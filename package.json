@@ -1,0 +1,74 @@
+{
+  "name": "rawalite",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@10.15.1",
+  "scripts": {
+    "dev": "vite",
+    "electron:run": "wait-on tcp:5173 && electron .",
+    "watch:electron": "tsup electron/*.ts --format esm --sourcemap --out-dir dist-electron --watch --external electron,fs-extra",
+    "build:electron": "tsup electron/*.ts --format esm --sourcemap --out-dir dist-electron --external electron,fs-extra",
+    "dev:all": "concurrently -k \"pnpm:dev\" \"pnpm:watch:electron\" \"pnpm:electron:run\"",
+    "build": "vite build",
+    "dist": "pnpm build && pnpm build:electron && electron-builder"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
+    "@vitejs/plugin-react": "^5.0.2",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.0",
+    "electron": "31.7.7",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.35.0",
+    "eslint-config-prettier": "^10.1.8",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.1.13",
+    "tsup": "^8.2.4",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.4",
+    "wait-on": "^8.0.0"
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.2",
+    "sql.js": "^1.13.0"
+  },
+  "main": "dist-electron/main.js",
+  "build": {
+    "appId": "de.rawalite.app",
+    "productName": "RaWaLite",
+    "npmRebuild": false,
+    "extraResources": [
+      "sql-wasm.wasm"
+    ],
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "index.html",
+      "package.json"
+    ],
+    "asar": true,
+    "directories": {
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

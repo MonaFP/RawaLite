@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+  - electron
+
+onlyBuiltDependencies:
+  - electron
+  - esbuild
+  - lzma-native

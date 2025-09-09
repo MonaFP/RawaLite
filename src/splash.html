@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RaWaLite</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+
+        .splash-container {
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 15px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-container">
+        <div class="logo">
+            <span class="logo-text">RW</span>
+        </div>
+        <h1>RaWaLite</h1>
+        <p class="subtitle">Rechnungs- und Angebotsverwaltung</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RaWaLite</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Linkes Menü -->
+        <nav class="sidebar">
+            <div class="logo-section">
+                <div class="logo">
+                    <span class="logo-text">RW</span>
+                </div>
+                <h1>RaWaLite</h1>
+            </div>
+            
+            <ul class="nav-menu">
+                <li>
+                    <button class="nav-btn active" data-view="customers">
+                        <span class="nav-icon">👥</span>
+                        Kunden
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-btn" data-view="packages">
+                        <span class="nav-icon">📦</span>
+                        Pakete
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-btn" data-view="offers">
+                        <span class="nav-icon">📄</span>
+                        Angebote
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-btn" data-view="invoices">
+                        <span class="nav-icon">🧾</span>
+                        Rechnungen
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-btn" data-view="settings">
+                        <span class="nav-icon">⚙️</span>
+                        Einstellungen
+                    </button>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Hauptinhalt -->
+        <main class="main-content">
+            <!-- Kunden-Ansicht -->
+            <div id="customers-view" class="view active">
+                <div class="view-header">
+                    <h2>Kundenverwaltung</h2>
+                </div>
+                
+                <div class="content-split">
+                    <div class="form-section">
+                        <form id="customer-form">
+                            <input type="hidden" id="customer-id">
+                            
+                            <div class="form-group">
+                                <label for="customer-number">Kundennummer</label>
+                                <input type="text" id="customer-number" placeholder="Wird automatisch vergeben" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="customer-name">Name *</label>
+                                <input type="text" id="customer-name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="customer-email">E-Mail</label>
+                                <input type="email" id="customer-email">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="customer-phone">Telefon</label>
+                                <input type="text" id="customer-phone">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="customer-address">Adresse</label>
+                                <textarea id="customer-address" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Speichern</button>
+                                <button type="button" class="btn btn-secondary" id="customer-reset">Neu</button>
+                                <button type="button" class="btn btn-danger" id="customer-delete" style="display:none;">Löschen</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="list-section">
+                        <h3>Kundenliste</h3>
+                        <div id="customer-list" class="item-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pakete-Ansicht -->
+            <div id="packages-view" class="view">
+                <div class="view-header">
+                    <h2>Pakete / Dienstleistungen</h2>
+                </div>
+                
+                <div class="content-split">
+                    <div class="form-section">
+                        <form id="package-form">
+                            <input type="hidden" id="package-id">
+                            
+                            <div class="form-group">
+                                <label for="package-sku">SKU</label>
+                                <input type="text" id="package-sku" placeholder="Automatisch generiert">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="package-title">Titel *</label>
+                                <input type="text" id="package-title" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="package-description">Beschreibung</label>
+                                <textarea id="package-description" rows="4"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="package-price">Preis (netto) *</label>
+                                <input type="number" id="package-price" step="0.01" min="0" required>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Speichern</button>
+                                <button type="button" class="btn btn-secondary" id="package-reset">Neu</button>
+                                <button type="button" class="btn btn-danger" id="package-delete" style="display:none;">Löschen</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="list-section">
+                        <h3>Paketliste</h3>
+                        <div id="package-list" class="item-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Angebote-Ansicht -->
+            <div id="offers-view" class="view">
+                <div class="view-header">
+                    <h2>Angebotsverwaltung</h2>
+                    <button class="btn btn-primary" id="new-offer">Neues Angebot</button>
+                </div>
+                
+                <div id="offer-list-view">
+                    <div id="offer-list" class="document-list"></div>
+                </div>
+                
+                <div id="offer-form-view" style="display: none;">
+                    <form id="offer-form">
+                        <input type="hidden" id="offer-id">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="offer-number">Angebotsnummer</label>
+                                <input type="text" id="offer-number" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="offer-customer">Kunde *</label>
+                                <select id="offer-customer" required>
+                                    <option value="">Kunde auswählen</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="offer-date">Datum</label>
+                                <input type="date" id="offer-date" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="offer-notes">Notizen</label>
+                            <textarea id="offer-notes" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="positions-section">
+                            <h3>Positionen</h3>
+                            <div id="offer-positions"></div>
+                            <button type="button" class="btn btn-secondary" id="add-offer-position">Position hinzufügen</button>
+                        </div>
+                        
+                        <div class="totals-section">
+                            <div class="total-row">
+                                <span>Gesamtsumme (netto):</span>
+                                <span id="offer-total">0,00 €</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Speichern</button>
+                            <button type="button" class="btn btn-secondary" id="offer-back">Zurück</button>
+                            <button type="button" class="btn btn-danger" id="offer-delete" style="display:none;">Löschen</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Rechnungen-Ansicht -->
+            <div id="invoices-view" class="view">
+                <div class="view-header">
+                    <h2>Rechnungsverwaltung</h2>
+                    <button class="btn btn-primary" id="new-invoice">Neue Rechnung</button>
+                </div>
+                
+                <div id="invoice-list-view">
+                    <div id="invoice-list" class="document-list"></div>
+                </div>
+                
+                <div id="invoice-form-view" style="display: none;">
+                    <form id="invoice-form">
+                        <input type="hidden" id="invoice-id">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="invoice-number">Rechnungsnummer</label>
+                                <input type="text" id="invoice-number" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="invoice-customer">Kunde *</label>
+                                <select id="invoice-customer" required>
+                                    <option value="">Kunde auswählen</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="invoice-date">Datum</label>
+                                <input type="date" id="invoice-date" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="invoice-due-date">Fälligkeitsdatum</label>
+                                <input type="date" id="invoice-due-date" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="invoice-status">Status</label>
+                                <select id="invoice-status">
+                                    <option value="offen">Offen</option>
+                                    <option value="bezahlt">Bezahlt</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="invoice-notes">Notizen</label>
+                            <textarea id="invoice-notes" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="positions-section">
+                            <h3>Positionen</h3>
+                            <div id="invoice-positions"></div>
+                            <button type="button" class="btn btn-secondary" id="add-invoice-position">Position hinzufügen</button>
+                        </div>
+                        
+                        <div class="totals-section">
+                            <div class="total-row">
+                                <span>Gesamtsumme (netto):</span>
+                                <span id="invoice-total">0,00 €</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Speichern</button>
+                            <button type="button" class="btn btn-secondary" id="invoice-back">Zurück</button>
+                            <button type="button" class="btn btn-danger" id="invoice-delete" style="display:none;">Löschen</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Einstellungen-Ansicht -->
+            <div id="settings-view" class="view">
+                <div class="view-header">
+                    <h2>Einstellungen</h2>
+                </div>
+                
+                <div class="settings-sections">
+                    <div class="settings-section">
+                        <h3>Nummernkreise</h3>
+                        <form id="numbering-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="customer-prefix">Kunden-Prefix</label>
+                                    <input type="text" id="customer-prefix" value="K">
+                                </div>
+                                <div class="form-group">
+                                    <label for="customer-digits">Stellenanzahl</label>
+                                    <input type="number" id="customer-digits" min="1" max="10" value="3">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="invoice-prefix">Rechnungs-Prefix</label>
+                                    <input type="text" id="invoice-prefix" value="RE">
+                                </div>
+                                <div class="form-group">
+                                    <label for="invoice-digits">Stellenanzahl</label>
+                                    <input type="number" id="invoice-digits" min="1" max="10" value="3">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="offer-prefix">Angebots-Prefix</label>
+                                    <input type="text" id="offer-prefix" value="AN">
+                                </div>
+                                <div class="form-group">
+                                    <label for="offer-digits">Stellenanzahl</label>
+                                    <input type="number" id="offer-digits" min="1" max="10" value="3">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="package-prefix">Paket-Prefix</label>
+                                    <input type="text" id="package-prefix" value="PAK">
+                                </div>
+                                <div class="form-group">
+                                    <label for="package-digits">Stellenanzahl</label>
+                                    <input type="number" id="package-digits" min="1" max="10" value="3">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Nummernkreise speichern</button>
+                        </form>
+                       </div>
+                     <h3>Wartung</h3>
+
+                    <div class="settings-section">
+                        <h3>Firmendaten</h3>
+                        <form id="company-form">
+                            <div class="form-group">
+                                <label for="company-name">Firmenname</label>
+                                <input type="text" id="company-name">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="company-address">Adresse</label>
+                                <textarea id="company-address" rows="4"></textarea>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="company-phone">Telefon</label>
+                                    <input type="text" id="company-phone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="company-email">E-Mail</label>
+                                    <input type="email" id="company-email">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="company-website">Webseite</label>
+                                <input type="url" id="company-website">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Firmendaten speichern</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="database.js"></script>
+<script src="app.js"></script>
+<script>
+console.log('Inline Script läuft');
+setTimeout(() => {
+    console.log('Test nach 1 Sekunde');
+    if (window.app) {
+        console.log('App gefunden');
+    } else {
+        console.log('App NICHT gefunden - app.js lädt nicht!');
+    }
+}, 1000);
+</script>
+</body>
+</html>

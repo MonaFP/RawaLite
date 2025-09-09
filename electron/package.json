@@ -1,0 +1,43 @@
+{
+  "name": "@rawalite/electron",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "build": "tsc && vite build --config ../../vite.config.ts",
+    "dist": "electron-builder",
+    "lint": "eslint . --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "electron": "^26.1.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.4.1",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "de.rawa.rawalite",
+    "productName": "RaWaLite",
+    "directories": { "output": "dist" },
+    "files": [
+      "apps/**",
+      "packages/**",
+      "electron/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icons/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
