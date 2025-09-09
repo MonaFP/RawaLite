@@ -1,10 +1,18 @@
-// vite.config.mts
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'node:path'
 
 export default defineConfig({
+  base: './',                 // <— WICHTIG für Electron (file://)
   plugins: [react()],
-  server: { port: 5173, strictPort: true, host: "localhost" },
-  build: { sourcemap: true, outDir: "dist", assetsDir: "assets" },
-  resolve: { alias: { "@": "/src" } }
-});
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true
+  },
+  server: { port: 5173, strictPort: true }
+})

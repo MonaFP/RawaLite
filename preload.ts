@@ -1,25 +1,25 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer } from 'electron'
 
-contextBridge.exposeInMainWorld("api", {
+/**
+ * Einheitliche Bridge:
+ * Ab jetzt nur noch window.rawalitelite.* im Renderer verwenden.
+ * Die Methoden sind Platzhalter, damit der Renderer nicht crasht –
+ * du kannst sie später mit echter Funktionalität (DB/Backup/PDF) füllen.
+ */
+contextBridge.exposeInMainWorld('rawalite', {
+  log: (msg: string) => ipcRenderer.invoke('log', msg),
+
   db: {
-    load: (): Promise<Uint8Array> => ipcRenderer.invoke("db:load"),
-    save: (bytes: Uint8Array): Promise<void> => ipcRenderer.invoke("db:save", bytes)
+    load: async () => ({}),
+    save: async (_data: unknown) => true
   },
-  backup: {
-    create: (): Promise<string> => ipcRenderer.invoke("backup:create"),
-    restore: (): Promise<boolean> => ipcRenderer.invoke("backup:restore")
-  },
-  pdf: {
-    generate: (content: string, options: { footer: string }): Promise<Buffer> => ipcRenderer.invoke("pdf:generate", content, options)
-  }
-});
 
-declare global {
-  interface Window {
-    api: {
-      db: { load(): Promise<Uint8Array>; save(bytes: Uint8Array): Promise<void> };
-      backup: { create(): Promise<string>; restore(): Promise<boolean> };
-      pdf: { generate(content: string, options: { footer: string }): Promise<Buffer> };
-    };
+  backup: {
+    create: async () => false,
+    restore: async (_file: string) => false
+  },
+
+  pdf: {
+    generate: async (_data: unknown) => false
   }
-}
+})

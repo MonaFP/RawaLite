@@ -5,13 +5,13 @@ export class SQLiteAdapter {
 
   async init(): Promise<void> {
     const SQL = await initSqlJs({ locateFile: () => '/path/to/sql-wasm.wasm' }); // WASM Path anpassen
-    const bytes = await window.api.db.load();
+    const bytes = await window.rawalitelite.db.load();
     this.db = new SQL.Database(bytes);
   }
 
   async save(): Promise<void> {
     const bytes = this.db.export();
-    await window.api.db.save(bytes);
+    await window.rawalitelite.db.save(bytes);
   }
 
   // CRUD Methods: executeSql, etc.

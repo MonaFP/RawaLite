@@ -1,34 +1,21 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Sidebar from '@components/Sidebar';
-import { PersistenceProvider } from './contexts/PersistenceContext';
-import DashboardPage from '@pages/DashboardPage';
-import KundenPage from '@pages/KundenPage';
-import PaketePage from '@pages/PaketePage';
-import AngebotePage from '@pages/AngebotePage';
-import RechnungenPage from '@pages/RechnungenPage';
-import EinstellungenPage from '@pages/EinstellungenPage';
-import NotFoundPage from '@pages/NotFoundPage';
+// src/App.tsx
+import { useEffect } from 'react'
 
-const App: React.FC = () => {
+export default function App() {
+  useEffect(() => {
+    // kleine Probe: Bridge vorhanden?
+    // @ts-expect-error - preload stellt rawalite bereit
+    window.rawalite?.log?.('Renderer gestartet')
+  }, [])
+
   return (
-    <PersistenceProvider><Router>
-      <div className="layout">
-        <Sidebar />
-        <main className="content">
-          <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/kunden" element={<KundenPage />} />
-            <Route path="/pakete" element={<PaketePage />} />
-            <Route path="/angebote" element={<AngebotePage />} />
-            <Route path="/rechnungen" element={<RechnungenPage />} />
-            <Route path="/einstellungen" element={<EinstellungenPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </main>
-      </div>
-    </Router></PersistenceProvider>
-  );
-};
-
-export default App;
+    <div style={{ padding: 24, fontFamily: 'Segoe UI, sans-serif' }}>
+      <h1>RaWaLite</h1>
+      <p>React + Vite + Electron läuft 🎉</p>
+      <ul>
+        <li>Links: Sidebar / Navigation</li>
+        <li>Rechts: Inhalt</li>
+      </ul>
+    </div>
+  )
+}

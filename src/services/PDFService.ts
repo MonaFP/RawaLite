@@ -6,5 +6,5 @@ export async function generatePDF(template: string, data: object, kleinunternehm
     // USt Berechnung
   }
   content += '<footer>Seite {{page}} von {{pages}} | Pflichtangaben §14 UStG: Firma, Adresse, etc.</footer>';
-  return window.api.pdf.generate(content, { footer: '...' });
+  return window.rawalitelite.pdf.generate(content, { footer: '...' });
 }

@@ -13,7 +13,7 @@ export async function getDb() {
     SQL = await initSqlJs({ locateFile: locate });
   }
   if (!db) {
-    const bytes = await window.rawalite.db.load();
+    const bytes = await window.rawalitelite.db.load();
     db = bytes ? new SQL.Database(new Uint8Array(bytes)) : new SQL.Database();
     // Erst-Setup
     db.exec(`
@@ -33,6 +33,6 @@ export async function saveDbDebounced() {
   saveTimer = setTimeout(async () => {
     if (!db) return;
     const data = db.export();
-    await window.rawalite.db.save(data);
+    await window.rawalitelite.db.save(data);
   }, 400);
 }

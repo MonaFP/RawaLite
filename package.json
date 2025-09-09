@@ -1,61 +1,27 @@
 {
   "name": "rawalite",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.1.0",
+  "description": "RaWaLite – Rechnungs- und Angebotsverwaltung (Electron + React + Vite + TypeScript)",
+  "author": "MonaFP",
+  "license": "MIT",
+  "main": "dist-electron/main.js",
   "type": "module",
-  "packageManager": "pnpm@10.15.1",
   "scripts": {
     "dev": "vite",
-    "electron:run": "wait-on tcp:5173 && electron .",
-    "watch:electron": "tsup electron/*.ts --format esm --sourcemap --out-dir dist-electron --watch --external electron,fs-extra",
-    "build:electron": "tsup electron/*.ts --format esm --sourcemap --out-dir dist-electron --external electron,fs-extra",
-    "dev:all": "concurrently -k \"pnpm:dev\" \"pnpm:watch:electron\" \"pnpm:electron:run\"",
-    "build": "vite build",
-    "dist": "pnpm build && pnpm build:electron && electron-builder"
+    "dev:all": "cross-env VITE_DEV_SERVER_URL=http://localhost:5173 concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "vite build && tsc -p tsconfig.electron.json",
+    "start": "electron .",
+    "dist": "pnpm build && electron-builder"
   },
-  "devDependencies": {
-    "@types/node": "^20.12.12",
-    "@types/react": "^19.1.12",
-    "@types/react-dom": "^19.1.9",
-    "@typescript-eslint/eslint-plugin": "^8.42.0",
-    "@typescript-eslint/parser": "^8.42.0",
-    "@vitejs/plugin-react": "^5.0.2",
-    "autoprefixer": "^10.4.21",
-    "concurrently": "^9.1.0",
-    "electron": "31.7.7",
-    "electron-builder": "^25.1.8",
-    "eslint": "^9.35.0",
-    "eslint-config-prettier": "^10.1.8",
-    "postcss": "^8.5.6",
-    "prettier": "^3.6.2",
-    "tailwindcss": "^4.1.13",
-    "tsup": "^8.2.4",
-    "typescript": "^5.9.2",
-    "vite": "^7.1.4",
-    "wait-on": "^8.0.0"
-  },
-  "dependencies": {
-    "fs-extra": "^11.3.1",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-router-dom": "^7.8.2",
-    "sql.js": "^1.13.0"
-  },
-  "main": "dist-electron/main.js",
   "build": {
-    "appId": "de.rawalite.app",
+    "appId": "de.mona.rawalite",
     "productName": "RaWaLite",
-    "npmRebuild": false,
-    "extraResources": [
-      "sql-wasm.wasm"
-    ],
     "files": [
-      "dist/**",
-      "dist-electron/**",
-      "index.html",
+      "dist/**/*",
+      "dist-electron/**/*",
       "package.json"
     ],
-    "asar": true,
     "directories": {
       "buildResources": "build"
     },
@@ -66,9 +32,27 @@
     "nsis": {
       "oneClick": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "allowToChangeInstallationDirectory": true
     }
+  },
+  "dependencies": {
+    "electron": "^31.7.7",
+    "fs-extra": "^11.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sql.js": "^1.11.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.14.10",
+    "@types/react": "^18.3.4",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "concurrently": "^9.0.1",
+    "cross-env": "^7.0.3",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0",
+    "wait-on": "^8.0.0"
   }
 }
