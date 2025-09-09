@@ -1,1 +1,0 @@
-Place your icon as build/icon.ico for installer branding.
