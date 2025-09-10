@@ -144,7 +144,23 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       const offer = offers.find(o => o.id === offerId);
       if (!offer) return;
       
-      await updateOffer(offerId, { ...offer, status: newStatus });
+      // Prepare status date fields
+      const now = new Date().toISOString();
+      const statusDates: Partial<Offer> = {};
+      
+      switch (newStatus) {
+        case 'sent':
+          statusDates.sentAt = now;
+          break;
+        case 'accepted':
+          statusDates.acceptedAt = now;
+          break;
+        case 'rejected':
+          statusDates.rejectedAt = now;
+          break;
+      }
+      
+      await updateOffer(offerId, { ...offer, status: newStatus, ...statusDates });
       
       // Success notification
       const statusLabels = {

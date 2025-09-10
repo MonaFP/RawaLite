@@ -147,7 +147,26 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
       const invoice = invoices.find(i => i.id === invoiceId);
       if (!invoice) return;
       
-      await updateInvoice(invoiceId, { ...invoice, status: newStatus });
+      // Prepare status date fields
+      const now = new Date().toISOString();
+      const statusDates: Partial<Invoice> = {};
+      
+      switch (newStatus) {
+        case 'sent':
+          statusDates.sentAt = now;
+          break;
+        case 'paid':
+          statusDates.paidAt = now;
+          break;
+        case 'overdue':
+          statusDates.overdueAt = now;
+          break;
+        case 'cancelled':
+          statusDates.cancelledAt = now;
+          break;
+      }
+      
+      await updateInvoice(invoiceId, { ...invoice, status: newStatus, ...statusDates });
       
       // Success notification
       const statusLabels = {

@@ -112,8 +112,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!customerId || !title) {
-      alert('Bitte füllen Sie alle Pflichtfelder aus.');
+    if (!customerId || !title.trim()) {
+      alert('❌ Pflichtfelder fehlen:\\n\\n' + 
+            (!customerId ? '• Bitte wählen Sie einen Kunden aus\\n' : '') +
+            (!title.trim() ? '• Bitte geben Sie einen Titel ein\\n' : ''));
       return;
     }
 

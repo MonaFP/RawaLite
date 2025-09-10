@@ -157,6 +157,9 @@ function createSchemaIfNeeded() {
       vatAmount REAL NOT NULL DEFAULT 0,
       total REAL NOT NULL DEFAULT 0,
       notes TEXT,
+      sentAt TEXT,
+      acceptedAt TEXT,
+      rejectedAt TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL
     );
@@ -185,6 +188,10 @@ function createSchemaIfNeeded() {
       vatAmount REAL NOT NULL DEFAULT 0,
       total REAL NOT NULL DEFAULT 0,
       notes TEXT,
+      sentAt TEXT,
+      paidAt TEXT,
+      overdueAt TEXT,
+      cancelledAt TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL
     );
