@@ -21,6 +21,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [importType, setImportType] = useState<'customers' | 'invoices' | 'offers'>('customers');
+  const [selectedCSVFile, setSelectedCSVFile] = useState<File | null>(null);
 
   // Update form data when settings change
   React.useEffect(() => {
@@ -471,38 +472,52 @@ Die Daten werden aktualisiert, navigiere zur Kunden-Seite um sie zu sehen.`);
       setSaving(false);
       // Input zurücksetzen für wiederholte Imports
       event.target.value = '';
+      setSelectedCSVFile(null);
     }
   };
 
-  const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCSVFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      setSelectedCSVFile(null);
+      return;
+    }
 
     if (!file.name.endsWith('.csv')) {
-      alert('Bitte wählen Sie eine CSV-Datei aus.');
+      showError('Bitte wählen Sie eine CSV-Datei aus.');
+      setSelectedCSVFile(null);
+      return;
+    }
+
+    setSelectedCSVFile(file);
+  };
+
+  const handleImportCSV = async () => {
+    if (!selectedCSVFile) {
+      showError('Bitte wählen Sie zuerst eine CSV-Datei aus.');
       return;
     }
 
     if (!adapter) {
-      alert('Fehler: Datenbankadapter nicht verfügbar');
+      showError('Fehler: Datenbankadapter nicht verfügbar');
       return;
     }
 
     try {
       setSaving(true);
       
-      const text = await file.text();
+      const text = await selectedCSVFile.text();
       const lines = text.split('\n').filter(line => line.trim());
       
       if (lines.length < 2) {
-        alert('CSV-Datei ist leer oder hat keine Daten.');
+        showError('CSV-Datei ist leer oder hat keine Daten.');
         return;
       }
 
       const headers = lines[0].split(';').map(h => h.trim().replace(/^"|"$/g, ''));
       const dataLines = lines.slice(1);
       
-      alert(`CSV-Import ist noch nicht vollständig implementiert.
+      showSuccess(`CSV-Import ist noch nicht vollständig implementiert.
       
 Gefunden:
 - ${headers.length} Spalten
@@ -514,9 +529,10 @@ was eine komplexere Implementierung erfordert.`);
       
     } catch (error) {
       console.error('CSV Import error:', error);
-      alert('Fehler beim CSV-Import: ' + error);
+      showError('Fehler beim CSV-Import: ' + error);
     } finally {
       setSaving(false);
+      setSelectedCSVFile(null);
     }
   };
 
@@ -585,16 +601,26 @@ was eine komplexere Implementierung erfordert.`);
       // 🔥 WICHTIG: Nummernkreise zurücksetzen!
       try {
         console.log('🔄 Resetting numbering circles to default values');
-        await updateNumberingCircles(settings.numberingCircles.map(circle => ({
+        
+        // Zuerst localStorage komplett leeren
+        localStorage.removeItem('rawalite-numbering');
+        console.log('🗑️ Cleared localStorage numbering data');
+        
+        // Dann Standard-Nummernkreise mit current: 0 setzen
+        const resetCircles = defaultSettings.numberingCircles.map(circle => ({
           ...circle,
           current: 0,
           lastResetYear: undefined
-        })));
+        }));
+        
+        console.log('📝 Setting numbering circles to:', resetCircles);
+        await updateNumberingCircles(resetCircles);
         console.log('✅ Numbering circles reset successfully');
       } catch (e) {
         console.warn('Error resetting numbering circles:', e);
-        // Fallback: Clear localStorage directly
+        // Fallback: Clear localStorage directly and set defaults
         localStorage.removeItem('rawalite-numbering');
+        localStorage.setItem('rawalite-numbering', JSON.stringify(defaultSettings.numberingCircles));
       }
 
       // 🔥 ZUSÄTZLICH: Firmendaten zurücksetzen (optional)
@@ -1446,8 +1472,11 @@ was eine komplexere Implementierung erfordert.`);
               <label style={{ display: "block", marginBottom: "8px", fontWeight: "500", color: "#374151" }}>
                 CSV importieren
               </label>
-              <div style={{ display: "flex", gap: "12px", alignItems: "end", flexWrap: "wrap" }}>
+              <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "auto 1fr auto", alignItems: "end" }}>
                 <div>
+                  <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#6b7280" }}>
+                    Datentyp
+                  </label>
                   <select
                     value={importType}
                     onChange={(e) => setImportType(e.target.value as 'customers' | 'invoices' | 'offers')}
@@ -1456,7 +1485,7 @@ was eine komplexere Implementierung erfordert.`);
                       border: "1px solid rgba(0,0,0,.2)",
                       borderRadius: "6px",
                       backgroundColor: "rgba(255,255,255,0.9)",
-                      marginRight: "8px"
+                      minWidth: "120px"
                     }}
                   >
                     <option value="customers">Kunden</option>
@@ -1465,19 +1494,49 @@ was eine komplexere Implementierung erfordert.`);
                   </select>
                 </div>
                 <div>
+                  <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#6b7280" }}>
+                    CSV-Datei auswählen
+                  </label>
                   <input
                     type="file"
                     accept=".csv"
-                    onChange={handleImportCSV}
+                    onChange={handleCSVFileSelect}
                     style={{
                       padding: "8px",
                       border: "1px solid rgba(0,0,0,.2)",
                       borderRadius: "6px",
-                      backgroundColor: "rgba(255,255,255,0.9)"
+                      backgroundColor: "rgba(255,255,255,0.9)",
+                      width: "100%"
                     }}
                   />
                 </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleImportCSV}
+                    disabled={!selectedCSVFile || saving}
+                    className="btn btn-secondary"
+                    style={{
+                      backgroundColor: selectedCSVFile ? "#059669" : "#6b7280",
+                      color: "white",
+                      border: "none",
+                      padding: "10px 20px",
+                      borderRadius: "6px",
+                      cursor: selectedCSVFile && !saving ? "pointer" : "not-allowed",
+                      fontWeight: "500",
+                      opacity: selectedCSVFile && !saving ? 1 : 0.6,
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    {saving ? "Importiere..." : "Import starten"}
+                  </button>
+                </div>
               </div>
+              {selectedCSVFile && (
+                <div style={{ marginTop: "8px", fontSize: "14px", color: "#059669" }}>
+                  📄 Ausgewählte Datei: {selectedCSVFile.name} ({Math.round(selectedCSVFile.size / 1024)}KB)
+                </div>
+              )}
             </div>
           </div>
 
