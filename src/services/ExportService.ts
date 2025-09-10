@@ -26,16 +26,16 @@ export class ExportService {
     this.downloadFile(csvContent, `kunden_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
   }
 
-  // PDF Export für Angebote (simplified HTML to PDF)
-  static async exportOfferToPDF(offer: any, customer: Customer, settings: any): Promise<void> {
+  // PDF Export für Angebote (with preview option)
+  static async exportOfferToPDF(offer: any, customer: Customer, settings: any, previewOnly: boolean = false): Promise<void> {
     const html = this.generateOfferHTML(offer, customer, settings);
-    await this.htmlToPDF(html, `angebot_${offer.offerNumber}.pdf`);
+    await this.htmlToPDF(html, `angebot_${offer.offerNumber}.pdf`, previewOnly);
   }
 
-  // PDF Export für Rechnungen
-  static async exportInvoiceToPDF(invoice: any, customer: Customer, settings: any): Promise<void> {
+  // PDF Export für Rechnungen (with preview option)
+  static async exportInvoiceToPDF(invoice: any, customer: Customer, settings: any, previewOnly: boolean = false): Promise<void> {
     const html = this.generateInvoiceHTML(invoice, customer, settings);
-    await this.htmlToPDF(html, `rechnung_${invoice.invoiceNumber}.pdf`);
+    await this.htmlToPDF(html, `rechnung_${invoice.invoiceNumber}.pdf`, previewOnly);
   }
 
   private static generateOfferHTML(offer: any, customer: Customer, settings: any): string {
@@ -218,7 +218,7 @@ export class ExportService {
     `;
   }
 
-  private static async htmlToPDF(html: string, filename: string): Promise<void> {
+  private static async htmlToPDF(html: string, filename: string, previewOnly: boolean = false): Promise<void> {
     try {
       // Use jsPDF with html2canvas for modern PDF generation without popups
       const { jsPDF } = await import('jspdf');
@@ -254,10 +254,41 @@ export class ExportService {
         const imgData = canvas.toDataURL('image/png');
         pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
         
-        // Save PDF
-        pdf.save(filename);
-        
-        console.log(`✅ PDF "${filename}" generated successfully`);
+        if (previewOnly) {
+          // Open PDF in new tab for preview
+          const pdfBlob = pdf.output('blob');
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          
+          const previewWindow = window.open(pdfUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+          if (!previewWindow) {
+            // Fallback: Ask user to allow popup and try again
+            const allowPreview = confirm(`🔍 PDF-Vorschau benötigt ein Popup!
+
+Möchten Sie:
+- "OK" → Popup erlauben und Vorschau öffnen
+- "Abbrechen" → PDF direkt herunterladen`);
+            
+            if (allowPreview) {
+              // User wants preview but popup blocked - show inline
+              this.showInlinePDFPreview(pdfBlob, filename);
+            } else {
+              // User prefers direct download
+              pdf.save(filename);
+            }
+          } else {
+            // Preview opened successfully
+            console.log(`✅ PDF preview "${filename}" opened in new tab`);
+            
+            // Add event listener to clean up URL when window closes
+            previewWindow.addEventListener('beforeunload', () => {
+              URL.revokeObjectURL(pdfUrl);
+            });
+          }
+        } else {
+          // Direct download
+          pdf.save(filename);
+          console.log(`✅ PDF "${filename}" downloaded successfully`);
+        }
         
       } finally {
         // Clean up temporary container
@@ -299,6 +330,120 @@ export class ExportService {
         }, 1000);
       };
     }
+  }
+
+  // Helper method for inline PDF preview when popups are blocked
+  private static showInlinePDFPreview(pdfBlob: Blob, filename: string): void {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    `;
+    
+    // Create preview container
+    const container = document.createElement('div');
+    container.style.cssText = `
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 90%;
+      max-height: 90%;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    `;
+    
+    // Title and controls
+    const header = document.createElement('div');
+    header.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    `;
+    
+    const title = document.createElement('h3');
+    title.textContent = `PDF Vorschau: ${filename}`;
+    title.style.margin = '0';
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = 'display: flex; gap: 10px;';
+    
+    const downloadBtn = document.createElement('button');
+    downloadBtn.textContent = '💾 Herunterladen';
+    downloadBtn.style.cssText = `
+      padding: 8px 16px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    `;
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '❌ Schließen';
+    closeBtn.style.cssText = `
+      padding: 8px 16px;
+      background: #6b7280;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    `;
+    
+    // PDF iframe
+    const iframe = document.createElement('iframe');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    iframe.src = pdfUrl;
+    iframe.style.cssText = `
+      width: 800px;
+      height: 600px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    `;
+    
+    // Event handlers
+    downloadBtn.onclick = () => {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = filename;
+      link.click();
+    };
+    
+    closeBtn.onclick = () => {
+      document.body.removeChild(overlay);
+      URL.revokeObjectURL(pdfUrl);
+    };
+    
+    // Escape key to close
+    document.addEventListener('keydown', function escapeHandler(e) {
+      if (e.key === 'Escape') {
+        document.body.removeChild(overlay);
+        URL.revokeObjectURL(pdfUrl);
+        document.removeEventListener('keydown', escapeHandler);
+      }
+    });
+    
+    // Build modal
+    buttonContainer.appendChild(downloadBtn);
+    buttonContainer.appendChild(closeBtn);
+    header.appendChild(title);
+    header.appendChild(buttonContainer);
+    container.appendChild(header);
+    container.appendChild(iframe);
+    overlay.appendChild(container);
+    document.body.appendChild(overlay);
   }
 
   private static downloadFile(content: string, filename: string, mimeType: string): void {
