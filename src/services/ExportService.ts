@@ -373,7 +373,7 @@ Möchten Sie:
     // Header with title bar (like app design)
     const header = document.createElement('div');
     header.style.cssText = `
-      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      background: linear-gradient(160deg, #1e3a2e 0%, #0f2419 40%, #0a1b0f 100%);
       color: white;
       padding: 16px 20px;
       display: flex;
@@ -464,7 +464,7 @@ Möchten Sie:
     const downloadBtn = document.createElement('button');
     downloadBtn.innerHTML = '💾 Herunterladen';
     downloadBtn.style.cssText = `
-      background: #3b82f6;
+      background: #1e3a2e;
       color: white;
       border: none;
       border-radius: 8px;
@@ -476,25 +476,7 @@ Möchten Sie:
       align-items: center;
       gap: 6px;
       transition: all 0.2s;
-      box-shadow: 0 2px 4px rgba(59,130,246,0.2);
-    `;
-    
-    const newTabBtn = document.createElement('button');
-    newTabBtn.innerHTML = '🔗 Neuer Tab';
-    newTabBtn.style.cssText = `
-      background: #10b981;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-      box-shadow: 0 2px 4px rgba(16,185,129,0.2);
+      box-shadow: 0 2px 4px rgba(30,58,46,0.3);
     `;
     
     // PDF container
@@ -579,10 +561,6 @@ Möchten Sie:
       link.click();
     };
     
-    newTabBtn.onclick = () => {
-      window.open(pdfUrl, '_blank');
-    };
-    
     // Drag functionality for header
     let isDragging = false;
     let dragStart = { x: 0, y: 0 };
@@ -627,20 +605,12 @@ Möchten Sie:
     closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(239,68,68,0.4)';
     closeBtn.onmouseleave = () => closeBtn.style.background = 'rgba(239,68,68,0.2)';
     downloadBtn.onmouseenter = () => {
-      downloadBtn.style.background = '#2563eb';
+      downloadBtn.style.background = '#0f2419';
       downloadBtn.style.transform = 'translateY(-1px)';
     };
     downloadBtn.onmouseleave = () => {
-      downloadBtn.style.background = '#3b82f6';
+      downloadBtn.style.background = '#1e3a2e';
       downloadBtn.style.transform = 'translateY(0)';
-    };
-    newTabBtn.onmouseenter = () => {
-      newTabBtn.style.background = '#059669';
-      newTabBtn.style.transform = 'translateY(-1px)';
-    };
-    newTabBtn.onmouseleave = () => {
-      newTabBtn.style.background = '#10b981';
-      newTabBtn.style.transform = 'translateY(0)';
     };
     
     // Build the modal
@@ -650,7 +620,6 @@ Möchten Sie:
     header.appendChild(controls);
     
     toolbar.appendChild(downloadBtn);
-    toolbar.appendChild(newTabBtn);
     
     pdfContainer.appendChild(iframe);
     
