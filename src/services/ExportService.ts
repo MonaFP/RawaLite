@@ -342,64 +342,170 @@ Möchten Sie:
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.5);
       z-index: 10000;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
     `;
     
-    // Create preview container
-    const container = document.createElement('div');
-    container.style.cssText = `
+    // Create resizable preview window
+    const modal = document.createElement('div');
+    modal.style.cssText = `
       background: white;
-      border-radius: 8px;
-      padding: 20px;
-      max-width: 90%;
-      max-height: 90%;
+      border-radius: 12px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      width: 80vw;
+      height: 80vh;
+      min-width: 600px;
+      min-height: 400px;
+      max-width: 95vw;
+      max-height: 95vh;
+      resize: both;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
     `;
     
-    // Title and controls
+    // Header with title bar (like app design)
     const header = document.createElement('div');
     header.style.cssText = `
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      color: white;
+      padding: 16px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 10px;
+      border-radius: 12px 12px 0 0;
+      cursor: move;
+      user-select: none;
+      border-bottom: 1px solid #e2e8f0;
     `;
+    
+    const titleSection = document.createElement('div');
+    titleSection.style.cssText = 'display: flex; align-items: center; gap: 12px;';
+    
+    const icon = document.createElement('span');
+    icon.textContent = '📄';
+    icon.style.fontSize = '20px';
     
     const title = document.createElement('h3');
     title.textContent = `PDF Vorschau: ${filename}`;
-    title.style.margin = '0';
+    title.style.cssText = 'margin: 0; font-size: 16px; font-weight: 600;';
     
-    const buttonContainer = document.createElement('div');
-    buttonContainer.style.cssText = 'display: flex; gap: 10px;';
+    titleSection.appendChild(icon);
+    titleSection.appendChild(title);
     
-    const downloadBtn = document.createElement('button');
-    downloadBtn.textContent = '💾 Herunterladen';
-    downloadBtn.style.cssText = `
-      padding: 8px 16px;
-      background: #3b82f6;
+    // Window controls
+    const controls = document.createElement('div');
+    controls.style.cssText = 'display: flex; gap: 8px; align-items: center;';
+    
+    const maximizeBtn = document.createElement('button');
+    maximizeBtn.textContent = '⬜';
+    maximizeBtn.title = 'Maximieren';
+    maximizeBtn.style.cssText = `
+      background: rgba(255,255,255,0.2);
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
+      width: 32px;
+      height: 32px;
       cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
     `;
     
     const closeBtn = document.createElement('button');
-    closeBtn.textContent = '❌ Schließen';
+    closeBtn.textContent = '✕';
+    closeBtn.title = 'Schließen';
     closeBtn.style.cssText = `
-      padding: 8px 16px;
-      background: #6b7280;
+      background: rgba(239,68,68,0.2);
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
+      width: 32px;
+      height: 32px;
       cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    `;
+    
+    // Content area
+    const content = document.createElement('div');
+    content.style.cssText = `
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #f8fafc;
+    `;
+    
+    // Toolbar
+    const toolbar = document.createElement('div');
+    toolbar.style.cssText = `
+      padding: 12px 20px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    `;
+    
+    const downloadBtn = document.createElement('button');
+    downloadBtn.innerHTML = '💾 Herunterladen';
+    downloadBtn.style.cssText = `
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(59,130,246,0.2);
+    `;
+    
+    const newTabBtn = document.createElement('button');
+    newTabBtn.innerHTML = '🔗 Neuer Tab';
+    newTabBtn.style.cssText = `
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(16,185,129,0.2);
+    `;
+    
+    // PDF container
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.cssText = `
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow: auto;
     `;
     
     // PDF iframe
@@ -407,18 +513,58 @@ Möchten Sie:
     const pdfUrl = URL.createObjectURL(pdfBlob);
     iframe.src = pdfUrl;
     iframe.style.cssText = `
-      width: 800px;
-      height: 600px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      width: 100%;
+      height: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     `;
     
+    // Status bar
+    const statusBar = document.createElement('div');
+    statusBar.style.cssText = `
+      padding: 8px 20px;
+      background: #f1f5f9;
+      border-top: 1px solid #e2e8f0;
+      font-size: 12px;
+      color: #64748b;
+      border-radius: 0 0 12px 12px;
+    `;
+    statusBar.textContent = `Dateigröße: ${(pdfBlob.size / 1024).toFixed(1)} KB`;
+    
     // Event handlers
-    downloadBtn.onclick = () => {
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = filename;
-      link.click();
+    let isMaximized = false;
+    let originalStyle = '';
+    
+    maximizeBtn.onclick = () => {
+      if (!isMaximized) {
+        originalStyle = modal.style.cssText;
+        modal.style.cssText = `
+          position: fixed;
+          top: 20px;
+          left: 20px;
+          right: 20px;
+          bottom: 20px;
+          width: auto;
+          height: auto;
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+          display: flex;
+          flex-direction: column;
+          border: 1px solid #e2e8f0;
+          resize: none;
+        `;
+        maximizeBtn.textContent = '🗗';
+        maximizeBtn.title = 'Wiederherstellen';
+        isMaximized = true;
+      } else {
+        modal.style.cssText = originalStyle;
+        maximizeBtn.textContent = '⬜';
+        maximizeBtn.title = 'Maximieren';
+        isMaximized = false;
+      }
     };
     
     closeBtn.onclick = () => {
@@ -426,23 +572,96 @@ Möchten Sie:
       URL.revokeObjectURL(pdfUrl);
     };
     
-    // Escape key to close
-    document.addEventListener('keydown', function escapeHandler(e) {
+    downloadBtn.onclick = () => {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = filename;
+      link.click();
+    };
+    
+    newTabBtn.onclick = () => {
+      window.open(pdfUrl, '_blank');
+    };
+    
+    // Drag functionality for header
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+    let modalStart = { x: 0, y: 0 };
+    
+    header.onmousedown = (e) => {
+      if (isMaximized) return;
+      isDragging = true;
+      dragStart = { x: e.clientX, y: e.clientY };
+      const rect = modal.getBoundingClientRect();
+      modalStart = { x: rect.left, y: rect.top };
+      header.style.cursor = 'grabbing';
+    };
+    
+    document.onmousemove = (e) => {
+      if (!isDragging || isMaximized) return;
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      modal.style.left = (modalStart.x + deltaX) + 'px';
+      modal.style.top = (modalStart.y + deltaY) + 'px';
+      modal.style.position = 'absolute';
+    };
+    
+    document.onmouseup = () => {
+      isDragging = false;
+      header.style.cursor = 'move';
+    };
+    
+    // Escape key handler
+    const escapeHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         document.body.removeChild(overlay);
         URL.revokeObjectURL(pdfUrl);
         document.removeEventListener('keydown', escapeHandler);
       }
-    });
+    };
+    document.addEventListener('keydown', escapeHandler);
     
-    // Build modal
-    buttonContainer.appendChild(downloadBtn);
-    buttonContainer.appendChild(closeBtn);
-    header.appendChild(title);
-    header.appendChild(buttonContainer);
-    container.appendChild(header);
-    container.appendChild(iframe);
-    overlay.appendChild(container);
+    // Hover effects
+    maximizeBtn.onmouseenter = () => maximizeBtn.style.background = 'rgba(255,255,255,0.3)';
+    maximizeBtn.onmouseleave = () => maximizeBtn.style.background = 'rgba(255,255,255,0.2)';
+    closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(239,68,68,0.4)';
+    closeBtn.onmouseleave = () => closeBtn.style.background = 'rgba(239,68,68,0.2)';
+    downloadBtn.onmouseenter = () => {
+      downloadBtn.style.background = '#2563eb';
+      downloadBtn.style.transform = 'translateY(-1px)';
+    };
+    downloadBtn.onmouseleave = () => {
+      downloadBtn.style.background = '#3b82f6';
+      downloadBtn.style.transform = 'translateY(0)';
+    };
+    newTabBtn.onmouseenter = () => {
+      newTabBtn.style.background = '#059669';
+      newTabBtn.style.transform = 'translateY(-1px)';
+    };
+    newTabBtn.onmouseleave = () => {
+      newTabBtn.style.background = '#10b981';
+      newTabBtn.style.transform = 'translateY(0)';
+    };
+    
+    // Build the modal
+    controls.appendChild(maximizeBtn);
+    controls.appendChild(closeBtn);
+    header.appendChild(titleSection);
+    header.appendChild(controls);
+    
+    toolbar.appendChild(downloadBtn);
+    toolbar.appendChild(newTabBtn);
+    
+    pdfContainer.appendChild(iframe);
+    
+    content.appendChild(toolbar);
+    content.appendChild(pdfContainer);
+    
+    modal.appendChild(header);
+    modal.appendChild(content);
+    modal.appendChild(statusBar);
+    
+    overlay.appendChild(modal);
     document.body.appendChild(overlay);
   }
 
