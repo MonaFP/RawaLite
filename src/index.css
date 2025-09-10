@@ -1,1 +1,93 @@
-body { font-family: Arial, sans-serif; }
+
+:root{
+  --bg:#0f172a;        /* slate-900 */
+  --panel:#111827;     /* gray-900 */
+  --muted:#cbd5e1;     /* slate-300 */
+  --accent:#60a5fa;    /* blue-400 */
+  --accent-2:#f472b6;  /* pink-400 */
+  --ok:#22c55e;        /* green-500 */
+  --warn:#f59e0b;      /* amber-500 */
+  --danger:#ef4444;    /* red-500 */
+}
+
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  color: var(--muted);
+  background: linear-gradient(120deg,var(--bg) 0%, #0b1022 100%);
+}
+
+.app{
+  display:grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 56px 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+  min-height:100%;
+}
+
+.sidebar{
+  grid-area: sidebar;
+  background: rgba(17,24,39,.7);
+  backdrop-filter: blur(6px);
+  border-right:1px solid rgba(255,255,255,.06);
+  padding:16px 12px;
+  position: sticky;
+  top:0;
+  min-height:100vh;
+}
+
+.brand{
+  display:flex; align-items:center; gap:10px;
+  margin: 0 8px 16px;
+  font-weight:700; letter-spacing:.2px;
+}
+.brand .dot{ width:10px; height:10px; border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2)); box-shadow:0 0 20px var(--accent); }
+
+.nav{
+  list-style:none; padding:0; margin:8px 0 0;
+}
+.nav a{
+  display:flex; align-items:center; gap:10px;
+  color:var(--muted);
+  text-decoration:none;
+  padding:10px 12px; margin:4px 4px;
+  border-radius:10px;
+  transition: background .2s, color .2s, transform .06s;
+}
+.nav a:hover{ background:rgba(96,165,250,.12); color:white; }
+.nav a[aria-current="page"]{ background:rgba(96,165,250,.2); color:white; }
+
+.header{
+  grid-area: header;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  background: rgba(17,24,39,.5);
+  backdrop-filter: blur(6px);
+}
+.header .title{ font-weight:600; }
+
+.main{
+  grid-area: main;
+  padding: 18px 20px 40px;
+}
+
+.card{
+  background: rgba(17,24,39,.6);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;
+  padding:16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+.table{
+  width:100%; border-collapse: collapse;
+}
+.table th, .table td{
+  text-align:left; padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.06);
+}
+.table th{ opacity:.8; font-weight:600; }
