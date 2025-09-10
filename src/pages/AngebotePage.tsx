@@ -79,14 +79,26 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       render: (row: Offer) => (
         <div style={{ display: "flex", gap: "4px" }}>
           <button
+            className="btn btn-info"
+            onClick={() => handlePreviewPDF(row)}
+            style={{
+              padding: "4px 8px",
+              fontSize: "12px"
+            }}
+            title="PDF Vorschau anzeigen"
+          >
+            👁️ Vorschau
+          </button>
+          <button
             className="btn btn-warning"
             onClick={() => handleExportPDF(row)}
             style={{
               padding: "4px 8px",
               fontSize: "12px"
             }}
+            title="PDF herunterladen"
           >
-            PDF
+            💾 PDF
           </button>
           <button className="btn btn-secondary" style={{ padding: "4px 8px", fontSize: "12px" }} onClick={() => { setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
           <button className="btn btn-danger" style={{ padding: "4px 8px", fontSize: "12px" }} onClick={() => { if (confirm("Dieses Angebot wirklich löschen?")) handleRemove(row.id); }}>Löschen</button>
@@ -119,10 +131,25 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
     }
 
     try {
-      await ExportService.exportOfferToPDF(offer, customer, settings);
+      await ExportService.exportOfferToPDF(offer, customer, settings, false); // false = direct download
     } catch (error) {
       console.error('PDF Export failed:', error);
       alert('PDF Export fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+    }
+  };
+
+  const handlePreviewPDF = async (offer: Offer) => {
+    const customer = customers.find(c => c.id === offer.customerId);
+    if (!customer) {
+      alert('Kunde nicht gefunden');
+      return;
+    }
+
+    try {
+      await ExportService.exportOfferToPDF(offer, customer, settings, true); // true = preview only
+    } catch (error) {
+      console.error('PDF Preview failed:', error);
+      alert('PDF Vorschau fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
     }
   };
 
