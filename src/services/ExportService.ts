@@ -233,32 +233,36 @@ export class ExportService {
     // Fallback: Create a new window with the HTML content for printing
     const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (!printWindow) {
-      // Detailed popup blocker message with instructions
-      const message = `🚫 Popup wurde blockiert!
+      // Detailed popup blocker message with simple instructions
+      const allowPopups = confirm(`🚫 Popup wurde blockiert!
 
-Um PDF-Export zu ermöglichen, erlauben Sie Popups für diese Seite:
+Um PDF-Export zu ermöglichen, müssen Sie Popups für diese Website erlauben:
 
-Chrome/Edge:
 1. Klicken Sie auf das 🚫-Symbol in der Adressleiste
 2. Wählen Sie "Popups und Weiterleitungen immer für diese Website zulassen"
+3. Versuchen Sie den PDF-Export erneut
 
-Firefox:
-1. Klicken Sie auf das Schild-Symbol in der Adressleite
-2. Deaktivieren Sie den Popup-Blocker für diese Seite
-
-Safari:
-1. Gehen Sie zu Safari > Einstellungen > Websites
-2. Wählen Sie "Pop-up-Fenster" und erlauben Sie sie für diese Seite
-
-Versuchen Sie es dann erneut.`;
+Alternative: Klicken Sie "OK" und wir verwenden den Browser-Druckdialog direkt.`);
       
-      if (confirm(message + '\n\nMöchten Sie die Browser-Einstellungen jetzt öffnen?')) {
-        // Try to guide user to browser settings
-        try {
-          window.open('chrome://settings/content/popups', '_blank');
-        } catch (err) {
-          alert('Bitte öffnen Sie die Browser-Einstellungen manuell.');
-        }
+      if (allowPopups) {
+        // Alternative: Use window.print() on current window
+        const printDiv = document.createElement('div');
+        printDiv.innerHTML = html;
+        printDiv.style.position = 'fixed';
+        printDiv.style.top = '-1000px';
+        printDiv.style.left = '-1000px';
+        printDiv.style.width = '210mm';
+        printDiv.style.height = '297mm';
+        document.body.appendChild(printDiv);
+        
+        // Focus the content and print
+        window.focus();
+        window.print();
+        
+        // Clean up
+        setTimeout(() => {
+          document.body.removeChild(printDiv);
+        }, 1000);
       }
       return;
     }

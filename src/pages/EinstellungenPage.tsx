@@ -12,7 +12,7 @@ interface EinstellungenPageProps {
 
 export default function EinstellungenPage({ title = "Einstellungen" }: EinstellungenPageProps) {
   const navigate = useNavigate();
-  const { settings, loading, error, updateCompanyData, updateNumberingCircles } = useUnifiedSettings();
+  const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useUnifiedSettings();
   const { adapter } = usePersistence();
   const { showError, showSuccess } = useNotifications();
   const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'maintenance'>('company');
@@ -588,7 +588,7 @@ Importierte Daten:
           try {
             const values = line.split(';').map(v => v.trim().replace(/^"|"$/g, ''));
             
-            // Einfaches Mapping - erwarte: Name, Email, Telefon, Adresse, etc.
+            // CSV-Import für Kunden - Mapping auf korrekte DB-Felder
             const customerData: any = {};
             
             // Flexible Zuordnung basierend auf Spaltenanzahl
@@ -596,14 +596,23 @@ Importierte Daten:
             if (values[1]) customerData.email = values[1];
             if (values[2]) customerData.phone = values[2];
             if (values[3]) customerData.street = values[3];
-            if (values[4]) customerData.postalCode = values[4];
+            if (values[4]) customerData.zip = values[4]; // zip, nicht postalCode!
             if (values[5]) customerData.city = values[5];
+            if (values[6]) customerData.notes = values[6]; // Optional: Notizen
             
             // Validierung
             if (!customerData.name) {
               console.warn('Überspringe Zeile ohne Namen:', values);
               errors++;
               continue;
+            }
+            
+            // Automatische Kundennummer generieren lassen - verwende Hook-Funktion
+            try {
+              customerData.number = await getNextNumber('customers');
+            } catch (error) {
+              // Fallback zu timestamp-basierter Nummerierung
+              customerData.number = `K-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
             }
             
             await adapter.createCustomer(customerData);
@@ -620,7 +629,7 @@ Importierte Daten:
 Erfolgreich importiert: ${importedCount} Kunden
 ${errors > 0 ? `Fehler: ${errors}` : ''}
 
-CSV-Format erwartet: Name;Email;Telefon;Straße;PLZ;Stadt
+CSV-Format erwartet: Name;Email;Telefon;Straße;PLZ;Stadt;Notizen
 Die Daten sind jetzt in der Datenbank verfügbar.`);
         
       } else {
