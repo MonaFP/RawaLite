@@ -1,13 +1,10 @@
 import initSqlJs, { type Database, type SqlJsStatic } from "sql.js";
 
-// LocalStorage-Key
 const LS_KEY = "rawalite.db";
-
 let SQL: SqlJsStatic | null = null;
 let db: Database | null = null;
 let persistTimer: number | undefined;
 
-// Helpers
 function u8FromBase64(b64: string) {
   const bin = atob(b64);
   const len = bin.length;
@@ -20,7 +17,6 @@ function base64FromU8(u8: Uint8Array) {
   for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
   return btoa(bin);
 }
-
 function schedulePersist() {
   if (persistTimer) window.clearTimeout(persistTimer);
   persistTimer = window.setTimeout(() => {
@@ -29,7 +25,6 @@ function schedulePersist() {
     localStorage.setItem(LS_KEY, base64FromU8(data));
   }, 250);
 }
-
 function createSchemaIfNeeded() {
   if (!db) return;
   db.exec(`
@@ -63,7 +58,6 @@ function createSchemaIfNeeded() {
     CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(name);
   `);
 }
-
 export async function getDB(): Promise<Database> {
   if (db) return db;
   if (!SQL) {
@@ -75,21 +69,17 @@ export async function getDB(): Promise<Database> {
   db = stored ? new SQL!.Database(u8FromBase64(stored)) : new SQL!.Database();
   createSchemaIfNeeded();
 
-  // persist bei mutierenden Statements
   const _exec = db.exec.bind(db);
   db.exec = (...args: Parameters<Database["exec"]>) => {
     const result = _exec(...args);
-    const sqlText = String(args[0] ?? "").toUpperCase(); // fix: {} → string
+    const sqlText = String(args[0] ?? "").toUpperCase();
     if (/INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|ALTER/.test(sqlText)) {
       schedulePersist();
     }
     return result;
   };
-
   return db;
 }
-
-// Convenience
 export function all<T = any>(sql: string, params: any[] = []): T[] {
   if (!db) throw new Error("DB not initialized");
   const stmt = db.prepare(sql);
@@ -102,7 +92,6 @@ export function all<T = any>(sql: string, params: any[] = []): T[] {
     stmt.free();
   }
 }
-
 export function run(sql: string, params: any[] = []): void {
   if (!db) throw new Error("DB not initialized");
   const stmt = db.prepare(sql);
@@ -113,7 +102,6 @@ export function run(sql: string, params: any[] = []): void {
     stmt.free();
   }
 }
-
 export async function withTx<T>(fn: () => T | Promise<T>): Promise<T> {
   const d = await getDB();
   d.exec("BEGIN");

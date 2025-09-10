@@ -9,13 +9,11 @@ export async function findAllCustomers(): Promise<Customer[]> {
   await getDB();
   return all<Customer>(`SELECT * FROM customers ORDER BY createdAt DESC`);
 }
-
 export async function findCustomer(id: number): Promise<Customer | null> {
   await getDB();
   const rows = all<Customer>(`SELECT * FROM customers WHERE id = ?`, [id]);
   return rows[0] ?? null;
 }
-
 export async function insertCustomer(
   data: Omit<Customer, "id" | "createdAt" | "updatedAt">
 ): Promise<Customer> {
@@ -41,7 +39,6 @@ export async function insertCustomer(
     return row[0];
   });
 }
-
 export async function updateCustomer(
   id: number,
   patch: Partial<Customer>
@@ -50,10 +47,8 @@ export async function updateCustomer(
     const curr = await findCustomer(id);
     if (!curr) throw new Error("Customer not found");
     const next: Customer = { ...curr, ...patch, updatedAt: nowIso() };
-
     run(
-      `UPDATE customers SET number=?, name=?, email=?, phone=?, street=?, zip=?, city=?, notes=?, updatedAt=?
-       WHERE id=?`,
+      `UPDATE customers SET number=?, name=?, email=?, phone=?, street=?, zip=?, city=?, notes=?, updatedAt=? WHERE id=?`,
       [
         next.number,
         next.name,
@@ -72,7 +67,6 @@ export async function updateCustomer(
     return fresh;
   });
 }
-
 export async function removeCustomer(id: number): Promise<void> {
   await withTx(async () => run(`DELETE FROM customers WHERE id = ?`, [id]));
 }
