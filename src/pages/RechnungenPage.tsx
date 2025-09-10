@@ -7,7 +7,7 @@ interface RechnungenPageProps{
 
 type RechnungRow = {
   nummer: string;
-  kunde: string;
+  customer: string;
   datum: string;
   status: string;
   betrag: string;
@@ -24,7 +24,7 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
       <Table<RechnungRow>
         columns={[
           { key: "nummer", header: "Rechnungs-Nr." },
-          { key: "kunde", header: "Kunde" },
+          { key: "customer", header: "customer" },
           { key: "datum", header: "Datum" },
           { key: "status", header: "Status" },
           { key: "betrag", header: "Betrag" },

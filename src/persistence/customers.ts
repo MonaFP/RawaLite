@@ -1,42 +1,42 @@
-import { Kunde } from "../entities/Kunde";
+import type { Customer } from "../persistence/adapter";
 
 const LS_KEY = "rawalite.customers";
 
-function read(): Kunde[]{
+function read(): customer[]{
   try{
     const raw = localStorage.getItem(LS_KEY);
-    return raw ? (JSON.parse(raw) as Kunde[]) : [];
+    return raw ? (JSON.parse(raw) as customer[]) : [];
   }catch{
     return [];
   }
 }
 
-function write(list: Kunde[]): void{
+function write(list: customer[]): void{
   localStorage.setItem(LS_KEY, JSON.stringify(list));
 }
 
-export function listCustomers(): Kunde[]{
+export function listCustomers(): customer[]{
   return read().sort((a,b)=>a.name.localeCompare(b.name));
 }
 
-export function getCustomer(id: string): Kunde | undefined{
+export function getCustomer(id: string): customer | undefined{
   return read().find(c=>c.id===id);
 }
 
-export function createCustomer(input: Omit<Kunde,"id"|"createdAt"|"updatedAt">): Kunde{
+export function createCustomer(input: Omit<customer,"id"|"createdAt"|"updatedAt">): customer{
   const now = new Date().toISOString();
-  const item: Kunde = { ...input, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
+  const item: customer = { ...input, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
   const list = read();
   list.push(item);
   write(list);
   return item;
 }
 
-export function updateCustomer(id: string, patch: Partial<Omit<Kunde,"id"|"createdAt">>): Kunde | undefined{
+export function updateCustomer(id: string, patch: Partial<Omit<customer,"id"|"createdAt">>): customer | undefined{
   const list = read();
   const idx = list.findIndex(c=>c.id===id);
   if(idx === -1) return undefined;
-  const updated: Kunde = { ...list[idx], ...patch, updatedAt: new Date().toISOString() };
+  const updated: customer = { ...list[idx], ...patch, updatedAt: new Date().toISOString() };
   list[idx] = updated;
   write(list);
   return updated;
