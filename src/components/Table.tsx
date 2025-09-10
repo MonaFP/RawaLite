@@ -1,22 +1,47 @@
-import React from 'react';
+import React from "react";
 
-type Props = { data: Record<string, any>[]; columns: string[] };
+export interface Column<T>{
+  key: keyof T;
+  header: string;
+  render?: (row: T) => React.ReactNode;
+  width?: string | number;
+}
 
-const Table: React.FC<Props> = ({ data, columns }) => {
+export interface TableProps<T>{
+  columns: Column<T>[];
+  data: T[];
+  emptyMessage?: string;
+}
+
+export function Table<T>({ columns, data, emptyMessage }: TableProps<T>){
   return (
-    <table className="table">
-      <thead>
-        <tr>{columns.map(c => <th key={c}>{c}</th>)}</tr>
-      </thead>
-      <tbody>
-        {data.map((row, i) => (
-          <tr key={row.id ?? i}>
-            {columns.map(c => <td key={c}>{String(row[c] ?? '')}</td>)}
+    <div className="card">
+      <table className="table">
+        <thead>
+          <tr>
+            {columns.map(c => (
+              <th key={String(c.key)} style={{width: c.width}}>{c.header}</th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {data.length === 0 ? (
+            <tr>
+              <td colSpan={columns.length} style={{opacity:.8, padding:"16px 8px"}}>
+                {emptyMessage ?? "Keine Einträge vorhanden."}
+              </td>
+            </tr>
+          ) : data.map((row, i) => (
+            <tr key={i}>
+              {columns.map(c => (
+                <td key={String(c.key)}>
+                  {c.render ? c.render(row) : String(row[c.key])}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
-};
-
-export default Table;
+}

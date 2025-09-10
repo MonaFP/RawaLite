@@ -1,42 +1,78 @@
-import React, { useState } from 'react';
-import Header from '@components/Header';
-import Table from '@components/Table';
-import { usePersistence } from '../contexts/PersistenceContext';
+import React, { useMemo, useState } from "react";
+import { Table } from "../components/Table";
+import type { Kunde } from "../entities/Kunde";
+import CustomerForm, { CustomerFormValues } from "../components/CustomerForm";
+import { useCustomers } from "../hooks/useCustomers";
 
-const KundenPage: React.FC = () => {
-  const { listCustomers, addCustomer, deleteCustomer } = usePersistence();
-  const [form, setForm] = useState({ Name: '', Adresse: '' });
+interface KundenPageProps{
+  title?: string;
+}
 
-  const data = listCustomers();
+export default function KundenPage({ title = "Kunden" }: KundenPageProps){
+  const { items, add, edit, remove } = useCustomers();
+  const [mode, setMode] = useState<"list"|"create"|"edit">("list");
+  const [current, setCurrent] = useState<Kunde | null>(null);
+
+  const columns = useMemo(()=>([
+    { key: "name", header: "Name" },
+    { key: "email", header: "E-Mail" },
+    { key: "ort", header: "Ort" },
+    { key: "id", header: "Aktionen", render: (row: Kunde) => (
+        <div style={{display:"flex", gap:8}}>
+          <button onClick={()=>{ setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
+          <button onClick={()=>{ if(confirm("Diesen Kunden wirklich löschen?")) remove(row.id); }}>Löschen</button>
+        </div>
+      ) 
+    }
+  ]), [remove]);
+
+  function handleCreate(values: CustomerFormValues){
+    add({ name: values.name, email: values.email, ort: values.ort });
+    setMode("list");
+  }
+
+  function handleEdit(values: CustomerFormValues){
+    if(!current) return;
+    edit(current.id, { name: values.name, email: values.email, ort: values.ort });
+    setMode("list");
+    setCurrent(null);
+  }
 
   return (
-    <div>
-      <Header title="Kunden" right={<button className="btn" onClick={() => {
-        if (!form.Name.trim()) { alert('Name eingeben'); return; }
-        addCustomer({ Name: form.Name, Adresse: form.Adresse });
-        setForm({ Name: '', Adresse: '' });
-      }}>Anlegen</button>} />
-      <div className="card" style={{marginBottom:12}}>
-        <div style={{display:'flex', gap:8}}>
-          <input placeholder="Name" value={form.Name} onChange={e=>setForm(f=>({...f, Name:e.target.value}))} />
-          <input placeholder="Adresse" value={form.Adresse} onChange={e=>setForm(f=>({...f, Adresse:e.target.value}))} />
-        </div>
-      </div>
-      <div className="card">
-        <Table data={data} columns={['id','Name','Adresse']} />
-        <div style={{marginTop:8}}>
-          <small className="badge">Total: {data.length}</small>
-        </div>
-        <div style={{marginTop:8}}>
-          <button className="btn" onClick={()=>{
-            if(data.length===0){alert('Keine Kunden'); return;}
-            const last = data[data.length-1];
-            deleteCustomer(last.id);
-          }}>Letzten löschen</button>
-        </div>
-      </div>
-    </div>
-  );
-};
+    <>
+      {mode === "list" && (
+        <>
+          <div className="card" style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+            <div>
+              <h2 style={{margin:"0 0 4px 0"}}>{title}</h2>
+              <div style={{opacity:.7}}>Verwalte deine Kunden. Daten werden lokal gespeichert.</div>
+            </div>
+            <button onClick={()=>setMode("create")}>Neuer Kunde</button>
+          </div>
+          <Table<Kunde>
+            columns={columns as any}
+            data={items}
+            emptyMessage="Noch keine Kunden angelegt."
+          />
+        </>
+      )}
 
-export default KundenPage;
+      {mode === "create" && (
+        <CustomerForm
+          onSubmit={handleCreate}
+          onCancel={()=>setMode("list")}
+          submitLabel="Anlegen"
+        />
+      )}
+
+      {mode === "edit" && current && (
+        <CustomerForm
+          initial={{ name: current.name, email: current.email, ort: current.ort }}
+          onSubmit={handleEdit}
+          onCancel={()=>{ setMode("list"); setCurrent(null); }}
+          submitLabel="Aktualisieren"
+        />
+      )}
+    </>
+  );
+}
