@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Invoice, InvoiceLineItem, Customer, Offer } from '../persistence/adapter';
-import { useSettings } from '../hooks/useSettings';
+import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { usePersistence } from '../contexts/PersistenceContext';
 
 interface InvoiceFormProps {
@@ -19,7 +19,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   onCancel
 }) => {
   const { adapter } = usePersistence();
-  const { settings } = useSettings();
+  const { settings } = useUnifiedSettings();
   const [customerId, setCustomerId] = useState(invoice?.customerId?.toString() || '');
   const [offerId, setOfferId] = useState(invoice?.offerId?.toString() || '');
   const [title, setTitle] = useState(invoice?.title || '');

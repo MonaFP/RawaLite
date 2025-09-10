@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Offer, OfferLineItem, Customer, Package } from '../persistence/adapter';
 import { usePersistence } from '../contexts/PersistenceContext';
-import { useSettings } from '../hooks/useSettings';
+import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useLoading } from '../contexts/LoadingContext';
 import { ValidationError, handleError } from '../lib/errors';
@@ -24,7 +24,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
   submitLabel = "Erstellen"
 }) => {
   const { adapter } = usePersistence();
-  const { settings } = useSettings();
+  const { settings } = useUnifiedSettings();
   const { showError, showSuccess } = useNotifications();
   const { withLoading } = useLoading();
   
