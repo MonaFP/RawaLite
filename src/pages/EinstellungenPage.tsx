@@ -450,41 +450,51 @@ Möchten Sie wirklich fortfahren?`;
             adapter.listPackages()
           ]);
           
-          // Finde höchste Nummer für jeden Typ
-          const findHighestNumber = (items: any[], prefix: string): number => {
-            let highest = 0;
+          // Finde alle verwendeten Nummern und bestimme die niedrigste freie
+          const findNextFreeNumber = (items: any[], prefix: string): number => {
+            const usedNumbers = new Set<number>();
+            
+            // Sammle alle verwendeten Nummern
             items.forEach(item => {
               if (item.number && item.number.startsWith(prefix)) {
                 const numberPart = item.number.replace(prefix, '');
                 const parsed = parseInt(numberPart, 10);
-                if (!isNaN(parsed) && parsed > highest) {
-                  highest = parsed;
+                if (!isNaN(parsed)) {
+                  usedNumbers.add(parsed);
                 }
               }
             });
-            return highest;
+            
+            // Finde die niedrigste freie Nummer (beginne bei 1)
+            let freeNumber = 1;
+            while (usedNumbers.has(freeNumber)) {
+              freeNumber++;
+            }
+            
+            // Gib die Nummer zurück, die verwendet werden soll (eine weniger, da getNextNumber +1 macht)
+            return Math.max(0, freeNumber - 1);
           };
           
           // Aktualisiere Nummernkreise mit intelligenten Werten
           const intelligentNumberingCircles = backupData.numberingCircles.map((circle: any) => {
-            let newCurrent = circle.current;
+            let newCurrent = 0;
             
             switch (circle.id) {
               case 'customers':
-                newCurrent = Math.max(findHighestNumber(importedCustomers, circle.prefix), circle.current);
+                newCurrent = findNextFreeNumber(importedCustomers, circle.prefix);
                 break;
               case 'invoices':
-                newCurrent = Math.max(findHighestNumber(importedInvoices, circle.prefix), circle.current);
+                newCurrent = findNextFreeNumber(importedInvoices, circle.prefix);
                 break;
               case 'offers':
-                newCurrent = Math.max(findHighestNumber(importedOffers, circle.prefix), circle.current);
+                newCurrent = findNextFreeNumber(importedOffers, circle.prefix);
                 break;
               case 'packages':
-                newCurrent = Math.max(findHighestNumber(importedPackages, circle.prefix), circle.current);
+                newCurrent = findNextFreeNumber(importedPackages, circle.prefix);
                 break;
             }
             
-            console.log(`📊 ${circle.id}: Found highest number ${newCurrent}, was ${circle.current}`);
+            console.log(`📊 ${circle.id}: Next free number will be ${circle.prefix}${(newCurrent + 1).toString().padStart(3, '0')}, setting current to ${newCurrent}`);
             return { ...circle, current: newCurrent };
           });
           
@@ -566,15 +576,57 @@ Importierte Daten:
       const headers = lines[0].split(';').map(h => h.trim().replace(/^"|"$/g, ''));
       const dataLines = lines.slice(1);
       
-      showSuccess(`CSV-Import ist noch nicht vollständig implementiert.
+      console.log('CSV Headers:', headers);
+      console.log('CSV Data lines:', dataLines.length);
       
-Gefunden:
-- ${headers.length} Spalten
-- ${dataLines.length} Datensätze
-- Typ: ${importType}
+      let importedCount = 0;
+      let errors = 0;
+      
+      if (importType === 'customers') {
+        // CSV-Import für Kunden
+        for (const line of dataLines) {
+          try {
+            const values = line.split(';').map(v => v.trim().replace(/^"|"$/g, ''));
+            
+            // Einfaches Mapping - erwarte: Name, Email, Telefon, Adresse, etc.
+            const customerData: any = {};
+            
+            // Flexible Zuordnung basierend auf Spaltenanzahl
+            if (values[0]) customerData.name = values[0];
+            if (values[1]) customerData.email = values[1];
+            if (values[2]) customerData.phone = values[2];
+            if (values[3]) customerData.street = values[3];
+            if (values[4]) customerData.postalCode = values[4];
+            if (values[5]) customerData.city = values[5];
+            
+            // Validierung
+            if (!customerData.name) {
+              console.warn('Überspringe Zeile ohne Namen:', values);
+              errors++;
+              continue;
+            }
+            
+            await adapter.createCustomer(customerData);
+            importedCount++;
+            
+          } catch (error) {
+            console.warn('Fehler beim Importieren einer CSV-Zeile:', line, error);
+            errors++;
+          }
+        }
+        
+        showSuccess(`✅ CSV-Import abgeschlossen!
+        
+Erfolgreich importiert: ${importedCount} Kunden
+${errors > 0 ? `Fehler: ${errors}` : ''}
 
-Diese Funktion würde die Daten über den Datenbankadapter importieren,
-was eine komplexere Implementierung erfordert.`);
+CSV-Format erwartet: Name;Email;Telefon;Straße;PLZ;Stadt
+Die Daten sind jetzt in der Datenbank verfügbar.`);
+        
+      } else {
+        // Placeholder für andere Typen
+        showError(`CSV-Import für "${importType}" ist noch nicht implementiert. Derzeit wird nur "customers" unterstützt.`);
+      }
       
     } catch (error) {
       console.error('CSV Import error:', error);
