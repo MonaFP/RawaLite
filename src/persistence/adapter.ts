@@ -70,6 +70,10 @@ export interface Offer {
   vatAmount: number;
   total: number;
   notes?: string;
+  // Status-Datum Felder
+  sentAt?: string;
+  acceptedAt?: string;
+  rejectedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -98,6 +102,11 @@ export interface Invoice {
   vatAmount: number;
   total: number;
   notes?: string;
+  // Status-Datum Felder
+  sentAt?: string;
+  paidAt?: string;
+  overdueAt?: string;
+  cancelledAt?: string;
   createdAt: string;
   updatedAt: string;
 }

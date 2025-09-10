@@ -147,10 +147,18 @@ export const OfferForm: React.FC<OfferFormProps> = ({
     return Object.keys(errors).length === 0;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (isSubmitting) {
+      return;
+    }
+
+    // Validate required fields
+    if (!customerId || !title.trim()) {
+      alert('❌ Pflichtfelder fehlen:\\n\\n' + 
+            (!customerId ? '• Bitte wählen Sie einen Kunden aus\\n' : '') +
+            (!title.trim() ? '• Bitte geben Sie einen Titel ein\\n' : ''));
       return;
     }
 

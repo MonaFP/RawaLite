@@ -190,7 +190,9 @@ Enthaltene Daten:
       const url = window.URL.createObjectURL(content);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `rawalite-backup-${new Date().toISOString().split('T')[0]}.zip`;
+      const now = new Date();
+      const dateTime = now.toISOString().split('T')[0] + '_' + now.toTimeString().split(' ')[0].replace(/:/g, '-');
+      link.download = `rawalite-backup-${dateTime}.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -266,7 +268,9 @@ Enthalten:
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${filename}-${new Date().toISOString().split('T')[0]}.csv`;
+      const now = new Date();
+      const dateTime = now.toISOString().split('T')[0] + '_' + now.toTimeString().split(' ')[0].replace(/:/g, '-');
+      link.download = `${filename}-${dateTime}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
