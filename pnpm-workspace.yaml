@@ -1,6 +1,7 @@
 packages:
-  - "."
+  - .
 
 onlyBuiltDependencies:
+  - core-js
   - electron
   - esbuild

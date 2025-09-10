@@ -219,33 +219,58 @@ export class ExportService {
   }
 
   private static async htmlToPDF(html: string, filename: string): Promise<void> {
-    // For Electron environment, we'll use the print API
-    if (typeof window !== 'undefined' && (window as any).electronAPI) {
-      // If Electron API is available, use it for better PDF generation
-      try {
-        await (window as any).electronAPI.printToPDF(html, filename);
-        return;
-      } catch (err) {
-        console.warn('Electron PDF failed, falling back to browser print');
-      }
-    }
-
-    // Fallback: Create a new window with the HTML content for printing
-    const printWindow = window.open('', '_blank', 'width=800,height=600');
-    if (!printWindow) {
-      // Detailed popup blocker message with simple instructions
-      const allowPopups = confirm(`🚫 Popup wurde blockiert!
-
-Um PDF-Export zu ermöglichen, müssen Sie Popups für diese Website erlauben:
-
-1. Klicken Sie auf das 🚫-Symbol in der Adressleiste
-2. Wählen Sie "Popups und Weiterleitungen immer für diese Website zulassen"
-3. Versuchen Sie den PDF-Export erneut
-
-Alternative: Klicken Sie "OK" und wir verwenden den Browser-Druckdialog direkt.`);
+    try {
+      // Use jsPDF with html2canvas for modern PDF generation without popups
+      const { jsPDF } = await import('jspdf');
+      const html2canvas = (await import('html2canvas')).default;
       
-      if (allowPopups) {
-        // Alternative: Use window.print() on current window
+      // Create a temporary container for the HTML
+      const container = document.createElement('div');
+      container.innerHTML = html;
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '-9999px';
+      container.style.width = '210mm'; // A4 width
+      container.style.background = 'white';
+      container.style.padding = '20px';
+      document.body.appendChild(container);
+      
+      try {
+        // Convert HTML to canvas
+        const canvas = await html2canvas(container, {
+          scale: 2, // Higher quality
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 794, // A4 width in pixels at 96 DPI
+          height: 1123 // A4 height in pixels at 96 DPI
+        });
+        
+        // Create PDF
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        // Add image to PDF
+        const imgData = canvas.toDataURL('image/png');
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        
+        // Save PDF
+        pdf.save(filename);
+        
+        console.log(`✅ PDF "${filename}" generated successfully`);
+        
+      } finally {
+        // Clean up temporary container
+        document.body.removeChild(container);
+      }
+      
+    } catch (error) {
+      console.warn('Modern PDF generation failed, falling back to print dialog:', error);
+      
+      // Fallback to print dialog if modern method fails
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      if (!printWindow) {
+        // Last resort: use current window print
         const printDiv = document.createElement('div');
         printDiv.innerHTML = html;
         printDiv.style.position = 'fixed';
@@ -255,38 +280,25 @@ Alternative: Klicken Sie "OK" und wir verwenden den Browser-Druckdialog direkt.`
         printDiv.style.height = '297mm';
         document.body.appendChild(printDiv);
         
-        // Focus the content and print
         window.focus();
         window.print();
         
-        // Clean up
         setTimeout(() => {
           document.body.removeChild(printDiv);
         }, 1000);
+        return;
       }
-      return;
-    }
 
-    // Write the HTML content
-    printWindow.document.write(html);
-    printWindow.document.close();
-    
-    // Wait for content to load, then focus and print
-    printWindow.onload = () => {
-      printWindow.focus();
-      setTimeout(() => {
-        printWindow.print();
-        // Don't automatically close - let user decide
-      }, 1000);
-    };
-    
-    // If onload doesn't fire, try after a delay
-    setTimeout(() => {
-      if (printWindow.document.readyState === 'complete') {
+      printWindow.document.write(html);
+      printWindow.document.close();
+      
+      printWindow.onload = () => {
         printWindow.focus();
-        printWindow.print();
-      }
-    }, 2000);
+        setTimeout(() => {
+          printWindow.print();
+        }, 1000);
+      };
+    }
   }
 
   private static downloadFile(content: string, filename: string, mimeType: string): void {

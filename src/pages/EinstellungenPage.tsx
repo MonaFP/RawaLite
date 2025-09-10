@@ -588,30 +588,24 @@ Importierte Daten:
           try {
             const values = line.split(';').map(v => v.trim().replace(/^"|"$/g, ''));
             
-            // CSV-Import für Kunden - Mapping auf korrekte DB-Felder
             const customerData: any = {};
-            
-            // Flexible Zuordnung basierend auf Spaltenanzahl
             if (values[0]) customerData.name = values[0];
             if (values[1]) customerData.email = values[1];
             if (values[2]) customerData.phone = values[2];
             if (values[3]) customerData.street = values[3];
-            if (values[4]) customerData.zip = values[4]; // zip, nicht postalCode!
+            if (values[4]) customerData.zip = values[4];
             if (values[5]) customerData.city = values[5];
-            if (values[6]) customerData.notes = values[6]; // Optional: Notizen
+            if (values[6]) customerData.notes = values[6];
             
-            // Validierung
             if (!customerData.name) {
               console.warn('Überspringe Zeile ohne Namen:', values);
               errors++;
               continue;
             }
             
-            // Automatische Kundennummer generieren lassen - verwende Hook-Funktion
             try {
               customerData.number = await getNextNumber('customers');
             } catch (error) {
-              // Fallback zu timestamp-basierter Nummerierung
               customerData.number = `K-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
             }
             
@@ -629,12 +623,149 @@ Importierte Daten:
 Erfolgreich importiert: ${importedCount} Kunden
 ${errors > 0 ? `Fehler: ${errors}` : ''}
 
-CSV-Format erwartet: Name;Email;Telefon;Straße;PLZ;Stadt;Notizen
-Die Daten sind jetzt in der Datenbank verfügbar.`);
+CSV-Format: Name;Email;Telefon;Straße;PLZ;Stadt;Notizen`);
+
+      } else if (importType === 'offers') {
+        // CSV-Import für Angebote
+        for (const line of dataLines) {
+          try {
+            const values = line.split(';').map(v => v.trim().replace(/^"|"$/g, ''));
+            
+            const offerData: any = {};
+            if (values[0]) offerData.title = values[0];
+            if (values[1]) offerData.customerName = values[1]; // Kundenname für Zuordnung
+            if (values[2]) offerData.total = parseFloat(values[2]) || 0;
+            if (values[3]) offerData.validUntil = values[3]; // Format: YYYY-MM-DD
+            if (values[4]) offerData.notes = values[4];
+            
+            if (!offerData.title) {
+              console.warn('Überspringe Zeile ohne Titel:', values);
+              errors++;
+              continue;
+            }
+            
+            // Finde Kunden-ID basierend auf Namen
+            let customerId = null;
+            if (offerData.customerName) {
+              const customers = await adapter.listCustomers();
+              const customer = customers.find(c => c.name.toLowerCase() === offerData.customerName.toLowerCase());
+              if (customer) {
+                customerId = customer.id;
+              }
+            }
+            
+            if (!customerId) {
+              console.warn('Kunde nicht gefunden für Angebot:', offerData.customerName);
+              errors++;
+              continue;
+            }
+            
+            try {
+              offerData.offerNumber = await getNextNumber('offers');
+            } catch (error) {
+              offerData.offerNumber = `A-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            }
+            
+            // Erstelle Angebot mit Minimal-Daten
+            const fullOfferData = {
+              ...offerData,
+              customerId,
+              lineItems: [], // Leere LineItems - können später manuell hinzugefügt werden
+              subtotal: offerData.total,
+              vatAmount: 0,
+              vatRate: 19,
+              status: 'draft'
+            };
+            
+            delete fullOfferData.customerName; // Entferne temporäres Feld
+            
+            await adapter.createOffer(fullOfferData);
+            importedCount++;
+            
+          } catch (error) {
+            console.warn('Fehler beim Importieren einer CSV-Zeile:', line, error);
+            errors++;
+          }
+        }
+        
+        showSuccess(`✅ CSV-Import abgeschlossen!
+        
+Erfolgreich importiert: ${importedCount} Angebote
+${errors > 0 ? `Fehler: ${errors}` : ''}
+
+CSV-Format: Titel;Kundenname;Gesamtbetrag;Gültig bis (YYYY-MM-DD);Notizen`);
+
+      } else if (importType === 'invoices') {
+        // CSV-Import für Rechnungen  
+        for (const line of dataLines) {
+          try {
+            const values = line.split(';').map(v => v.trim().replace(/^"|"$/g, ''));
+            
+            const invoiceData: any = {};
+            if (values[0]) invoiceData.title = values[0];
+            if (values[1]) invoiceData.customerName = values[1];
+            if (values[2]) invoiceData.total = parseFloat(values[2]) || 0;
+            if (values[3]) invoiceData.dueDate = values[3]; // Format: YYYY-MM-DD
+            if (values[4]) invoiceData.notes = values[4];
+            
+            if (!invoiceData.title) {
+              console.warn('Überspringe Zeile ohne Titel:', values);
+              errors++;
+              continue;
+            }
+            
+            // Finde Kunden-ID
+            let customerId = null;
+            if (invoiceData.customerName) {
+              const customers = await adapter.listCustomers();
+              const customer = customers.find(c => c.name.toLowerCase() === invoiceData.customerName.toLowerCase());
+              if (customer) {
+                customerId = customer.id;
+              }
+            }
+            
+            if (!customerId) {
+              console.warn('Kunde nicht gefunden für Rechnung:', invoiceData.customerName);
+              errors++;
+              continue;
+            }
+            
+            try {
+              invoiceData.invoiceNumber = await getNextNumber('invoices');
+            } catch (error) {
+              invoiceData.invoiceNumber = `R-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            }
+            
+            const fullInvoiceData = {
+              ...invoiceData,
+              customerId,
+              lineItems: [],
+              subtotal: invoiceData.total,
+              vatAmount: 0,
+              vatRate: 19,
+              status: 'draft'
+            };
+            
+            delete fullInvoiceData.customerName;
+            
+            await adapter.createInvoice(fullInvoiceData);
+            importedCount++;
+            
+          } catch (error) {
+            console.warn('Fehler beim Importieren einer CSV-Zeile:', line, error);
+            errors++;
+          }
+        }
+        
+        showSuccess(`✅ CSV-Import abgeschlossen!
+        
+Erfolgreich importiert: ${importedCount} Rechnungen
+${errors > 0 ? `Fehler: ${errors}` : ''}
+
+CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
         
       } else {
-        // Placeholder für andere Typen
-        showError(`CSV-Import für "${importType}" ist noch nicht implementiert. Derzeit wird nur "customers" unterstützt.`);
+        showError(`CSV-Import für "${importType}" ist noch nicht implementiert.`);
       }
       
     } catch (error) {
