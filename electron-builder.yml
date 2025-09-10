@@ -1,5 +1,6 @@
 appId: com.rawalite.app
 productName: RawaLite
+copyright: "Copyright © 2025 MonaFP. All rights reserved."
 directories:
   output: dist
 files:

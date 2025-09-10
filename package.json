@@ -2,6 +2,9 @@
   "name": "rawalite",
   "version": "1.0.0",
   "private": true,
+  "license": "UNLICENSED",
+  "author": "MonaFP",
+  "description": "RawaLite - Professional Business Management Solution",
   "type": "module",
   "engines": {
     "node": ">=20"
