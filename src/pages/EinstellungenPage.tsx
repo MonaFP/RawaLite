@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
 import { usePersistence } from "../contexts/PersistenceContext";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
+import { defaultSettings } from "../lib/settings";
 
 interface EinstellungenPageProps {
   title?: string;
@@ -422,10 +423,23 @@ Möchten Sie wirklich fortfahren?`;
 
       // Importiere Einstellungen
       if (backupData.companyData) {
-        await updateCompanyData(backupData.companyData);
+        try {
+          console.log('🏢 Importing company data...');
+          await updateCompanyData(backupData.companyData);
+          console.log('✅ Company data imported successfully');
+        } catch (error) {
+          console.warn('Error importing company data:', error);
+        }
       }
+      
       if (backupData.numberingCircles) {
-        await updateNumberingCircles(backupData.numberingCircles);
+        try {
+          console.log('🔢 Importing numbering circles...');
+          await updateNumberingCircles(backupData.numberingCircles);
+          console.log('✅ Numbering circles imported successfully');
+        } catch (error) {
+          console.warn('Error importing numbering circles:', error);
+        }
       }
 
       alert(`✅ Backup erfolgreich importiert!
@@ -558,8 +572,32 @@ was eine komplexere Implementierung erfordert.`);
       } catch (e) {
         console.warn('Error deleting packages:', e);
       }
+
+      // 🔥 WICHTIG: Nummernkreise zurücksetzen!
+      try {
+        console.log('🔄 Resetting numbering circles to default values');
+        await updateNumberingCircles(settings.numberingCircles.map(circle => ({
+          ...circle,
+          current: 0,
+          lastResetYear: undefined
+        })));
+        console.log('✅ Numbering circles reset successfully');
+      } catch (e) {
+        console.warn('Error resetting numbering circles:', e);
+        // Fallback: Clear localStorage directly
+        localStorage.removeItem('rawalite-numbering');
+      }
+
+      // 🔥 ZUSÄTZLICH: Firmendaten zurücksetzen (optional)
+      try {
+        console.log('🔄 Resetting company data to defaults');
+        await updateCompanyData(defaultSettings.companyData);
+        console.log('✅ Company data reset successfully');
+      } catch (e) {
+        console.warn('Error resetting company data:', e);
+      }
       
-      alert(`${deletedCount} Datensätze wurden gelöscht. Die Seite wird neu geladen.`);
+      alert(`${deletedCount} Datensätze wurden gelöscht und alle Nummernkreise zurückgesetzt. Die Seite wird neu geladen.`);
       window.location.reload();
     } catch (error) {
       console.error('Clear data error:', error);
