@@ -5,6 +5,7 @@ import { useInvoices } from '../hooks/useInvoices';
 import { useCustomers } from '../hooks/useCustomers';
 import { useOffers } from '../hooks/useOffers';
 import { useSettings } from '../hooks/useSettings';
+import { useNotifications } from '../contexts/NotificationContext';
 import { ExportService } from '../services/ExportService';
 import type { Invoice } from '../persistence/adapter';
 
@@ -17,6 +18,7 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
   const { customers } = useCustomers();
   const { offers } = useOffers();
   const { settings } = useSettings();
+  const { showSuccess, showError } = useNotifications();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Invoice | null>(null);
 
@@ -103,6 +105,25 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
             💾 PDF
           </button>
           <button className="btn btn-secondary" style={{ padding: "4px 8px", fontSize: "12px" }} onClick={() => { setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
+          <select
+            value={row.status}
+            onChange={(e) => handleStatusChange(row.id, e.target.value as Invoice['status'])}
+            style={{
+              padding: "4px 8px",
+              fontSize: "12px",
+              border: "1px solid rgba(255,255,255,.1)",
+              borderRadius: "4px",
+              background: "rgba(17,24,39,.8)",
+              color: "var(--muted)",
+              cursor: "pointer"
+            }}
+          >
+            <option value="draft">Entwurf</option>
+            <option value="sent">Gesendet</option>
+            <option value="paid">Bezahlt</option>
+            <option value="overdue">Überfällig</option>
+            <option value="cancelled">Storniert</option>
+          </select>
           <button className="btn btn-danger" style={{ padding: "4px 8px", fontSize: "12px" }} onClick={() => { if (confirm("Diese Rechnung wirklich löschen?")) handleRemove(row.id); }}>Löschen</button>
         </div>
       ) 
@@ -119,6 +140,27 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     await updateInvoice(current.id, invoiceData);
     setMode("list");
     setCurrent(null);
+  }
+
+  async function handleStatusChange(invoiceId: number, newStatus: Invoice['status']) {
+    try {
+      const invoice = invoices.find(i => i.id === invoiceId);
+      if (!invoice) return;
+      
+      await updateInvoice(invoiceId, { ...invoice, status: newStatus });
+      
+      // Success notification
+      const statusLabels = {
+        'draft': 'Entwurf',
+        'sent': 'Gesendet', 
+        'paid': 'Bezahlt',
+        'overdue': 'Überfällig',
+        'cancelled': 'Storniert'
+      };
+      showSuccess(`Rechnungs-Status auf "${statusLabels[newStatus]}" geändert`);
+    } catch (error) {
+      showError('Fehler beim Ändern des Status');
+    }
   }
 
   async function handleRemove(id: number) {

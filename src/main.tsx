@@ -15,6 +15,7 @@ import AngebotDetailPage from "./pages/AngebotDetailPage";
 import PaketePage from "./pages/PaketePage";
 import RechnungenPage from "./pages/RechnungenPage";
 import EinstellungenPage from "./pages/EinstellungenPage";
+import UpdatesPage from "./pages/UpdatesPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 const router = createBrowserRouter([
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
       {
         path: "einstellungen",
         element: <EinstellungenPage />,
+      },
+      {
+        path: "updates",
+        element: <UpdatesPage />,
       },
       {
         path: "*",
