@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
 import { usePersistence } from "../contexts/PersistenceContext";
+import { useNotifications } from "../contexts/NotificationContext";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
 import { defaultSettings } from "../lib/settings";
 
@@ -9,8 +11,10 @@ interface EinstellungenPageProps {
 }
 
 export default function EinstellungenPage({ title = "Einstellungen" }: EinstellungenPageProps) {
+  const navigate = useNavigate();
   const { settings, loading, error, updateCompanyData, updateNumberingCircles } = useUnifiedSettings();
   const { adapter } = usePersistence();
+  const { showError, showSuccess } = useNotifications();
   const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'maintenance'>('company');
   const [companyFormData, setCompanyFormData] = useState<CompanyData>(settings.companyData);
   const [numberingFormData, setNumberingFormData] = useState<NumberingCircle[]>(settings.numberingCircles);
@@ -66,11 +70,11 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     try {
       setSaving(true);
       await updateCompanyData(companyFormData);
-      alert('Unternehmensdaten gespeichert!');
+      showSuccess('Unternehmensdaten gespeichert!');
       // Automatischer Reload nach dem Speichern, damit Logo in Sidebar erscheint
       window.location.reload();
     } catch (error) {
-      alert('Fehler beim Speichern der Unternehmensdaten');
+      showError('Fehler beim Speichern der Unternehmensdaten');
     } finally {
       setSaving(false);
     }
@@ -82,10 +86,10 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     try {
       setSaving(true);
       await updateCompanyData(companyFormData);
-      alert('Steuerliche Einstellungen gespeichert!');
+      showSuccess('Steuerliche Einstellungen gespeichert!');
     } catch (error) {
       console.error('Tax settings save error:', error);
-      alert('Fehler beim Speichern der steuerlichen Einstellungen');
+      showError('Fehler beim Speichern der steuerlichen Einstellungen');
     } finally {
       setSaving(false);
     }
@@ -106,9 +110,9 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     try {
       setSaving(true);
       await updateNumberingCircles(numberingFormData);
-      alert('Nummernkreise gespeichert!');
+      showSuccess('Nummernkreise gespeichert!');
     } catch (error) {
-      alert('Fehler beim Speichern der Nummernkreise');
+      showError('Fehler beim Speichern der Nummernkreise');
     } finally {
       setSaving(false);
     }
@@ -442,7 +446,7 @@ Möchten Sie wirklich fortfahren?`;
         }
       }
 
-      alert(`✅ Backup erfolgreich importiert!
+      showSuccess(`✅ Backup erfolgreich importiert!
 
 Importierte Daten:
 - ${importedCounts.customers} Kunden
@@ -452,9 +456,14 @@ Importierte Daten:
 - Unternehmenseinstellungen
 - Nummernkreise
 
-Die Seite wird neu geladen.`);
+Die Daten werden aktualisiert, navigiere zur Kunden-Seite um sie zu sehen.`);
       
-      window.location.reload();
+      console.log('✅ Backup import completed successfully');
+      
+      // Navigiere zur Kunden-Seite - dort sollten sich die Hooks automatisch refreshen
+      setTimeout(() => {
+        navigate('/kunden');
+      }, 1500);
     } catch (error) {
       console.error('Import error:', error);
       alert('Fehler beim Importieren des Backups: ' + error);
@@ -597,8 +606,12 @@ was eine komplexere Implementierung erfordert.`);
         console.warn('Error resetting company data:', e);
       }
       
-      alert(`${deletedCount} Datensätze wurden gelöscht und alle Nummernkreise zurückgesetzt. Die Seite wird neu geladen.`);
-      window.location.reload();
+      showSuccess(`${deletedCount} Datensätze wurden gelöscht und alle Nummernkreise zurückgesetzt. Die Anwendung wird neu geladen...`);
+      
+      // Kurze Verzögerung, damit der Nutzer die Erfolgsmeldung lesen kann  
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (error) {
       console.error('Clear data error:', error);
       alert('Fehler beim Löschen der Daten: ' + error);
