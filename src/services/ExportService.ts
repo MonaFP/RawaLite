@@ -4,7 +4,7 @@ export class ExportService {
   
   // CSV Export für Kunden
   static exportCustomersToCSV(customers: Customer[]): void {
-    const headers = ['ID', 'Nummer', 'Name', 'E-Mail', 'Telefon', 'Straße', 'PLZ', 'Stadt', 'Notizen', 'Erstellt', 'Aktualisiert'];
+    const headers = ['ID', 'Nummer', 'Name', 'E-Mail', 'Telefon', 'Straße', 'PLZ', 'Ort', 'Notizen', 'Erstellt', 'Aktualisiert'];
     
     const csvContent = [
       headers.join(';'),
@@ -115,9 +115,13 @@ export class ExportService {
 
         <div class="totals">
           <div>Zwischensumme: €${offer.subtotal?.toFixed(2) || offer.total.toFixed(2)}</div>
-          ${!settings?.companyData?.kleinunternehmer && offer.vatAmount ? 
+          ${!settings?.companyData?.kleinunternehmer && offer.vatAmount && offer.vatAmount > 0 ? 
             `<div>MwSt. (${offer.vatRate || 19}%): €${offer.vatAmount.toFixed(2)}</div>` : 
-            '<div style="font-size: 12px; color: #666;">Umsatzsteuerbefreit nach §19 UStG</div>'
+            ''
+          }
+          ${settings?.companyData?.kleinunternehmer ? 
+            '<div style="font-size: 12px; color: #666;">Umsatzsteuerbefreit nach §19 UStG</div>' : 
+            ''
           }
           <div class="total-row">Gesamtbetrag: €${offer.total.toFixed(2)}</div>
         </div>
@@ -205,9 +209,13 @@ export class ExportService {
 
         <div class="totals">
           <div>Zwischensumme: €${invoice.subtotal?.toFixed(2) || invoice.total.toFixed(2)}</div>
-          ${!settings?.companyData?.kleinunternehmer && invoice.vatAmount ? 
+          ${!settings?.companyData?.kleinunternehmer && invoice.vatAmount && invoice.vatAmount > 0 ? 
             `<div>MwSt. (${invoice.vatRate || 19}%): €${invoice.vatAmount.toFixed(2)}</div>` : 
-            '<div style="font-size: 12px; color: #666;">Umsatzsteuerbefreit nach §19 UStG</div>'
+            ''
+          }
+          ${settings?.companyData?.kleinunternehmer ? 
+            '<div style="font-size: 12px; color: #666;">Umsatzsteuerbefreit nach §19 UStG</div>' : 
+            ''
           }
           <div class="total-row">Gesamtbetrag: €${invoice.total.toFixed(2)}</div>
         </div>

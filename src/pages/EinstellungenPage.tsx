@@ -35,28 +35,39 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Bitte wählen Sie eine Bilddatei aus (PNG, JPG, etc.)');
+      alert('❌ Fehler: Bitte wählen Sie eine Bilddatei aus (PNG, JPG, GIF, etc.)');
+      event.target.value = ''; // Reset input
       return;
     }
 
     // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Die Datei ist zu groß. Maximum 2MB erlaubt.');
+    const maxSizeMB = 2;
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      alert(`❌ Datei zu groß: ${fileSizeMB.toFixed(2)} MB\n\nMaximum erlaubt: ${maxSizeMB} MB\nBitte verkleinern Sie das Bild oder wählen Sie eine andere Datei.`);
+      event.target.value = ''; // Reset input
       return;
     }
 
     try {
       setUploadingLogo(true);
+      showSuccess(`✅ Logo wird hochgeladen... (${fileSizeMB.toFixed(2)} MB)`);
       
       // Convert to base64
       const reader = new FileReader();
       reader.onload = () => {
         const base64 = reader.result as string;
         setCompanyFormData(prev => ({ ...prev, logo: base64 }));
+        showSuccess('Logo erfolgreich geladen! Vergessen Sie nicht zu speichern.');
+      };
+      reader.onerror = () => {
+        showError('Fehler beim Lesen der Datei');
+        event.target.value = ''; // Reset input
       };
       reader.readAsDataURL(file);
     } catch (error) {
-      alert('Fehler beim Laden des Logos');
+      showError('Fehler beim Verarbeiten des Logos');
+      event.target.value = ''; // Reset input
     } finally {
       setUploadingLogo(false);
     }
@@ -163,7 +174,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
 Erstellt am: ${new Date().toLocaleDateString('de-DE')}
 Version: ${backupData.version}
 
-Diese Datei enthält alle Ihre RawaLite-Daten und kann über die Wartungs-Funktion importiert werden.
+Diese Datei enthält alle Ihre RawaLite-Daten und kann über die Datensicherungs-Funktion importiert werden.
 
 Enthaltene Daten:
 - Kunden: ${customers.length}
@@ -623,7 +634,7 @@ Importierte Daten:
 Erfolgreich importiert: ${importedCount} Kunden
 ${errors > 0 ? `Fehler: ${errors}` : ''}
 
-CSV-Format: Name;Email;Telefon;Straße;PLZ;Stadt;Notizen`);
+CSV-Format: Name;Email;Telefon;Straße;PLZ;Ort;Notizen`);
 
       } else if (importType === 'offers') {
         // CSV-Import für Angebote
@@ -918,7 +929,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
             fontWeight: activeTab === 'company' ? "600" : "500"
           }}
         >
-          Grunddaten
+          Stammdaten
         </button>
         <button
           onClick={() => setActiveTab('logo')}
@@ -998,16 +1009,16 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
             fontWeight: activeTab === 'maintenance' ? "600" : "500"
           }}
         >
-          Wartung
+          Datensicherung
         </button>
       </div>
 
-      {/* Company Data Tab - Grunddaten */}
+      {/* Company Data Tab - Stammdaten */}
       {activeTab === 'company' && (
         <form onSubmit={handleCompanySubmit}>
           <div style={{ display: "grid", gap: "16px", gridTemplateColumns: "1fr 1fr" }}>
             <div style={{ gridColumn: "1 / -1" }}>
-              <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Grunddaten</h3>
+              <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Stammdaten</h3>
             </div>
             
             <div>
@@ -1108,7 +1119,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
 
             <div>
               <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
-                Stadt
+                Ort
               </label>
               <input
                 type="text"
@@ -1158,7 +1169,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                   fontWeight: "500"
                 }}
               >
-                {saving ? "Speichere..." : "Grunddaten speichern"}
+                {saving ? "Speichere..." : "Stammdaten speichern"}
               </button>
             </div>
           </div>
@@ -1568,10 +1579,10 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
         </form>
       )}
 
-      {/* Maintenance Tab - Wartung */}
+      {/* Maintenance Tab - Datensicherung */}
       {activeTab === 'maintenance' && (
         <div>
-          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Wartung & Datenmanagement</h3>
+          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Datensicherung & Datenmanagement</h3>
           
           {/* Backup Section */}
           <div style={{ marginBottom: "32px" }}>

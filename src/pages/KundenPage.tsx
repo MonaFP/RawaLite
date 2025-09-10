@@ -29,7 +29,7 @@ export default function KundenPage({ title = "Kunden" }: KundenPageProps){
     },
     { 
       key: "city", 
-      header: "Stadt", 
+      header: "Ort", 
       render: (row: Customer) => row.city || <em style={{opacity: 0.6}}>kein Eintrag</em>
     },
     { 

@@ -5,6 +5,7 @@ import { useOffers } from '../hooks/useOffers';
 import { useCustomers } from '../hooks/useCustomers';
 import { usePackages } from '../hooks/usePackages';
 import { useSettings } from '../hooks/useSettings';
+import { useNotifications } from '../contexts/NotificationContext';
 import { ExportService } from '../services/ExportService';
 import type { Offer } from '../persistence/adapter';
 
@@ -17,6 +18,7 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const { customers } = useCustomers();
   const { packages } = usePackages();
   const { settings } = useSettings();
+  const { showSuccess, showError } = useNotifications();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Offer | null>(null);
 
@@ -101,6 +103,24 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
             💾 PDF
           </button>
           <button className="btn btn-secondary" style={{ padding: "4px 8px", fontSize: "12px" }} onClick={() => { setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
+          <select
+            value={row.status}
+            onChange={(e) => handleStatusChange(row.id, e.target.value as Offer['status'])}
+            style={{
+              padding: "4px 8px",
+              fontSize: "12px",
+              border: "1px solid rgba(255,255,255,.1)",
+              borderRadius: "4px",
+              background: "rgba(17,24,39,.8)",
+              color: "var(--muted)",
+              cursor: "pointer"
+            }}
+          >
+            <option value="draft">Entwurf</option>
+            <option value="sent">Gesendet</option>
+            <option value="accepted">Angenommen</option>
+            <option value="rejected">Abgelehnt</option>
+          </select>
           <button className="btn btn-danger" style={{ padding: "4px 8px", fontSize: "12px" }} onClick={() => { if (confirm("Dieses Angebot wirklich löschen?")) handleRemove(row.id); }}>Löschen</button>
         </div>
       ) 
@@ -117,6 +137,26 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
     await updateOffer(current.id, offerData);
     setMode("list");
     setCurrent(null);
+  }
+
+  async function handleStatusChange(offerId: number, newStatus: Offer['status']) {
+    try {
+      const offer = offers.find(o => o.id === offerId);
+      if (!offer) return;
+      
+      await updateOffer(offerId, { ...offer, status: newStatus });
+      
+      // Success notification
+      const statusLabels = {
+        'draft': 'Entwurf',
+        'sent': 'Gesendet', 
+        'accepted': 'Angenommen',
+        'rejected': 'Abgelehnt'
+      };
+      showSuccess(`Angebot-Status auf "${statusLabels[newStatus]}" geändert`);
+    } catch (error) {
+      showError('Fehler beim Ändern des Status');
+    }
   }
 
   async function handleRemove(id: number) {

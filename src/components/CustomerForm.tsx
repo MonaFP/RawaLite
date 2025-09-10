@@ -170,7 +170,7 @@ export default function CustomerForm({ initial, onSubmit, onCancel, submitLabel 
           />
         </div>
         <div style={{ display: "grid", gap: 6 }}>
-          <label>Stadt</label>
+          <label>Ort</label>
           <input 
             type="text"
             value={values.city ?? ""} 
