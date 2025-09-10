@@ -1,17 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  getOffer,
-  listCustomers,
-  updateOfferBasics,
-  replaceOfferItems,
-  getSettings,
-} from "../db";
+import Header from "@components/Header";
+import { usePersistence } from "../contexts/PersistenceContext";
+
 
 type Customer = {
   id: string;
-  name: string;
-  address: string;
+  Name: string;
+  Adresse?: string;
 };
 
 type OfferItem = {
@@ -32,9 +28,33 @@ type Offer = {
 // Fallback: wenn kein Steuersatz in Settings liegt, 19 %
 const DEFAULT_TAX_RATE = 0.19;
 
+// Mock functions for offer management - these need to be implemented
+async function getOffer(id: number): Promise<Offer | null> {
+  // TODO: Implement actual offer retrieval
+  console.warn('getOffer not implemented yet');
+  return null;
+}
+
+async function updateOfferBasics(id: number, data: { title?: string; customer_id?: string | null }): Promise<void> {
+  // TODO: Implement actual offer update
+  console.warn('updateOfferBasics not implemented yet');
+}
+
+async function replaceOfferItems(offerId: number, items: OfferItem[]): Promise<void> {
+  // TODO: Implement actual offer items replacement
+  console.warn('replaceOfferItems not implemented yet');
+}
+
+async function getSettings(): Promise<any> {
+  // TODO: Implement actual settings retrieval
+  console.warn('getSettings not implemented yet');
+  return {};
+}
+
 export default function AngebotDetailPage() {
   const params = useParams();
   const navigate = useNavigate();
+  const persistence = usePersistence();
   const offerId = useMemo<number | null>(() => {
     const p = params?.id ?? params?.offerId ?? "";
     const n = Number(p);
@@ -58,7 +78,7 @@ export default function AngebotDetailPage() {
       try {
         setLoading(true);
         // Kunden laden
-        const cs = await listCustomers();
+        const cs = persistence.listCustomers();
         if (!cancelled) setCustomers(cs ?? []);
 
         if (offerId == null) {
@@ -244,7 +264,7 @@ export default function AngebotDetailPage() {
             <option value="">— Kein Kunde —</option>
             {customers.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.id} — {c.name}
+                {c.id} — {c.Name}
               </option>
             ))}
           </select>
@@ -254,7 +274,7 @@ export default function AngebotDetailPage() {
           <div style={{ fontSize: 12, opacity: 0.8 }}>
             <div>
               <strong>Adresse:</strong>{" "}
-              {customersById.get(offer.customer_id)?.address ?? "—"}
+              {customersById.get(offer.customer_id)?.Adresse ?? "—"}
             </div>
           </div>
         )}

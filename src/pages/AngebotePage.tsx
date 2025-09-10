@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { db, saveDbDebounced, ensureSchema } from "../db";
+import Header from "@components/Header";
+import { usePersistence } from "../contexts/PersistenceContext";
+import { db, ensureSchema, saveDbDebounced } from "../db";
 
 type OfferRow = {
   id: number;

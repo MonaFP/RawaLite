@@ -1,36 +1,43 @@
 // electron/main.ts
-import { app, BrowserWindow } from "electron";
-import path from "node:path";
+import { app, BrowserWindow, shell } from 'electron'
+import path from 'node:path'
 
-const isDev = !app.isPackaged;
+const isDev = !app.isPackaged            // zuverlässig für Dev/Prod
 
-async function createWindow() {
+function createWindow() {
+  // Projekt-Root ermitteln:
+  const rootPath = isDev ? process.cwd() : app.getAppPath()
+
+  // Preload: im Dev aus <root>/dist-electron, im Prod neben main.cjs
+  const preloadPath = isDev
+    ? path.join(rootPath, 'dist-electron', 'preload.js')
+    : path.join(__dirname, 'preload.js')
+
   const win = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1280,
+    height: 900,
     webPreferences: {
-      contextIsolation: true,   // sicher
-      nodeIntegration: false,   // sicher
-      // kein preload!
+      preload: preloadPath,
+      contextIsolation: true,
+      sandbox: true,
     },
-  });
+  })
 
   if (isDev) {
-    await win.loadURL("http://localhost:5173/");
-    // optional: DevTools
-    // win.webContents.openDevTools({ mode: "detach" });
+    // Vite-Dev-Server
+    win.loadURL('http://localhost:5173')
+    // win.webContents.openDevTools({ mode: 'detach' })
   } else {
-    // beim Build: auf dein index.html zeigen
-    await win.loadFile(path.join(__dirname, "..", "index.html"));
+    // Statisches HTML aus dem **Projekt-Root**
+    win.loadFile(path.join(rootPath, 'index.html'))
   }
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url)
+    return { action: 'deny' }
+  })
 }
 
-app.whenReady().then(createWindow);
-
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
-});
-
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
-});
+app.whenReady().then(createWindow)
+app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
+app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })

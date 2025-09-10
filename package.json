@@ -1,0 +1,46 @@
+{
+  "name": "rawalite",
+  "version": "0.9.0-optionc-mvp",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "dist-electron/main.cjs",
+  "scripts": {
+  "dev": "npm-run-all -l -p vite electron:dev",
+    "vite": "vite",
+    "electron:dev": "npm-run-all -s build:preload build:main && electron dist-electron/main.cjs",
+
+    "build": "vite build && npm-run-all -s build:preload build:main",
+
+    "build:preload": "esbuild electron/preload.ts --bundle --platform=node --external:electron --outfile=dist-electron/preload.js",
+    "build:main": "esbuild electron/main.ts --bundle --platform=node --format=cjs --external:electron --outfile=dist-electron/main.cjs",    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest",
+    "e2e": "@playwright/test",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "dexie": "^4.0.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.8.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.46.0",
+    "@types/node": "^20.14.10",
+    "@types/react": "^18.3.7",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^5.0.2",
+    "electron": "^31.2.0",
+    "electron-builder": "^24.13.3",
+    "esbuild": "^0.21.5",
+    "eslint": "^9.9.0",
+    "npm-run-all": "^4.1.5",
+    "tsx": "^4.20.5",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}
