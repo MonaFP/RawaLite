@@ -426,7 +426,7 @@ Möchten Sie wirklich fortfahren?`;
         }
       }
 
-      // Importiere Einstellungen
+      // Schritt 3: Unternehmensdaten importieren
       if (backupData.companyData) {
         try {
           console.log('🏢 Importing company data...');
@@ -437,13 +437,64 @@ Möchten Sie wirklich fortfahren?`;
         }
       }
       
+      // Schritt 4: Nummernkreise intelligent anpassen - schaue nach höchster verwendeter ID
       if (backupData.numberingCircles) {
         try {
-          console.log('🔢 Importing numbering circles...');
-          await updateNumberingCircles(backupData.numberingCircles);
-          console.log('✅ Numbering circles imported successfully');
+          console.log('🔢 Analyzing imported data for intelligent numbering...');
+          
+          // Lade die importierten Daten um die höchsten IDs zu finden
+          const [importedCustomers, importedInvoices, importedOffers, importedPackages] = await Promise.all([
+            adapter.listCustomers(),
+            adapter.listInvoices(),
+            adapter.listOffers(),
+            adapter.listPackages()
+          ]);
+          
+          // Finde höchste Nummer für jeden Typ
+          const findHighestNumber = (items: any[], prefix: string): number => {
+            let highest = 0;
+            items.forEach(item => {
+              if (item.number && item.number.startsWith(prefix)) {
+                const numberPart = item.number.replace(prefix, '');
+                const parsed = parseInt(numberPart, 10);
+                if (!isNaN(parsed) && parsed > highest) {
+                  highest = parsed;
+                }
+              }
+            });
+            return highest;
+          };
+          
+          // Aktualisiere Nummernkreise mit intelligenten Werten
+          const intelligentNumberingCircles = backupData.numberingCircles.map((circle: any) => {
+            let newCurrent = circle.current;
+            
+            switch (circle.id) {
+              case 'customers':
+                newCurrent = Math.max(findHighestNumber(importedCustomers, circle.prefix), circle.current);
+                break;
+              case 'invoices':
+                newCurrent = Math.max(findHighestNumber(importedInvoices, circle.prefix), circle.current);
+                break;
+              case 'offers':
+                newCurrent = Math.max(findHighestNumber(importedOffers, circle.prefix), circle.current);
+                break;
+              case 'packages':
+                newCurrent = Math.max(findHighestNumber(importedPackages, circle.prefix), circle.current);
+                break;
+            }
+            
+            console.log(`📊 ${circle.id}: Found highest number ${newCurrent}, was ${circle.current}`);
+            return { ...circle, current: newCurrent };
+          });
+          
+          console.log('🔢 Importing intelligent numbering circles...');
+          await updateNumberingCircles(intelligentNumberingCircles);
+          console.log('✅ Intelligent numbering circles imported successfully');
         } catch (error) {
-          console.warn('Error importing numbering circles:', error);
+          console.warn('Error importing intelligent numbering circles:', error);
+          // Fallback zu normalen Nummernkreisen
+          await updateNumberingCircles(backupData.numberingCircles);
         }
       }
 
@@ -455,16 +506,14 @@ Importierte Daten:
 - ${importedCounts.offers} Angebote
 - ${importedCounts.packages} Pakete
 - Unternehmenseinstellungen
-- Nummernkreise
+- Intelligente Nummernkreise (angepasst an vorhandene Daten)
 
-Die Daten werden aktualisiert, navigiere zur Kunden-Seite um sie zu sehen.`);
+🔄 Die Anwendung wurde aktualisiert. Sie können jetzt mit den importierten Daten arbeiten.`);
       
       console.log('✅ Backup import completed successfully');
       
-      // Navigiere zur Kunden-Seite - dort sollten sich die Hooks automatisch refreshen
-      setTimeout(() => {
-        navigate('/kunden');
-      }, 1500);
+      // Statt zu navigieren, informiere den User und lasse ihn selbst navigieren
+      // Das verhindert das UI-Blocking-Problem
     } catch (error) {
       console.error('Import error:', error);
       alert('Fehler beim Importieren des Backups: ' + error);
