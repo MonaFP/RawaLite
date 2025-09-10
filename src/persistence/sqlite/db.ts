@@ -27,13 +27,19 @@ function schedulePersist() {
 }
 function createSchemaIfNeeded() {
   if (!db) return;
+  
+  // First, create basic schema
   db.exec(`
     PRAGMA journal_mode = WAL;
 
     CREATE TABLE IF NOT EXISTS settings (
       id INTEGER PRIMARY KEY CHECK (id = 1),
-      companyName TEXT, street TEXT, zip TEXT, city TEXT, taxId TEXT,
+      companyName TEXT, street TEXT, zip TEXT, city TEXT, 
+      phone TEXT, email TEXT, website TEXT,
+      taxId TEXT, vatId TEXT,
       kleinunternehmer INTEGER DEFAULT 1,
+      bankName TEXT, bankAccount TEXT, bankBic TEXT,
+      logo TEXT,
       nextCustomerNumber INTEGER DEFAULT 1,
       nextOfferNumber INTEGER DEFAULT 1,
       nextInvoiceNumber INTEGER DEFAULT 1,
@@ -56,6 +62,150 @@ function createSchemaIfNeeded() {
     );
 
     CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(name);
+  `);
+
+  // Handle packages table migration
+  try {
+    // Check if packages table exists and has language column
+    const tableInfo = db.exec(`PRAGMA table_info(packages)`);
+    let hasLanguageColumn = false;
+    let tableExists = false;
+    
+    if (tableInfo.length > 0 && tableInfo[0].values) {
+      tableExists = true;
+      hasLanguageColumn = tableInfo[0].values.some((row: any[]) => row[1] === 'language');
+    }
+    
+    if (!tableExists) {
+      // Create new packages table
+      db.exec(`
+        CREATE TABLE packages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          internalTitle TEXT NOT NULL,
+          parentPackageId INTEGER REFERENCES packages(id) ON DELETE CASCADE,
+          total REAL NOT NULL,
+          addVat INTEGER DEFAULT 0,
+          createdAt TEXT NOT NULL,
+          updatedAt TEXT NOT NULL
+        );
+      `);
+    } else if (hasLanguageColumn) {
+      // Migrate existing table
+      db.exec(`
+        CREATE TABLE packages_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          internalTitle TEXT NOT NULL,
+          parentPackageId INTEGER REFERENCES packages(id) ON DELETE CASCADE,
+          total REAL NOT NULL,
+          addVat INTEGER DEFAULT 0,
+          createdAt TEXT NOT NULL,
+          updatedAt TEXT NOT NULL
+        );
+        
+        INSERT INTO packages_new (id, internalTitle, parentPackageId, total, addVat, createdAt, updatedAt)
+        SELECT id, internalTitle, parentPackageId, total, addVat, createdAt, updatedAt FROM packages;
+        
+        DROP TABLE packages;
+        ALTER TABLE packages_new RENAME TO packages;
+      `);
+    }
+  } catch (error) {
+    console.warn('Package table migration error (creating fresh table):', error);
+    // If migration fails, drop and recreate
+    try {
+      db.exec(`DROP TABLE IF EXISTS packages;`);
+      db.exec(`
+        CREATE TABLE packages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          internalTitle TEXT NOT NULL,
+          parentPackageId INTEGER REFERENCES packages(id) ON DELETE CASCADE,
+          total REAL NOT NULL,
+          addVat INTEGER DEFAULT 0,
+          createdAt TEXT NOT NULL,
+          updatedAt TEXT NOT NULL
+        );
+      `);
+    } catch (recreateError) {
+      console.error('Failed to recreate packages table:', recreateError);
+    }
+  }
+
+  // Continue with the rest of the schema
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS package_line_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      packageId INTEGER NOT NULL REFERENCES packages(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      amount REAL NOT NULL DEFAULT 0,
+      parentItemId INTEGER REFERENCES package_line_items(id) ON DELETE CASCADE,
+      description TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_packages_parent ON packages(parentPackageId);
+    CREATE INDEX IF NOT EXISTS idx_line_items_package ON package_line_items(packageId);
+
+    CREATE TABLE IF NOT EXISTS offers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      offerNumber TEXT NOT NULL UNIQUE,
+      customerId INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'draft',
+      validUntil TEXT NOT NULL,
+      subtotal REAL NOT NULL DEFAULT 0,
+      vatRate REAL NOT NULL DEFAULT 19,
+      vatAmount REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0,
+      notes TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS offer_line_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      offerId INTEGER NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      description TEXT,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      unitPrice REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0,
+      parentItemId INTEGER REFERENCES offer_line_items(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS invoices (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoiceNumber TEXT NOT NULL UNIQUE,
+      customerId INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+      offerId INTEGER REFERENCES offers(id) ON DELETE SET NULL,
+      title TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'draft',
+      dueDate TEXT NOT NULL,
+      subtotal REAL NOT NULL DEFAULT 0,
+      vatRate REAL NOT NULL DEFAULT 19,
+      vatAmount REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0,
+      notes TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS invoice_line_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoiceId INTEGER NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      description TEXT,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      unitPrice REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0,
+      parentItemId INTEGER REFERENCES invoice_line_items(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_offers_customer ON offers(customerId);
+    CREATE INDEX IF NOT EXISTS idx_offers_status ON offers(status);
+    CREATE INDEX IF NOT EXISTS idx_invoices_customer ON invoices(customerId);
+    CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+    CREATE INDEX IF NOT EXISTS idx_offer_items_offer ON offer_line_items(offerId);
+    CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice ON invoice_line_items(invoiceId);
   `);
 }
 export async function getDB(): Promise<Database> {

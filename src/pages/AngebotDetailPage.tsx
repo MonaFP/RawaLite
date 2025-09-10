@@ -51,4 +51,39 @@ export default function AngebotDetailPage({}: AngebotDetailPageProps) {
       {error && <div className="text-sm text-red-600">Persistenzfehler: {String(error)}</div>}
 
       <section className="space-y-3">
-        <h2 className="text
+        <h2 className="text-lg font-medium">Schnell-Kunde anlegen</h2>
+        <div className="flex gap-2">
+          <input
+            value={newCustomerName}
+            onChange={(e) => setNewCustomerName(e.target.value)}
+            placeholder="Kundenname"
+            className="flex-1 px-3 py-2 border rounded"
+          />
+          <button
+            onClick={handleAddQuickCustomer}
+            disabled={!newCustomerName.trim() || !adapter}
+            className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400"
+          >
+            Hinzufügen
+          </button>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-medium">Kunden ({customers.length})</h2>
+        {loading ? (
+          <div className="text-sm text-gray-500">Lade Kunden…</div>
+        ) : (
+          <div className="grid gap-2">
+            {customers.map((c) => (
+              <div key={c.id} className="p-3 border rounded">
+                <div className="font-medium">{c.name}</div>
+                <div className="text-sm text-gray-600">{c.number}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
