@@ -1,31 +1,26 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
 
-const NavItem: React.FC<{ to: string; label: string }> = ({ to, label }) => (
-  <li>
-    <NavLink
-      to={to}
-      className={({ isActive }) => (isActive ? 'active' : '')}
-    >
-      {label}
-    </NavLink>
-  </li>
-);
-
-const Sidebar: React.FC = () => {
+export default function Sidebar(){
+  const items = [
+    { to: "/", label: "Dashboard" },
+    { to: "/kunden", label: "Kunden" },
+    { to: "/pakete", label: "Pakete" },
+    { to: "/angebote", label: "Angebote" },
+    { to: "/rechnungen", label: "Rechnungen" },
+    { to: "/einstellungen", label: "Einstellungen" }
+  ];
   return (
     <aside className="sidebar">
-      <h1>RaWaLite <span className="badge">Skeleton</span></h1>
-      <ul>
-        <NavItem to="/" label="Dashboard" />
-        <NavItem to="/kunden" label="Kunden" />
-        <NavItem to="/pakete" label="Pakete" />
-        <NavItem to="/angebote" label="Angebote" />
-        <NavItem to="/rechnungen" label="Rechnungen" />
-        <NavItem to="/einstellungen" label="Einstellungen" />
+      <div className="brand"><span className="dot" /> RaWaLite</div>
+      <ul className="nav">
+        {items.map(i => (
+          <li key={i.to}>
+            <NavLink to={i.to} end={i.to === "/"}>
+              {i.label}
+            </NavLink>
+          </li>
+        ))}
       </ul>
     </aside>
   );
-};
-
-export default Sidebar;
+}

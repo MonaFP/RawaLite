@@ -1,12 +1,27 @@
-import React from 'react';
+import { useLocation } from "react-router-dom";
 
-const Header: React.FC<{ title: string; right?: React.ReactNode }> = ({ title, right }) => {
-  return (
-    <div className="header">
-      <h2 style={{margin:0}}>{title}</h2>
-      <div>{right}</div>
-    </div>
-  );
+const titles: Record<string,string> = {
+  "/": "Dashboard",
+  "/kunden": "Kunden",
+  "/pakete": "Pakete",
+  "/angebote": "Angebote",
+  "/rechnungen": "Rechnungen",
+  "/einstellungen": "Einstellungen"
 };
 
-export default Header;
+interface HeaderProps {
+  title?: string;
+  right?: React.ReactNode;
+}
+
+export default function Header({ title: propTitle, right }: HeaderProps = {}){
+  const { pathname } = useLocation();
+  const title = propTitle ?? titles[pathname] ?? "RaWaLite";
+  return (
+    <header className="header">
+      <div className="title">{title}</div>
+      {right && <div className="header-right">{right}</div>}
+      <div style={{opacity:.7}}>v0.1 UI-Fix</div>
+    </header>
+  );
+}
