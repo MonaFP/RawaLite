@@ -18,7 +18,8 @@
     "lint": "eslint .",
     "test": "vitest",
     "e2e": "@playwright/test",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "postinstall": "node -e \"require('fs').cpSync(require.resolve('sql.js/dist/sql-wasm.wasm'), 'public/sql-wasm.wasm')\""
   },
   "dependencies": {
     "dexie": "^4.0.8",
@@ -32,6 +33,7 @@
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.7",
     "@types/react-dom": "^18.3.0",
+    "@types/sql.js": "^1.4.9",
     "@vitejs/plugin-react": "^5.0.2",
     "electron": "^31.2.0",
     "electron-builder": "^24.13.3",

@@ -1,379 +1,138 @@
-import { useEffect, useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Header from "@components/Header";
+import { useEffect, useState } from "react";
 import { usePersistence } from "../contexts/PersistenceContext";
+import type { Customer } from "../persistence/adapter";
 
-
-type Customer = {
-  id: string;
-  Name: string;
-  Adresse?: string;
-};
-
-type OfferItem = {
-  pos: number;
-  text: string;
-  qty: number;
-  price: number;
-};
-
-type Offer = {
-  id: number;
-  title: string;
-  customer_id: string | null;
-  created_at: string;
-  items?: OfferItem[];
-};
-
-// Fallback: wenn kein Steuersatz in Settings liegt, 19 %
-const DEFAULT_TAX_RATE = 0.19;
-
-// Mock functions for offer management - these need to be implemented
-async function getOffer(id: number): Promise<Offer | null> {
-  // TODO: Implement actual offer retrieval
-  console.warn('getOffer not implemented yet');
-  return null;
+interface AngebotDetailPageProps {
+  // zukünftig: offerId?: string; // wenn du Routing/Details einhängst
 }
 
-async function updateOfferBasics(id: number, data: { title?: string; customer_id?: string | null }): Promise<void> {
-  // TODO: Implement actual offer update
-  console.warn('updateOfferBasics not implemented yet');
-}
+export default function AngebotDetailPage({}: AngebotDetailPageProps) {
+  const { adapter, ready, error } = usePersistence();
 
-async function replaceOfferItems(offerId: number, items: OfferItem[]): Promise<void> {
-  // TODO: Implement actual offer items replacement
-  console.warn('replaceOfferItems not implemented yet');
-}
-
-async function getSettings(): Promise<any> {
-  // TODO: Implement actual settings retrieval
-  console.warn('getSettings not implemented yet');
-  return {};
-}
-
-export default function AngebotDetailPage() {
-  const params = useParams();
-  const navigate = useNavigate();
-  const persistence = usePersistence();
-  const offerId = useMemo<number | null>(() => {
-    const p = params?.id ?? params?.offerId ?? "";
-    const n = Number(p);
-    return Number.isFinite(n) ? n : null;
-  }, [params]);
-
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [offer, setOffer] = useState<Offer | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [items, setItems] = useState<OfferItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [newCustomerName, setNewCustomerName] = useState<string>("");
 
-  // Settings
-  const [smallBusiness, setSmallBusiness] = useState<boolean>(false);
-  const [taxRate, setTaxRate] = useState<number>(DEFAULT_TAX_RATE);
-
-  // Initial load
+  // customern laden
   useEffect(() => {
-    let cancelled = false;
-    async function load() {
+    if (!ready || !adapter) return;
+    let active = true;
+
+    (async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        // Kunden laden
-        const cs = persistence.listCustomers();
-        if (!cancelled) setCustomers(cs ?? []);
-
-        if (offerId == null) {
-          if (!cancelled) setOffer(null);
-          return;
-        }
-        // Angebot + Positionen
-        const of = await getOffer(offerId);
-        if (!cancelled) {
-          setOffer(of as Offer);
-          const loadedItems: OfferItem[] =
-            (of && (of as any).items ? (of as any).items : []) as OfferItem[];
-          setItems(
-            (loadedItems ?? []).map((it, idx) => ({
-              pos: Number(it.pos ?? idx + 1),
-              text: String(it.text ?? ""),
-              qty: Number(it.qty ?? 0),
-              price: Number(it.price ?? 0),
-            }))
-          );
-        }
-
-        // Settings (Kleinunternehmer + optional vat_rate)
-        const settings = await getSettings();
-        if (!cancelled) {
-          const sb = String(settings?.small_business ?? "false") === "true";
-          setSmallBusiness(sb);
-          const parsedVat =
-            settings && typeof settings.vat_rate === "string"
-              ? Number(settings.vat_rate)
-              : settings && typeof settings.vat_rate === "number"
-              ? Number(settings.vat_rate)
-              : NaN;
-          setTaxRate(Number.isFinite(parsedVat) ? parsedVat : DEFAULT_TAX_RATE);
-        }
+        const rows = await adapter.listCustomers();
+        if (active) setCustomers(rows);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (active) setLoading(false);
       }
-    }
-    load();
+    })();
+
     return () => {
-      cancelled = true;
+      active = false;
     };
-  }, [offerId]);
+  }, [ready, adapter]);
 
-  const customersById = useMemo(() => {
-    const map = new Map<string, Customer>();
-    for (const c of customers) map.set(c.id, c);
-    return map;
-  }, [customers]);
+  async function handleAddQuickCustomer() {
+    if (!adapter) return;
+    const name = newCustomerName.trim();
+    if (!name) return;
 
-  // Summen berechnen
-  const { net, vat, gross } = useMemo(() => {
-    const n = items.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.price) || 0), 0);
-    const v = smallBusiness ? 0 : n * taxRate;
-    const g = n + v;
-    return { net: n, vat: v, gross: g };
-  }, [items, smallBusiness, taxRate]);
+    // einfache Nummernvergabe – später durch NummernkreisService ersetzen
+    const number = `K-${String(Date.now()).slice(-6)}`;
 
-  function fmt(amount: number) {
-    return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(
-      Math.round(amount * 100) / 100
-    );
-  }
-
-  async function handleTitleChange(newTitle: string) {
-    if (!offer) return;
-    setOffer({ ...offer, title: newTitle });
-  }
-
-  async function handleTitleBlur() {
-    if (!offer) return;
-    setSaving(true);
-    try {
-      await updateOfferBasics(offer.id, { title: offer.title });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleCustomerChange(newId: string) {
-    if (!offer) return;
-    setSaving(true);
-    try {
-      await updateOfferBasics(offer.id, { customer_id: newId || null });
-      setOffer({ ...offer, customer_id: newId || null });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function upsertItem(index: number, patch: Partial<OfferItem>) {
-    setItems((prev) => {
-      const next = [...prev];
-      const current = next[index] ?? {
-        pos: index + 1,
-        text: "",
-        qty: 0,
-        price: 0,
-      };
-      next[index] = { ...current, ...patch, pos: index + 1 };
-      return next;
+    await adapter.createCustomer({
+      number,
+      name,
+      email: undefined,
+      phone: undefined,
+      street: undefined,
+      zip: undefined,
+      city: undefined,
+      notes: undefined,
     });
-  }
 
-  function addItem() {
-    setItems((prev) => [
-      ...prev,
-      {
-        pos: prev.length + 1,
-        text: "",
-        qty: 1,
-        price: 0,
-      },
-    ]);
-  }
-
-  function removeItem(index: number) {
-    setItems((prev) =>
-      prev.filter((_, i) => i !== index).map((it, i) => ({ ...it, pos: i + 1 }))
-    );
-  }
-
-  async function saveItems() {
-    if (!offer) return;
-    setSaving(true);
-    try {
-      const clean = items
-        .map((it, i) => ({
-          pos: i + 1,
-          text: (it.text ?? "").trim(),
-          qty: Number(it.qty) || 0,
-          price: Number(it.price) || 0,
-        }))
-        // optional: leere Zeilen raus
-        .filter((it) => it.text.length > 0 || it.qty !== 0 || it.price !== 0);
-      await replaceOfferItems(offer.id, clean);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (loading) {
-    return <div style={{ padding: 16 }}>Lade Angebot …</div>;
-  }
-
-  if (!offer || offerId == null) {
-    return (
-      <div style={{ padding: 16 }}>
-        <p>Kein Angebot gefunden.</p>
-        <button onClick={() => (navigate ? navigate(-1) : window.history.back())}>
-          Zurück
-        </button>
-      </div>
-    );
+    // Refresh list (einfach gehalten)
+    const rows = await adapter.listCustomers();
+    setCustomers(rows);
+    setNewCustomerName("");
   }
 
   return (
-    <div style={{ padding: 16, display: "grid", gap: 16 }}>
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <button onClick={() => (navigate ? navigate(-1) : window.history.back())}>← Zurück</button>
-        <h1 style={{ margin: 0, fontSize: 20 }}>Angebot #{offer.id}</h1>
-        {saving && <span style={{ marginLeft: 8, fontSize: 12 }}>Speichere …</span>}
-      </div>
+    <div className="p-4 space-y-6">
+      <header className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Angebot – Details</h1>
+        {/* Platz für Aktionen (Speichern, PDF, etc.) */}
+      </header>
 
-      <section style={{ display: "grid", gap: 12 }}>
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Titel</span>
-          <input
-            value={offer.title ?? ""}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            onBlur={handleTitleBlur}
-            placeholder="Titel des Angebots"
-          />
-        </label>
-
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Kunde</span>
-          <select
-            value={offer.customer_id ?? ""}
-            onChange={(e) => handleCustomerChange(e.target.value)}
-          >
-            <option value="">— Kein Kunde —</option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.id} — {c.Name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {offer.customer_id && customersById.get(offer.customer_id) && (
-          <div style={{ fontSize: 12, opacity: 0.8 }}>
-            <div>
-              <strong>Adresse:</strong>{" "}
-              {customersById.get(offer.customer_id)?.Adresse ?? "—"}
-            </div>
-          </div>
-        )}
-      </section>
-
-      <section>
-        <h2 style={{ fontSize: 16, marginBottom: 8 }}>Positionen</h2>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd", padding: 6 }}>Pos</th>
-                <th style={{ textAlign: "left", borderBottom: "1px solid #ddd", padding: 6 }}>Text</th>
-                <th style={{ textAlign: "right", borderBottom: "1px solid #ddd", padding: 6 }}>Menge</th>
-                <th style={{ textAlign: "right", borderBottom: "1px solid #ddd", padding: 6 }}>Einzelpreis (€)</th>
-                <th style={{ textAlign: "right", borderBottom: "1px solid #ddd", padding: 6 }}>Summe (€)</th>
-                <th style={{ borderBottom: "1px solid #ddd" }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((it, idx) => {
-                const rowSum = (Number(it.qty) || 0) * (Number(it.price) || 0);
-                return (
-                  <tr key={idx}>
-                    <td style={{ padding: 6 }}>{idx + 1}</td>
-                    <td style={{ padding: 6, minWidth: 240 }}>
-                      <input
-                        value={it.text ?? ""}
-                        onChange={(e) => upsertItem(idx, { text: e.target.value })}
-                        placeholder="Leistungsbeschreibung"
-                        style={{ width: "100%" }}
-                      />
-                    </td>
-                    <td style={{ padding: 6, textAlign: "right", minWidth: 100 }}>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        step="0.01"
-                        value={Number.isFinite(Number(it.qty)) ? String(it.qty) : ""}
-                        onChange={(e) =>
-                          upsertItem(idx, { qty: Number(e.target.value.replace(",", ".")) })
-                        }
-                        style={{ width: 100, textAlign: "right" }}
-                      />
-                    </td>
-                    <td style={{ padding: 6, textAlign: "right", minWidth: 120 }}>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        step="0.01"
-                        value={Number.isFinite(Number(it.price)) ? String(it.price) : ""}
-                        onChange={(e) =>
-                          upsertItem(idx, { price: Number(e.target.value.replace(",", ".")) })
-                        }
-                        style={{ width: 120, textAlign: "right" }}
-                      />
-                    </td>
-                    <td style={{ padding: 6, textAlign: "right", minWidth: 120 }}>
-                      {fmt(rowSum)}
-                    </td>
-                    <td style={{ padding: 6, textAlign: "right" }}>
-                      <button onClick={() => removeItem(idx)} title="Position löschen">✕</button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {!ready && (
+        <div className="text-sm text-gray-500">Initialisiere Persistenz…</div>
+      )}
+      {error && (
+        <div className="text-sm text-red-600">
+          Persistenzfehler: {String(error)}
         </div>
+      )}
 
-        <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-          <button onClick={addItem}>+ Position</button>
-          <button onClick={saveItems} disabled={saving}>
-            {saving ? "Speichern …" : "Positionen speichern"}
+      {/* customern-Sektion (als Vorbereitung für Angebots-Zuordnung) */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-medium">customer</h2>
+
+        <div className="flex gap-2">
+          <input
+            className="border rounded px-2 py-1 flex-1"
+            placeholder="Neuen customern schnell anlegen…"
+            value={newCustomerName}
+            onChange={(e) => setNewCustomerName(e.target.value)}
+          />
+          <button
+            className="border rounded px-3 py-1"
+            onClick={handleAddQuickCustomer}
+            disabled={!ready || !adapter || !newCustomerName.trim()}
+          >
+            Anlegen
           </button>
         </div>
+
+        <div className="border rounded">
+          <div className="grid grid-cols-4 gap-2 px-3 py-2 font-semibold bg-gray-50">
+            <div>Nr.</div>
+            <div>Name</div>
+            <div>Ort</div>
+            <div>Geändert</div>
+          </div>
+
+          {loading ? (
+            <div className="px-3 py-2 text-sm text-gray-500">Lade customern…</div>
+          ) : customers.length === 0 ? (
+            <div className="px-3 py-2 text-sm text-gray-500">
+              Noch keine customern erfasst.
+            </div>
+          ) : (
+            <ul className="divide-y">
+              {customers.map((c) => (
+                <li key={c.id} className="grid grid-cols-4 gap-2 px-3 py-2">
+                  <div className="truncate">{c.number}</div>
+                  <div className="truncate">{c.name}</div>
+                  <div className="truncate">
+                    {[c.zip, c.city].filter(Boolean).join(" ")}
+                  </div>
+                  <div className="truncate">
+                    {new Date(c.updatedAt).toLocaleString()}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </section>
 
-      <section style={{ display: "grid", gap: 4, justifyContent: "end" }}>
-        {smallBusiness && (
-          <div style={{ fontSize: 12, color: "#444", maxWidth: 560 }}>
-            Hinweis: Kleinunternehmerregelung nach § 19 UStG – Es wird keine Umsatzsteuer
-            ausgewiesen.
-          </div>
-        )}
-        <div style={{ display: "grid", gap: 4, minWidth: 320 }}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span>Nettosumme:</span>
-            <strong>{fmt(net)}</strong>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span>Umsatzsteuer {smallBusiness ? "(0 %)" : `(${Math.round(taxRate * 100)} %)`}:</span>
-            <strong>{fmt(vat)}</strong>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #ddd", paddingTop: 6 }}>
-            <span>Gesamt:</span>
-            <strong>{fmt(gross)}</strong>
-          </div>
-        </div>
+      {/* Platzhalter für Angebotsdetails (Positionen, Summen, Nummernkreis, PDF) */}
+      <section className="space-y-2">
+        <h2 className="text-lg font-medium">Positionen</h2>
+        <p className="text-sm text-gray-500">
+          TODO: Positionen-Editor, Netto/Brutto, MwSt., Gesamtsumme, PDF-Preview.
+        </p>
       </section>
     </div>
   );

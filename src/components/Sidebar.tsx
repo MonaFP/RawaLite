@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 export default function Sidebar(){
   const items = [
     { to: "/", label: "Dashboard" },
-    { to: "/kunden", label: "Kunden" },
+    { to: "/customern", label: "customern" },
     { to: "/pakete", label: "Pakete" },
     { to: "/angebote", label: "Angebote" },
     { to: "/rechnungen", label: "Rechnungen" },

@@ -1,82 +1,128 @@
-import initSqlJs, { Database, SqlJsStatic } from "sql.js";
-import wasmUrl from "sql.js/dist/sql-wasm.wasm?url";
+import initSqlJs, { type Database, type SqlJsStatic } from "sql.js";
 
-const LS_KEY = "rawalite.sqlite";
-const LS_MIGRATE_CUSTOMERS = "rawalite.customers";
+// LocalStorage-Key
+const LS_KEY = "rawalite.db";
 
 let SQL: SqlJsStatic | null = null;
 let db: Database | null = null;
+let persistTimer: number | undefined;
 
-function b64ToBytes(b64: string): Uint8Array{
+// Helpers
+function u8FromBase64(b64: string) {
   const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  const len = bin.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
   return bytes;
 }
-function bytesToB64(bytes: Uint8Array): string{
-  let s = "";
-  for (let i=0;i<bytes.length;i++) s += String.fromCharCode(bytes[i]);
-  return btoa(s);
+function base64FromU8(u8: Uint8Array) {
+  let bin = "";
+  for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+  return btoa(bin);
 }
 
-export async function getDB(): Promise<Database>{
-  if(db) return db;
-  if(!SQL){
-    SQL = await initSqlJs({
-      locateFile: () => wasmUrl,
-    });
-  }
-  const stored = localStorage.getItem(LS_KEY);
-  db = stored ? new SQL.Database(b64ToBytes(stored)) : new SQL.Database();
-  ensureSchema(db);
-  await migrateFromLocalStorage(db);
-  return db;
+function schedulePersist() {
+  if (persistTimer) window.clearTimeout(persistTimer);
+  persistTimer = window.setTimeout(() => {
+    if (!db) return;
+    const data = db.export();
+    localStorage.setItem(LS_KEY, base64FromU8(data));
+  }, 250);
 }
 
-export function persist(): void{
-  if(!db) return;
-  const data = db.export();
-  localStorage.setItem(LS_KEY, bytesToB64(data));
-}
+function createSchemaIfNeeded() {
+  if (!db) return;
+  db.exec(`
+    PRAGMA journal_mode = WAL;
 
-function ensureSchema(d: Database){
-  d.exec(`
+    CREATE TABLE IF NOT EXISTS settings (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      companyName TEXT, street TEXT, zip TEXT, city TEXT, taxId TEXT,
+      kleinunternehmer INTEGER DEFAULT 1,
+      nextCustomerNumber INTEGER DEFAULT 1,
+      nextOfferNumber INTEGER DEFAULT 1,
+      nextInvoiceNumber INTEGER DEFAULT 1,
+      createdAt TEXT, updatedAt TEXT
+    );
+
+    INSERT INTO settings (id, createdAt, updatedAt)
+    SELECT 1, datetime('now'), datetime('now')
+    WHERE NOT EXISTS (SELECT 1 FROM settings WHERE id = 1);
+
     CREATE TABLE IF NOT EXISTS customers (
-      id TEXT PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      number TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
-      email TEXT,
-      ort TEXT,
+      email TEXT, phone TEXT,
+      street TEXT, zip TEXT, city TEXT,
+      notes TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL
     );
+
     CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(name);
   `);
 }
 
-async function migrateFromLocalStorage(d: Database){
-  try{
-    const raw = localStorage.getItem(LS_MIGRATE_CUSTOMERS);
-    if(!raw) return;
-    const list = JSON.parse(raw);
-    if(!Array.isArray(list) || list.length === 0) return;
+export async function getDB(): Promise<Database> {
+  if (db) return db;
+  if (!SQL) {
+    SQL = await initSqlJs({
+      locateFile: (file: string) => `${import.meta.env.BASE_URL}sql-wasm.wasm`,
+    });
+  }
+  const stored = localStorage.getItem(LS_KEY);
+  db = stored ? new SQL!.Database(u8FromBase64(stored)) : new SQL!.Database();
+  createSchemaIfNeeded();
 
-    const stmt = d.prepare(`INSERT OR IGNORE INTO customers (id,name,email,ort,createdAt,updatedAt) VALUES (?,?,?,?,?,?)`);
-    d.run("BEGIN");
-    for(const c of list){
-      stmt.run([
-        c.id ?? crypto.randomUUID(),
-        c.name ?? "",
-        c.email ?? null,
-        c.ort ?? null,
-        c.createdAt ?? new Date().toISOString(),
-        c.updatedAt ?? new Date().toISOString(),
-      ]);
+  // persist bei mutierenden Statements
+  const _exec = db.exec.bind(db);
+  db.exec = (...args: Parameters<Database["exec"]>) => {
+    const result = _exec(...args);
+    const sqlText = String(args[0] ?? "").toUpperCase(); // fix: {} → string
+    if (/INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|ALTER/.test(sqlText)) {
+      schedulePersist();
     }
-    d.run("COMMIT");
+    return result;
+  };
+
+  return db;
+}
+
+// Convenience
+export function all<T = any>(sql: string, params: any[] = []): T[] {
+  if (!db) throw new Error("DB not initialized");
+  const stmt = db.prepare(sql);
+  try {
+    stmt.bind(params);
+    const rows: T[] = [];
+    while (stmt.step()) rows.push(stmt.getAsObject() as T);
+    return rows;
+  } finally {
     stmt.free();
-    persist();
-    localStorage.removeItem(LS_MIGRATE_CUSTOMERS);
-  }catch{
-    // ignore
+  }
+}
+
+export function run(sql: string, params: any[] = []): void {
+  if (!db) throw new Error("DB not initialized");
+  const stmt = db.prepare(sql);
+  try {
+    stmt.bind(params);
+    stmt.step();
+  } finally {
+    stmt.free();
+  }
+}
+
+export async function withTx<T>(fn: () => T | Promise<T>): Promise<T> {
+  const d = await getDB();
+  d.exec("BEGIN");
+  try {
+    const res = await fn();
+    d.exec("COMMIT");
+    return res;
+  } catch (e) {
+    d.exec("ROLLBACK");
+    throw e;
   }
 }

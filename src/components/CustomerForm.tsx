@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import type { Kunde } from "../entities/Kunde";
+import type { Customer } from "../persistence/adapter";
 
 export interface CustomerFormValues{
   name: string;

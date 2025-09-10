@@ -7,7 +7,7 @@ interface AngebotePageProps{
 
 type AngebotRow = {
   nummer: string;
-  kunde: string;
+  customer: string;
   datum: string;
   betrag: string;
 };
@@ -23,7 +23,7 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps){
       <Table<AngebotRow>
         columns={[
           { key: "nummer", header: "Angebots-Nr." },
-          { key: "kunde", header: "Kunde" },
+          { key: "customer", header: "customer" },
           { key: "datum", header: "Datum" },
           { key: "betrag", header: "Betrag" },
         ]}

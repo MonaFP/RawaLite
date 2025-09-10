@@ -1,26 +1,26 @@
 import React, { useMemo, useState } from "react";
 import { Table } from "../components/Table";
-import type { Kunde } from "../entities/Kunde";
+import type { Customer } from "../persistence/adapter";
 import CustomerForm, { CustomerFormValues } from "../components/CustomerForm";
 import { useCustomers } from "../hooks/useCustomers";
 
-interface KundenPageProps{
+interface customernPageProps{
   title?: string;
 }
 
-export default function KundenPage({ title = "Kunden" }: KundenPageProps){
+export default function customernPage({ title = "customern" }: customernPageProps){
   const { items, add, edit, remove } = useCustomers();
   const [mode, setMode] = useState<"list"|"create"|"edit">("list");
-  const [current, setCurrent] = useState<Kunde | null>(null);
+  const [current, setCurrent] = useState<customer | null>(null);
 
   const columns = useMemo(()=>([
     { key: "name", header: "Name" },
     { key: "email", header: "E-Mail" },
     { key: "ort", header: "Ort" },
-    { key: "id", header: "Aktionen", render: (row: Kunde) => (
+    { key: "id", header: "Aktionen", render: (row: customer) => (
         <div style={{display:"flex", gap:8}}>
           <button onClick={()=>{ setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
-          <button onClick={()=>{ if(confirm("Diesen Kunden wirklich löschen?")) remove(row.id); }}>Löschen</button>
+          <button onClick={()=>{ if(confirm("Diesen customern wirklich löschen?")) remove(row.id); }}>Löschen</button>
         </div>
       ) 
     }
@@ -45,14 +45,14 @@ export default function KundenPage({ title = "Kunden" }: KundenPageProps){
           <div className="card" style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
             <div>
               <h2 style={{margin:"0 0 4px 0"}}>{title}</h2>
-              <div style={{opacity:.7}}>Verwalte deine Kunden. Daten werden lokal gespeichert.</div>
+              <div style={{opacity:.7}}>Verwalte deine customern. Daten werden lokal gespeichert.</div>
             </div>
-            <button onClick={()=>setMode("create")}>Neuer Kunde</button>
+            <button onClick={()=>setMode("create")}>Neuer customer</button>
           </div>
-          <Table<Kunde>
+          <Table<customer>
             columns={columns as any}
             data={items}
-            emptyMessage="Noch keine Kunden angelegt."
+            emptyMessage="Noch keine customern angelegt."
           />
         </>
       )}
