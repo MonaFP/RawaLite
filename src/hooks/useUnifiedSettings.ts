@@ -34,7 +34,10 @@ export function useUnifiedSettings() {
     try {
       setLoading(true);
       await settingsAdapter.updateCompanyData(companyData);
-      setSettings(prev => ({ ...prev, companyData }));
+      
+      // Force reload from database to ensure we have the latest data
+      const freshSettings = await settingsAdapter.getSettings();
+      setSettings(freshSettings);
       setError(null);
     } catch (err) {
       console.error('Error saving company data:', err);

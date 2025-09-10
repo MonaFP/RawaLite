@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
+import { useSettings } from "../contexts/SettingsContext";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
@@ -12,7 +12,7 @@ interface EinstellungenPageProps {
 
 export default function EinstellungenPage({ title = "Einstellungen" }: EinstellungenPageProps) {
   const navigate = useNavigate();
-  const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useUnifiedSettings();
+  const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useSettings();
   const { adapter } = usePersistence();
   const { showError, showSuccess } = useNotifications();
   const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'maintenance'>('company');
@@ -25,6 +25,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
 
   // Update form data when settings change
   React.useEffect(() => {
+    console.log('🔍 Settings loaded - Logo length:', settings.companyData.logo?.length || 0);
     setCompanyFormData(settings.companyData);
     setNumberingFormData(settings.numberingCircles);
   }, [settings]);
@@ -79,13 +80,16 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
 
   const handleCompanySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('🏢 Company form submitted with data:', companyFormData);
+    
     try {
       setSaving(true);
       await updateCompanyData(companyFormData);
       showSuccess('Unternehmensdaten gespeichert!');
-      // Automatischer Reload nach dem Speichern, damit Logo in Sidebar erscheint
-      window.location.reload();
+      // KEIN window.location.reload() - Daten bleiben erhalten
     } catch (error) {
+      console.error('Company save error:', error);
       showError('Fehler beim Speichern der Unternehmensdaten');
     } finally {
       setSaving(false);
@@ -102,6 +106,38 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     } catch (error) {
       console.error('Tax settings save error:', error);
       showError('Fehler beim Speichern der steuerlichen Einstellungen');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('🖼️ Logo form submitted, saving logo only');
+    try {
+      setSaving(true);
+      await updateCompanyData(companyFormData);
+      showSuccess('Logo erfolgreich gespeichert!');
+      // KEIN window.location.reload() hier - Logo bleibt im aktuellen Tab
+    } catch (error) {
+      console.error('Logo save error:', error);
+      showError('Fehler beim Speichern des Logos');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleBankSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('🏦 Bank form submitted, saving bank data only');
+    try {
+      setSaving(true);
+      await updateCompanyData(companyFormData);
+      showSuccess('Bankverbindung erfolgreich gespeichert!');
+      // KEIN window.location.reload() hier - Bank-Tab bleibt aktiv
+    } catch (error) {
+      console.error('Bank save error:', error);
+      showError('Fehler beim Speichern der Bankverbindung');
     } finally {
       setSaving(false);
     }
@@ -1182,7 +1218,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
 
       {/* Logo & Design Tab */}
       {activeTab === 'logo' && (
-        <form onSubmit={handleCompanySubmit}>
+        <form onSubmit={handleLogoSubmit}>
           <div style={{ display: "grid", gap: "16px", maxWidth: "600px" }}>
             <div>
               <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Logo & Design</h3>
@@ -1367,7 +1403,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
 
       {/* Bank Tab - Bankverbindung */}
       {activeTab === 'bank' && (
-        <form onSubmit={handleCompanySubmit}>
+        <form onSubmit={handleBankSubmit}>
           <div style={{ display: "grid", gap: "16px", gridTemplateColumns: "1fr 1fr" }}>
             <div style={{ gridColumn: "1 / -1" }}>
               <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Bankverbindung</h3>
