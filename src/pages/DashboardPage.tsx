@@ -1,5 +1,6 @@
-import React from 'react';
-import Header from '@components/Header';
+import { useEffect, useState } from "react";
+import Header from "@components/Header";
+import { usePersistence } from "../contexts/PersistenceContext";
 
 const DashboardPage: React.FC = () => {
   return (
