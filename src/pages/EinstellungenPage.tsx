@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
@@ -17,6 +17,7 @@ interface EinstellungenPageProps {
 
 export default function EinstellungenPage({ title = "Einstellungen" }: EinstellungenPageProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useSettings();
   const { currentTheme, currentNavigationMode, updateTheme, updateNavigationMode, loading: designLoading } = useDesignSettings();
   const { adapter } = usePersistence();
@@ -54,6 +55,16 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     setCompanyFormData(settings.companyData);
     setNumberingFormData(settings.numberingCircles);
   }, [settings]);
+
+  // ✅ Handle tab query parameter for direct navigation (e.g. from header version click)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['company', 'logo', 'tax', 'bank', 'numbering', 'activities', 'design', 'navigation', 'updates', 'maintenance'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+      console.log('🔗 Navigated to tab from URL parameter:', tabParam);
+    }
+  }, [location.search]);
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

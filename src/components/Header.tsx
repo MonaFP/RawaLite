@@ -1,4 +1,4 @@
-import { useLocation, NavLink } from "react-router-dom";
+import { useLocation, NavLink, useNavigate } from "react-router-dom";
 import { useVersion } from "../hooks/useVersion";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import HeaderWidgets from "./HeaderWidgets";
@@ -20,7 +20,8 @@ interface HeaderProps {
 
 export default function Header({ title: propTitle, right }: HeaderProps = {}){
   const { pathname } = useLocation();
-  const { displayVersion, updateAvailable, isUpdating, isCheckingUpdates, performUpdate, checkForUpdates } = useVersion();
+  const navigate = useNavigate();
+  const { displayVersion, updateAvailable, isUpdating, isCheckingUpdates, checkForUpdates } = useVersion();
   const { currentNavigationMode } = useDesignSettings();
   
   const title = propTitle ?? titles[pathname] ?? "RaWaLite";
@@ -28,32 +29,8 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}){
   const handleVersionClick = async () => {
     if (isUpdating || isCheckingUpdates) return; // Verhindere Mehrfach-Klicks
     
-    if (updateAvailable) {
-      // Update verfügbar - führe Update durch
-      if (confirm('Update verfügbar! Jetzt installieren?')) {
-        try {
-          await performUpdate();
-          alert('Update erfolgreich installiert!');
-        } catch (error) {
-          console.error('Update failed:', error);
-          alert('Update fehlgeschlagen: ' + (error instanceof Error ? error.message : String(error)));
-        }
-      }
-    } else {
-      // Kein Update verfügbar - prüfe nach Updates
-      try {
-        const result = await checkForUpdates();
-        // Kurz warten, damit der State aktualisiert wird
-        setTimeout(() => {
-          if (!updateAvailable) {
-            alert('Sie verwenden bereits die neueste Version.');
-          }
-        }, 100);
-      } catch (error) {
-        console.error('Update check failed:', error);
-        alert('Update-Prüfung fehlgeschlagen: ' + (error instanceof Error ? error.message : String(error)));
-      }
-    }
+    // ✅ KONSISTENT: Zu Einstellungen/Updates-Tab navigieren (nicht zu GitHub!)
+    navigate('/einstellungen?tab=updates');
   };
   
   // Icon basierend auf Status

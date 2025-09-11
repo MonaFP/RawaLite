@@ -296,40 +296,22 @@ export class UpdateService {
 
       // 2. Lade die neueste Release-Info von GitHub
       const latestVersion = await this.fetchLatestVersion();
-      this.log('info', `Starting update to version ${latestVersion}...`);
+      this.log('info', `Update-Information für Version ${latestVersion} geladen`);
 
-      // 3. Informiere User über manuellen Update-Prozess für portable App
-      const message = `Update auf RawaLite v${latestVersion} verfügbar!\n\nDa dies eine portable Anwendung ist:\n• Ihre Daten bleiben automatisch erhalten\n• Laden Sie die neue Version von GitHub herunter\n• Ersetzen Sie die alte .exe mit der neuen\n\nSoll die Download-Seite geöffnet werden?`;
-      
-      // 4. Für echte Electron-Apps: Hier würde electron-updater verwendet
-      // Für portable Apps: Leite zum manuellen Download weiter
-      if (typeof window !== 'undefined' && window.confirm) {
-        const openDownload = window.confirm(message);
-        if (openDownload) {
-          // Öffne GitHub Releases in externem Browser
-          const downloadUrl = `https://github.com/MonaFP/RawaLite/releases/tag/v${latestVersion}`;
-          
-          try {
-            // Verwende Electron Shell API
-            await (window as any).rawalite.shell.openExternal(downloadUrl);
-            this.log('info', `Opened external URL: ${downloadUrl}`);
-          } catch (electronError) {
-            this.log('warn', `Electron shell failed, using fallback: ${electronError}`);
-            // Fallback: window.open
-            window.open(downloadUrl, '_blank');
-          }
-        }
-      }
+      // 3. ✅ KONSISTENT: Leite zur In-App Updates-Seite weiter (NICHT zu GitHub!)
+      // Das Update-Management läuft vollständig in der App über die Updates-Seite
+      this.log('info', 'Update wird über die App-interne Updates-Seite verwaltet');
 
-      // 5. Markiere Update als "behandelt" aber nicht automatisch installiert
-      localStorage.setItem('rawalite.update.lastNotified', latestVersion);
+      // 4. Markiere Update als verfügbar (wird in der Updates-Seite angezeigt)
+      localStorage.setItem('rawalite.update.available', 'true');
+      localStorage.setItem('rawalite.update.latestVersion', latestVersion);
       localStorage.setItem('rawalite.update.lastCheck', new Date().toISOString());
       
-      this.log('info', 'Update notification completed - manual download initiated');
+      this.log('info', 'Update-Information für Updates-Seite vorbereitet');
 
     } catch (error) {
-      this.log('error', `Update process failed: ${error}`);
-      throw new Error(`Update fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`);
+      this.log('error', `Update-Information konnte nicht geladen werden: ${error}`);
+      throw new Error(`Update-Check fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
