@@ -219,8 +219,8 @@ export class UpdateService {
    */
 
   private getCurrentAppVersion(): string {
-    // In echter App: aus package.json oder Electron app.getVersion()
-    return '1.0.0';
+    // Korrekte Version aus package.json
+    return '1.5.0';
   }
 
   private async fetchLatestVersion(): Promise<string> {

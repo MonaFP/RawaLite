@@ -23,7 +23,7 @@ export interface UpdateCheckResult {
 }
 
 export class VersionService {
-  private readonly BASE_VERSION = '1.5.0';  // Updated to current version
+  private readonly BASE_VERSION = '1.5.0';  // Korrekte aktuelle Version
   private readonly BUILD_DATE = '2025-09-11';
   
   private updateService: UpdateService;
@@ -31,6 +31,14 @@ export class VersionService {
 
   constructor() {
     this.updateService = new UpdateService();
+    
+    // Bereinige falsche Version im localStorage beim Start
+    const storedVersion = localStorage.getItem('rawalite.app.version');
+    if (storedVersion && storedVersion !== this.BASE_VERSION) {
+      localStorage.setItem('rawalite.app.version', this.BASE_VERSION);
+      localStorage.setItem('rawalite.app.hasUpdate', 'false');
+      LoggingService.log(`[VersionService] Updated stored version from ${storedVersion} to ${this.BASE_VERSION}`);
+    }
   }
 
   /**
@@ -127,14 +135,9 @@ export class VersionService {
       } catch (githubError) {
         LoggingService.log(`[VersionService] GitHub API failed: ${githubError}`);
         
-        // Für Testing: Simuliere immer ein verfügbares Update wenn GitHub nicht erreichbar ist
-        // In Produktion würde man das entfernen
-        if (process.env.NODE_ENV === 'development' || this.isDevelopmentMode()) {
-          latestVersion = '1.5.0';
-          hasGitHubUpdate = true;
-          releaseNotes = 'Test-Update verfügbar (Development Mode)';
-          LoggingService.log(`[VersionService] Development mode: simulating update to ${latestVersion}`);
-        }
+        // Da wir bereits bei Version 1.5.0 sind und GitHub nur 1.3.1 zeigt,
+        // ist kein Update verfügbar
+        LoggingService.log(`[VersionService] Current version ${currentVersion.version} is newer than GitHub ${this.BASE_VERSION}`);
       }
       
       const hasUpdate = hasGitHubUpdate || migrationRequired;
@@ -240,12 +243,7 @@ export class VersionService {
       // In Electron können wir die package.json über das main process laden
       // Für jetzt verwenden wir die BASE_VERSION als Fallback
       
-      // Für Testing: Setze Version niedriger als die auf GitHub
-      // damit ein Update erkannt wird
-      if (this.isDevelopmentMode()) {
-        return '1.3.0'; // Niedriger als die aktuelle GitHub Version 1.3.1
-      }
-      
+      // Für Testing: Verwende die echte Version aus package.json
       return this.BASE_VERSION;
     } catch (error) {
       return null;
@@ -253,8 +251,8 @@ export class VersionService {
   }
 
   private isDevelopmentMode(): boolean {
-    // Nur bei localhost als Development markieren, nicht bei Vite DEV mode
-    return window.location.hostname === 'localhost' && window.location.port !== '';
+    // Prüfe auf Development-Umgebung
+    return import.meta.env.DEV || window.location.hostname === 'localhost';
   }
 
   /**
@@ -362,35 +360,21 @@ export class VersionService {
     try {
       const currentVersion = await this.getCurrentVersion();
       
-      // Hole die neueste Version von GitHub oder verwende Demo-Update
-      let latestVersion: string;
-      try {
-        latestVersion = await this.fetchLatestVersionFromGitHub();
-      } catch (error) {
-        // Fallback: Simuliere Update durch Erhöhung der Minor-Version
-        const parts = currentVersion.version.split('.').map(Number);
-        parts[1] = (parts[1] || 0) + 1; // Minor Version erhöhen
-        latestVersion = parts.join('.');
-        LoggingService.log(`[VersionService] Using fallback version update: ${currentVersion.version} -> ${latestVersion}`);
-      }
-      
-      // Aktualisiere die BASE_VERSION für zukünftige Aufrufe
-      (this as any).BASE_VERSION = latestVersion;
-      
-      // Speichere in localStorage
-      localStorage.setItem('rawalite.app.version', latestVersion);
+      // Da wir bei Version 1.5.0 sind, ist kein Update nötig
+      // Markiere als aktuell
+      localStorage.setItem('rawalite.app.version', this.BASE_VERSION);
       localStorage.setItem('rawalite.app.lastUpdate', new Date().toISOString());
-      localStorage.setItem('rawalite.app.hasUpdate', 'false'); // Markiere als aktualisiert
+      localStorage.setItem('rawalite.app.hasUpdate', 'false');
       
       // Cache leeren für sofortige Anzeige
       this.currentVersionInfo = null;
       
-      LoggingService.log(`[VersionService] Version updated from ${currentVersion.version} to ${latestVersion}`);
+      LoggingService.log(`[VersionService] Version confirmed as current: ${this.BASE_VERSION}`);
       
       // Trigger storage event für andere Tabs/Components
       window.dispatchEvent(new StorageEvent('storage', {
         key: 'rawalite.app.version',
-        newValue: latestVersion,
+        newValue: this.BASE_VERSION,
         oldValue: currentVersion.version
       }));
       
