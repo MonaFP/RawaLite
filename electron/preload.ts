@@ -10,4 +10,26 @@ contextBridge.exposeInMainWorld('rawalite', {
     restart: () => ipcRenderer.invoke('app:restart') as Promise<void>,
     getVersion: () => ipcRenderer.invoke('app:getVersion') as Promise<string>,
   },
+  shell: {
+    openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url) as Promise<void>,
+  },
 });
+
+// Erweitere das globale Window-Interface für TypeScript
+declare global {
+  interface Window {
+    rawalite: {
+      db: {
+        load: () => Promise<Uint8Array | null>;
+        save: (data: Uint8Array) => Promise<boolean>;
+      };
+      app: {
+        restart: () => Promise<void>;
+        getVersion: () => Promise<string>;
+      };
+      shell: {
+        openExternal: (url: string) => Promise<void>;
+      };
+    };
+  }
+}

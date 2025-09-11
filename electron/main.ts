@@ -49,6 +49,11 @@ ipcMain.handle('app:getVersion', async () => {
   return app.getVersion()
 })
 
+// IPC Handler für Shell-Operationen
+ipcMain.handle('shell:openExternal', async (_, url: string) => {
+  shell.openExternal(url)
+})
+
 // IPC Handler für Datenbank-Operationen
 ipcMain.handle('db:load', async (): Promise<Uint8Array | null> => {
   try {
