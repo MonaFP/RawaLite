@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createHashRouter, RouterProvider } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import PersistenceProvider from "./PersistenceProvider";
@@ -20,7 +20,7 @@ import TimesheetsPage from "./pages/TimesheetsPage";
 import EinstellungenPage from "./pages/EinstellungenPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
     element: <App />,

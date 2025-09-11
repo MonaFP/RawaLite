@@ -87,7 +87,7 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}){
           {/* RawaLite Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <img 
-              src="/rawalite-logo.png" 
+              src="./rawalite-logo.png" 
               alt="RawaLite" 
               style={{ 
                 height: "32px",

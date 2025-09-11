@@ -57,7 +57,7 @@ export default function Sidebar(){
           marginBottom: "16px"
         }}>
           <img 
-            src="/rawalite-logo.png" 
+            src="./rawalite-logo.png" 
             alt="RawaLite" 
             style={{ 
               width: "100%", 
