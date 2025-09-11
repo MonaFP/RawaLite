@@ -57,7 +57,7 @@ export default function Sidebar(){
           marginBottom: "16px"
         }}>
           <img 
-            src="./rawalite-logo.png" 
+            src="/rawalite-logo.png" 
             alt="RawaLite" 
             style={{ 
               width: "100%", 
@@ -65,7 +65,11 @@ export default function Sidebar(){
               height: "auto", 
               objectFit: "contain",
               filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" // Schöner Schatten für bessere Sichtbarkeit
-            }} 
+            }}
+            onError={(e) => {
+              console.error('RawaLite Logo konnte nicht geladen werden, versuche alternativen Pfad');
+              e.currentTarget.src = './rawalite-logo.png';
+            }}
           />
         </div>
       </div>

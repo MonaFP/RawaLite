@@ -24,9 +24,14 @@ const router = createHashRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <div>Routing Error - Lade Dashboard...</div>,
     children: [
       {
         index: true,
+        element: <DashboardPage />,
+      },
+      {
+        path: "dashboard",
         element: <DashboardPage />,
       },
       {
