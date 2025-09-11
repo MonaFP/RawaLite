@@ -12,14 +12,27 @@ export const MigrationInitializer: React.FC<MigrationInitializerProps> = ({ chil
   useEffect(() => {
     const initializeMigrations = async () => {
       try {
+        console.log('🔧 Starting migration initialization...');
         const migrationService = new MigrationService();
         await migrationService.initialize();
+        console.log('✅ Migration initialization completed successfully');
         setIsInitialized(true);
       } catch (error) {
-        console.error('Migration initialization failed:', error);
-        setError(error instanceof Error ? error.message : 'Migration initialization failed');
-        // Auch bei Fehlern die App starten lassen, aber den Fehler loggen
-        setIsInitialized(true);
+        console.error('❌ Migration initialization failed:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Migration initialization failed';
+        setError(errorMessage);
+        
+        // Für Development: App trotzdem starten lassen
+        if (import.meta.env.DEV) {
+          console.warn('🚧 Development mode: Starting app despite migration errors');
+          setIsInitialized(true);
+        } else {
+          // In Production: Fehler anzeigen aber nach 5 Sekunden trotzdem starten
+          setTimeout(() => {
+            console.warn('⚠️ Starting app after timeout despite migration errors');
+            setIsInitialized(true);
+          }, 5000);
+        }
       }
     };
 
