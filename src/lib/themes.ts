@@ -19,48 +19,48 @@ export interface ThemeDefinition {
 export const availableThemes: ThemeDefinition[] = [
   {
     id: 'green',
-    name: 'Grün (Standard)',
-    primary: '#1e3a2e',
-    secondary: '#0f2419',
-    accent: '#10b981',
-    gradient: 'linear-gradient(160deg, #1e3a2e 0%, #0f2419 40%, #0a1b0f 100%)',
-    description: 'Das klassische RawaLite-Design mit grünen Akzenten'
+    name: 'Salbeigrün (Standard)',
+    primary: '#4a5d5a',
+    secondary: '#3a4d4a',
+    accent: '#7dd3a0',
+    gradient: 'linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%)',
+    description: 'Beruhigendes Salbeigrün mit sanften Pastellakzenten'
   },
   {
     id: 'blue',
-    name: 'Blau (Business)',
-    primary: '#1e3a8a',
-    secondary: '#1e40af',
-    accent: '#3b82f6',
-    gradient: 'linear-gradient(160deg, #1e3a8a 0%, #1e40af 40%, #1d4ed8 100%)',
-    description: 'Professionelles Business-Design in klassischem Blau'
+    name: 'Himmelblau (Business)',
+    primary: '#4a5b6b',
+    secondary: '#3d4e5e',
+    accent: '#87ceeb',
+    gradient: 'linear-gradient(160deg, #4a5b6b 0%, #3d4e5e 40%, #324151 100%)',
+    description: 'Sanftes Himmelblau für professionelle Eleganz'
   },
   {
     id: 'purple',
-    name: 'Lila (Modern)',
-    primary: '#581c87',
-    secondary: '#6b21a8',
-    accent: '#8b5cf6',
-    gradient: 'linear-gradient(160deg, #581c87 0%, #6b21a8 40%, #7c3aed 100%)',
-    description: 'Modernes Design mit lila Farbakzenten'
+    name: 'Lavendel (Elegant)',
+    primary: '#5a4d6b',
+    secondary: '#4d405e',
+    accent: '#b19cd9',
+    gradient: 'linear-gradient(160deg, #5a4d6b 0%, #4d405e 40%, #403351 100%)',
+    description: 'Elegantes Lavendel mit warmen Untertönen'
   },
   {
     id: 'orange',
-    name: 'Orange (Kreativ)',
-    primary: '#9a3412',
-    secondary: '#c2410c',
-    accent: '#f97316',
-    gradient: 'linear-gradient(160deg, #9a3412 0%, #c2410c 40%, #ea580c 100%)',
-    description: 'Warmes, kreatives Design in Orange-Tönen'
+    name: 'Pfirsich (Warm)',
+    primary: '#6b5a4d',
+    secondary: '#5e4d40',
+    accent: '#f4a28c',
+    gradient: 'linear-gradient(160deg, #6b5a4d 0%, #5e4d40 40%, #514033 100%)',
+    description: 'Warme Pfirsichtöne für gemütliche Atmosphäre'
   },
   {
     id: 'red',
-    name: 'Rot (Dynamisch)',
-    primary: '#991b1b',
-    secondary: '#b91c1c',
-    accent: '#ef4444',
-    gradient: 'linear-gradient(160deg, #991b1b 0%, #b91c1c 40%, #dc2626 100%)',
-    description: 'Dynamisches Design mit kraftvollen Rot-Tönen'
+    name: 'Rosé (Soft)',
+    primary: '#6b4d5a',
+    secondary: '#5e4050',
+    accent: '#e6a8b8',
+    gradient: 'linear-gradient(160deg, #6b4d5a 0%, #5e4050 40%, #513343 100%)',
+    description: 'Sanfte Rosétöne für dezente Eleganz'
   }
 ];
 

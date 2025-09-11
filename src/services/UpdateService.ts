@@ -219,8 +219,8 @@ export class UpdateService {
    */
 
   private getCurrentAppVersion(): string {
-    // Neue Version mit Routing-Fixes
-    return '1.5.1';
+    // Neue Version mit Pastel-Themes und verbesserter Navigation
+    return '1.5.2';
   }
 
   private async fetchLatestVersion(): Promise<string> {

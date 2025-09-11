@@ -14,7 +14,8 @@ export default function App(){
   
   return (
     <div className="app" data-nav-mode={currentNavigationMode}>
-      {currentNavigationMode === 'sidebar' && <Sidebar />}
+      {/* Sidebar ist immer da, aber passt sich dem Navigation-Modus an */}
+      <Sidebar />
       <Header />
       <main className="main">
         <Outlet />

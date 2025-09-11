@@ -3,12 +3,14 @@ import { useSettings } from "../contexts/SettingsContext";
 import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
 import { useTimesheets } from "../hooks/useTimesheets";
+import { useDesignSettings } from "../hooks/useDesignSettings";
 
 export default function Sidebar(){
   const { settings, loading, error } = useSettings();
   const { offers } = useOffers();
   const { invoices } = useInvoices();
   const { timesheets } = useTimesheets();
+  const { currentNavigationMode } = useDesignSettings();
 
   // Statistiken berechnen
   const stats = {
@@ -47,7 +49,7 @@ export default function Sidebar(){
     { to: "/einstellungen", label: "Einstellungen" }
   ];
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${currentNavigationMode === 'header' ? 'sidebar-compact' : ''}`}>
       <div style={{ marginBottom: "20px" }}>
         {/* RawaLite App Logo - in voller Spaltenbreite */}
         <div style={{ 
@@ -74,15 +76,18 @@ export default function Sidebar(){
         </div>
       </div>
       
-      <ul className="nav">
-        {items.map(i => (
-          <li key={i.to}>
-            <NavLink to={i.to} end={i.to === "/"}>
-              {i.label}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
+      {/* Navigation nur im Sidebar-Modus anzeigen */}
+      {currentNavigationMode === 'sidebar' && (
+        <ul className="nav">
+          {items.map(i => (
+            <li key={i.to}>
+              <NavLink to={i.to} end={i.to === "/"}>
+                {i.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {/* Firmenbereich - immer anzeigen */}
       <div style={{ 

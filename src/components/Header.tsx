@@ -81,47 +81,30 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}){
   
   return (
     <header className="header">
-      {/* Logo und Navigation für Header-Modus */}
+      {/* Navigation für Header-Modus */}
       {currentNavigationMode === 'header' && (
-        <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-          {/* RawaLite Logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <img 
-              src="./rawalite-logo.png" 
-              alt="RawaLite" 
-              style={{ 
-                height: "32px",
-                width: "auto", 
-                objectFit: "contain",
-                filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.3))"
-              }} 
-            />
-          </div>
-          
-          {/* Horizontale Navigation */}
-          <nav style={{ display: "flex", gap: "6px" }}>
-            {navigationItems.map(item => (
-              <NavLink 
-                key={item.to}
-                to={item.to} 
-                end={item.to === "/"}
-                style={({ isActive }) => ({
-                  color: isActive ? "white" : "rgba(255,255,255,0.8)",
-                  textDecoration: "none",
-                  padding: "8px 12px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: isActive ? "600" : "500",
-                  background: isActive ? "rgba(255,255,255,0.1)" : "transparent",
-                  transition: "all 0.2s ease",
-                  border: isActive ? "1px solid rgba(255,255,255,0.2)" : "1px solid transparent"
-                })}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
+        <nav style={{ display: "flex", gap: "6px" }}>
+          {navigationItems.map(item => (
+            <NavLink 
+              key={item.to}
+              to={item.to} 
+              end={item.to === "/"}
+              style={({ isActive }) => ({
+                color: isActive ? "white" : "rgba(255,255,255,0.8)",
+                textDecoration: "none",
+                padding: "8px 12px",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: isActive ? "600" : "500",
+                background: isActive ? "rgba(255,255,255,0.1)" : "transparent",
+                transition: "all 0.2s ease",
+                border: isActive ? "1px solid rgba(255,255,255,0.2)" : "1px solid transparent"
+              })}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
       )}
       
       {/* Page Title für Sidebar-Modus */}
