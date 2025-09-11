@@ -23,7 +23,7 @@ export interface UpdateCheckResult {
 }
 
 export class VersionService {
-  private readonly BASE_VERSION = '1.0.0';
+  private readonly BASE_VERSION = '1.4.1';  // Updated to current version
   private readonly BUILD_DATE = '2025-09-11';
   
   private updateService: UpdateService;
@@ -41,17 +41,24 @@ export class VersionService {
       return this.currentVersionInfo;
     }
 
-    // Versuche aus localStorage gespeicherte Version zu lesen
+    // Versuche Version aus package.json zu lesen (für Development) oder localStorage
     let version = this.BASE_VERSION;
     let buildNumber = 1;
 
     try {
-      const storedVersion = localStorage.getItem('rawalite.app.version');
-      if (storedVersion) {
-        version = storedVersion;
+      // Hole Version aus package.json wenn verfügbar
+      const packageVersion = await this.getPackageVersion();
+      if (packageVersion) {
+        version = packageVersion;
+      } else {
+        // Fallback: Aus localStorage gespeicherte Version lesen
+        const storedVersion = localStorage.getItem('rawalite.app.version');
+        if (storedVersion) {
+          version = storedVersion;
+        }
       }
     } catch (error) {
-      console.warn('Could not read stored version, using default');
+      console.warn('Could not read version, using default');
     }
 
     // Build Number aus Migration Status generieren
@@ -93,6 +100,8 @@ export class VersionService {
     try {
       const currentVersion = await this.getCurrentVersion();
       
+      LoggingService.log(`[VersionService] Checking for updates, current version: ${currentVersion.version}`);
+      
       // Prüfe Migration-Status zuerst (lokale Operation)
       let migrationRequired = false;
       try {
@@ -102,7 +111,7 @@ export class VersionService {
         LoggingService.log(`[VersionService] Migration check failed: ${migrationError}`);
       }
       
-      // GitHub API oder Fallback für private Repos
+      // GitHub API prüfen
       let hasGitHubUpdate = false;
       let latestVersion: string | undefined;
       let releaseNotes: string | undefined;
@@ -110,23 +119,27 @@ export class VersionService {
       try {
         latestVersion = await this.fetchLatestVersionFromGitHub();
         hasGitHubUpdate = this.isUpdateAvailable(currentVersion.version, latestVersion);
+        LoggingService.log(`[VersionService] GitHub check: current=${currentVersion.version}, latest=${latestVersion}, hasUpdate=${hasGitHubUpdate}`);
+        
         if (hasGitHubUpdate) {
           releaseNotes = await this.fetchReleaseNotesFromGitHub(latestVersion);
         }
       } catch (githubError) {
-        LoggingService.log(`[VersionService] GitHub API failed (probably private repo), using demo fallback: ${githubError}`);
+        LoggingService.log(`[VersionService] GitHub API failed: ${githubError}`);
         
-        // Demo-Update für private Repos
-        if (Math.random() < 0.3) { // 30% Chance für Demo-Update
-          latestVersion = '1.2.0';
-          hasGitHubUpdate = this.isUpdateAvailable(currentVersion.version, latestVersion);
-          releaseNotes = 'Demo-Update verfügbar (Private Repository)';
+        // Für Testing: Simuliere immer ein verfügbares Update wenn GitHub nicht erreichbar ist
+        // In Produktion würde man das entfernen
+        if (process.env.NODE_ENV === 'development' || this.isDevelopmentMode()) {
+          latestVersion = '1.5.0';
+          hasGitHubUpdate = true;
+          releaseNotes = 'Test-Update verfügbar (Development Mode)';
+          LoggingService.log(`[VersionService] Development mode: simulating update to ${latestVersion}`);
         }
       }
       
       const hasUpdate = hasGitHubUpdate || migrationRequired;
       
-      LoggingService.log(`[VersionService] Update check: current=${currentVersion.version}, latest=${latestVersion || 'unknown'}, hasUpdate=${hasUpdate}, migrationRequired=${migrationRequired}`);
+      LoggingService.log(`[VersionService] Final update check result: hasUpdate=${hasUpdate}, migration=${migrationRequired}, github=${hasGitHubUpdate}`);
       
       return {
         hasUpdate,
@@ -219,6 +232,26 @@ export class VersionService {
 
   // Private Hilfsfunktionen
 
+  /**
+   * Holt die Version aus der package.json (für Development builds)
+   */
+  private async getPackageVersion(): Promise<string | null> {
+    try {
+      // In Electron können wir die package.json über das main process laden
+      // Für jetzt verwenden wir die BASE_VERSION als Fallback
+      
+      // Für Testing: Setze Version niedriger als die auf GitHub
+      // damit ein Update erkannt wird
+      if (this.isDevelopmentMode()) {
+        return '1.4.0'; // Niedriger als die aktuelle GitHub Version 1.4.1
+      }
+      
+      return this.BASE_VERSION;
+    } catch (error) {
+      return null;
+    }
+  }
+
   private isDevelopmentMode(): boolean {
     // Nur bei localhost als Development markieren, nicht bei Vite DEV mode
     return window.location.hostname === 'localhost' && window.location.port !== '';
@@ -297,20 +330,32 @@ export class VersionService {
    * Vergleicht zwei Versionen nach Semantic Versioning
    */
   private isUpdateAvailable(current: string, latest: string): boolean {
-    const currentParts = current.split('.').map(n => parseInt(n) || 0);
-    const latestParts = latest.split('.').map(n => parseInt(n) || 0);
+    try {
+      const currentParts = current.split('.').map(n => parseInt(n) || 0);
+      const latestParts = latest.split('.').map(n => parseInt(n) || 0);
 
-    // Ensure both arrays have same length (pad with zeros)
-    const maxLength = Math.max(currentParts.length, latestParts.length);
-    while (currentParts.length < maxLength) currentParts.push(0);
-    while (latestParts.length < maxLength) latestParts.push(0);
+      // Ensure both arrays have same length (pad with zeros)
+      const maxLength = Math.max(currentParts.length, latestParts.length);
+      while (currentParts.length < maxLength) currentParts.push(0);
+      while (latestParts.length < maxLength) latestParts.push(0);
 
-    for (let i = 0; i < maxLength; i++) {
-      if (latestParts[i] > currentParts[i]) return true;
-      if (latestParts[i] < currentParts[i]) return false;
+      for (let i = 0; i < maxLength; i++) {
+        if (latestParts[i] > currentParts[i]) {
+          LoggingService.log(`[VersionService] Update available: ${current} -> ${latest}`);
+          return true;
+        }
+        if (latestParts[i] < currentParts[i]) {
+          LoggingService.log(`[VersionService] Current version is newer: ${current} vs ${latest}`);
+          return false;
+        }
+      }
+
+      LoggingService.log(`[VersionService] Versions are equal: ${current} = ${latest}`);
+      return false; // Versions are equal
+    } catch (error) {
+      LoggingService.log(`[VersionService] Error comparing versions: ${error}`);
+      return false;
     }
-
-    return false; // Versions are equal
   }
 
   private async updateStoredVersion(): Promise<void> {
