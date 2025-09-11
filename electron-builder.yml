@@ -11,22 +11,28 @@ files:
   - "!src"
   - "!public"
   - "!electron"
-icon: assets/icon.png
+extraResources:
+  - from: "public/rawalite-logo.png"
+    to: "app/rawalite-logo.png"
+  - from: "assets/"
+    to: "app/assets/"
+icon: assets/icon.ico
 win:
   target:
     - target: nsis
       arch:
         - x64
+  icon: assets/icon.ico
 mac:
   target:
     - target: dmg
       arch:
         - x64
         - arm64
-  icon: assets/icon.png
+  icon: assets/icon.ico
 linux:
   target:
     - target: AppImage
       arch:
         - x64
-  icon: assets/icon.png
+  icon: assets/icon.ico

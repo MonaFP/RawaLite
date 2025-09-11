@@ -1,5 +1,6 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, NavLink } from "react-router-dom";
 import { useVersion } from "../hooks/useVersion";
+import { useDesignSettings } from "../hooks/useDesignSettings";
 
 const titles: Record<string,string> = {
   "/": "Dashboard",
@@ -19,6 +20,7 @@ interface HeaderProps {
 export default function Header({ title: propTitle, right }: HeaderProps = {}){
   const { pathname } = useLocation();
   const { displayVersion, updateAvailable, isUpdating, isCheckingUpdates, performUpdate, checkForUpdates } = useVersion();
+  const { currentNavigationMode } = useDesignSettings();
   
   const title = propTitle ?? titles[pathname] ?? "RaWaLite";
   
@@ -67,38 +69,100 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}){
     return '#3b82f6';
   };
   
+  const navigationItems = [
+    { to: "/", label: "Dashboard" },
+    { to: "/kunden", label: "Kunden" },
+    { to: "/pakete", label: "Pakete" },
+    { to: "/angebote", label: "Angebote" },
+    { to: "/rechnungen", label: "Rechnungen" },
+    { to: "/leistungsnachweise", label: "Leistungsnachweise" },
+    { to: "/einstellungen", label: "Einstellungen" }
+  ];
+  
   return (
     <header className="header">
-      <div className="title">{title}</div>
-      {right && <div className="header-right">{right}</div>}
-      <div 
-        style={{
-          opacity: (isUpdating || isCheckingUpdates) ? 0.6 : 1,
-          cursor: (isUpdating || isCheckingUpdates) ? 'wait' : 'pointer',
-          color: getStatusColor(),
-          fontWeight: updateAvailable ? '600' : '500',
-          transition: 'all 0.2s ease',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          padding: '4px 8px',
-          borderRadius: '4px',
-          backgroundColor: updateAvailable ? 'rgba(34, 197, 94, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-          border: `1px solid ${updateAvailable ? 'rgba(34, 197, 94, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
-          userSelect: 'none'
-        }}
-        onClick={handleVersionClick}
-        title={
-          isUpdating 
-            ? 'Update wird durchgeführt...' 
-            : isCheckingUpdates
-              ? 'Prüfe nach Updates...'
-            : updateAvailable 
-              ? 'Update verfügbar - Klicken zum Installieren' 
-              : 'Klicken um nach Updates zu suchen'
-        }
-      >
-        {getStatusIcon()} {displayVersion}
+      {/* Logo und Navigation für Header-Modus */}
+      {currentNavigationMode === 'header' && (
+        <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
+          {/* RawaLite Logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <img 
+              src="/rawalite-logo.png" 
+              alt="RawaLite" 
+              style={{ 
+                height: "32px",
+                width: "auto", 
+                objectFit: "contain",
+                filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.3))"
+              }} 
+            />
+          </div>
+          
+          {/* Horizontale Navigation */}
+          <nav style={{ display: "flex", gap: "6px" }}>
+            {navigationItems.map(item => (
+              <NavLink 
+                key={item.to}
+                to={item.to} 
+                end={item.to === "/"}
+                style={({ isActive }) => ({
+                  color: isActive ? "white" : "rgba(255,255,255,0.8)",
+                  textDecoration: "none",
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontWeight: isActive ? "600" : "500",
+                  background: isActive ? "rgba(255,255,255,0.1)" : "transparent",
+                  transition: "all 0.2s ease",
+                  border: isActive ? "1px solid rgba(255,255,255,0.2)" : "1px solid transparent"
+                })}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+      )}
+      
+      {/* Page Title für Sidebar-Modus */}
+      {currentNavigationMode === 'sidebar' && (
+        <div className="title">{title}</div>
+      )}
+      
+      {/* Right Content */}
+      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        {right && <div className="header-right">{right}</div>}
+        
+        {/* Version Badge */}
+        <div 
+          style={{
+            opacity: (isUpdating || isCheckingUpdates) ? 0.6 : 1,
+            cursor: (isUpdating || isCheckingUpdates) ? 'wait' : 'pointer',
+            color: getStatusColor(),
+            fontWeight: updateAvailable ? '600' : '500',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            backgroundColor: updateAvailable ? 'rgba(34, 197, 94, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+            border: `1px solid ${updateAvailable ? 'rgba(34, 197, 94, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+            userSelect: 'none'
+          }}
+          onClick={handleVersionClick}
+          title={
+            isUpdating 
+              ? 'Update wird durchgeführt...' 
+              : isCheckingUpdates
+                ? 'Prüfe nach Updates...'
+              : updateAvailable 
+                ? 'Update verfügbar - Klicken zum Installieren' 
+                : 'Klicken um nach Updates zu suchen'
+          }
+        >
+          {getStatusIcon()} {displayVersion}
+        </div>
       </div>
     </header>
   );

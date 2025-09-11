@@ -220,7 +220,8 @@ export class VersionService {
   // Private Hilfsfunktionen
 
   private isDevelopmentMode(): boolean {
-    return import.meta.env.DEV || window.location.hostname === 'localhost';
+    // Nur bei localhost als Development markieren, nicht bei Vite DEV mode
+    return window.location.hostname === 'localhost' && window.location.port !== '';
   }
 
   /**

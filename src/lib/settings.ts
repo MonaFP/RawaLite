@@ -15,6 +15,14 @@ export type CompanyData = {
   logo?: string; // Base64-encoded Logo
 };
 
+export type ThemeColor = 'green' | 'blue' | 'purple' | 'orange' | 'red';
+export type NavigationMode = 'sidebar' | 'header';
+
+export type DesignSettings = {
+  theme: ThemeColor;
+  navigationMode: NavigationMode;
+};
+
 export type NumberingCircle = {
   id: string;
   name: string;
@@ -28,6 +36,7 @@ export type NumberingCircle = {
 export type Settings = {
   companyData: CompanyData;
   numberingCircles: NumberingCircle[];
+  designSettings: DesignSettings;
 };
 
 export const defaultSettings: Settings = {
@@ -46,6 +55,10 @@ export const defaultSettings: Settings = {
     bankAccount: '',
     bankBic: '',
     logo: ''
+  },
+  designSettings: {
+    theme: 'green',
+    navigationMode: 'sidebar'
   },
   numberingCircles: [
     {

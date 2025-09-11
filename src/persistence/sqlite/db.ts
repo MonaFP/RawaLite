@@ -40,6 +40,7 @@ function createSchemaIfNeeded() {
       kleinunternehmer INTEGER DEFAULT 1,
       bankName TEXT, bankAccount TEXT, bankBic TEXT,
       logo TEXT,
+      designSettings TEXT,
       nextCustomerNumber INTEGER DEFAULT 1,
       nextOfferNumber INTEGER DEFAULT 1,
       nextInvoiceNumber INTEGER DEFAULT 1,
@@ -56,14 +57,21 @@ function createSchemaIfNeeded() {
   try {
     const settingsInfo = db.exec(`PRAGMA table_info(settings)`);
     let hasTimesheetNumberColumn = false;
+    let hasDesignSettingsColumn = false;
     
     if (settingsInfo.length > 0 && settingsInfo[0].values) {
       hasTimesheetNumberColumn = settingsInfo[0].values.some((row: any[]) => row[1] === 'nextTimesheetNumber');
+      hasDesignSettingsColumn = settingsInfo[0].values.some((row: any[]) => row[1] === 'designSettings');
     }
     
     if (!hasTimesheetNumberColumn) {
       db.exec(`ALTER TABLE settings ADD COLUMN nextTimesheetNumber INTEGER DEFAULT 1;`);
       console.log('Added nextTimesheetNumber column to settings table');
+    }
+    
+    if (!hasDesignSettingsColumn) {
+      db.exec(`ALTER TABLE settings ADD COLUMN designSettings TEXT;`);
+      console.log('Added designSettings column to settings table');
     }
   } catch (error) {
     console.warn('Settings table migration error:', error);

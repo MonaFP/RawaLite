@@ -4,10 +4,12 @@ import { useSettings } from "../contexts/SettingsContext";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
+import { useDesignSettings } from "../hooks/useDesignSettings";
 import { MigrationManager } from "../components/MigrationManager";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
 import type { Activity } from "../persistence/adapter";
 import { defaultSettings } from "../lib/settings";
+import { availableThemes, type ThemeColor, type NavigationMode } from "../lib/themes";
 
 interface EinstellungenPageProps {
   title?: string;
@@ -16,10 +18,11 @@ interface EinstellungenPageProps {
 export default function EinstellungenPage({ title = "Einstellungen" }: EinstellungenPageProps) {
   const navigate = useNavigate();
   const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useSettings();
+  const { currentTheme, currentNavigationMode, updateTheme, updateNavigationMode, loading: designLoading } = useDesignSettings();
   const { adapter } = usePersistence();
   const { showError, showSuccess } = useNotifications();
   const { activities, createActivity, updateActivity, deleteActivity } = useActivities();
-  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'activities' | 'updates' | 'maintenance'>('company');
+  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'activities' | 'design' | 'navigation' | 'updates' | 'maintenance'>('company');
   const [companyFormData, setCompanyFormData] = useState<CompanyData>(settings.companyData);
   const [numberingFormData, setNumberingFormData] = useState<NumberingCircle[]>(settings.numberingCircles);
   const [saving, setSaving] = useState(false);
@@ -1074,6 +1077,38 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
           Tätigkeiten
         </button>
         <button
+          onClick={() => setActiveTab('design')}
+          style={{
+            backgroundColor: activeTab === 'design' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
+            color: activeTab === 'design' ? "white" : "#374151",
+            border: activeTab === 'design' ? "1px solid #1e3a2e" : "1px solid rgba(0,0,0,.2)",
+            padding: "8px 16px",
+            borderRadius: "8px 8px 0 0",
+            cursor: "pointer",
+            borderBottom: activeTab === 'design' ? "2px solid #1e3a2e" : "2px solid transparent",
+            transition: "all 0.2s ease",
+            fontWeight: activeTab === 'design' ? "600" : "500"
+          }}
+        >
+          🎨 Farbthemen
+        </button>
+        <button
+          onClick={() => setActiveTab('navigation')}
+          style={{
+            backgroundColor: activeTab === 'navigation' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
+            color: activeTab === 'navigation' ? "white" : "#374151",
+            border: activeTab === 'navigation' ? "1px solid #1e3a2e" : "1px solid rgba(0,0,0,.2)",
+            padding: "8px 16px",
+            borderRadius: "8px 8px 0 0",
+            cursor: "pointer",
+            borderBottom: activeTab === 'navigation' ? "2px solid #1e3a2e" : "2px solid transparent",
+            transition: "all 0.2s ease",
+            fontWeight: activeTab === 'navigation' ? "600" : "500"
+          }}
+        >
+          🧭 Navigation
+        </button>
+        <button
           onClick={() => setActiveTab('updates')}
           style={{
             backgroundColor: activeTab === 'updates' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
@@ -2023,6 +2058,317 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                 </table>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Design Tab - Farbthemen */}
+      {activeTab === 'design' && (
+        <div>
+          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>🎨 Farbthemen</h3>
+          <p style={{ margin: "0 0 24px 0", color: "#6b7280", fontSize: "14px" }}>
+            Wählen Sie ein Farbthema für die Anwendung. Das Theme wird sofort angewendet und automatisch gespeichert.
+          </p>
+
+          <div style={{ display: "grid", gap: "16px", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+            {availableThemes.map((theme) => (
+              <div 
+                key={theme.id}
+                onClick={async () => {
+                  if (designLoading) return;
+                  try {
+                    await updateTheme(theme.id);
+                    showSuccess(`Farbthema "${theme.name}" wurde angewendet!`);
+                  } catch (error) {
+                    showError(`Fehler beim Anwenden des Themes: ${error}`);
+                  }
+                }}
+                style={{
+                  border: currentTheme === theme.id ? "3px solid var(--theme-accent)" : "2px solid rgba(255,255,255,.1)",
+                  borderRadius: "12px",
+                  padding: "16px",
+                  cursor: designLoading ? "not-allowed" : "pointer",
+                  background: `linear-gradient(135deg, ${theme.primary}15 0%, ${theme.secondary}10 100%)`,
+                  transition: "all 0.2s ease",
+                  position: "relative",
+                  opacity: designLoading ? 0.6 : 1,
+                  transform: currentTheme === theme.id ? "scale(1.02)" : "scale(1)",
+                  boxShadow: currentTheme === theme.id 
+                    ? `0 8px 25px ${theme.primary}30, 0 4px 10px rgba(0,0,0,0.1)` 
+                    : "0 2px 8px rgba(0,0,0,0.1)"
+                }}
+              >
+                {/* Theme Preview Header */}
+                <div style={{ 
+                  background: theme.gradient,
+                  borderRadius: "8px",
+                  padding: "12px",
+                  marginBottom: "12px",
+                  position: "relative",
+                  overflow: "hidden"
+                }}>
+                  <div style={{
+                    color: "white",
+                    fontWeight: "600",
+                    fontSize: "16px",
+                    textShadow: "0 1px 2px rgba(0,0,0,0.2)"
+                  }}>
+                    {theme.name}
+                  </div>
+                  <div style={{
+                    color: "rgba(255,255,255,0.9)",
+                    fontSize: "12px",
+                    marginTop: "4px"
+                  }}>
+                    {theme.description}
+                  </div>
+                  
+                  {/* Current Theme Badge */}
+                  {currentTheme === theme.id && (
+                    <div style={{
+                      position: "absolute",
+                      top: "8px",
+                      right: "8px",
+                      background: "rgba(255,255,255,0.2)",
+                      color: "white",
+                      padding: "4px 8px",
+                      borderRadius: "12px",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      backdropFilter: "blur(10px)"
+                    }}>
+                      ✓ Aktiv
+                    </div>
+                  )}
+                </div>
+
+                {/* Color Palette Preview */}
+                <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                  <div style={{
+                    width: "40px",
+                    height: "20px",
+                    background: theme.primary,
+                    borderRadius: "4px",
+                    border: "1px solid rgba(255,255,255,0.2)"
+                  }}></div>
+                  <div style={{
+                    width: "40px",
+                    height: "20px",
+                    background: theme.secondary,
+                    borderRadius: "4px",
+                    border: "1px solid rgba(255,255,255,0.2)"
+                  }}></div>
+                  <div style={{
+                    width: "40px",
+                    height: "20px",
+                    background: theme.accent,
+                    borderRadius: "4px",
+                    border: "1px solid rgba(255,255,255,0.2)"
+                  }}></div>
+                </div>
+
+                {/* Theme Info */}
+                <div style={{
+                  fontSize: "12px",
+                  color: "#6b7280",
+                  lineHeight: "1.4"
+                }}>
+                  <div><strong>Primary:</strong> {theme.primary}</div>
+                  <div><strong>Accent:</strong> {theme.accent}</div>
+                </div>
+
+                {/* Hover Overlay */}
+                <div style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: currentTheme === theme.id 
+                    ? "transparent"
+                    : "rgba(255,255,255,0)",
+                  borderRadius: "12px",
+                  transition: "background 0.2s ease",
+                  pointerEvents: "none"
+                }}></div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ 
+            marginTop: "32px", 
+            padding: "16px", 
+            background: "rgba(59, 130, 246, 0.1)", 
+            border: "1px solid rgba(59, 130, 246, 0.2)",
+            borderRadius: "8px" 
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+              <span style={{ fontSize: "18px" }}>💡</span>
+              <strong style={{ color: "#1e40af" }}>Tipp:</strong>
+            </div>
+            <p style={{ margin: "0", color: "#1e40af", fontSize: "14px", lineHeight: "1.5" }}>
+              Das gewählte Farbthema wird auf die gesamte Anwendung angewendet, einschließlich der Sidebar, 
+              Buttons und Akzentfarben. Die Änderung ist sofort sichtbar und wird automatisch gespeichert.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Navigation Tab - Navigation-Modus */}
+      {activeTab === 'navigation' && (
+        <div>
+          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>🧭 Navigation & Layout</h3>
+          <p style={{ margin: "0 0 24px 0", color: "#6b7280", fontSize: "14px" }}>
+            Wählen Sie, wo die Hauptnavigation angezeigt werden soll. Die Änderung wird sofort angewendet.
+          </p>
+
+          <div style={{ display: "grid", gap: "20px", gridTemplateColumns: "1fr 1fr", maxWidth: "800px" }}>
+            {/* Sidebar Navigation Option */}
+            <div 
+              onClick={async () => {
+                if (designLoading) return;
+                try {
+                  await updateNavigationMode('sidebar');
+                  showSuccess('Navigation in der Sidebar aktiviert!');
+                } catch (error) {
+                  showError(`Fehler beim Umschalten der Navigation: ${error}`);
+                }
+              }}
+              style={{
+                border: currentNavigationMode === 'sidebar' ? "3px solid var(--theme-accent)" : "2px solid rgba(255,255,255,.2)",
+                borderRadius: "12px",
+                padding: "20px",
+                cursor: designLoading ? "not-allowed" : "pointer",
+                background: currentNavigationMode === 'sidebar' 
+                  ? "rgba(255,255,255,0.05)" 
+                  : "rgba(255,255,255,0.02)",
+                transition: "all 0.2s ease",
+                position: "relative",
+                opacity: designLoading ? 0.6 : 1,
+                transform: currentNavigationMode === 'sidebar' ? "scale(1.02)" : "scale(1)"
+              }}
+            >
+              <div style={{ textAlign: "center", marginBottom: "16px" }}>
+                <div style={{ 
+                  fontSize: "48px", 
+                  marginBottom: "8px",
+                  filter: currentNavigationMode === 'sidebar' ? "none" : "grayscale(0.5)"
+                }}>
+                  📋
+                </div>
+                <h4 style={{ margin: "0", color: "var(--accent)", fontSize: "18px" }}>
+                  Sidebar-Navigation
+                </h4>
+                {currentNavigationMode === 'sidebar' && (
+                  <div style={{
+                    display: "inline-block",
+                    background: "var(--theme-accent)",
+                    color: "white",
+                    padding: "4px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    marginTop: "8px"
+                  }}>
+                    ✓ Aktiv
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ color: "#374151", fontSize: "14px", lineHeight: "1.5", textAlign: "center" }}>
+                <p style={{ margin: "0 0 12px 0" }}>
+                  <strong>Klassische Ansicht</strong> mit fixierter Seitenleiste links
+                </p>
+                <ul style={{ margin: "0", padding: "0", listStyle: "none", color: "#6b7280" }}>
+                  <li>✓ Menü immer sichtbar</li>
+                  <li>✓ Mini-Dashboard in Sidebar</li>
+                  <li>✓ Firmenlogo prominent</li>
+                  <li>✓ Mehr vertikaler Platz für Inhalte</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Header Navigation Option */}
+            <div 
+              onClick={async () => {
+                if (designLoading) return;
+                try {
+                  await updateNavigationMode('header');
+                  showSuccess('Navigation im Header aktiviert!');
+                } catch (error) {
+                  showError(`Fehler beim Umschalten der Navigation: ${error}`);
+                }
+              }}
+              style={{
+                border: currentNavigationMode === 'header' ? "3px solid var(--theme-accent)" : "2px solid rgba(255,255,255,.2)",
+                borderRadius: "12px",
+                padding: "20px",
+                cursor: designLoading ? "not-allowed" : "pointer",
+                background: currentNavigationMode === 'header' 
+                  ? "rgba(255,255,255,0.05)" 
+                  : "rgba(255,255,255,0.02)",
+                transition: "all 0.2s ease",
+                position: "relative",
+                opacity: designLoading ? 0.6 : 1,
+                transform: currentNavigationMode === 'header' ? "scale(1.02)" : "scale(1)"
+              }}
+            >
+              <div style={{ textAlign: "center", marginBottom: "16px" }}>
+                <div style={{ 
+                  fontSize: "48px", 
+                  marginBottom: "8px",
+                  filter: currentNavigationMode === 'header' ? "none" : "grayscale(0.5)"
+                }}>
+                  📱
+                </div>
+                <h4 style={{ margin: "0", color: "var(--accent)", fontSize: "18px" }}>
+                  Header-Navigation
+                </h4>
+                {currentNavigationMode === 'header' && (
+                  <div style={{
+                    display: "inline-block",
+                    background: "var(--theme-accent)",
+                    color: "white",
+                    padding: "4px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    marginTop: "8px"
+                  }}>
+                    ✓ Aktiv
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ color: "#374151", fontSize: "14px", lineHeight: "1.5", textAlign: "center" }}>
+                <p style={{ margin: "0 0 12px 0" }}>
+                  <strong>Moderne Ansicht</strong> mit Navigation im oberen Bereich
+                </p>
+                <ul style={{ margin: "0", padding: "0", listStyle: "none", color: "#6b7280" }}>
+                  <li>✓ Mehr horizontaler Platz</li>
+                  <li>✓ Mobile-freundliches Layout</li>
+                  <li>✓ Kompakte Menüführung</li>
+                  <li>✓ Fokus auf Hauptinhalt</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ 
+            marginTop: "32px", 
+            padding: "16px", 
+            background: "rgba(245, 158, 11, 0.1)", 
+            border: "1px solid rgba(245, 158, 11, 0.2)",
+            borderRadius: "8px" 
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+              <span style={{ fontSize: "18px" }}>⚡</span>
+              <strong style={{ color: "#d97706" }}>Hinweis:</strong>
+            </div>
+            <p style={{ margin: "0", color: "#d97706", fontSize: "14px", lineHeight: "1.5" }}>
+              Die Navigation kann jederzeit umgestellt werden. Bei Header-Navigation wird die Sidebar 
+              vollständig ausgeblendet, um mehr Platz für den Hauptinhalt zu schaffen.
+            </p>
           </div>
         </div>
       )}

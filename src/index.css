@@ -10,12 +10,83 @@
   --warn:#f59e0b;      /* amber-500 */
   --danger:#ef4444;    /* red-500 */
   
+  /* Theme-specific colors - default to green */
+  --theme-primary: #1e3a2e;
+  --theme-secondary: #0f2419;
+  --theme-accent: #10b981;
+  --theme-gradient: linear-gradient(160deg, #1e3a2e 0%, #0f2419 40%, #0a1b0f 100%);
+  
   /* Neue Farben für professionelles Design */
-  --sidebar-bg: linear-gradient(160deg, #1e3a2e 0%, #0f2419 40%, #0a1b0f 100%);
-  --sidebar-green: #1e3a2e; /* Hauptfarbe aus dem Sidebar-Gradient für Buttons */
-  --sidebar-green-hover: #0f2419; /* Dunklere Variante für Hover-Effekte */
+  --sidebar-bg: var(--theme-gradient);
+  --sidebar-green: var(--theme-primary); /* Hauptfarbe aus dem Sidebar-Gradient für Buttons */
+  --sidebar-green-hover: var(--theme-secondary); /* Dunklere Variante für Hover-Effekte */
   --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
   --main-bg-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+}
+
+/* Theme Color Variations */
+:root[data-theme="green"] {
+  --theme-primary: #1e3a2e;
+  --theme-secondary: #0f2419;
+  --theme-accent: #10b981;
+  --theme-gradient: linear-gradient(160deg, #1e3a2e 0%, #0f2419 40%, #0a1b0f 100%);
+}
+
+:root[data-theme="blue"] {
+  --theme-primary: #1e3a8a;
+  --theme-secondary: #1e40af;
+  --theme-accent: #3b82f6;
+  --theme-gradient: linear-gradient(160deg, #1e3a8a 0%, #1e40af 40%, #1d4ed8 100%);
+}
+
+:root[data-theme="purple"] {
+  --theme-primary: #581c87;
+  --theme-secondary: #6b21a8;
+  --theme-accent: #8b5cf6;
+  --theme-gradient: linear-gradient(160deg, #581c87 0%, #6b21a8 40%, #7c3aed 100%);
+}
+
+:root[data-theme="orange"] {
+  --theme-primary: #9a3412;
+  --theme-secondary: #c2410c;
+  --theme-accent: #f97316;
+  --theme-gradient: linear-gradient(160deg, #9a3412 0%, #c2410c 40%, #ea580c 100%);
+}
+
+:root[data-theme="red"] {
+  --theme-primary: #991b1b;
+  --theme-secondary: #b91c1c;
+  --theme-accent: #ef4444;
+  --theme-gradient: linear-gradient(160deg, #991b1b 0%, #b91c1c 40%, #dc2626 100%);
+}
+
+/* Navigation Mode Layouts */
+:root[data-nav-mode="sidebar"] .app {
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 56px 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+}
+
+:root[data-nav-mode="header"] .app {
+  grid-template-columns: 1fr;
+  grid-template-rows: 56px 1fr;
+  grid-template-areas:
+    "header"
+    "main";
+}
+
+:root[data-nav-mode="header"] .sidebar {
+  display: none;
+}
+
+:root[data-nav-mode="header"] .header {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
 }
 
 *{box-sizing:border-box}

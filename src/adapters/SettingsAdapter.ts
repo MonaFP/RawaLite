@@ -1,5 +1,5 @@
 import { getDB, all, run, withTx } from '../persistence/sqlite/db';
-import type { Settings, CompanyData, NumberingCircle } from '../lib/settings';
+import type { Settings, CompanyData, NumberingCircle, DesignSettings } from '../lib/settings';
 import { defaultSettings } from '../lib/settings';
 
 export class SettingsAdapter {
@@ -23,8 +23,23 @@ export class SettingsAdapter {
     };
   }
 
+  // Extract design settings from company data
+  private extractDesignSettings(row: any): DesignSettings {
+    try {
+      // Check if design settings are stored in a custom field
+      if (row.designSettings && typeof row.designSettings === 'string') {
+        return JSON.parse(row.designSettings);
+      }
+    } catch (error) {
+      console.warn('Error parsing design settings from database:', error);
+    }
+    
+    // Fallback to defaults
+    return defaultSettings.designSettings;
+  }
+
   // Convert CompanyData to SQLite format
-  private mapCompanyDataToSQLite(data: CompanyData) {
+  private mapCompanyDataToSQLite(data: CompanyData & { designSettings?: string }) {
     return {
       companyName: data.name,
       street: data.street,
@@ -39,7 +54,8 @@ export class SettingsAdapter {
       bankName: data.bankName,
       bankAccount: data.bankAccount,
       bankBic: data.bankBic,
-      logo: data.logo
+      logo: data.logo,
+      designSettings: data.designSettings // Store design settings as JSON string
     };
   }
 
@@ -51,10 +67,14 @@ export class SettingsAdapter {
     const settingsRow = settingsRows[0];
     
     let companyData: CompanyData;
+    let designSettings: DesignSettings;
+    
     if (settingsRow) {
       companyData = this.mapSQLiteToCompanyData(settingsRow);
+      designSettings = this.extractDesignSettings(settingsRow);
     } else {
       companyData = defaultSettings.companyData;
+      designSettings = defaultSettings.designSettings;
     }
 
     // Get numbering circles from localStorage (for now, until we migrate to SQLite)
@@ -82,23 +102,24 @@ export class SettingsAdapter {
 
     return {
       companyData,
-      numberingCircles
+      numberingCircles,
+      designSettings
     };
   }
 
-  async updateCompanyData(companyData: CompanyData): Promise<void> {
+  async updateCompanyData(companyData: CompanyData & { designSettings?: string }): Promise<void> {
     await withTx(async () => {
       const sqliteData = this.mapCompanyDataToSQLite(companyData);
       const timestamp = new Date().toISOString();
 
-      // Update or insert company data
+      // Update or insert company data (including design settings)
       run(`
         INSERT OR REPLACE INTO settings (
           id, companyName, street, zip, city, phone, email, website, 
           taxId, vatId, kleinunternehmer, bankName, bankAccount, bankBic, 
-          logo, updatedAt
+          logo, designSettings, updatedAt
         ) VALUES (
-          1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+          1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
       `, [
         sqliteData.companyName,
@@ -115,6 +136,7 @@ export class SettingsAdapter {
         sqliteData.bankAccount,
         sqliteData.bankBic,
         sqliteData.logo,
+        sqliteData.designSettings,
         timestamp
       ]);
     });
