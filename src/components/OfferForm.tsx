@@ -368,7 +368,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                     />
                   </div>
                   <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
-                    €{item.total.toFixed(2)}
+                    {item.total.toFixed(2)} €
                   </div>
                   <div style={{display:"flex", gap:"4px"}}>
                     <button
@@ -432,7 +432,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                         />
                       </div>
                       <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
-                        €{subItem.total.toFixed(2)}
+                        {subItem.total.toFixed(2)} €
                       </div>
                       <div>
                         <button
@@ -456,7 +456,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
             <div style={{width:"300px", display:"flex", flexDirection:"column", gap:"8px"}}>
               <div style={{display:"flex", justifyContent:"space-between"}}>
                 <span>Zwischensumme:</span>
-                <span>€{subtotal.toFixed(2)}</span>
+                <span>{subtotal.toFixed(2)} €</span>
               </div>
               {!isKleinunternehmer && (
                 <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
@@ -473,12 +473,12 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                     />
                     <span>%</span>
                   </div>
-                  <span>€{vatAmount.toFixed(2)}</span>
+                  <span>{vatAmount.toFixed(2)} €</span>
                 </div>
               )}
               <div style={{display:"flex", justifyContent:"space-between", fontWeight:"600", fontSize:"16px", borderTop:"1px solid rgba(255,255,255,.1)", paddingTop:"8px"}}>
                 <span>Gesamtbetrag:</span>
-                <span>€{total.toFixed(2)}</span>
+                <span>{total.toFixed(2)} €</span>
               </div>
             </div>
           </div>

@@ -60,6 +60,7 @@ src/hooks/
 ├── usePackages.ts             # 📦 Paket-Management mit Hierarchien
 ├── useOffers.ts               # 📋 Angebotsverwaltung + Kalkulationen
 ├── useInvoices.ts             # 🧾 Rechnungsverwaltung + Status-Tracking
+├── useTimesheets.ts           # ⏰ Leistungsnachweise + Stundenabrechnung
 └── useSettings.ts             # ⚙️ Legacy Settings Hook
 ```
 
@@ -67,14 +68,15 @@ src/hooks/
 ```
 src/components/
 ├── Layout/
-│   ├── Sidebar.tsx            # Navigation + Firmenlogo
+│   ├── Sidebar.tsx            # Navigation + Firmenlogo + Mini-Dashboard
 │   ├── Header.tsx             # Page Title + Actions
 │   └── Table.tsx              # Generische Datentabelle
 └── Forms/
     ├── CustomerForm.tsx       # Kundenformular
     ├── PackageForm.tsx        # Paketformular mit Sub-Items
     ├── OfferForm.tsx          # Angebotsformular + Line Items
-    └── InvoiceForm.tsx        # Rechnungsformular + Angebot-Import
+    ├── InvoiceForm.tsx        # Rechnungsformular + Angebot-Import
+    └── TimesheetForm.tsx      # Leistungsnachweis-Formular mit Zeiterfassung
 ```
 
 ### Context Providers
@@ -94,6 +96,7 @@ src/pages/
 ├── AngebotePage.tsx           # 📋 Angebotsliste
 ├── AngebotDetailPage.tsx      # 📋 Einzelangebot-Ansicht
 ├── RechnungenPage.tsx         # 🧾 Rechnungsübersicht
+├── TimesheetsPage.tsx         # ⏰ Leistungsnachweise-Verwaltung
 ├── EinstellungenPage.tsx      # ⚙️ Vollständige Konfiguration
 ├── UpdatesPage.tsx            # 🔄 Changelog & Updates
 └── NotFoundPage.tsx           # 404 Error Page
@@ -189,6 +192,32 @@ interface Invoice {
   paidAt?: string;
   overdueAt?: string;
   cancelledAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+#### ⏰ **Timesheet** (Leistungsnachweis)
+```typescript
+interface Timesheet {
+  id: number;
+  timesheetNumber: string;      // Auto-generiert (LN-2025-0001)
+  customerId: number;
+  title: string;
+  status: 'draft' | 'sent' | 'approved' | 'rejected';
+  startDate: string;            // Zeitraum Start
+  endDate: string;              // Zeitraum Ende
+  hourlyRate: number;           // Stundensatz
+  totalHours: number;           // Gesamtstunden
+  subtotal: number;             // hourlyRate * totalHours
+  vatRate: number;
+  vatAmount: number;
+  total: number;
+  notes?: string;
+  // Status-Tracking
+  sentAt?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -309,17 +338,46 @@ CREATE TABLE invoice_line_items (
   total REAL NOT NULL DEFAULT 0,
   parentItemId INTEGER REFERENCES invoice_line_items(id) ON DELETE CASCADE
 );
+
+-- Leistungsnachweise
+CREATE TABLE timesheets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timesheetNumber TEXT NOT NULL UNIQUE,
+  customerId INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft',
+  startDate TEXT NOT NULL,
+  endDate TEXT NOT NULL,
+  hourlyRate REAL NOT NULL DEFAULT 0,
+  totalHours REAL NOT NULL DEFAULT 0,
+  subtotal REAL NOT NULL DEFAULT 0,
+  vatRate REAL NOT NULL DEFAULT 19,
+  vatAmount REAL NOT NULL DEFAULT 0,
+  total REAL NOT NULL DEFAULT 0,
+  notes TEXT,
+  sentAt TEXT, approvedAt TEXT, rejectedAt TEXT,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
+);
 ```
 
 ---
 
-## ⚙️ **Besondere Features**
+### ⚙️ **Besondere Features**
 
 ### 🔢 **Automatische Nummerierung**
 - Konfigurierbare Nummernkreise für alle Entitäten
-- Jährliche Reset-Optionen (z.B. AN-2025-0001)
+- **Neue Unterstützung für Leistungsnachweise:** LN-2025-0001
+- Jährliche Reset-Optionen (z.B. AN-2025-0001, LN-2025-0001)
 - Fallback zu Timestamp-basierter Nummerierung
 - Präfix + Stellenanzahl vollständig anpassbar
+
+### ⏰ **Leistungsnachweise & Zeiterfassung**
+- **Stundenbasierte Abrechnung:** Stundensatz × Gesamtstunden
+- **Zeitraum-Verwaltung:** Start- und Enddatum für Abrechnungsperioden
+- **Status-Workflow:** Entwurf → Versendet → Genehmigt/Abgelehnt
+- **Automatische Kalkulationen:** Netto, MwSt., Brutto
+- **Kunden-Integration:** Vollständige Verknüpfung mit Kundendatenbank
 
 ### 🌳 **Hierarchische Strukturen**
 - **Pakete:** Sub-Pakete mit eigenen Line Items
@@ -429,13 +487,15 @@ RawaLite/
 
 ### ✅ **Implementiert**
 - ✅ Vollständige CRUD-Operationen für alle Entitäten
-- ✅ Automatische Nummerierung mit konfigurierbaren Kreisen
+- ✅ **Leistungsnachweise-Modul:** Stundenbasierte Abrechnung komplett implementiert
+- ✅ Automatische Nummerierung mit konfigurierbaren Kreisen (inkl. LN-Nummern)
 - ✅ Hierarchische Pakete und Line Items
 - ✅ Angebot-zu-Rechnung Workflow
 - ✅ SQLite-basierte Persistierung
 - ✅ TypeScript-First Architektur
 - ✅ Dark Theme Design
 - ✅ Electron Desktop App
+- ✅ **Erweiterte Sidebar:** Mini-Dashboard mit Leistungsnachweise-Übersicht
 
 ### 🚧 **In Entwicklung**
 - 🚧 PDF-Export für Angebote/Rechnungen
@@ -449,6 +509,19 @@ RawaLite/
 - 🎯 Erweiterte Berechtigungen
 
 ### 🔧 **Letzte Fixes & Updates**
+- ✅ **Leistungsnachweise-Modul komplett implementiert** (10.09.2025)
+  - ✅ Vollständiges Timesheet-Datenmodell mit Stundenabrechnung
+  - ✅ Automatische Nummerierung (LN-2025-0001) mit jährlichem Reset
+  - ✅ Zeitraum-basierte Verwaltung (Start-/Enddatum)
+  - ✅ Status-Workflow: Entwurf → Versendet → Genehmigt/Abgelehnt
+  - ✅ Stundenbasierte Kalkulation: Stundensatz × Gesamtstunden + MwSt.
+  - ✅ Vollständige CRUD-Operationen in SQLite
+  - ✅ TimesheetForm mit Echtzeit-Kostenvorschau
+  - ✅ TimesheetsPage mit Statistiken und Filterung
+  - ✅ Integration in Sidebar-Dashboard mit Leistungsnachweise-Widget
+  - ✅ Routing und Navigation komplett eingerichtet (/leistungsnachweise)
+  - ✅ Database-Migration für bestehende Installationen
+  
 - ✅ **Logo-Speicherung & Branding-System** (10.09.2025)
   - ✅ Logo-Speicherung behoben - Separater Submit-Handler verhindert Tab-Wechsel
   - ✅ Neues RawaLite App-Logo integriert - Ersetzt Text-Logo in Sidebar
@@ -460,7 +533,7 @@ RawaLite/
   - ✅ Mini-Dashboard implementiert - Angebote, Rechnungen & Finanz-Widgets
   - ✅ Dezente transparente Blöcke - Alle Widgets in einheitlichem, subtilen Design
   - ✅ Immer sichtbare Übersicht - Zeigt Statistiken auch bei 0-Werten
-  - ✅ Konsistente Datenanbindung - Verwendet useOffers() und useInvoices() Hooks
+  - ✅ Konsistente Datenanbindung - Verwendet useOffers(), useInvoices() und useTimesheets() Hooks
   - ✅ Responsive Mini-Widgets - Kompakte Darstellung für Sidebar-Breite
 
 ---

@@ -43,13 +43,33 @@ function createSchemaIfNeeded() {
       nextCustomerNumber INTEGER DEFAULT 1,
       nextOfferNumber INTEGER DEFAULT 1,
       nextInvoiceNumber INTEGER DEFAULT 1,
+      nextTimesheetNumber INTEGER DEFAULT 1,
       createdAt TEXT, updatedAt TEXT
     );
 
     INSERT INTO settings (id, createdAt, updatedAt)
     SELECT 1, datetime('now'), datetime('now')
     WHERE NOT EXISTS (SELECT 1 FROM settings WHERE id = 1);
+  `);
 
+  // Add nextTimesheetNumber column if it doesn't exist
+  try {
+    const settingsInfo = db.exec(`PRAGMA table_info(settings)`);
+    let hasTimesheetNumberColumn = false;
+    
+    if (settingsInfo.length > 0 && settingsInfo[0].values) {
+      hasTimesheetNumberColumn = settingsInfo[0].values.some((row: any[]) => row[1] === 'nextTimesheetNumber');
+    }
+    
+    if (!hasTimesheetNumberColumn) {
+      db.exec(`ALTER TABLE settings ADD COLUMN nextTimesheetNumber INTEGER DEFAULT 1;`);
+      console.log('Added nextTimesheetNumber column to settings table');
+    }
+  } catch (error) {
+    console.warn('Settings table migration error:', error);
+  }
+
+  db.exec(`
     CREATE TABLE IF NOT EXISTS customers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       number TEXT NOT NULL UNIQUE,
@@ -213,7 +233,76 @@ function createSchemaIfNeeded() {
     CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
     CREATE INDEX IF NOT EXISTS idx_offer_items_offer ON offer_line_items(offerId);
     CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice ON invoice_line_items(invoiceId);
+
+    CREATE TABLE IF NOT EXISTS timesheets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      timesheetNumber TEXT NOT NULL UNIQUE,
+      customerId INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'draft',
+      startDate TEXT NOT NULL,
+      endDate TEXT NOT NULL,
+      subtotal REAL NOT NULL DEFAULT 0,
+      vatRate REAL NOT NULL DEFAULT 19,
+      vatAmount REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0,
+      notes TEXT,
+      sentAt TEXT,
+      approvedAt TEXT,
+      rejectedAt TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_timesheets_customer ON timesheets(customerId);
+    CREATE INDEX IF NOT EXISTS idx_timesheets_status ON timesheets(status);
+    CREATE INDEX IF NOT EXISTS idx_timesheets_dates ON timesheets(startDate, endDate);
+
+    -- Activities und Timesheet-Activities
+    CREATE TABLE IF NOT EXISTS activities (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      description TEXT,
+      defaultHourlyRate REAL NOT NULL DEFAULT 0,
+      isActive INTEGER NOT NULL DEFAULT 1,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_activities_name ON activities(name);
+    CREATE INDEX IF NOT EXISTS idx_activities_active ON activities(isActive);
+
+    CREATE TABLE IF NOT EXISTS timesheet_activities (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      timesheetId INTEGER NOT NULL REFERENCES timesheets(id) ON DELETE CASCADE,
+      activityId INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+      hours REAL NOT NULL DEFAULT 0,
+      hourlyRate REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0,
+      description TEXT,
+      position TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_timesheet_activities_timesheet ON timesheet_activities(timesheetId);
+    CREATE INDEX IF NOT EXISTS idx_timesheet_activities_activity ON timesheet_activities(activityId);
+
+    -- Add position column to existing timesheet_activities table (migration)
+    -- This is safe to run multiple times as it will only add the column if it doesn't exist
+    PRAGMA table_info(timesheet_activities);
   `);
+
+  // Check if position column exists and add it if not (for existing databases)
+  try {
+    const columns = all<any>("PRAGMA table_info(timesheet_activities)");
+    const hasPositionColumn = columns.some(col => col.name === 'position');
+    
+    if (!hasPositionColumn) {
+      run("ALTER TABLE timesheet_activities ADD COLUMN position TEXT");
+      console.log('Added position column to timesheet_activities table');
+    }
+  } catch (error) {
+    console.warn('Migration warning:', error);
+  }
 }
 export async function getDB(): Promise<Database> {
   if (db) return db;

@@ -4,6 +4,11 @@ import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   plugins: [react()],
+  base: './',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
   resolve: {
     alias: {
     '@': new URL('./src', import.meta.url).pathname,

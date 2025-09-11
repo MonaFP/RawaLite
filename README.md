@@ -1,54 +1,119 @@
-# RawaLite - Professional Business Management Solution
+# RawaLite - Professionelle Geschäftsverwaltungslösung
 
 ![RawaLite Logo](assets/rawalite-logo.png)
 
-> **Version 1.0.0** - Professional Desktop Application for Business Management
+> **Version 1.0.0** - Professionelle Desktop-Anwendung für Geschäftsverwaltung
 
-## 🏢 **Proprietary Software**
+## 🏢 **Proprietäre Software**
 
-**© 2025 MonaFP. All rights reserved.**
+**© 2025 MonaFP. Alle Rechte vorbehalten.**
 
-This is proprietary software. All source code, documentation, and associated materials are confidential and protected by copyright law.
+Dies ist proprietäre Software. Aller Quellcode, Dokumentation und zugehörige Materialien sind vertraulich und durch Urheberrecht geschützt.
 
-## ⚡ **Features**
+## ⚡ **Funktionen**
 
-- 👥 **Customer Management** - Complete customer database with auto-numbering
-- 📦 **Package Management** - Hierarchical packages with sub-items
-- 📋 **Professional Offers** - From draft to acceptance workflow
-- 🧾 **Invoice Management** - Complete billing system with status tracking
-- 🏢 **Company Branding** - Logo integration and professional presentation
-- 📊 **Dashboard Overview** - Real-time business statistics
-- 💾 **Local Database** - Secure SQLite-based data storage
-- 🎨 **Modern UI** - Professional dark theme design
+- 👥 **Kundenverwaltung** - Komplette Kundendatenbank mit Auto-Nummerierung
+- 📦 **Paketverwaltung** - Hierarchische Pakete mit Unterpositionen
+- 📋 **Professionelle Angebote** - Vom Entwurf bis zur Annahme-Workflow
+- 🧾 **Rechnungsverwaltung** - Komplettes Abrechnungssystem mit Status-Verfolgung
+- ⏱️ **Leistungsnachweis-Verwaltung** - Tätigkeitsbasierte Zeiterfassung mit Stundensätzen
+- 🏢 **Firmen-Branding** - Logo-Integration und professionelle Präsentation
+- 📊 **Dashboard-Übersicht** - Echtzeit-Geschäftsstatistiken
+- 💾 **Lokale Datenbank** - Sichere SQLite-basierte Datenspeicherung
+- 🎨 **Moderne Benutzeroberfläche** - Professionelles dunkles Theme-Design
+- 📄 **PDF-Export** - Professionelle Dokumentenerstellung
+- 🔄 **Datensicherung** - Komplette Backup- und Wiederherstellungsfunktionalität
 
-## 🚀 **Technology Stack**
+## 🚀 **Technologie-Stack**
 
-- **Desktop:** Electron 31.2.0
+- **Desktop:** Electron 31.7.7
 - **Frontend:** React 18.3.1 + TypeScript 5.5.4
-- **Database:** SQLite (via SQL.js)
+- **Datenbank:** SQLite (via SQL.js)
 - **Build:** Vite 5.4.0
 
-## 📋 **System Requirements**
+## 📦 **Installation für Tester**
+
+### **Windows-Installation**
+
+1. **Herunterladen** des Installers: `RawaLite Setup 1.0.0.exe`
+2. **Installer ausführen** als Administrator (Rechtsklick → "Als Administrator ausführen")
+3. **Installationsassistent** folgen
+4. **RawaLite starten** über Startmenü oder Desktop-Verknüpfung
+
+### **Erststart**
+
+1. **Firmendaten einrichten** - Gehe zu Einstellungen → Firmendaten
+2. **Logo hinzufügen** - Einstellungen → Logo & Design
+3. **Nummerierung konfigurieren** - Einstellungen → Nummernkreise
+4. **Tätigkeiten erstellen** - Einstellungen → Tätigkeiten (für Leistungsnachweise)
+5. **Beginnen** mit dem ersten Kunden
+
+### **Test-Bereiche**
+
+- ✅ Kundenverwaltung (erstellen, bearbeiten, löschen)
+- ✅ Paketerstellung mit hierarchischer Struktur
+- ✅ Angebots-Workflow (Entwurf → versendet → angenommen)
+- ✅ Rechnungsgenerierung und Status-Verfolgung
+- ✅ Leistungsnachweis-Erstellung mit Tätigkeiten
+- ✅ PDF-Export-Funktionalität
+- ✅ Datensicherung und Wiederherstellung
+- ✅ Einstellungskonfiguration
+
+## 📋 **Systemanforderungen**
 
 - **Windows:** 10/11 (x64)
-- **macOS:** 10.15+ (Intel/Apple Silicon)
-- **Linux:** Ubuntu 18.04+ or equivalent
-- **Memory:** 4GB RAM minimum
-- **Storage:** 100MB free space
+- **macOS:** 10.15+ (Intel/Apple Silicon) *[Demnächst]*
+- **Linux:** Ubuntu 18.04+ oder gleichwertig *[Demnächst]*
+- **Arbeitsspeicher:** 4GB RAM minimum
+- **Speicherplatz:** 100MB freier Speicherplatz
 
-## 🔒 **License**
+## 🐛 **Tests & Feedback**
 
-This software is **NOT open source**. See [LICENSE](LICENSE) for terms of use.
+**Für Beta-Tester:**
 
-**Proprietary Software - Commercial Use Requires License**
+1. **Alle Kernfunktionen testen** (Kunden, Pakete, Angebote, Rechnungen, Leistungsnachweise)
+2. **PDF-Export ausprobieren** für Dokumente
+3. **Backup/Wiederherstellung testen** 
+4. **Bugs oder Vorschläge melden**
+5. **Leistung und UI-Reaktionsfähigkeit prüfen**
 
-## 📞 **Contact**
+**Häufige Probleme:**
+- Falls App nicht startet, als Administrator ausführen
+- Datenbank wird lokal im Benutzerprofil gespeichert
+- Zur Fehlerbehebung Windows-Ereignisanzeige prüfen
 
-- **Repository:** https://github.com/MonaFP/RawaLite
-- **Owner:** MonaFP
-- **License Inquiries:** Contact repository owner
+## 🔄 **Updates**
+
+Updates werden über die integrierte Update-Funktion bereitgestellt:
+- Gehe zu Einstellungen → Updates
+- Prüfe auf verfügbare Updates
+- Automatischer Download und Installation
+
+## 📚 **Dokumentation**
+
+- **[Installationsanleitung](docs/INSTALL.md)** - Detaillierte Installationsanweisungen
+- **[Entwicklerhandbuch](docs/DEV_GUIDE.md)** - Für Entwickler
+- **[Architektur](docs/ARCHITEKTUR.md)** - Technische Details
+
+## 📞 **Support**
+
+**Für Entwickler:**
+```bash
+# Entwicklungsumgebung
+node 20+, pnpm@9
+
+# Installation
+pnpm install
+
+# Entwicklung starten
+pnpm dev
+
+# Installer erstellen
+pnpm build
+pnpm dist
+```
 
 ---
 
-**CONFIDENTIAL AND PROPRIETARY SOFTWARE**  
-**Copyright © 2025 MonaFP. All rights reserved.**
+**RawaLite** - Professionelle Geschäftsverwaltung leicht gemacht.  
+© 2025 MonaFP. Alle Rechte vorbehalten.

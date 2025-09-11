@@ -64,11 +64,20 @@ export class SettingsAdapter {
       if (stored) {
         numberingCircles = JSON.parse(stored);
       } else {
+        // Use defaults and save them immediately for persistence
         numberingCircles = defaultSettings.numberingCircles;
+        localStorage.setItem('rawalite-numbering', JSON.stringify(numberingCircles));
+        console.log('Initialized default numbering circles in localStorage');
       }
     } catch (error) {
       console.warn('Error loading numbering circles from localStorage:', error);
       numberingCircles = defaultSettings.numberingCircles;
+      // Try to save defaults even after error
+      try {
+        localStorage.setItem('rawalite-numbering', JSON.stringify(numberingCircles));
+      } catch (saveError) {
+        console.error('Could not save default numbering circles:', saveError);
+      }
     }
 
     return {

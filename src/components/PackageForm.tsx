@@ -478,7 +478,7 @@ export default function PackageForm({
           MwSt. hinzufügen
         </label>
         <div style={{ fontSize: "18px", fontWeight: "bold" }}>
-          Total: €{total.toFixed(2)}
+          Total: {total.toFixed(2)} €
           {values.addVat && (
             <span style={{ fontSize: "12px", opacity: 0.8, display: "block" }}>
               zzgl. MwSt.

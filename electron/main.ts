@@ -28,8 +28,8 @@ function createWindow() {
     win.loadURL('http://localhost:5173')
     // win.webContents.openDevTools({ mode: 'detach' })
   } else {
-    // Statisches HTML aus dem **Projekt-Root**
-    win.loadFile(path.join(rootPath, 'index.html'))
+    // Statisches HTML aus dist-Ordner
+    win.loadFile(path.join(rootPath, 'dist', 'index.html'))
   }
 
   win.webContents.setWindowOpenHandler(({ url }) => {

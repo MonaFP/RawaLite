@@ -79,6 +79,14 @@ export const defaultSettings: Settings = {
       digits: 3,
       current: 0,
       resetMode: 'never'
+    },
+    {
+      id: 'timesheets',
+      name: 'Leistungsnachweise',
+      prefix: 'LN-',
+      digits: 4,
+      current: 0,
+      resetMode: 'yearly'
     }
   ]
 };

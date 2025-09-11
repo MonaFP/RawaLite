@@ -132,19 +132,19 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
           <div style={{display:"flex", flexDirection:"column", gap:8}}>
             <div style={{display:"flex", justifyContent:"space-between"}}>
               <span>Angebotswert gesamt:</span>
-              <span style={{fontWeight:"600"}}>€{stats.totalOfferValue.toFixed(2)}</span>
+              <span style={{fontWeight:"600"}}>{stats.totalOfferValue.toFixed(2)} €</span>
             </div>
             <div style={{display:"flex", justifyContent:"space-between"}}>
               <span>Rechnungswert gesamt:</span>
-              <span style={{fontWeight:"600"}}>€{stats.totalInvoiceValue.toFixed(2)}</span>
+              <span style={{fontWeight:"600"}}>{stats.totalInvoiceValue.toFixed(2)} €</span>
             </div>
             <div style={{display:"flex", justifyContent:"space-between", color:"#22c55e"}}>
               <span>Bezahlt:</span>
-              <span style={{fontWeight:"600"}}>€{stats.paidAmount.toFixed(2)}</span>
+              <span style={{fontWeight:"600"}}>{stats.paidAmount.toFixed(2)} €</span>
             </div>
             <div style={{display:"flex", justifyContent:"space-between", color:"#f59e0b"}}>
               <span>Offen:</span>
-              <span style={{fontWeight:"600"}}>€{stats.unpaidAmount.toFixed(2)}</span>
+              <span style={{fontWeight:"600"}}>{stats.unpaidAmount.toFixed(2)} €</span>
             </div>
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
                     </div>
                   </div>
                   <div style={{textAlign:"right"}}>
-                    <div style={{fontWeight:"600"}}>€{offer.total.toFixed(2)}</div>
+                    <div style={{fontWeight:"600"}}>{offer.total.toFixed(2)} €</div>
                     <div style={{
                       fontSize:"12px", 
                       color: getStatusColor(offer.status),
@@ -211,7 +211,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
                     </div>
                   </div>
                   <div style={{textAlign:"right"}}>
-                    <div style={{fontWeight:"600"}}>€{invoice.total.toFixed(2)}</div>
+                    <div style={{fontWeight:"600"}}>{invoice.total.toFixed(2)} €</div>
                     <div style={{
                       fontSize:"12px", 
                       color: getStatusColor(invoice.status),

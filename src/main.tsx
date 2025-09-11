@@ -15,8 +15,8 @@ import AngebotePage from "./pages/AngebotePage";
 import AngebotDetailPage from "./pages/AngebotDetailPage";
 import PaketePage from "./pages/PaketePage";
 import RechnungenPage from "./pages/RechnungenPage";
+import TimesheetsPage from "./pages/TimesheetsPage";
 import EinstellungenPage from "./pages/EinstellungenPage";
-import UpdatesPage from "./pages/UpdatesPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 const router = createBrowserRouter([
@@ -49,12 +49,12 @@ const router = createBrowserRouter([
         element: <RechnungenPage />,
       },
       {
-        path: "einstellungen",
-        element: <EinstellungenPage />,
+        path: "leistungsnachweise",
+        element: <TimesheetsPage />,
       },
       {
-        path: "updates",
-        element: <UpdatesPage />,
+        path: "einstellungen",
+        element: <EinstellungenPage />,
       },
       {
         path: "*",

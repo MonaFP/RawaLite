@@ -2,11 +2,13 @@ import { NavLink } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
+import { useTimesheets } from "../hooks/useTimesheets";
 
 export default function Sidebar(){
   const { settings, loading, error } = useSettings();
   const { offers } = useOffers();
   const { invoices } = useInvoices();
+  const { timesheets } = useTimesheets();
 
   // Statistiken berechnen
   const stats = {
@@ -20,10 +22,19 @@ export default function Sidebar(){
     paidInvoices: invoices.filter(invoice => invoice.status === 'paid').length,
     unpaidInvoices: invoices.filter(invoice => invoice.status === 'draft' || invoice.status === 'sent' || invoice.status === 'overdue').length,
     
+    // Leistungsnachweise
+    totalTimesheets: timesheets.length,
+    approvedTimesheets: timesheets.filter(timesheet => timesheet.status === 'approved').length,
+    pendingTimesheets: timesheets.filter(timesheet => timesheet.status === 'draft' || timesheet.status === 'sent').length,
+    
     // Finanzen
     totalOfferValue: offers.reduce((sum, offer) => sum + offer.total, 0),
     paidAmount: invoices.filter(inv => inv.status === 'paid').reduce((sum, invoice) => sum + invoice.total, 0),
     unpaidAmount: invoices.filter(inv => inv.status !== 'paid').reduce((sum, invoice) => sum + invoice.total, 0),
+    timesheetValue: timesheets.reduce((sum, timesheet) => sum + timesheet.total, 0),
+    totalTimesheetHours: timesheets.reduce((sum, timesheet) => 
+      sum + timesheet.activities.reduce((actSum, activity) => actSum + activity.hours, 0), 0
+    ),
   };
 
   const items = [
@@ -32,7 +43,7 @@ export default function Sidebar(){
     { to: "/pakete", label: "Pakete" },
     { to: "/angebote", label: "Angebote" },
     { to: "/rechnungen", label: "Rechnungen" },
-    { to: "/updates", label: "Updates" },
+    { to: "/leistungsnachweise", label: "Leistungsnachweise" },
     { to: "/einstellungen", label: "Einstellungen" }
   ];
   return (
@@ -223,6 +234,45 @@ export default function Sidebar(){
               <span>{stats.unpaidInvoices} Offen</span>
             </div>
           </div>
+
+          {/* Leistungsnachweise */}
+          <div style={{
+            padding: "8px 10px",
+            backgroundColor: "rgba(255,255,255,0.03)",
+            borderRadius: "6px",
+            border: "1px solid rgba(255,255,255,0.08)"
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "3px"
+            }}>
+              <span style={{ 
+                fontSize: "12px", 
+                color: "rgba(255,255,255,0.7)",
+                fontWeight: "500"
+              }}>
+                ⏰ Leistungsnachweise
+              </span>
+              <span style={{ 
+                fontSize: "13px", 
+                color: "rgba(255,255,255,0.9)",
+                fontWeight: "600"
+              }}>
+                {stats.totalTimesheets}
+              </span>
+            </div>
+            <div style={{
+              fontSize: "10px",
+              color: "rgba(255,255,255,0.5)",
+              display: "flex",
+              justifyContent: "space-between"
+            }}>
+              <span>{stats.pendingTimesheets} Offen</span>
+              <span>{stats.approvedTimesheets} Genehmigt</span>
+            </div>
+          </div>
         </div>
 
         {/* Finanzübersicht - immer anzeigen */}
@@ -256,7 +306,7 @@ export default function Sidebar(){
                 color: "rgba(255,255,255,0.8)", 
                 fontWeight: "600" 
               }}>
-                €{stats.paidAmount.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                {stats.paidAmount.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €
               </span>
             </div>
             <div style={{
@@ -269,7 +319,20 @@ export default function Sidebar(){
                 color: "rgba(255,255,255,0.8)", 
                 fontWeight: "600" 
               }}>
-                €{stats.unpaidAmount.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                {stats.unpaidAmount.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €
+              </span>
+            </div>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px"
+            }}>
+              <span style={{ color: "rgba(255,255,255,0.6)" }}>Leistungen:</span>
+              <span style={{ 
+                color: "rgba(255,255,255,0.8)", 
+                fontWeight: "600" 
+              }}>
+                {stats.timesheetValue.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €
               </span>
             </div>
           </div>

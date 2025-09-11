@@ -1,4 +1,4 @@
-import { PersistenceAdapter, Settings, Customer, Package, Offer, Invoice } from "../persistence/adapter";
+import { PersistenceAdapter, Settings, Customer, Package, Offer, Invoice, Timesheet, Activity, TimesheetActivity } from "../persistence/adapter";
 import { getDB, all, run, withTx } from "../persistence/sqlite/db";
 
 function nowIso() {
@@ -26,7 +26,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         `
         UPDATE settings SET
           companyName = ?, street = ?, zip = ?, city = ?, taxId = ?,
-          kleinunternehmer = ?, nextCustomerNumber = ?, nextOfferNumber = ?, nextInvoiceNumber = ?,
+          kleinunternehmer = ?, nextCustomerNumber = ?, nextOfferNumber = ?, nextInvoiceNumber = ?, nextTimesheetNumber = ?,
           updatedAt = ?
         WHERE id = 1
       `,
@@ -40,6 +40,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
           next.nextCustomerNumber ?? 1,
           next.nextOfferNumber ?? 1,
           next.nextInvoiceNumber ?? 1,
+          next.nextTimesheetNumber ?? 1,
           next.updatedAt,
         ]
       );
@@ -548,6 +549,248 @@ export class SQLiteAdapter implements PersistenceAdapter {
     await withTx(async () => {
       run(`DELETE FROM invoice_line_items WHERE invoiceId = ?`, [id]);
       run(`DELETE FROM invoices WHERE id = ?`, [id]);
+    });
+  }
+
+  // TIMESHEETS
+  async listTimesheets(): Promise<Timesheet[]> {
+    await getDB();
+    const timesheets = all<Omit<Timesheet, "activities">>(`SELECT * FROM timesheets ORDER BY createdAt DESC`);
+    
+    const result: Timesheet[] = [];
+    for (const timesheet of timesheets) {
+      const activities = await this.getTimesheetActivities(timesheet.id);
+      result.push({
+        ...timesheet,
+        activities
+      });
+    }
+    return result;
+  }
+
+  async getTimesheet(id: number): Promise<Timesheet | null> {
+    await getDB();
+    const rows = all<Omit<Timesheet, "activities">>(`SELECT * FROM timesheets WHERE id = ?`, [id]);
+    if (!rows[0]) return null;
+    
+    const timesheet = rows[0];
+    const activities = await this.getTimesheetActivities(id);
+    
+    return {
+      ...timesheet,
+      activities
+    };
+  }
+
+  async createTimesheet(data: Omit<Timesheet, "id" | "createdAt" | "updatedAt">): Promise<Timesheet> {
+    return withTx(async () => {
+      const ts = nowIso();
+      
+      run(
+        `
+        INSERT INTO timesheets (timesheetNumber, customerId, title, status, startDate, endDate, subtotal, vatRate, vatAmount, total, notes, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+        [
+          data.timesheetNumber,
+          data.customerId,
+          data.title,
+          data.status,
+          data.startDate,
+          data.endDate,
+          data.subtotal,
+          data.vatRate,
+          data.vatAmount,
+          data.total,
+          data.notes || null,
+          ts,
+          ts,
+        ]
+      );
+      
+      const timesheetRows = all<{ id: number }>(`SELECT id FROM timesheets WHERE rowid = last_insert_rowid()`);
+      const timesheetId = timesheetRows[0].id;
+      
+      // Insert activities
+      for (const activity of data.activities) {
+        await this._createTimesheetActivityInternal({
+          timesheetId,
+          activityId: activity.activityId,
+          hours: activity.hours,
+          hourlyRate: activity.hourlyRate,
+          total: activity.total,
+          description: activity.description,
+          position: activity.position
+        });
+      }
+      
+      const newTimesheet = await this.getTimesheet(timesheetId);
+      if (!newTimesheet) throw new Error("Timesheet creation failed");
+      return newTimesheet;
+    });
+  }
+
+  async updateTimesheet(id: number, patch: Partial<Timesheet>): Promise<Timesheet> {
+    return withTx(async () => {
+      const current = await this.getTimesheet(id);
+      if (!current) throw new Error("Timesheet not found");
+
+      const next = { ...current, ...patch, updatedAt: nowIso() };
+
+      run(
+        `
+        UPDATE timesheets SET
+          timesheetNumber = ?, customerId = ?, title = ?, status = ?, startDate = ?, endDate = ?, 
+          subtotal = ?, vatRate = ?, vatAmount = ?, total = ?, notes = ?, updatedAt = ?
+        WHERE id = ?
+      `,
+        [
+          next.timesheetNumber,
+          next.customerId,
+          next.title,
+          next.status,
+          next.startDate,
+          next.endDate,
+          next.subtotal,
+          next.vatRate,
+          next.vatAmount,
+          next.total,
+          next.notes || null,
+          next.updatedAt,
+          id,
+        ]
+      );
+
+      // Update activities if provided
+      if (patch.activities) {
+        // Delete old activities
+        run(`DELETE FROM timesheet_activities WHERE timesheetId = ?`, [id]);
+        
+        // Insert new activities
+        for (const activity of patch.activities) {
+          await this._createTimesheetActivityInternal({
+            timesheetId: id,
+            activityId: activity.activityId,
+            hours: activity.hours,
+            hourlyRate: activity.hourlyRate,
+            total: activity.total,
+            description: activity.description,
+            position: activity.position
+          });
+        }
+      }
+
+      const updated = await this.getTimesheet(id);
+      if (!updated) throw new Error("Timesheet update failed");
+      return updated;
+    });
+  }
+
+  async deleteTimesheet(id: number): Promise<void> {
+    await withTx(async () => {
+      run(`DELETE FROM timesheets WHERE id = ?`, [id]);
+    });
+  }
+
+  // ACTIVITIES
+  async listActivities(): Promise<Activity[]> {
+    await getDB();
+    return all<Activity>(`SELECT * FROM activities ORDER BY name ASC`);
+  }
+
+  async getActivity(id: number): Promise<Activity | null> {
+    await getDB();
+    const rows = all<Activity>(`SELECT * FROM activities WHERE id = ?`, [id]);
+    return rows[0] ?? null;
+  }
+
+  async createActivity(data: Omit<Activity, "id" | "createdAt" | "updatedAt">): Promise<Activity> {
+    return withTx(async () => {
+      const ts = nowIso();
+      
+      run(
+        `INSERT INTO activities (name, description, defaultHourlyRate, isActive, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)`,
+        [data.name, data.description || null, data.defaultHourlyRate, data.isActive ? 1 : 0, ts, ts]
+      );
+      
+      const activityRows = all<{ id: number }>(`SELECT id FROM activities WHERE rowid = last_insert_rowid()`);
+      const activityId = activityRows[0].id;
+      
+      const newActivity = await this.getActivity(activityId);
+      if (!newActivity) throw new Error("Activity creation failed");
+      return newActivity;
+    });
+  }
+
+  async updateActivity(id: number, patch: Partial<Activity>): Promise<Activity> {
+    return withTx(async () => {
+      const current = await this.getActivity(id);
+      if (!current) throw new Error("Activity not found");
+
+      const next = { ...current, ...patch, updatedAt: nowIso() };
+
+      run(
+        `UPDATE activities SET name = ?, description = ?, defaultHourlyRate = ?, isActive = ?, updatedAt = ? WHERE id = ?`,
+        [next.name, next.description || null, next.defaultHourlyRate, next.isActive ? 1 : 0, next.updatedAt, id]
+      );
+
+      const updated = await this.getActivity(id);
+      if (!updated) throw new Error("Activity update failed");
+      return updated;
+    });
+  }
+
+  async deleteActivity(id: number): Promise<void> {
+    await withTx(async () => {
+      run(`DELETE FROM activities WHERE id = ?`, [id]);
+    });
+  }
+
+  // TIMESHEET ACTIVITIES
+  async getTimesheetActivities(timesheetId: number): Promise<TimesheetActivity[]> {
+    await getDB();
+    return all<TimesheetActivity>(`SELECT * FROM timesheet_activities WHERE timesheetId = ? ORDER BY id`, [timesheetId]);
+  }
+
+  private async _createTimesheetActivityInternal(data: Omit<TimesheetActivity, "id">): Promise<TimesheetActivity> {
+    console.log('SQLiteAdapter._createTimesheetActivityInternal: Creating with data:', data);
+    run(
+      `INSERT INTO timesheet_activities (timesheetId, activityId, hours, hourlyRate, total, description, position) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [data.timesheetId, data.activityId, data.hours, data.hourlyRate, data.total, data.description || null, data.position || null]
+    );
+    
+    const rows = all<TimesheetActivity>(`SELECT * FROM timesheet_activities WHERE rowid = last_insert_rowid()`);
+    console.log('SQLiteAdapter._createTimesheetActivityInternal: Created activity:', rows[0]);
+    return rows[0];
+  }
+
+  async createTimesheetActivity(data: Omit<TimesheetActivity, "id">): Promise<TimesheetActivity> {
+    return withTx(async () => {
+      return this._createTimesheetActivityInternal(data);
+    });
+  }
+
+  async updateTimesheetActivity(id: number, patch: Partial<TimesheetActivity>): Promise<TimesheetActivity> {
+    return withTx(async () => {
+      const current = all<TimesheetActivity>(`SELECT * FROM timesheet_activities WHERE id = ?`, [id])[0];
+      if (!current) throw new Error("Timesheet activity not found");
+
+      const next = { ...current, ...patch };
+
+      run(
+        `UPDATE timesheet_activities SET timesheetId = ?, activityId = ?, hours = ?, hourlyRate = ?, total = ?, description = ?, position = ? WHERE id = ?`,
+        [next.timesheetId, next.activityId, next.hours, next.hourlyRate, next.total, next.description || null, next.position || null, id]
+      );
+
+      const updated = all<TimesheetActivity>(`SELECT * FROM timesheet_activities WHERE id = ?`, [id]);
+      if (!updated[0]) throw new Error("Timesheet activity update failed");
+      return updated[0];
+    });
+  }
+
+  async deleteTimesheetActivity(id: number): Promise<void> {
+    await withTx(async () => {
+      run(`DELETE FROM timesheet_activities WHERE id = ?`, [id]);
     });
   }
 }

@@ -9,6 +9,7 @@ export interface Settings {
   nextCustomerNumber?: number;
   nextOfferNumber?: number;
   nextInvoiceNumber?: number;
+  nextTimesheetNumber?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -111,6 +112,49 @@ export interface Invoice {
   updatedAt: string;
 }
 
+export interface Activity {
+  id: number;
+  name: string; // z.B. "Webdesign", "Entwicklung", "Beratung"
+  description?: string; // Optionale Beschreibung der Tätigkeit
+  defaultHourlyRate: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TimesheetActivity {
+  id?: number;
+  timesheetId: number;
+  activityId: number;
+  hours: number;
+  hourlyRate: number; // Kann vom Standard abweichen
+  total: number;
+  description?: string;
+  position?: string; // z.B. "Homepage erstellt", "Meeting mit Kunde", etc.
+}
+
+export interface Timesheet {
+  id: number;
+  timesheetNumber: string;
+  customerId: number;
+  title: string;
+  status: 'draft' | 'sent' | 'approved' | 'rejected';
+  startDate: string;
+  endDate: string;
+  activities: TimesheetActivity[];
+  subtotal: number;
+  vatRate: number;
+  vatAmount: number;
+  total: number;
+  notes?: string;
+  // Status-Datum Felder
+  sentAt?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PersistenceAdapter {
   ready(): Promise<void>;
 
@@ -145,4 +189,18 @@ export interface PersistenceAdapter {
   createInvoice(data: Omit<Invoice, "id" | "createdAt" | "updatedAt">): Promise<Invoice>;
   updateInvoice(id: number, patch: Partial<Invoice>): Promise<Invoice>;
   deleteInvoice(id: number): Promise<void>;
+
+  // Timesheets
+  listTimesheets(): Promise<Timesheet[]>;
+  getTimesheet(id: number): Promise<Timesheet | null>;
+  createTimesheet(data: Omit<Timesheet, "id" | "createdAt" | "updatedAt">): Promise<Timesheet>;
+  updateTimesheet(id: number, patch: Partial<Timesheet>): Promise<Timesheet>;
+  deleteTimesheet(id: number): Promise<void>;
+
+  // Activities
+  listActivities(): Promise<Activity[]>;
+  getActivity(id: number): Promise<Activity | null>;
+  createActivity(data: Omit<Activity, "id" | "createdAt" | "updatedAt">): Promise<Activity>;
+  updateActivity(id: number, patch: Partial<Activity>): Promise<Activity>;
+  deleteActivity(id: number): Promise<void>;
 }

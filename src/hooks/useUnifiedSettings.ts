@@ -72,7 +72,13 @@ export function useUnifiedSettings() {
       return nextNumber;
     } catch (err) {
       console.error('Error getting next number:', err);
-      throw err;
+      // Fallback numbering in case settings are not available
+      const year = new Date().getFullYear();
+      const timestamp = Date.now().toString().slice(-4);
+      const prefix = circleId === 'timesheets' ? 'LN-' : 'DOC-';
+      const fallbackNumber = `${prefix}${year}-${timestamp}`;
+      console.warn(`Using fallback number for ${circleId}: ${fallbackNumber}`);
+      return fallbackNumber;
     }
   };
 

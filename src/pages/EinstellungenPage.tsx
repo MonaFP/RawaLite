@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
+import { useActivities } from "../hooks/useActivities";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
+import type { Activity } from "../persistence/adapter";
 import { defaultSettings } from "../lib/settings";
 
 interface EinstellungenPageProps {
@@ -15,13 +17,32 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useSettings();
   const { adapter } = usePersistence();
   const { showError, showSuccess } = useNotifications();
-  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'maintenance'>('company');
+  const { activities, createActivity, updateActivity, deleteActivity } = useActivities();
+  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'activities' | 'updates' | 'maintenance'>('company');
   const [companyFormData, setCompanyFormData] = useState<CompanyData>(settings.companyData);
   const [numberingFormData, setNumberingFormData] = useState<NumberingCircle[]>(settings.numberingCircles);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [importType, setImportType] = useState<'customers' | 'invoices' | 'offers'>('customers');
   const [selectedCSVFile, setSelectedCSVFile] = useState<File | null>(null);
+  const [activityFormData, setActivityFormData] = useState<Partial<Activity>>({});
+  const [editingActivity, setEditingActivity] = useState<number | null>(null);
+
+  // Debug: Watch activity form data changes
+  useEffect(() => {
+    const hourlyRateNumber = Number(activityFormData.defaultHourlyRate);
+    console.log('🔍 Activity form data changed:', {
+      activityFormData,
+      name: activityFormData.name,
+      nameValid: !!activityFormData.name?.trim(),
+      hourlyRate: activityFormData.defaultHourlyRate,
+      hourlyRateNumber,
+      hourlyRateType: typeof activityFormData.defaultHourlyRate,
+      isNaN: isNaN(hourlyRateNumber),
+      hourlyRateValid: !!(activityFormData.defaultHourlyRate && !isNaN(hourlyRateNumber) && hourlyRateNumber > 0),
+      isButtonDisabled: saving || !activityFormData.name?.trim() || !activityFormData.defaultHourlyRate || activityFormData.defaultHourlyRate <= 0
+    });
+  }, [activityFormData, saving]);
 
   // Update form data when settings change
   React.useEffect(() => {
@@ -1036,6 +1057,38 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
           Nummernkreise
         </button>
         <button
+          onClick={() => setActiveTab('activities')}
+          style={{
+            backgroundColor: activeTab === 'activities' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
+            color: activeTab === 'activities' ? "white" : "#374151",
+            border: activeTab === 'activities' ? "1px solid #1e3a2e" : "1px solid rgba(0,0,0,.2)",
+            padding: "8px 16px",
+            borderRadius: "8px 8px 0 0",
+            cursor: "pointer",
+            borderBottom: activeTab === 'activities' ? "2px solid #1e3a2e" : "2px solid transparent",
+            transition: "all 0.2s ease",
+            fontWeight: activeTab === 'activities' ? "600" : "500"
+          }}
+        >
+          Tätigkeiten
+        </button>
+        <button
+          onClick={() => setActiveTab('updates')}
+          style={{
+            backgroundColor: activeTab === 'updates' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
+            color: activeTab === 'updates' ? "white" : "#374151",
+            border: activeTab === 'updates' ? "1px solid #1e3a2e" : "1px solid rgba(0,0,0,.2)",
+            padding: "8px 16px",
+            borderRadius: "8px 8px 0 0",
+            cursor: "pointer",
+            borderBottom: activeTab === 'updates' ? "2px solid #1e3a2e" : "2px solid transparent",
+            transition: "all 0.2s ease",
+            fontWeight: activeTab === 'updates' ? "600" : "500"
+          }}
+        >
+          Updates
+        </button>
+        <button
           onClick={() => setActiveTab('maintenance')}
           style={{
             backgroundColor: activeTab === 'maintenance' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
@@ -1617,6 +1670,402 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
             </button>
           </div>
         </form>
+      )}
+
+      {/* Activities Tab */}
+      {activeTab === 'activities' && (
+        <div>
+          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Tätigkeiten verwalten</h3>
+          <p style={{ margin: "0 0 24px 0", color: "#6b7280", fontSize: "14px" }}>
+            Verwalten Sie Ihre Tätigkeiten mit individuellen Stundensätzen für die Leistungserfassung.
+          </p>
+
+          {/* Activity Form */}
+          <div style={{ 
+            marginBottom: "24px", 
+            padding: "16px", 
+            border: "1px solid rgba(255,255,255,.1)", 
+            borderRadius: "8px",
+            backgroundColor: "rgba(255,255,255,.02)"
+          }}>
+            <h4 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>
+              {editingActivity ? 'Tätigkeit bearbeiten' : 'Neue Tätigkeit'}
+            </h4>
+            
+            <div style={{ display: "grid", gap: "16px", gridTemplateColumns: "2fr 1fr 1fr auto" }}>
+              <div>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={activityFormData.name || ''}
+                  onChange={(e) => setActivityFormData({ ...activityFormData, name: e.target.value })}
+                  placeholder="z.B. Entwicklung, Beratung, Design..."
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid rgba(255,255,255,.2)",
+                    backgroundColor: "rgba(255,255,255,.05)",
+                    color: "var(--foreground)"
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                  Stundensatz (€) *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={activityFormData.defaultHourlyRate || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const parsed = parseFloat(value);
+                    const isValidNumber = !isNaN(parsed) && parsed > 0;
+                    console.log('💰 Hourly rate input changed:', { 
+                      value, 
+                      parsed, 
+                      isValidNumber,
+                      isEmptyString: value === '',
+                      finalValue: value === '' ? undefined : parsed
+                    });
+                    setActivityFormData({ 
+                      ...activityFormData, 
+                      defaultHourlyRate: value === '' ? undefined : parsed
+                    });
+                  }}
+                  placeholder="85.00"
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid rgba(255,255,255,.2)",
+                    backgroundColor: "rgba(255,255,255,.05)",
+                    color: "var(--foreground)"
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                  Status
+                </label>
+                <select
+                  value={activityFormData.isActive !== false ? 'active' : 'inactive'}
+                  onChange={(e) => setActivityFormData({ ...activityFormData, isActive: e.target.value === 'active' })}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid rgba(255,255,255,.2)",
+                    backgroundColor: "rgba(255,255,255,.05)",
+                    color: "var(--foreground)"
+                  }}
+                >
+                  <option value="active">Aktiv</option>
+                  <option value="inactive">Inaktiv</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", gap: "8px", alignItems: "end" }}>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    console.log('🎯 Button clicked!', { 
+                      activityFormData,
+                      formDataKeys: Object.keys(activityFormData),
+                      name: activityFormData.name,
+                      nameType: typeof activityFormData.name,
+                      hourlyRate: activityFormData.defaultHourlyRate,
+                      hourlyRateType: typeof activityFormData.defaultHourlyRate,
+                      isDisabled: saving || !activityFormData.name?.trim() || !activityFormData.defaultHourlyRate || activityFormData.defaultHourlyRate <= 0
+                    });
+                    
+                    // Detaillierte Validierung mit spezifischen Fehlermeldungen
+                    if (!activityFormData.name?.trim()) {
+                      console.log('❌ Name validation failed');
+                      alert("Bitte geben Sie einen Namen für die Tätigkeit ein.");
+                      return;
+                    }
+                    
+                    if (!activityFormData.defaultHourlyRate) {
+                      console.log('❌ Hourly rate validation failed - no value');
+                      alert("Bitte geben Sie einen Stundensatz ein.");
+                      return;
+                    }
+                    
+                    if (activityFormData.defaultHourlyRate <= 0) {
+                      console.log('❌ Hourly rate validation failed - invalid value:', activityFormData.defaultHourlyRate);
+                      alert("Der Stundensatz muss größer als 0 sein.");
+                      return;
+                    }
+                    
+                    console.log('✅ Validation passed, creating activity...');
+                    
+                    try {
+                      setSaving(true);
+                      if (editingActivity) {
+                        console.log('📝 Updating activity:', editingActivity);
+                        await updateActivity(editingActivity, {
+                          name: activityFormData.name,
+                          defaultHourlyRate: activityFormData.defaultHourlyRate,
+                          isActive: activityFormData.isActive !== false,
+                          description: activityFormData.description
+                        });
+                        showSuccess("Tätigkeit erfolgreich aktualisiert!");
+                        setEditingActivity(null);
+                      } else {
+                        console.log('➕ Creating new activity...');
+                        const result = await createActivity({
+                          name: activityFormData.name,
+                          defaultHourlyRate: activityFormData.defaultHourlyRate,
+                          isActive: activityFormData.isActive !== false,
+                          description: activityFormData.description
+                        });
+                        console.log('✅ Activity created successfully:', result);
+                        showSuccess("Tätigkeit erfolgreich erstellt!");
+                      }
+                      setActivityFormData({});
+                    } catch (error) {
+                      console.error('❌ Error in activity operation:', error);
+                      showError(`Fehler beim ${editingActivity ? 'Aktualisieren' : 'Erstellen'} der Tätigkeit: ${error}`);
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}
+                  disabled={saving}
+                  style={{
+                    backgroundColor: "var(--accent)",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: "4px",
+                    cursor: saving ? "not-allowed" : "pointer",
+                    fontWeight: "500",
+                    opacity: saving ? 0.6 : 1
+                  }}
+                >
+                  {saving ? "Speichere..." : (editingActivity ? "Aktualisieren" : "Hinzufügen")}
+                </button>
+                
+                {editingActivity && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingActivity(null);
+                      setActivityFormData({});
+                    }}
+                    style={{
+                      backgroundColor: "#6b7280",
+                      color: "white",
+                      border: "none",
+                      padding: "8px 16px",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontWeight: "500"
+                    }}
+                  >
+                    Abbrechen
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div style={{ marginTop: "12px" }}>
+              <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                Beschreibung (optional)
+              </label>
+              <textarea
+                value={activityFormData.description || ''}
+                onChange={(e) => setActivityFormData({ ...activityFormData, description: e.target.value })}
+                placeholder="Detaillierte Beschreibung der Tätigkeit..."
+                rows={2}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255,255,255,.2)",
+                  backgroundColor: "rgba(255,255,255,.05)",
+                  color: "var(--foreground)",
+                  resize: "vertical"
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Activities List */}
+          <div>
+            <h4 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Bestehende Tätigkeiten ({activities.length})</h4>
+            
+            {activities.length === 0 ? (
+              <div style={{ 
+                padding: "32px", 
+                textAlign: "center", 
+                color: "#6b7280",
+                border: "1px dashed rgba(255,255,255,.2)", 
+                borderRadius: "8px" 
+              }}>
+                <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
+                <p style={{ margin: "0 0 8px 0", fontWeight: "500" }}>Noch keine Tätigkeiten definiert</p>
+                <p style={{ margin: "0", fontSize: "14px" }}>
+                  Erstellen Sie Tätigkeiten mit individuellen Stundensätzen für die Leistungserfassung.
+                </p>
+              </div>
+            ) : (
+              <div style={{ 
+                border: "1px solid rgba(255,255,255,.1)", 
+                borderRadius: "8px",
+                backgroundColor: "rgba(255,255,255,.02)"
+              }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid rgba(255,255,255,.1)" }}>
+                      <th style={{ padding: "12px", textAlign: "left", fontWeight: "500" }}>Name</th>
+                      <th style={{ padding: "12px", textAlign: "left", fontWeight: "500" }}>Stundensatz</th>
+                      <th style={{ padding: "12px", textAlign: "left", fontWeight: "500" }}>Status</th>
+                      <th style={{ padding: "12px", textAlign: "left", fontWeight: "500" }}>Beschreibung</th>
+                      <th style={{ padding: "12px", textAlign: "left", fontWeight: "500" }}>Aktionen</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activities.map((activity, index) => (
+                      <tr key={activity.id} style={{ 
+                        borderBottom: index < activities.length - 1 ? "1px solid rgba(255,255,255,.05)" : "none" 
+                      }}>
+                        <td style={{ padding: "12px" }}>
+                          <div style={{ fontWeight: "500" }}>{activity.name}</div>
+                        </td>
+                        <td style={{ padding: "12px" }}>
+                          <div style={{ fontFamily: "monospace" }}>{activity.defaultHourlyRate.toFixed(2)} €</div>
+                        </td>
+                        <td style={{ padding: "12px" }}>
+                          <span style={{
+                            padding: "4px 8px",
+                            borderRadius: "12px",
+                            fontSize: "12px",
+                            fontWeight: "500",
+                            backgroundColor: activity.isActive ? "#10b981" + "20" : "#6b7280" + "20",
+                            color: activity.isActive ? "#10b981" : "#6b7280"
+                          }}>
+                            {activity.isActive ? "Aktiv" : "Inaktiv"}
+                          </span>
+                        </td>
+                        <td style={{ padding: "12px" }}>
+                          <div style={{ 
+                            fontSize: "14px", 
+                            color: "#6b7280",
+                            maxWidth: "200px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap"
+                          }}>
+                            {activity.description || "-"}
+                          </div>
+                        </td>
+                        <td style={{ padding: "12px" }}>
+                          <div style={{ display: "flex", gap: "8px" }}>
+                            <button
+                              onClick={() => {
+                                setEditingActivity(activity.id);
+                                setActivityFormData({
+                                  name: activity.name,
+                                  defaultHourlyRate: activity.defaultHourlyRate,
+                                  isActive: activity.isActive,
+                                  description: activity.description
+                                });
+                              }}
+                              style={{
+                                color: "#3b82f6",
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                                textDecoration: "underline"
+                              }}
+                            >
+                              Bearbeiten
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (confirm(`Tätigkeit "${activity.name}" wirklich löschen?`)) {
+                                  try {
+                                    setSaving(true);
+                                    await deleteActivity(activity.id);
+                                    showSuccess("Tätigkeit erfolgreich gelöscht!");
+                                  } catch (error) {
+                                    showError("Fehler beim Löschen der Tätigkeit: " + error);
+                                  } finally {
+                                    setSaving(false);
+                                  }
+                                }
+                              }}
+                              style={{
+                                color: "#ef4444",
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                                textDecoration: "underline"
+                              }}
+                            >
+                              Löschen
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Updates Tab */}
+      {activeTab === 'updates' && (
+        <div>
+          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Updates & Changelog</h3>
+          <p style={{ margin: "0 0 24px 0", color: "#6b7280", fontSize: "14px" }}>
+            Neue Funktionen, Verbesserungen und Fehlerbehebungen
+          </p>
+
+          <div style={{ textAlign: "center", padding: "60px 40px" }}>
+            <div style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.6 }}>
+              🚧
+            </div>
+            <h4 style={{ color: "var(--accent)", marginBottom: "12px" }}>
+              In Entwicklung
+            </h4>
+            <p style={{ color: "#6b7280", marginBottom: "20px", lineHeight: "1.5" }}>
+              Die Update-Funktionalität wird derzeit entwickelt.<br/>
+              Hier werden zukünftig alle Änderungen und neuen Features angezeigt.
+            </p>
+            <div style={{ 
+              background: "rgba(30, 58, 46, 0.1)", 
+              border: "1px solid var(--accent)", 
+              borderRadius: "8px", 
+              padding: "16px", 
+              textAlign: "left",
+              marginTop: "32px"
+            }}>
+              <h5 style={{ color: "var(--accent)", margin: "0 0 12px 0" }}>
+                📋 Geplante Features:
+              </h5>
+              <ul style={{ color: "#6b7280", margin: 0, paddingLeft: "20px" }}>
+                <li>Automatische Update-Benachrichtigungen</li>
+                <li>Changelog mit Versionsverlauf</li>
+                <li>Feature-Ankündigungen</li>
+                <li>Download-Links für neue Versionen</li>
+                <li>Installations-Anweisungen</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Maintenance Tab - Datensicherung */}
