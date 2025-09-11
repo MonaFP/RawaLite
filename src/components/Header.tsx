@@ -25,7 +25,10 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}){
   const handleVersionClick = () => {
     if (updateAvailable && !isUpdating) {
       if (confirm('Update verfügbar! Jetzt installieren?')) {
-        performUpdate();
+        performUpdate().catch(error => {
+          console.error('Update failed:', error);
+          alert('Update fehlgeschlagen: ' + error.message);
+        });
       }
     }
   };

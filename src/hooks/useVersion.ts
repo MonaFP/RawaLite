@@ -49,6 +49,14 @@ export function useVersion(): UseVersionReturn {
     } catch (err) {
       console.error('Failed to load version:', err);
       setError(err instanceof Error ? err.message : 'Fehler beim Laden der Version');
+      // Fallback für kritische UI-Elemente
+      setDisplayVersion('v1.0.0');
+      setVersionInfo({
+        version: '1.0.0',
+        buildNumber: 1,
+        buildDate: '2025-09-11',
+        isDevelopment: false
+      });
     }
   }, []);
 
@@ -66,6 +74,7 @@ export function useVersion(): UseVersionReturn {
     } catch (err) {
       console.error('Failed to check for updates:', err);
       setError(err instanceof Error ? err.message : 'Fehler bei Update-Prüfung');
+      // Trotz Fehler weiter machen - App soll nicht blockieren
     } finally {
       setIsCheckingUpdates(false);
     }

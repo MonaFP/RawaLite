@@ -93,33 +93,58 @@ export class VersionService {
     try {
       const currentVersion = await this.getCurrentVersion();
       
-      // Echte GitHub API statt Simulation
-      const latestVersion = await this.fetchLatestVersionFromGitHub();
-      const hasGitHubUpdate = this.isUpdateAvailable(currentVersion.version, latestVersion);
+      // Prüfe Migration-Status zuerst (lokale Operation)
+      let migrationRequired = false;
+      try {
+        const migrationStatus = await this.updateService.getMigrationStatus();
+        migrationRequired = migrationStatus.needsMigration;
+      } catch (migrationError) {
+        LoggingService.log(`[VersionService] Migration check failed: ${migrationError}`);
+      }
       
-      // Prüfe auch Migration-Status
-      const migrationStatus = await this.updateService.getMigrationStatus();
-      const migrationRequired = migrationStatus.needsMigration;
+      // Versuche GitHub API, aber nicht blockierend
+      let hasGitHubUpdate = false;
+      let latestVersion: string | undefined;
+      let releaseNotes: string | undefined;
+      
+      try {
+        latestVersion = await this.fetchLatestVersionFromGitHub();
+        hasGitHubUpdate = this.isUpdateAvailable(currentVersion.version, latestVersion);
+        if (hasGitHubUpdate) {
+          releaseNotes = await this.fetchReleaseNotesFromGitHub(latestVersion);
+        }
+      } catch (githubError) {
+        LoggingService.log(`[VersionService] GitHub API failed, continuing without: ${githubError}`);
+        // GitHub API Fehler sind nicht kritisch - App funktioniert weiter
+      }
       
       const hasUpdate = hasGitHubUpdate || migrationRequired;
       
-      LoggingService.log(`[VersionService] Update check: current=${currentVersion.version}, latest=${latestVersion}, hasUpdate=${hasUpdate}, migrationRequired=${migrationRequired}`);
+      LoggingService.log(`[VersionService] Update check: current=${currentVersion.version}, latest=${latestVersion || 'unknown'}, hasUpdate=${hasUpdate}, migrationRequired=${migrationRequired}`);
       
       return {
         hasUpdate,
         currentVersion: currentVersion.version,
         latestVersion: hasGitHubUpdate ? latestVersion : undefined,
-        updateNotes: hasGitHubUpdate ? await this.fetchReleaseNotesFromGitHub(latestVersion) : 
-                    (migrationRequired ? 'Datenbank-Updates verfügbar' : undefined)
+        updateNotes: releaseNotes || (migrationRequired ? 'Datenbank-Updates verfügbar' : undefined)
       };
     } catch (error) {
       LoggingService.log(`[VersionService] Update check failed: ${error}`);
       
-      const currentVersion = await this.getCurrentVersion();
-      return {
-        hasUpdate: false,
-        currentVersion: currentVersion.version
-      };
+      // Fallback: Versuche wenigstens aktuelle Version zu laden
+      try {
+        const currentVersion = await this.getCurrentVersion();
+        return {
+          hasUpdate: false,
+          currentVersion: currentVersion.version
+        };
+      } catch (fallbackError) {
+        LoggingService.log(`[VersionService] Complete fallback failed: ${fallbackError}`);
+        return {
+          hasUpdate: false,
+          currentVersion: '1.0.0'
+        };
+      }
     }
   }
 
@@ -197,15 +222,22 @@ export class VersionService {
    */
   private async fetchLatestVersionFromGitHub(): Promise<string> {
     try {
+      // Kurzes Timeout für GitHub API
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 Sekunden Timeout
+      
       const response = await fetch('https://api.github.com/repos/MonaFP/RawaLite/releases/latest', {
         headers: {
           'Accept': 'application/vnd.github.v3+json',
           'User-Agent': 'RawaLite-App'
-        }
+        },
+        signal: controller.signal
       });
       
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.status}`);
+        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
       }
       
       const release = await response.json();
@@ -214,7 +246,11 @@ export class VersionService {
       LoggingService.log(`[VersionService] Fetched latest version from GitHub: ${version}`);
       return version;
     } catch (error) {
-      LoggingService.log(`[VersionService] Failed to fetch from GitHub, using fallback: ${error}`);
+      if (error instanceof Error && error.name === 'AbortError') {
+        LoggingService.log('[VersionService] GitHub API timeout, using fallback');
+      } else {
+        LoggingService.log(`[VersionService] Failed to fetch from GitHub: ${error}`);
+      }
       // Fallback to current version if GitHub is unreachable
       return this.BASE_VERSION;
     }
