@@ -87,20 +87,30 @@ export class VersionService {
   }
 
   /**
-   * Prüft auf verfügbare Updates
+   * Prüft auf verfügbare Updates via GitHub API
    */
   async checkForUpdates(): Promise<UpdateCheckResult> {
     try {
       const currentVersion = await this.getCurrentVersion();
-      const updateInfo = await this.updateService.checkForUpdates();
       
-      LoggingService.log(`[VersionService] Update check: hasUpdate=${updateInfo.updateAvailable}`);
+      // Echte GitHub API statt Simulation
+      const latestVersion = await this.fetchLatestVersionFromGitHub();
+      const hasGitHubUpdate = this.isUpdateAvailable(currentVersion.version, latestVersion);
+      
+      // Prüfe auch Migration-Status
+      const migrationStatus = await this.updateService.getMigrationStatus();
+      const migrationRequired = migrationStatus.needsMigration;
+      
+      const hasUpdate = hasGitHubUpdate || migrationRequired;
+      
+      LoggingService.log(`[VersionService] Update check: current=${currentVersion.version}, latest=${latestVersion}, hasUpdate=${hasUpdate}, migrationRequired=${migrationRequired}`);
       
       return {
-        hasUpdate: updateInfo.updateAvailable || updateInfo.migrationRequired,
+        hasUpdate,
         currentVersion: currentVersion.version,
-        latestVersion: updateInfo.updateAvailable ? updateInfo.latestVersion : undefined,
-        updateNotes: updateInfo.releaseNotes || (updateInfo.migrationRequired ? 'Datenbank-Updates verfügbar' : undefined)
+        latestVersion: hasGitHubUpdate ? latestVersion : undefined,
+        updateNotes: hasGitHubUpdate ? await this.fetchReleaseNotesFromGitHub(latestVersion) : 
+                    (migrationRequired ? 'Datenbank-Updates verfügbar' : undefined)
       };
     } catch (error) {
       LoggingService.log(`[VersionService] Update check failed: ${error}`);
@@ -182,45 +192,84 @@ export class VersionService {
     return import.meta.env.DEV || window.location.hostname === 'localhost';
   }
 
-  private hasNewerVersion(): boolean {
-    // Prüfe ob kürzlich ein Update installiert wurde
-    const lastUpdate = localStorage.getItem('rawalite.app.lastUpdate');
-    const hasUpdate = localStorage.getItem('rawalite.app.hasUpdate');
-    
-    if (hasUpdate === 'false') {
-      // Kürzlich aktualisiert, kein neues Update für eine Weile
-      const updateTime = lastUpdate ? new Date(lastUpdate).getTime() : 0;
-      const now = new Date().getTime();
-      const timeSinceUpdate = now - updateTime;
+  /**
+   * Holt die neueste Version von GitHub Releases API
+   */
+  private async fetchLatestVersionFromGitHub(): Promise<string> {
+    try {
+      const response = await fetch('https://api.github.com/repos/MonaFP/RawaLite/releases/latest', {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'RawaLite-App'
+        }
+      });
       
-      // Mindestens 5 Minuten warten bevor wieder Updates angeboten werden
-      if (timeSinceUpdate < 5 * 60 * 1000) {
-        return false;
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status}`);
       }
+      
+      const release = await response.json();
+      const version = release.tag_name?.replace(/^v/, '') || this.BASE_VERSION;
+      
+      LoggingService.log(`[VersionService] Fetched latest version from GitHub: ${version}`);
+      return version;
+    } catch (error) {
+      LoggingService.log(`[VersionService] Failed to fetch from GitHub, using fallback: ${error}`);
+      // Fallback to current version if GitHub is unreachable
+      return this.BASE_VERSION;
     }
-    
-    // Für Demo-Zwecke simulieren wir gelegentlich verfügbare Updates
-    // Aber weniger häufig als vorher
-    const updateAvailable = Math.random() < 0.05; // 5% Chance auf verfügbares Update
-    
-    if (updateAvailable) {
-      localStorage.setItem('rawalite.app.hasUpdate', 'true');
-    }
-    
-    return updateAvailable;
   }
 
-  private getLatestAvailableVersion(): string {
-    // Simulierte neueste Version
-    const current = this.BASE_VERSION.split('.').map(Number);
-    current[2] += 1; // Patch-Version erhöhen
-    return current.join('.');
+  /**
+   * Holt Release Notes von GitHub
+   */
+  private async fetchReleaseNotesFromGitHub(version: string): Promise<string> {
+    try {
+      const response = await fetch('https://api.github.com/repos/MonaFP/RawaLite/releases/latest', {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'RawaLite-App'
+        }
+      });
+      
+      if (!response.ok) {
+        return `Update auf Version ${version} verfügbar`;
+      }
+      
+      const release = await response.json();
+      return release.body || `Update auf Version ${version} verfügbar`;
+    } catch (error) {
+      LoggingService.log(`[VersionService] Failed to fetch release notes: ${error}`);
+      return `Update auf Version ${version} verfügbar`;
+    }
+  }
+
+  /**
+   * Vergleicht zwei Versionen nach Semantic Versioning
+   */
+  private isUpdateAvailable(current: string, latest: string): boolean {
+    const currentParts = current.split('.').map(n => parseInt(n) || 0);
+    const latestParts = latest.split('.').map(n => parseInt(n) || 0);
+
+    // Ensure both arrays have same length (pad with zeros)
+    const maxLength = Math.max(currentParts.length, latestParts.length);
+    while (currentParts.length < maxLength) currentParts.push(0);
+    while (latestParts.length < maxLength) latestParts.push(0);
+
+    for (let i = 0; i < maxLength; i++) {
+      if (latestParts[i] > currentParts[i]) return true;
+      if (latestParts[i] < currentParts[i]) return false;
+    }
+
+    return false; // Versions are equal
   }
 
   private async updateStoredVersion(): Promise<void> {
     try {
       const currentVersion = await this.getCurrentVersion();
-      const latestVersion = this.getLatestAvailableVersion();
+      
+      // Hole die neueste Version von GitHub
+      const latestVersion = await this.fetchLatestVersionFromGitHub();
       
       // Aktualisiere die BASE_VERSION für zukünftige Aufrufe
       (this as any).BASE_VERSION = latestVersion;

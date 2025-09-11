@@ -224,29 +224,48 @@ export class UpdateService {
   }
 
   private async fetchLatestVersion(): Promise<string> {
-    // Simulierte Implementierung
-    // In echter App: GitHub API, Update Server, etc.
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve('1.1.0'); // Simuliere neuere Version
-      }, 1000);
-    });
+    try {
+      const response = await fetch('https://api.github.com/repos/MonaFP/RawaLite/releases/latest', {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'RawaLite-App'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status}`);
+      }
+      
+      const release = await response.json();
+      const version = release.tag_name?.replace(/^v/, '') || '1.0.0';
+      
+      this.log('info', 'Fetched latest version from GitHub', { version });
+      return version;
+    } catch (error) {
+      this.log('warn', 'Failed to fetch from GitHub, using fallback', { error: error instanceof Error ? error.message : String(error) });
+      return '1.0.0'; // Fallback
+    }
   }
 
   private async fetchReleaseNotes(version: string): Promise<string> {
-    // Simulierte Release Notes
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(`
-🆕 Version ${version} Release Notes:
-• Improved database migration system
-• Enhanced backup and restore functionality  
-• Better error handling and recovery
-• Performance optimizations
-• Bug fixes and stability improvements
-        `.trim());
-      }, 500);
-    });
+    try {
+      const response = await fetch('https://api.github.com/repos/MonaFP/RawaLite/releases/latest', {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'RawaLite-App'
+        }
+      });
+      
+      if (!response.ok) {
+        return `🆕 Version ${version} verfügbar!\n• Verbesserungen und Fehlerbehebungen`;
+      }
+      
+      const release = await response.json();
+      return release.body || `🆕 Version ${version} verfügbar!\n• Verbesserungen und Fehlerbehebungen`;
+    } catch (error) {
+      this.log('warn', 'Failed to fetch release notes', { error: error instanceof Error ? error.message : String(error) });
+      return `🆕 Version ${version} verfügbar!\n• Verbesserungen und Fehlerbehebungen`;
+    }
   }
 
   private isUpdateAvailable(current: string, latest: string): boolean {
