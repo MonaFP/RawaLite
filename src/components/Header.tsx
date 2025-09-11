@@ -18,12 +18,12 @@ interface HeaderProps {
 
 export default function Header({ title: propTitle, right }: HeaderProps = {}){
   const { pathname } = useLocation();
-  const { displayVersion, updateAvailable, isUpdating, performUpdate, checkForUpdates } = useVersion();
+  const { displayVersion, updateAvailable, isUpdating, isCheckingUpdates, performUpdate, checkForUpdates } = useVersion();
   
   const title = propTitle ?? titles[pathname] ?? "RaWaLite";
   
   const handleVersionClick = async () => {
-    if (isUpdating) return; // Verhindere Mehrfach-Klicks während Update
+    if (isUpdating || isCheckingUpdates) return; // Verhindere Mehrfach-Klicks
     
     if (updateAvailable) {
       // Update verfügbar - führe Update durch
@@ -39,15 +39,32 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}){
     } else {
       // Kein Update verfügbar - prüfe nach Updates
       try {
-        await checkForUpdates();
-        if (!updateAvailable) {
-          alert('Sie verwenden bereits die neueste Version.');
-        }
+        const result = await checkForUpdates();
+        // Kurz warten, damit der State aktualisiert wird
+        setTimeout(() => {
+          if (!updateAvailable) {
+            alert('Sie verwenden bereits die neueste Version.');
+          }
+        }, 100);
       } catch (error) {
         console.error('Update check failed:', error);
         alert('Update-Prüfung fehlgeschlagen: ' + (error instanceof Error ? error.message : String(error)));
       }
     }
+  };
+  
+  // Icon basierend auf Status
+  const getStatusIcon = () => {
+    if (isUpdating) return '🔄';
+    if (isCheckingUpdates) return '⏳';
+    if (updateAvailable) return '🔔';
+    return '🔍';
+  };
+  
+  const getStatusColor = () => {
+    if (updateAvailable) return '#22c55e';
+    if (isCheckingUpdates || isUpdating) return '#f59e0b';
+    return '#3b82f6';
   };
   
   return (
@@ -56,9 +73,9 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}){
       {right && <div className="header-right">{right}</div>}
       <div 
         style={{
-          opacity: isUpdating ? 0.6 : 1,
-          cursor: isUpdating ? 'wait' : 'pointer',
-          color: updateAvailable ? '#22c55e' : '#3b82f6',
+          opacity: (isUpdating || isCheckingUpdates) ? 0.6 : 1,
+          cursor: (isUpdating || isCheckingUpdates) ? 'wait' : 'pointer',
+          color: getStatusColor(),
           fontWeight: updateAvailable ? '600' : '500',
           transition: 'all 0.2s ease',
           display: 'flex',
@@ -74,12 +91,14 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}){
         title={
           isUpdating 
             ? 'Update wird durchgeführt...' 
+            : isCheckingUpdates
+              ? 'Prüfe nach Updates...'
             : updateAvailable 
               ? 'Update verfügbar - Klicken zum Installieren' 
               : 'Klicken um nach Updates zu suchen'
         }
       >
-        {isUpdating ? '🔄' : updateAvailable ? '🔔' : '🔍'} {displayVersion}
+        {getStatusIcon()} {displayVersion}
       </div>
     </header>
   );

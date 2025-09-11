@@ -62,7 +62,7 @@ export function useVersion(): UseVersionReturn {
 
   // Updates prüfen
   const checkForUpdates = useCallback(async () => {
-    if (isCheckingUpdates) return;
+    if (isCheckingUpdates) return; // Verhindere mehrfache gleichzeitige Checks
     
     try {
       setIsCheckingUpdates(true);
@@ -78,7 +78,7 @@ export function useVersion(): UseVersionReturn {
     } finally {
       setIsCheckingUpdates(false);
     }
-  }, [isCheckingUpdates]);
+  }, [isCheckingUpdates]); // Nur isCheckingUpdates als Dependency
 
   // Update durchführen
   const performUpdate = useCallback(async () => {
@@ -120,6 +120,15 @@ export function useVersion(): UseVersionReturn {
   useEffect(() => {
     loadVersion();
   }, [loadVersion]);
+
+  // Einmaliger Update-Check beim Start (nach 2 Sekunden)
+  useEffect(() => {
+    const startupCheckTimer = setTimeout(() => {
+      checkForUpdates();
+    }, 2000);
+    
+    return () => clearTimeout(startupCheckTimer);
+  }, []); // Leeres Dependency-Array = nur einmal beim Mount
 
   // Automatische Update-Prüfung alle 30 Minuten
   useEffect(() => {
