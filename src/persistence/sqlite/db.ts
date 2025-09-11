@@ -53,7 +53,7 @@ function createSchemaIfNeeded() {
     WHERE NOT EXISTS (SELECT 1 FROM settings WHERE id = 1);
   `);
 
-  // Add nextTimesheetNumber column if it doesn't exist
+  // Add migration columns with better error handling
   try {
     const settingsInfo = db.exec(`PRAGMA table_info(settings)`);
     let hasTimesheetNumberColumn = false;
@@ -66,15 +66,28 @@ function createSchemaIfNeeded() {
     
     if (!hasTimesheetNumberColumn) {
       db.exec(`ALTER TABLE settings ADD COLUMN nextTimesheetNumber INTEGER DEFAULT 1;`);
-      console.log('Added nextTimesheetNumber column to settings table');
+      console.log('✅ Added nextTimesheetNumber column to settings table');
     }
     
     if (!hasDesignSettingsColumn) {
       db.exec(`ALTER TABLE settings ADD COLUMN designSettings TEXT;`);
-      console.log('Added designSettings column to settings table');
+      console.log('✅ Added designSettings column to settings table');
+      
+      // ✨ KRITISCH: Nach Hinzufügung der Spalte sofort Default-Werte setzen
+      const defaultDesignSettings = JSON.stringify({
+        theme: 'salbeigrün',
+        navigationMode: 'sidebar'
+      });
+      
+      try {
+        run(`UPDATE settings SET designSettings = ? WHERE id = 1 AND (designSettings IS NULL OR designSettings = '')`, [defaultDesignSettings]);
+        console.log('✅ Initialized default design settings in database');
+      } catch (updateError) {
+        console.warn('⚠️ Could not initialize default design settings:', updateError);
+      }
     }
   } catch (error) {
-    console.warn('Settings table migration error:', error);
+    console.warn('⚠️ Settings table migration error:', error);
   }
 
   db.exec(`

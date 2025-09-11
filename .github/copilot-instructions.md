@@ -531,14 +531,47 @@ VersionService.ts -> Version management & user notifications
 
 ## 🎨 Theme System (Current: v1.5.2+)
 
+**🚨 KRITISCHE REGEL - THEME-FARBEN:**
+Die nachfolgenden Farbwerte sind **FINAL** und dürfen **NIE GEÄNDERT** werden!
+Sie wurden sorgfältig ausgewählt, visuell getestet und sind perfekt implementiert.
+Nur Theme-IDs und Namen dürfen angepasst werden, niemals die Hex-Farbcodes!
+
 ### **Pastel Color Palette**
 ```typescript
-// themes.ts - 5 Pastel Themes
-'salbeigrün': { primary: '#9db3a1', secondary: '#b8c7bb', accent: '#7a9b7e' }
-'himmelblau': { primary: '#a8c5e0', secondary: '#c2d6ea', accent: '#7fb3d3' }
-'lavendel': { primary: '#c4a8d8', secondary: '#d5bee6', accent: '#b089cc' }
-'pfirsich': { primary: '#f5c2a0', secondary: '#f7d1b3', accent: '#f2ad7a' }
-'rosé': { primary: '#e8b5c2', secondary: '#edc7d1', accent: '#e299ac' }
+// themes.ts - 5 Pastel Themes (AKTUELLE IMPLEMENTIERUNG - NICHT ÄNDERN!)
+'salbeigrün': { 
+  primary: '#4a5d5a', 
+  secondary: '#3a4d4a', 
+  accent: '#7dd3a0',
+  gradient: 'linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%)'
+}
+'himmelblau': { 
+  primary: '#4a5b6b', 
+  secondary: '#3d4e5e', 
+  accent: '#87ceeb',
+  gradient: 'linear-gradient(160deg, #4a5b6b 0%, #3d4e5e 40%, #324151 100%)'
+}
+'lavendel': { 
+  primary: '#5a4d6b', 
+  secondary: '#4d405e', 
+  accent: '#b19cd9',
+  gradient: 'linear-gradient(160deg, #5a4d6b 0%, #4d405e 40%, #403351 100%)'
+}
+'pfirsich': { 
+  primary: '#6b5a4d', 
+  secondary: '#5e4d40', 
+  accent: '#f4a28c',
+  gradient: 'linear-gradient(160deg, #6b5a4d 0%, #5e4d40 40%, #514033 100%)'
+}
+'rosé': { 
+  primary: '#6b4d5a', 
+  secondary: '#5e4050', 
+  accent: '#e6a8b8',
+  gradient: 'linear-gradient(160deg, #6b4d5a 0%, #5e4050 40%, #513343 100%)'
+}
+
+// ⚠️ WICHTIG: Diese Farbwerte sind final und dürfen NICHT geändert werden!
+// Sie sind bereits perfekt implementiert und visuell getestet.
 ```
 
 ### **Navigation Modes**

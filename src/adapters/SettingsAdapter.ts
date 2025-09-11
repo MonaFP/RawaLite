@@ -61,20 +61,27 @@ export class SettingsAdapter {
 
   async getSettings(): Promise<Settings> {
     await getDB();
-    
     // Get company data from SQLite
     const settingsRows = all<any>("SELECT * FROM settings WHERE id = 1");
     const settingsRow = settingsRows[0];
-    
+
     let companyData: CompanyData;
     let designSettings: DesignSettings;
     let needsInitialSave = false;
-    
+
     if (settingsRow) {
       companyData = this.mapSQLiteToCompanyData(settingsRow);
       designSettings = this.extractDesignSettings(settingsRow);
+      console.log('🗄️ [DB] Loaded designSettings from SQLite:', settingsRow.designSettings);
+      // ✨ KRITISCH: Prüfen ob designSettings existieren, sonst Default-Werte speichern
+      if (!settingsRow.designSettings) {
+        console.log('🔧 No design settings found in database - initializing defaults');
+        designSettings = defaultSettings.designSettings;
+        needsInitialSave = true;
+      }
     } else {
       // ✨ Beim ersten Start: Defaults verwenden und sofort speichern
+      console.log('🔧 No settings record found - creating initial settings');
       companyData = defaultSettings.companyData;
       designSettings = defaultSettings.designSettings;
       needsInitialSave = true;
@@ -109,17 +116,18 @@ export class SettingsAdapter {
       designSettings
     };
 
-    // ✨ Beim ersten Start: Einstellungen sofort in SQLite speichern
+    // ✨ KRITISCH: Beim ersten Start ODER fehlenden Design-Settings sofort in SQLite speichern
     if (needsInitialSave) {
       try {
+        console.log('💾 Saving initial design settings to SQLite:', designSettings);
         const companyDataWithDesign = {
           ...companyData,
           designSettings: JSON.stringify(designSettings)
         };
         await this.updateCompanyData(companyDataWithDesign);
-        console.log('Initialized default design settings in SQLite');
+        console.log('✅ Successfully initialized design settings in SQLite');
       } catch (error) {
-        console.warn('Could not save initial design settings:', error);
+        console.error('❌ Could not save initial design settings:', error);
       }
     }
 

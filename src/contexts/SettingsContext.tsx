@@ -26,48 +26,64 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const refreshSettings = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Loading settings from SQLite...');
       const loadedSettings = await settingsAdapter.getSettings();
-      setSettings(loadedSettings);
       
-      // ✨ SOFORT Design-Einstellungen anwenden beim Laden (KRITISCH für Reload-Persistierung)
+      // ✨ KRITISCH: Design-Settings SOFORT anwenden, bevor setSettings aufgerufen wird
       if (loadedSettings.designSettings) {
-        console.log('🎨 Applying persisted design settings:', loadedSettings.designSettings);
-        applyThemeToDocument(loadedSettings.designSettings.theme);
+        console.log('🎨 [IMMEDIATE] Applying persisted design settings:', loadedSettings.designSettings);
+        applyThemeToDocument(loadedSettings.designSettings.theme, loadedSettings.designSettings.customColors);
         applyNavigationMode(loadedSettings.designSettings.navigationMode);
       } else {
-        // ✨ Fallback zu Standard-Einstellungen wenn keine persistierten Settings vorhanden
-        console.log('🎨 No persisted design settings - applying defaults');
-        applyThemeToDocument('green');
+        console.warn('⚠️ No persisted design settings found - applying defaults');
+        applyThemeToDocument('salbeigrün');
         applyNavigationMode('sidebar');
       }
       
+      // Settings setzen NACH der Anwendung der Design-Settings
+      setSettings(loadedSettings);
       setError(null);
+      console.log('✅ Settings loaded and applied successfully');
     } catch (err) {
-      console.error('Error loading settings from SQLite:', err);
+      console.error('❌ Error loading settings from SQLite:', err);
       setError('Fehler beim Laden der Einstellungen');
       
       // ✨ Selbst bei Fehler Standard-Theme anwenden
-      applyThemeToDocument('green');
+      console.log('🎨 Applying fallback design settings due to error');
+      applyThemeToDocument('salbeigrün');
       applyNavigationMode('sidebar');
     } finally {
       setLoading(false);
     }
   };
 
+
   // Initial load + Design-Settings anwenden
   useEffect(() => {
     refreshSettings();
   }, []);
 
+  // Theme und Navigation IMMER synchron anwenden, sobald settings.designSettings geladen sind
+  useEffect(() => {
+    if (settings.designSettings) {
+      console.log('🎨 [Sync] Applying design settings from DB:', settings.designSettings);
+      applyThemeToDocument(settings.designSettings.theme, settings.designSettings.customColors);
+      applyNavigationMode(settings.designSettings.navigationMode);
+    }
+  }, [settings.designSettings]);
+
   const updateCompanyData = async (companyData: CompanyData) => {
     try {
       setLoading(true);
+      console.log('💾 Saving company data (including design settings)...');
       await settingsAdapter.updateCompanyData(companyData);
       
-      // Force refresh from database
+      // ✨ KRITISCH: Nach dem Speichern sofort Settings neu laden für Persistierung
+      console.log('🔄 Refreshing settings after company data update...');
       await refreshSettings();
+      console.log('✅ Company data saved and settings refreshed');
     } catch (err) {
-      console.error('Error saving company data:', err);
+      console.error('❌ Error saving company data:', err);
       setError('Fehler beim Speichern der Unternehmensdaten');
       throw err;
     }

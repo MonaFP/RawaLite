@@ -15,12 +15,19 @@ export type CompanyData = {
   logo?: string; // Base64-encoded Logo
 };
 
-export type ThemeColor = 'green' | 'blue' | 'purple' | 'orange' | 'red';
+export type ThemeColor = 'salbeigrün' | 'himmelblau' | 'lavendel' | 'pfirsich' | 'rosé' | 'custom';
 export type NavigationMode = 'sidebar' | 'header';
+
+export type CustomColorSettings = {
+  primary: string;
+  secondary: string;
+  accent: string;
+};
 
 export type DesignSettings = {
   theme: ThemeColor;
   navigationMode: NavigationMode;
+  customColors?: CustomColorSettings;
 };
 
 export type NumberingCircle = {
@@ -57,7 +64,7 @@ export const defaultSettings: Settings = {
     logo: ''
   },
   designSettings: {
-    theme: 'green',
+    theme: 'salbeigrün',
     navigationMode: 'sidebar'
   },
   numberingCircles: [

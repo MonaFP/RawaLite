@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
-import type { ThemeColor, NavigationMode, DesignSettings } from '../lib/settings';
+import type { ThemeColor, NavigationMode, DesignSettings, CustomColorSettings } from '../lib/settings';
 import { applyThemeToDocument, applyNavigationMode, getTheme } from '../lib/themes';
 
 export function useDesignSettings() {
@@ -16,36 +16,40 @@ export function useDesignSettings() {
     }
   }, [settings.designSettings, loading]);
 
-  const updateTheme = async (theme: ThemeColor): Promise<void> => {
+  const updateTheme = async (theme: ThemeColor, customColors?: CustomColorSettings): Promise<void> => {
     try {
       setApplying(true);
+      console.log('🎨 Updating theme to:', theme, customColors ? 'with custom colors' : '');
       
       // Apply theme immediately for instant visual feedback
-      applyThemeToDocument(theme);
+      applyThemeToDocument(theme, customColors);
       
-      // Update settings in database
+      // Update settings in database with current navigation mode preserved
       const updatedSettings = {
         ...settings,
         designSettings: {
-          ...settings.designSettings,
-          theme
+          theme,
+          navigationMode: settings.designSettings?.navigationMode || 'sidebar',
+          customColors: customColors
         }
       };
       
-      // For now, we store design settings in SQLite as part of company data
-      // This is a pragmatic approach that works with the existing SettingsAdapter
+      console.log('💾 Saving theme to database:', updatedSettings.designSettings);
+      
+      // Store design settings as JSON string in company data
       const companyDataWithDesign = {
         ...settings.companyData,
-        // Store design settings as JSON string in a custom field
         designSettings: JSON.stringify(updatedSettings.designSettings)
       };
       
       await updateCompanyData(companyDataWithDesign);
+      console.log('✅ Theme successfully updated and saved');
     } catch (err) {
-      console.error('Error updating theme:', err);
+      console.error('❌ Error updating theme:', err);
       // Rollback on error
       if (settings.designSettings) {
-        applyThemeToDocument(settings.designSettings.theme);
+        console.log('🔄 Rolling back theme due to error');
+        applyThemeToDocument(settings.designSettings.theme, settings.designSettings.customColors);
       }
       throw err;
     } finally {
@@ -56,18 +60,22 @@ export function useDesignSettings() {
   const updateNavigationMode = async (navigationMode: NavigationMode): Promise<void> => {
     try {
       setApplying(true);
+      console.log('🧭 Updating navigation mode to:', navigationMode);
       
       // Apply navigation mode immediately
       applyNavigationMode(navigationMode);
       
-      // Update settings in database
+      // Update settings in database with current theme preserved
       const updatedSettings = {
         ...settings,
         designSettings: {
-          ...settings.designSettings,
-          navigationMode
+          theme: settings.designSettings?.theme || 'salbeigrün',
+          navigationMode,
+          customColors: settings.designSettings?.customColors
         }
       };
+      
+      console.log('💾 Saving navigation mode to database:', updatedSettings.designSettings);
       
       const companyDataWithDesign = {
         ...settings.companyData,
@@ -75,10 +83,12 @@ export function useDesignSettings() {
       };
       
       await updateCompanyData(companyDataWithDesign);
+      console.log('✅ Navigation mode successfully updated and saved');
     } catch (err) {
-      console.error('Error updating navigation mode:', err);
+      console.error('❌ Error updating navigation mode:', err);
       // Rollback on error
       if (settings.designSettings) {
+        console.log('🔄 Rolling back navigation mode due to error');
         applyNavigationMode(settings.designSettings.navigationMode);
       }
       throw err;
@@ -87,15 +97,17 @@ export function useDesignSettings() {
     }
   };
 
-  const currentTheme = settings.designSettings?.theme || 'green';
+  const currentTheme = settings.designSettings?.theme || 'salbeigrün';
   const currentNavigationMode = settings.designSettings?.navigationMode || 'sidebar';
-  const currentThemeDefinition = getTheme(currentTheme);
+  const currentCustomColors = settings.designSettings?.customColors;
+  const currentThemeDefinition = getTheme(currentTheme, currentCustomColors);
 
   return {
     // Current state
     designSettings: settings.designSettings,
     currentTheme,
     currentNavigationMode,
+    currentCustomColors,
     currentThemeDefinition,
     
     // Status

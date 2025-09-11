@@ -24,40 +24,49 @@
   --main-bg-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
 }
 
-/* Theme Color Variations - Neue Pastelltöne */
-:root[data-theme="green"] {
+/* Theme Color Variations - Deutsche Theme-Namen */
+:root[data-theme="salbeigrün"] {
   --theme-primary: #4a5d5a;
   --theme-secondary: #3a4d4a;
   --theme-accent: #7dd3a0;
   --theme-gradient: linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%);
 }
 
-:root[data-theme="blue"] {
+:root[data-theme="himmelblau"] {
   --theme-primary: #4a5b6b;
   --theme-secondary: #3d4e5e;
   --theme-accent: #87ceeb;
   --theme-gradient: linear-gradient(160deg, #4a5b6b 0%, #3d4e5e 40%, #324151 100%);
 }
 
-:root[data-theme="purple"] {
+:root[data-theme="lavendel"] {
   --theme-primary: #5a4d6b;
   --theme-secondary: #4d405e;
   --theme-accent: #b19cd9;
   --theme-gradient: linear-gradient(160deg, #5a4d6b 0%, #4d405e 40%, #403351 100%);
 }
 
-:root[data-theme="orange"] {
+:root[data-theme="pfirsich"] {
   --theme-primary: #6b5a4d;
   --theme-secondary: #5e4d40;
   --theme-accent: #f4a28c;
   --theme-gradient: linear-gradient(160deg, #6b5a4d 0%, #5e4d40 40%, #514033 100%);
 }
 
-:root[data-theme="red"] {
+:root[data-theme="rosé"] {
   --theme-primary: #6b4d5a;
   --theme-secondary: #5e4050;
   --theme-accent: #e6a8b8;
   --theme-gradient: linear-gradient(160deg, #6b4d5a 0%, #5e4050 40%, #513343 100%);
+}
+
+:root[data-theme="custom"] {
+  /* Custom theme colors will be applied dynamically via JavaScript */
+  /* These are fallback values if custom colors are not set */
+  --theme-primary: #4a5d5a;
+  --theme-secondary: #3a4d4a;
+  --theme-accent: #7dd3a0;
+  --theme-gradient: linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%);
 }
 
 /* Navigation Mode Layouts - EINHEITLICHE Sidebar-Breite */

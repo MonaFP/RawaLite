@@ -1,9 +1,16 @@
-export type ThemeColor = 'green' | 'blue' | 'purple' | 'orange' | 'red';
+export type ThemeColor = 'salbeigrün' | 'himmelblau' | 'lavendel' | 'pfirsich' | 'rosé' | 'custom';
 export type NavigationMode = 'sidebar' | 'header';
+
+export interface CustomColorSettings {
+  primary: string;
+  secondary: string;
+  accent: string;
+}
 
 export interface DesignSettings {
   theme: ThemeColor;
   navigationMode: NavigationMode;
+  customColors?: CustomColorSettings;
 }
 
 export interface ThemeDefinition {
@@ -18,7 +25,7 @@ export interface ThemeDefinition {
 
 export const availableThemes: ThemeDefinition[] = [
   {
-    id: 'green',
+    id: 'salbeigrün',
     name: 'Salbeigrün (Standard)',
     primary: '#4a5d5a',
     secondary: '#3a4d4a',
@@ -27,7 +34,7 @@ export const availableThemes: ThemeDefinition[] = [
     description: 'Beruhigendes Salbeigrün mit sanften Pastellakzenten'
   },
   {
-    id: 'blue',
+    id: 'himmelblau',
     name: 'Himmelblau (Business)',
     primary: '#4a5b6b',
     secondary: '#3d4e5e',
@@ -36,7 +43,7 @@ export const availableThemes: ThemeDefinition[] = [
     description: 'Sanftes Himmelblau für professionelle Eleganz'
   },
   {
-    id: 'purple',
+    id: 'lavendel',
     name: 'Lavendel (Elegant)',
     primary: '#5a4d6b',
     secondary: '#4d405e',
@@ -45,7 +52,7 @@ export const availableThemes: ThemeDefinition[] = [
     description: 'Elegantes Lavendel mit warmen Untertönen'
   },
   {
-    id: 'orange',
+    id: 'pfirsich',
     name: 'Pfirsich (Warm)',
     primary: '#6b5a4d',
     secondary: '#5e4d40',
@@ -54,27 +61,55 @@ export const availableThemes: ThemeDefinition[] = [
     description: 'Warme Pfirsichtöne für gemütliche Atmosphäre'
   },
   {
-    id: 'red',
+    id: 'rosé',
     name: 'Rosé (Soft)',
     primary: '#6b4d5a',
     secondary: '#5e4050',
     accent: '#e6a8b8',
     gradient: 'linear-gradient(160deg, #6b4d5a 0%, #5e4050 40%, #513343 100%)',
     description: 'Sanfte Rosétöne für dezente Eleganz'
+  },
+  {
+    id: 'custom',
+    name: 'Custom Colors',
+    primary: '#4a5d5a', // Default fallback
+    secondary: '#3a4d4a',
+    accent: '#7dd3a0',
+    gradient: 'linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%)',
+    description: 'Benutzerdefinierte Farbauswahl'
   }
 ];
 
 export const defaultDesignSettings: DesignSettings = {
-  theme: 'green',
+  theme: 'salbeigrün',
   navigationMode: 'sidebar'
 };
 
-export function getTheme(themeId: ThemeColor): ThemeDefinition {
-  return availableThemes.find(theme => theme.id === themeId) || availableThemes[0];
+export const defaultCustomColors: CustomColorSettings = {
+  primary: '#4a5d5a',
+  secondary: '#3a4d4a',
+  accent: '#7dd3a0'
+};
+
+export function getTheme(themeId: ThemeColor, customColors?: CustomColorSettings): ThemeDefinition {
+  const theme = availableThemes.find(theme => theme.id === themeId) || availableThemes[0];
+  
+  // If it's a custom theme and custom colors are provided, override the colors
+  if (themeId === 'custom' && customColors) {
+    return {
+      ...theme,
+      primary: customColors.primary,
+      secondary: customColors.secondary,
+      accent: customColors.accent,
+      gradient: `linear-gradient(160deg, ${customColors.primary} 0%, ${customColors.secondary} 40%, ${customColors.secondary} 100%)`
+    };
+  }
+  
+  return theme;
 }
 
-export function applyThemeToDocument(themeId: ThemeColor): void {
-  const theme = getTheme(themeId);
+export function applyThemeToDocument(themeId: ThemeColor, customColors?: CustomColorSettings): void {
+  const theme = getTheme(themeId, customColors);
   const root = document.documentElement;
   
   // Set theme-specific CSS custom properties

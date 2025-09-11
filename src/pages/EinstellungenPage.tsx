@@ -5,11 +5,13 @@ import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
 import { useDesignSettings } from "../hooks/useDesignSettings";
+import { CustomColorPicker } from "../components/CustomColorPicker";
 import { MigrationManager } from "../components/MigrationManager";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
 import type { Activity } from "../persistence/adapter";
 import { defaultSettings } from "../lib/settings";
-import { availableThemes, type ThemeColor, type NavigationMode } from "../lib/themes";
+import { availableThemes, defaultCustomColors, type ThemeColor, type NavigationMode } from "../lib/themes";
+import type { CustomColorSettings } from "../lib/settings";
 
 interface EinstellungenPageProps {
   title?: string;
@@ -19,7 +21,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const navigate = useNavigate();
   const location = useLocation();
   const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useSettings();
-  const { currentTheme, currentNavigationMode, updateTheme, updateNavigationMode, loading: designLoading } = useDesignSettings();
+  const { currentTheme, currentNavigationMode, currentCustomColors, updateTheme, updateNavigationMode, loading: designLoading } = useDesignSettings();
   const { adapter } = usePersistence();
   const { showError, showSuccess } = useNotifications();
   const { activities, createActivity, updateActivity, deleteActivity } = useActivities();
@@ -32,6 +34,9 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const [selectedCSVFile, setSelectedCSVFile] = useState<File | null>(null);
   const [activityFormData, setActivityFormData] = useState<Partial<Activity>>({});
   const [editingActivity, setEditingActivity] = useState<number | null>(null);
+  const [customColors, setCustomColors] = useState<CustomColorSettings>(
+    currentCustomColors || defaultCustomColors
+  );
 
   // Debug: Watch activity form data changes
   useEffect(() => {
@@ -55,6 +60,13 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     setCompanyFormData(settings.companyData);
     setNumberingFormData(settings.numberingCircles);
   }, [settings]);
+
+  // Update custom colors when current settings change
+  React.useEffect(() => {
+    if (currentCustomColors) {
+      setCustomColors(currentCustomColors);
+    }
+  }, [currentCustomColors]);
 
   // ✅ Handle tab query parameter for direct navigation (e.g. from header version click)
   useEffect(() => {
@@ -117,11 +129,27 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const handleCompanySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('🏢 Company form submitted with data:', companyFormData);
-    
+    // Fallback: Felder aus Settings übernehmen, falls im Formular leer
+    const safeCompanyData: CompanyData = {
+      name: companyFormData.name || settings.companyData.name || '',
+      street: companyFormData.street || settings.companyData.street || '',
+      postalCode: companyFormData.postalCode || settings.companyData.postalCode || '',
+      city: companyFormData.city || settings.companyData.city || '',
+      phone: companyFormData.phone || settings.companyData.phone || '',
+      email: companyFormData.email || settings.companyData.email || '',
+      website: companyFormData.website || settings.companyData.website || '',
+      taxNumber: companyFormData.taxNumber || settings.companyData.taxNumber || '',
+      vatId: companyFormData.vatId || settings.companyData.vatId || '',
+      kleinunternehmer: typeof companyFormData.kleinunternehmer === 'boolean' ? companyFormData.kleinunternehmer : settings.companyData.kleinunternehmer,
+      bankName: companyFormData.bankName || settings.companyData.bankName || '',
+      bankAccount: companyFormData.bankAccount || settings.companyData.bankAccount || '',
+      bankBic: companyFormData.bankBic || settings.companyData.bankBic || '',
+      logo: companyFormData.logo || settings.companyData.logo || ''
+    };
+    console.log('🏢 Company form submitted with safe data:', safeCompanyData);
     try {
       setSaving(true);
-      await updateCompanyData(companyFormData);
+      await updateCompanyData({ ...safeCompanyData, designSettings: JSON.stringify(settings.designSettings) } as CompanyData & { designSettings?: string });
       showSuccess('Unternehmensdaten gespeichert!');
       // KEIN window.location.reload() - Daten bleiben erhalten
     } catch (error) {
@@ -137,7 +165,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     console.log('Tax form submitted, NOT calling clear data');
     try {
       setSaving(true);
-      await updateCompanyData(companyFormData);
+  await updateCompanyData({ ...companyFormData, designSettings: JSON.stringify(settings.designSettings) } as CompanyData & { designSettings?: string });
       showSuccess('Steuerliche Einstellungen gespeichert!');
     } catch (error) {
       console.error('Tax settings save error:', error);
@@ -152,7 +180,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     console.log('🖼️ Logo form submitted, saving logo only');
     try {
       setSaving(true);
-      await updateCompanyData(companyFormData);
+  await updateCompanyData({ ...companyFormData, designSettings: JSON.stringify(settings.designSettings) } as CompanyData & { designSettings?: string });
       showSuccess('Logo erfolgreich gespeichert!');
       // KEIN window.location.reload() hier - Logo bleibt im aktuellen Tab
     } catch (error) {
@@ -168,7 +196,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     console.log('🏦 Bank form submitted, saving bank data only');
     try {
       setSaving(true);
-      await updateCompanyData(companyFormData);
+  await updateCompanyData({ ...companyFormData, designSettings: JSON.stringify(settings.designSettings) } as CompanyData & { designSettings?: string });
       showSuccess('Bankverbindung erfolgreich gespeichert!');
       // KEIN window.location.reload() hier - Bank-Tab bleibt aktiv
     } catch (error) {
@@ -2204,7 +2232,145 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                 }}></div>
               </div>
             ))}
+            
+            {/* Custom Colors Theme Option */}
+            <div 
+              onClick={async () => {
+                if (designLoading) return;
+                try {
+                  await updateTheme('custom', customColors);
+                  showSuccess('Custom Colors-Theme wurde angewendet!');
+                } catch (error) {
+                  showError(`Fehler beim Anwenden des Custom Themes: ${error}`);
+                }
+              }}
+              style={{
+                border: currentTheme === 'custom' ? "3px solid var(--theme-accent)" : "2px solid rgba(255,255,255,.1)",
+                borderRadius: "12px",
+                padding: "16px",
+                cursor: designLoading ? "not-allowed" : "pointer",
+                background: `linear-gradient(135deg, ${customColors.primary}15 0%, ${customColors.secondary}10 100%)`,
+                transition: "all 0.2s ease",
+                position: "relative",
+                opacity: designLoading ? 0.6 : 1,
+                transform: currentTheme === 'custom' ? "scale(1.02)" : "scale(1)",
+                boxShadow: currentTheme === 'custom' 
+                  ? `0 8px 25px ${customColors.primary}30, 0 4px 10px rgba(0,0,0,0.1)` 
+                  : "0 2px 8px rgba(0,0,0,0.1)"
+              }}
+            >
+              {/* Custom Theme Preview Header */}
+              <div style={{ 
+                background: `linear-gradient(160deg, ${customColors.primary} 0%, ${customColors.secondary} 40%, ${customColors.secondary} 100%)`,
+                borderRadius: "8px",
+                padding: "12px",
+                marginBottom: "12px",
+                position: "relative",
+                overflow: "hidden"
+              }}>
+                <div style={{
+                  color: "white",
+                  fontWeight: "600",
+                  fontSize: "16px",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.2)"
+                }}>
+                  🎨 Custom Colors
+                </div>
+                <div style={{
+                  color: "rgba(255,255,255,0.9)",
+                  fontSize: "12px",
+                  marginTop: "4px"
+                }}>
+                  Benutzerdefinierte Farbauswahl
+                </div>
+                
+                {/* Current Theme Badge */}
+                {currentTheme === 'custom' && (
+                  <div style={{
+                    position: "absolute",
+                    top: "8px",
+                    right: "8px",
+                    background: "rgba(255,255,255,0.2)",
+                    color: "white",
+                    padding: "4px 8px",
+                    borderRadius: "12px",
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    backdropFilter: "blur(10px)"
+                  }}>
+                    ✓ Aktiv
+                  </div>
+                )}
+              </div>
+
+              {/* Custom Color Palette Preview */}
+              <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                <div style={{
+                  width: "40px",
+                  height: "20px",
+                  background: customColors.primary,
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255,255,255,0.2)"
+                }}></div>
+                <div style={{
+                  width: "40px",
+                  height: "20px",
+                  background: customColors.secondary,
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255,255,255,0.2)"
+                }}></div>
+                <div style={{
+                  width: "40px",
+                  height: "20px",
+                  background: customColors.accent,
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255,255,255,0.2)"
+                }}></div>
+              </div>
+
+              {/* Custom Theme Info */}
+              <div style={{
+                fontSize: "12px",
+                color: "#6b7280",
+                lineHeight: "1.4"
+              }}>
+                <div><strong>Primary:</strong> {customColors.primary}</div>
+                <div><strong>Accent:</strong> {customColors.accent}</div>
+              </div>
+
+              {/* Hover Overlay */}
+              <div style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: currentTheme === 'custom' 
+                  ? "transparent"
+                  : "rgba(255,255,255,0)",
+                borderRadius: "12px",
+                transition: "background 0.2s ease",
+                pointerEvents: "none"
+              }}></div>
+            </div>
           </div>
+
+          {/* Custom Color Picker */}
+          {currentTheme === 'custom' && (
+            <CustomColorPicker
+              colors={customColors}
+              onChange={setCustomColors}
+              onApply={async () => {
+                try {
+                  await updateTheme('custom', customColors);
+                  showSuccess('Custom Colors wurden angewendet!');
+                } catch (error) {
+                  showError(`Fehler beim Anwenden der Custom Colors: ${error}`);
+                }
+              }}
+              isApplying={designLoading}
+            />
+          )}
 
           <div style={{ 
             marginTop: "32px", 
