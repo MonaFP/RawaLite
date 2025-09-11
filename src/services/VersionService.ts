@@ -23,7 +23,7 @@ export interface UpdateCheckResult {
 }
 
 export class VersionService {
-  private readonly BASE_VERSION = '1.4.1';  // Updated to current version
+  private readonly BASE_VERSION = '1.5.0';  // Updated to current version
   private readonly BUILD_DATE = '2025-09-11';
   
   private updateService: UpdateService;
@@ -243,7 +243,7 @@ export class VersionService {
       // Für Testing: Setze Version niedriger als die auf GitHub
       // damit ein Update erkannt wird
       if (this.isDevelopmentMode()) {
-        return '1.4.0'; // Niedriger als die aktuelle GitHub Version 1.4.1
+        return '1.3.0'; // Niedriger als die aktuelle GitHub Version 1.3.1
       }
       
       return this.BASE_VERSION;
