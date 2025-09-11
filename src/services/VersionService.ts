@@ -23,7 +23,7 @@ export interface UpdateCheckResult {
 }
 
 export class VersionService {
-  private readonly BASE_VERSION = '1.5.0';  // Korrekte aktuelle Version
+  private readonly BASE_VERSION = '1.5.1';  // Neue Version mit Routing-Fixes
   private readonly BUILD_DATE = '2025-09-11';
   
   private updateService: UpdateService;
