@@ -8,4 +8,14 @@ declare interface Window {
     getSettings: () => Promise<any>;
     setKleinunternehmer: (val: boolean) => Promise<void>;
   };
+  rawalite?: {
+    db: {
+      load: () => Promise<Uint8Array | null>;
+      save: (data: Uint8Array) => Promise<boolean>;
+    };
+    app: {
+      restart: () => Promise<void>;
+      getVersion: () => Promise<string>;
+    };
+  };
 }

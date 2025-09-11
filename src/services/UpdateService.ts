@@ -347,12 +347,18 @@ export class UpdateService {
   async restartApplication(): Promise<void> {
     this.log('info', 'Application restart requested');
     
-    // In echter Electron-App:
-    // const { app } = require('electron');
-    // app.relaunch();
-    // app.exit();
+    // Für Electron-App - prüfe ob Electron verfügbar ist
+    if (typeof window !== 'undefined' && (window as any).rawalite?.app) {
+      try {
+        // Versuche Electron Neustart
+        await (window as any).rawalite.app.restart();
+        return;
+      } catch (error) {
+        this.log('warn', 'Electron restart failed, falling back to reload', { error });
+      }
+    }
     
-    // Für Browser-basierte Entwicklung:
+    // Fallback für Browser-basierte Entwicklung oder wenn Electron nicht verfügbar
     if (typeof window !== 'undefined') {
       window.location.reload();
     }
