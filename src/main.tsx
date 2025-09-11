@@ -7,6 +7,7 @@ import PersistenceProvider from "./PersistenceProvider";
 import { LoadingProvider, LoadingOverlay } from "./contexts/LoadingContext";
 import { NotificationProvider, NotificationContainer } from "./contexts/NotificationContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
+import { MigrationInitializer } from "./components/MigrationInitializer";
 
 // Import pages
 import DashboardPage from "./pages/DashboardPage";
@@ -70,9 +71,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <NotificationProvider>
         <PersistenceProvider mode="sqlite">
           <SettingsProvider>
-            <RouterProvider router={router} />
-            <LoadingOverlay />
-            <NotificationContainer />
+            <MigrationInitializer>
+              <RouterProvider router={router} />
+              <LoadingOverlay />
+              <NotificationContainer />
+            </MigrationInitializer>
           </SettingsProvider>
         </PersistenceProvider>
       </NotificationProvider>

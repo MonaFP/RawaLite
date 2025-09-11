@@ -4,6 +4,7 @@ import { useSettings } from "../contexts/SettingsContext";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
+import { MigrationManager } from "../components/MigrationManager";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
 import type { Activity } from "../persistence/adapter";
 import { defaultSettings } from "../lib/settings";
@@ -2027,44 +2028,15 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
       )}
 
       {/* Updates Tab */}
+      {/* Updates Tab - Migration & Update Management */}
       {activeTab === 'updates' && (
         <div>
-          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Updates & Changelog</h3>
+          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Datenbank-Migration & App-Updates</h3>
           <p style={{ margin: "0 0 24px 0", color: "#6b7280", fontSize: "14px" }}>
-            Neue Funktionen, Verbesserungen und Fehlerbehebungen
+            Verwalten Sie Datenbank-Migrationen und App-Updates sicher mit automatischen Backups.
           </p>
-
-          <div style={{ textAlign: "center", padding: "60px 40px" }}>
-            <div style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.6 }}>
-              🚧
-            </div>
-            <h4 style={{ color: "var(--accent)", marginBottom: "12px" }}>
-              In Entwicklung
-            </h4>
-            <p style={{ color: "#6b7280", marginBottom: "20px", lineHeight: "1.5" }}>
-              Die Update-Funktionalität wird derzeit entwickelt.<br/>
-              Hier werden zukünftig alle Änderungen und neuen Features angezeigt.
-            </p>
-            <div style={{ 
-              background: "rgba(30, 58, 46, 0.1)", 
-              border: "1px solid var(--accent)", 
-              borderRadius: "8px", 
-              padding: "16px", 
-              textAlign: "left",
-              marginTop: "32px"
-            }}>
-              <h5 style={{ color: "var(--accent)", margin: "0 0 12px 0" }}>
-                📋 Geplante Features:
-              </h5>
-              <ul style={{ color: "#6b7280", margin: 0, paddingLeft: "20px" }}>
-                <li>Automatische Update-Benachrichtigungen</li>
-                <li>Changelog mit Versionsverlauf</li>
-                <li>Feature-Ankündigungen</li>
-                <li>Download-Links für neue Versionen</li>
-                <li>Installations-Anweisungen</li>
-              </ul>
-            </div>
-          </div>
+          
+          <MigrationManager />
         </div>
       )}
 

@@ -587,6 +587,7 @@ export default function TimesheetForm({ initial, onSubmit, onCancel, submitLabel
             </div>
           )}
         </div>
+        </div>
 
         {/* Kalkulations-Vorschau */}
         {subtotal > 0 && (
