@@ -3,6 +3,7 @@ import { useCustomers } from "../hooks/useCustomers";
 import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
 import { usePackages } from "../hooks/usePackages";
+import { useDesignSettings } from "../hooks/useDesignSettings";
 
 interface DashboardPageProps{
   title?: string;
@@ -13,6 +14,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
   const { offers } = useOffers();
   const { invoices } = useInvoices();
   const { packages } = usePackages();
+  const { currentNavigationMode } = useDesignSettings();
 
   // Statistiken berechnen
   const stats = {
@@ -76,7 +78,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
       <h2 style={{marginTop:0}}>{title}</h2>
       <p>Willkommen in RaWaLite. Hier ist deine Übersicht:</p>
       
-      {/* Haupt-Statistiken */}
+      {/* Haupt-Statistiken - IMMER anzeigen */}
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:16, marginBottom:24}}>
         <div className="card" style={{background:"linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)"}}>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
@@ -125,7 +127,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
         </div>
       </div>
 
-      {/* Finanzübersicht */}
+      {/* Finanzübersicht - IMMER anzeigen */}
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))", gap:16, marginBottom:24}}>
         <div className="card">
           <h3 style={{marginTop:0}}>💰 Finanzübersicht</h3>
@@ -150,7 +152,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
         </div>
       </div>
 
-      {/* Letzte Aktivitäten */}
+      {/* Letzte Aktivitäten - IMMER anzeigen */}
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(400px,1fr))", gap:16}}>
         <div className="card">
           <h3 style={{marginTop:0}}>📋 Letzte Angebote</h3>

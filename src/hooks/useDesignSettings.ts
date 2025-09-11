@@ -7,11 +7,12 @@ export function useDesignSettings() {
   const { settings, loading, error, updateCompanyData } = useSettings();
   const [applying, setApplying] = useState(false);
 
-  // Apply theme on load and when settings change
+  // Apply theme nur wenn Settings sich AKTIV ändern (nicht beim ersten Laden)
   useEffect(() => {
     if (!loading && settings.designSettings) {
-      applyThemeToDocument(settings.designSettings.theme);
-      applyNavigationMode(settings.designSettings.navigationMode);
+      // Nur anwenden wenn es sich um eine Änderung handelt, nicht beim ersten Laden
+      // Der SettingsContext kümmert sich bereits um die initiale Anwendung
+      console.log('🔄 Design settings changed in useDesignSettings:', settings.designSettings);
     }
   }, [settings.designSettings, loading]);
 

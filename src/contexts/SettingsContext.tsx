@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { SettingsAdapter } from '../adapters/SettingsAdapter';
 import type { Settings, CompanyData, NumberingCircle } from '../lib/settings';
 import { defaultSettings } from '../lib/settings';
+import { applyThemeToDocument, applyNavigationMode } from '../lib/themes';
 
 interface SettingsContextType {
   settings: Settings;
@@ -27,16 +28,33 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       const loadedSettings = await settingsAdapter.getSettings();
       setSettings(loadedSettings);
+      
+      // ✨ SOFORT Design-Einstellungen anwenden beim Laden (KRITISCH für Reload-Persistierung)
+      if (loadedSettings.designSettings) {
+        console.log('🎨 Applying persisted design settings:', loadedSettings.designSettings);
+        applyThemeToDocument(loadedSettings.designSettings.theme);
+        applyNavigationMode(loadedSettings.designSettings.navigationMode);
+      } else {
+        // ✨ Fallback zu Standard-Einstellungen wenn keine persistierten Settings vorhanden
+        console.log('🎨 No persisted design settings - applying defaults');
+        applyThemeToDocument('green');
+        applyNavigationMode('sidebar');
+      }
+      
       setError(null);
     } catch (err) {
       console.error('Error loading settings from SQLite:', err);
       setError('Fehler beim Laden der Einstellungen');
+      
+      // ✨ Selbst bei Fehler Standard-Theme anwenden
+      applyThemeToDocument('green');
+      applyNavigationMode('sidebar');
     } finally {
       setLoading(false);
     }
   };
 
-  // Initial load
+  // Initial load + Design-Settings anwenden
   useEffect(() => {
     refreshSettings();
   }, []);

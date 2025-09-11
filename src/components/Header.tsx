@@ -1,6 +1,7 @@
 import { useLocation, NavLink } from "react-router-dom";
 import { useVersion } from "../hooks/useVersion";
 import { useDesignSettings } from "../hooks/useDesignSettings";
+import HeaderWidgets from "./HeaderWidgets";
 
 const titles: Record<string,string> = {
   "/": "Dashboard",
@@ -107,9 +108,9 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}){
         </nav>
       )}
       
-      {/* Page Title für Sidebar-Modus */}
+      {/* Widgets für Sidebar-Modus */}
       {currentNavigationMode === 'sidebar' && (
-        <div className="title">{title}</div>
+        <HeaderWidgets />
       )}
       
       {/* Right Content */}

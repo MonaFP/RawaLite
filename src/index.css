@@ -60,33 +60,128 @@
   --theme-gradient: linear-gradient(160deg, #6b4d5a 0%, #5e4050 40%, #513343 100%);
 }
 
-/* Navigation Mode Layouts */
+/* Navigation Mode Layouts - EINHEITLICHE Sidebar-Breite */
 :root[data-nav-mode="sidebar"] .app {
   grid-template-columns: 240px 1fr;
-  grid-template-rows: 56px 1fr;
+  grid-template-rows: 70px 1fr; /* Höher für Widgets */
   grid-template-areas:
     "sidebar header"
     "sidebar main";
 }
 
 :root[data-nav-mode="header"] .app {
-  grid-template-columns: 120px 1fr; /* Schmale Sidebar für Logo + Firmeninfo */
-  grid-template-rows: 56px 1fr;
+  grid-template-columns: 240px 1fr; /* GLEICHE Breite wie Sidebar-Modus */
+  grid-template-rows: 56px 1fr; /* Standard-Höhe */
   grid-template-areas:
     "sidebar header"
     "sidebar main";
 }
 
-/* Sidebar bleibt sichtbar, wird aber kompakter */
+/* Sidebar behält IMMER die gleiche Breite */
 :root[data-nav-mode="header"] .sidebar {
   display: block;
-  width: 120px;
-  padding: 12px 8px;
+  width: 240px; /* Identisch zu Sidebar-Modus */
+  padding: 16px 12px; /* Identisch zu Sidebar-Modus */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* Logo in kompakter Sidebar kleiner */
+/* Logo in Header-Modus GLEICH wie Sidebar-Modus */
 :root[data-nav-mode="header"] .sidebar img {
-  max-width: 80px !important;
+  max-width: 180px !important; /* Gleich wie Sidebar-Modus */
+}
+
+/* Firmenbereich in Header-Modus IDENTISCH zu Sidebar-Modus */
+:root[data-nav-mode="header"] .sidebar > div:last-child {
+  padding: 16px 12px !important; /* Identisch zu Standard */
+  margin-top: 20px !important; /* Identisch zu Standard */
+}
+
+/* Dashboard-Widgets in Header-Modus IDENTISCH zu Sidebar-Modus */
+:root[data-nav-mode="header"] .sidebar .dashboard-widget {
+  display: block !important;
+}
+
+/* KEINE speziellen Anpassungen - alles identisch zu Sidebar-Modus */
+/* Widgets werden in ORIGINAL-Größe dargestellt */
+
+/* Header-Widgets für Sidebar-Navigation-Modus */
+.header-widgets {
+  flex: 1;
+  max-width: 70%;
+  overflow: hidden;
+}
+
+.header-widget-item {
+  transition: all 0.2s ease;
+}
+
+.header-widget-item:hover {
+  background-color: rgba(255,255,255,0.15) !important;
+  border-color: rgba(255,255,255,0.2) !important;
+  transform: translateY(-1px);
+}
+
+/* Responsive Header-Widgets */
+@media (max-width: 1600px) {
+  .header-widgets {
+    max-width: 75%;
+  }
+}
+
+@media (max-width: 1400px) {
+  .header-widgets {
+    max-width: 70%;
+  }
+  
+  .header-widget-item span:last-child {
+    display: none; /* Labels verstecken bei wenig Platz */
+  }
+}
+
+@media (max-width: 1200px) {
+  .header-widgets {
+    max-width: 60%;
+  }
+  
+  .header-widgets > div:last-child > div:nth-child(n+4) {
+    display: none; /* Nur ersten 3 Business-Widgets zeigen */
+  }
+}
+
+@media (max-width: 1000px) {
+  .header-widgets {
+    max-width: 50%;
+  }
+  
+  .header-widgets > div:last-child > div:nth-child(n+3) {
+    display: none; /* Nur ersten 2 Business-Widgets zeigen */
+  }
+}
+
+/* Firmenname in Header-Modus IDENTISCH zu Sidebar-Modus */
+:root[data-nav-mode="header"] .sidebar .company-name {
+  font-size: 16px !important; /* Original-Größe */
+  line-height: 1.4 !important;
+  margin-bottom: 16px !important;
+  white-space: normal; /* Kein Text-Cutoff */
+  overflow: visible;
+  text-overflow: none;
+}
+
+/* Firmenlogo Platzhalter in Header-Modus IDENTISCH zu Sidebar-Modus */
+:root[data-nav-mode="header"] .sidebar .logo-placeholder {
+  padding: 16px 10px !important; /* Original-Größe */
+  margin-bottom: 12px !important;
+}
+
+:root[data-nav-mode="header"] .sidebar .logo-placeholder .placeholder-icon {
+  font-size: 20px !important; /* Original-Größe */
+  margin-bottom: 4px !important;
+}
+
+:root[data-nav-mode="header"] .sidebar .logo-placeholder .placeholder-text {
+  font-size: 10px !important; /* Original-Größe */
 }
 
 :root[data-nav-mode="header"] .header {
@@ -439,5 +534,20 @@ body{
   to {
     transform: translateX(0);
     opacity: 1;
+  }
+}
+
+/* Media Queries für große Bildschirme - NUR Schriftgrößen, KEINE Breitenänderungen */
+@media (min-width: 1440px) {
+  /* Große Bildschirme: Bessere Lesbarkeit durch größere Schriften */
+  :root[data-nav-mode="header"] .sidebar .company-name {
+    font-size: 17px !important; /* Etwas größer auf großen Bildschirmen */
+  }
+}
+
+@media (min-width: 1920px) {
+  /* Extra große Bildschirme: Optimale Lesbarkeit */
+  :root[data-nav-mode="header"] .sidebar .company-name {
+    font-size: 18px !important; /* Sehr gut lesbar */
   }
 }

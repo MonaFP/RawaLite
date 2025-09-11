@@ -8,6 +8,7 @@ import { LoadingProvider, LoadingOverlay } from "./contexts/LoadingContext";
 import { NotificationProvider, NotificationContainer } from "./contexts/NotificationContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
 import { MigrationInitializer } from "./components/MigrationInitializer";
+import { applyThemeToDocument, applyNavigationMode } from "./lib/themes";
 
 // Import pages
 import DashboardPage from "./pages/DashboardPage";
@@ -19,6 +20,11 @@ import RechnungenPage from "./pages/RechnungenPage";
 import TimesheetsPage from "./pages/TimesheetsPage";
 import EinstellungenPage from "./pages/EinstellungenPage";
 import NotFoundPage from "./pages/NotFoundPage";
+
+// ✨ Sofort Standard-Theme anwenden beim App-Start (verhindert weißen Bildschirm)
+// Wird später von persistierten Settings aus SQLite überschrieben
+applyThemeToDocument('green');
+applyNavigationMode('sidebar');
 
 const router = createHashRouter([
   {

@@ -68,13 +68,16 @@ export class SettingsAdapter {
     
     let companyData: CompanyData;
     let designSettings: DesignSettings;
+    let needsInitialSave = false;
     
     if (settingsRow) {
       companyData = this.mapSQLiteToCompanyData(settingsRow);
       designSettings = this.extractDesignSettings(settingsRow);
     } else {
+      // ✨ Beim ersten Start: Defaults verwenden und sofort speichern
       companyData = defaultSettings.companyData;
       designSettings = defaultSettings.designSettings;
+      needsInitialSave = true;
     }
 
     // Get numbering circles from localStorage (for now, until we migrate to SQLite)
@@ -100,11 +103,27 @@ export class SettingsAdapter {
       }
     }
 
-    return {
+    const settings: Settings = {
       companyData,
       numberingCircles,
       designSettings
     };
+
+    // ✨ Beim ersten Start: Einstellungen sofort in SQLite speichern
+    if (needsInitialSave) {
+      try {
+        const companyDataWithDesign = {
+          ...companyData,
+          designSettings: JSON.stringify(designSettings)
+        };
+        await this.updateCompanyData(companyDataWithDesign);
+        console.log('Initialized default design settings in SQLite');
+      } catch (error) {
+        console.warn('Could not save initial design settings:', error);
+      }
+    }
+
+    return settings;
   }
 
   async updateCompanyData(companyData: CompanyData & { designSettings?: string }): Promise<void> {
