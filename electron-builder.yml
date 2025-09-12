@@ -22,7 +22,17 @@ win:
     - target: nsis
       arch:
         - x64
+    - target: zip
+      arch:
+        - x64
   icon: assets/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: assets/icon.ico
+  uninstallerIcon: assets/icon.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
 mac:
   target:
     - target: dmg

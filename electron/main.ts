@@ -1,9 +1,76 @@
 // electron/main.ts
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, Menu } from 'electron'
 import path from 'node:path'
 import fs from 'node:fs'
 
 const isDev = !app.isPackaged            // zuverlässig für Dev/Prod
+
+function createMenu() {
+  const template = [
+    {
+      label: 'Datei',
+      submenu: [
+        {
+          label: 'Beenden',
+          accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
+          click: () => {
+            app.quit()
+          }
+        }
+      ]
+    },
+    {
+      label: 'Bearbeiten',
+      submenu: [
+        { label: 'Rückgängig', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
+        { label: 'Wiederholen', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
+        { type: 'separator' },
+        { label: 'Ausschneiden', accelerator: 'CmdOrCtrl+X', role: 'cut' },
+        { label: 'Kopieren', accelerator: 'CmdOrCtrl+C', role: 'copy' },
+        { label: 'Einfügen', accelerator: 'CmdOrCtrl+V', role: 'paste' },
+        { label: 'Alles auswählen', accelerator: 'CmdOrCtrl+A', role: 'selectall' }
+      ]
+    },
+    {
+      label: 'Ansicht',
+      submenu: [
+        { label: 'Vollbild', accelerator: 'F11', role: 'togglefullscreen' },
+        ...(isDev ? [
+          { type: 'separator' },
+          { label: 'Entwicklertools', accelerator: 'F12', role: 'toggledevtools' },
+          { label: 'Neu laden', accelerator: 'CmdOrCtrl+R', role: 'reload' },
+          { label: 'Erzwungenes Neu laden', accelerator: 'CmdOrCtrl+Shift+R', role: 'forceReload' }
+        ] : [])
+      ]
+    },
+    {
+      label: 'Hilfe',
+      submenu: [
+        {
+          label: 'Über RawaLite',
+          click: () => {
+            shell.openExternal('https://github.com/MonaFP/RawaLite')
+          }
+        },
+        {
+          label: 'Dokumentation',
+          click: () => {
+            shell.openExternal('https://github.com/MonaFP/RawaLite#readme')
+          }
+        },
+        {
+          label: 'Support & Feedback',
+          click: () => {
+            shell.openExternal('https://github.com/MonaFP/RawaLite/issues')
+          }
+        }
+      ]
+    }
+  ]
+
+  const menu = Menu.buildFromTemplate(template as any)
+  Menu.setApplicationMenu(menu)
+}
 
 function createWindow() {
   // Projekt-Root ermitteln:
@@ -84,6 +151,9 @@ ipcMain.handle('db:save', async (_, data: Uint8Array): Promise<boolean> => {
   }
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createMenu()
+  createWindow()
+})
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })

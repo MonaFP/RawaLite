@@ -14,6 +14,41 @@ export class SQLiteAdapter implements PersistenceAdapter {
   async getSettings(): Promise<Settings> {
     await getDB();
     const rows = all<Settings>("SELECT * FROM settings WHERE id = 1");
+    
+    // Fallback: Falls keine Settings existieren, Standard-Settings zurückgeben
+    if (!rows || rows.length === 0) {
+      console.warn('⚠️ No settings found in database, creating default settings');
+      const defaultSettings: Settings = {
+        id: 1,
+        companyName: '',
+        street: '',
+        zip: '',
+        city: '',
+        taxId: '',
+        kleinunternehmer: true,
+        nextCustomerNumber: 1,
+        nextOfferNumber: 1,
+        nextInvoiceNumber: 1,
+        nextTimesheetNumber: 1,
+        createdAt: nowIso(),
+        updatedAt: nowIso()
+      };
+      
+      // Erstelle Standard-Settings in der Datenbank
+      run(`
+        INSERT INTO settings (
+          id, companyName, street, zip, city, taxId, kleinunternehmer,
+          nextCustomerNumber, nextOfferNumber, nextInvoiceNumber, nextTimesheetNumber,
+          createdAt, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        1, '', '', '', '', '', 1, 1, 1, 1, 1,
+        defaultSettings.createdAt, defaultSettings.updatedAt
+      ]);
+      
+      return defaultSettings;
+    }
+    
     return rows[0] as Settings;
   }
 
