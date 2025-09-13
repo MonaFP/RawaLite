@@ -32,27 +32,13 @@ export class VersionService {
   constructor() {
     this.updateService = new UpdateService();
     
-    // **AGGRESSIVE UPDATE-LOOP FIX** - Bereinige localStorage vollständig
+    // Bereinige falsche Version im localStorage beim Start (moderate Cleanup)
     const storedVersion = localStorage.getItem('rawalite.app.version');
-    const hasUpdate = localStorage.getItem('rawalite.app.hasUpdate');
-    
-    // Setze Version immer auf aktuelle BASE_VERSION
-    if (storedVersion !== this.BASE_VERSION) {
+    if (storedVersion && storedVersion !== this.BASE_VERSION) {
       localStorage.setItem('rawalite.app.version', this.BASE_VERSION);
-      LoggingService.log(`[VersionService] Updated stored version from ${storedVersion || 'undefined'} to ${this.BASE_VERSION}`);
-    }
-    
-    // Setze hasUpdate immer auf false beim Start (verhindert Endlos-Loop)
-    if (hasUpdate !== 'false') {
       localStorage.setItem('rawalite.app.hasUpdate', 'false');
-      LoggingService.log(`[VersionService] Reset hasUpdate flag from ${hasUpdate || 'undefined'} to false`);
+      LoggingService.log(`[VersionService] Updated stored version from ${storedVersion} to ${this.BASE_VERSION}`);
     }
-    
-    // Bereinige alle Update-bezogenen Flags die Loops verursachen können
-    localStorage.removeItem('rawalite.update.lastCheck');
-    localStorage.removeItem('rawalite.update.lastNotified');
-    
-    LoggingService.log(`[VersionService] Update loop prevention completed - version locked to ${this.BASE_VERSION}`);
   }
 
   /**

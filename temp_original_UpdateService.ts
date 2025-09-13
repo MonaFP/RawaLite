@@ -220,7 +220,7 @@ export class UpdateService {
 
   private getCurrentAppVersion(): string {
     // Version mit echtem Update-System (kein Auto-Updater, aber reale GitHub-Integration)
-    return '1.5.6';
+    return '1.5.3';
   }
 
   private async fetchLatestVersion(): Promise<string> {
