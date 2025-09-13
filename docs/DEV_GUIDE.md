@@ -1,41 +1,107 @@
 # 🛠️ RawaLite - Developer Guide
 
-> **Entwickler-Dokumentation für Setup, Standards und Workflows** - Version 1.0.0
+> **Entwickler-Dokumentation für Setup, Standards und Workflows** - Version 1.5.6
 
 ## 🚀 **Quick Start**
 
 ### **System Requirements**
-- **Node.js**: 18.x oder höher (`node --version`)
-- **pnpm**: 8.x oder höher (`pnpm --version`)
-- **Git**: Für Versionskontrolle
-- **VS Code**: Empfohlene IDE mit Extensions
+- **Node.js**: 20.18.0 oder höher (`node --version`)
+- **pnpm**: 10.15.1 oder höher (`pnpm --version`)
+- **Git**: v2.51.0.1 für Versionskontrolle
+- **VS Code**: Latest LTS mit TypeScript Extensions
+- **PowerShell**: v7.5.2 (Core) - pwsh.exe
+
+### **Production Environment**
+- **Electron**: 31.7.7
+- **React**: 18.3.1 + TypeScript 5.9.2
+- **SQLite**: sql.js 1.13.0 (in-browser)
+- **Build Tools**: Vite 5.4.20, esbuild 0.23.1
 
 ### **Projekt-Setup**
 ```powershell
 # Repository klonen
-git clone <repository-url>
+git clone https://github.com/MonaFP/RawaLite.git
 cd RawaLite
 
-# Dependencies installieren
+# Dependencies installieren (pnpm bevorzugt)
 pnpm install
 
 # Development Server starten
 pnpm dev
 
-# Öffnet Electron App mit Hot Reload
+# Öffnet Electron App mit Hot Reload auf wechselnden Ports (5173, 5174, 5175...)
 ```
 
 ### **Development Umgebung prüfen**
 ```powershell
-# Alle Tests ausführen
+# Production Build testen
+pnpm build
+
+# Unit Tests (Vitest)
 pnpm test
 
-# TypeScript Compiler prüfen
-pnpm type-check
+# E2E Tests (Playwright)
+pnpm e2e
 
-# Code-Quality checks
+# TypeScript Validation
+pnpm typecheck
+
+# Code Quality
 pnpm lint
+
+# Electron Distribution
+pnpm dist
 ```
+
+## 🔬 **Extended Debug Pattern (STANDARD)**
+
+**KRITISCH: Für alle Features IMMER Extended Debug Pattern verwenden!**
+
+### **Template Engine Debugging**
+```typescript
+// ✅ ALWAYS: Comprehensive debug output
+console.log('🚀 === FEATURE DEBUG START ===');
+
+// Step 1: Data Structure Analysis  
+console.log('📊 Input Data Analysis:');
+console.log('  - Data exists:', !!data);
+console.log('  - Data keys:', Object.keys(data));
+
+// Step 2: Process Step Logging
+console.log('🔄 Processing Steps:');
+template = template.replace(/pattern/g, (match, group) => {
+  console.log(`✅ Processed: ${match} → ${result}`);
+  return result;
+});
+
+// Step 3: Variable Resolution Testing  
+console.log('🧪 Critical Variable Test:');
+testVars.forEach(varPath => {
+  const value = getNestedValue(data, varPath);
+  console.log(`  {{${varPath}}} = ${value !== undefined ? `"${value}"` : 'UNDEFINED'}`);
+});
+
+console.log('🏁 === FEATURE DEBUG END ===');
+```
+
+### **PDF Generation Debug Pattern**
+```typescript
+// ALWAYS: Log complete template data structure
+console.log('📊 Template Data Structure:');
+console.log('  - Type:', options.templateType);
+console.log('  - Offer exists:', !!templateData.offer);
+if (templateData.offer) {
+  console.log('  - Offer Number:', templateData.offer.offerNumber);
+  console.log('  - Line Items Count:', templateData.offer.lineItems?.length || 0);
+}
+
+// ALWAYS: Processing order logging
+console.log('🔄 Processing conditionals and loops first...');
+console.log('🔄 Processing formatters second...');
+console.log('🔄 Processing simple variables last...');
+```
+
+**Time Savings: 5-10x faster debugging cycles!**
 
 ---
 

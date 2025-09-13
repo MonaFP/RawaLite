@@ -1,6 +1,6 @@
 # 🏗️ RawaLite - Architektur-Dokumentation
 
-> **Technische Architektur und Design-Patterns** - Version 1.0.0
+> **Technische Architektur und Design-Patterns** - Version 1.5.5 (Current: Dezember 2024)
 
 ## 📊 **Überblick**
 
@@ -686,13 +686,19 @@ pnpm build && pnpm dist
 ### **Build Output Structure**
 ```
 dist/
-├── RawaLite Setup 1.0.0.exe     # Windows Installer
-├── RawaLite Setup 1.0.0.exe.blockmap
+├── RawaLite Setup 1.5.5.exe     # Windows Installer (167MB)
+├── RawaLite Setup 1.5.5.exe.blockmap
 ├── win-unpacked/                # Portable Version
 │   ├── RawaLite.exe
 │   └── resources/
 └── builder-debug.yml            # Build Metadata
 ```
+
+### **Build Metrics (Current v1.5.5)**
+- **Bundle Size**: 553kB (Vite Build)
+- **Installer Size**: 167MB (Electron + Dependencies)
+- **Build Time**: ~30-45 Sekunden
+- **Target Platform**: Windows x64 (NSIS Installer)
 
 ---
 

@@ -6,7 +6,7 @@ export class SettingsAdapter {
   // Convert SQLite row to CompanyData format
   private mapSQLiteToCompanyData(row: any): CompanyData {
     return {
-      name: row.companyName || '',
+      name: row.companyName || '', // ✅ CRITICAL FIX: companyName -> name mapping
       street: row.street || '',
       postalCode: row.zip || '', // zip -> postalCode mapping
       city: row.city || '',
@@ -26,7 +26,7 @@ export class SettingsAdapter {
   // Extract design settings from company data
   private extractDesignSettings(row: any): DesignSettings {
     try {
-      // Check if design settings are stored in a custom field
+      // Design settings are ONLY stored in SQLite database
       if (row.designSettings && typeof row.designSettings === 'string') {
         return JSON.parse(row.designSettings);
       }
@@ -34,7 +34,7 @@ export class SettingsAdapter {
       console.warn('Error parsing design settings from database:', error);
     }
     
-    // Fallback to defaults
+    // Return defaults if parsing fails or no settings found
     return defaultSettings.designSettings;
   }
 
@@ -87,28 +87,12 @@ export class SettingsAdapter {
       needsInitialSave = true;
     }
 
-    // Get numbering circles from localStorage (for now, until we migrate to SQLite)
-    let numberingCircles: NumberingCircle[];
-    try {
-      const stored = localStorage.getItem('rawalite-numbering');
-      if (stored) {
-        numberingCircles = JSON.parse(stored);
-      } else {
-        // Use defaults and save them immediately for persistence
-        numberingCircles = defaultSettings.numberingCircles;
-        localStorage.setItem('rawalite-numbering', JSON.stringify(numberingCircles));
-        console.log('Initialized default numbering circles in localStorage');
-      }
-    } catch (error) {
-      console.warn('Error loading numbering circles from localStorage:', error);
-      numberingCircles = defaultSettings.numberingCircles;
-      // Try to save defaults even after error
-      try {
-        localStorage.setItem('rawalite-numbering', JSON.stringify(numberingCircles));
-      } catch (saveError) {
-        console.error('Could not save default numbering circles:', saveError);
-      }
-    }
+    // Get numbering circles from SQLite (NO MORE localStorage!)
+    const numberingCircles = all<NumberingCircle>(`
+      SELECT id, name, prefix, digits, current, resetMode, lastResetYear 
+      FROM numbering_circles 
+      ORDER BY id
+    `);
 
     const settings: Settings = {
       companyData,
@@ -170,41 +154,69 @@ export class SettingsAdapter {
   }
 
   async updateNumberingCircles(numberingCircles: NumberingCircle[]): Promise<void> {
-    // Store in localStorage for now (we'll migrate to SQLite later)
-    try {
-      localStorage.setItem('rawalite-numbering', JSON.stringify(numberingCircles));
-    } catch (error) {
-      console.error('Error saving numbering circles:', error);
-      throw error;
-    }
+    await withTx(async () => {
+      const timestamp = new Date().toISOString();
+      
+      // Update all numbering circles in SQLite
+      for (const circle of numberingCircles) {
+        run(`
+          INSERT OR REPLACE INTO numbering_circles 
+          (id, name, prefix, digits, current, resetMode, lastResetYear, createdAt, updatedAt)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 
+            COALESCE((SELECT createdAt FROM numbering_circles WHERE id = ?), ?), 
+            ?)
+        `, [
+          circle.id,
+          circle.name,
+          circle.prefix,
+          circle.digits,
+          circle.current,
+          circle.resetMode,
+          circle.lastResetYear || null,
+          circle.id, // for COALESCE lookup
+          timestamp, // fallback createdAt for new records
+          timestamp  // updatedAt
+        ]);
+      }
+      
+      console.log('✅ Updated numbering circles in SQLite:', numberingCircles.map(c => c.id));
+    });
   }
 
   async getNextNumber(circleId: string): Promise<string> {
-    const settings = await this.getSettings();
-    const circle = settings.numberingCircles.find(c => c.id === circleId);
-    
-    if (!circle) {
-      throw new Error(`Nummernkreis '${circleId}' nicht gefunden`);
-    }
+    return withTx(async () => {
+      // Get current circle data from SQLite
+      const circles = all<NumberingCircle>(`
+        SELECT id, name, prefix, digits, current, resetMode, lastResetYear 
+        FROM numbering_circles 
+        WHERE id = ?
+      `, [circleId]);
+      
+      const circle = circles[0];
+      if (!circle) {
+        throw new Error(`Nummernkreis '${circleId}' nicht gefunden`);
+      }
 
-    const currentYear = new Date().getFullYear();
-    let newCurrent = circle.current + 1;
+      const currentYear = new Date().getFullYear();
+      let newCurrent = circle.current + 1;
 
-    // Check if we need to reset for yearly numbering
-    if (circle.resetMode === 'yearly' && circle.lastResetYear !== currentYear) {
-      newCurrent = 1;
-    }
+      // Check if we need to reset for yearly numbering
+      if (circle.resetMode === 'yearly' && circle.lastResetYear !== currentYear) {
+        newCurrent = 1;
+      }
 
-    // Update the circle
-    const updatedCircles = settings.numberingCircles.map(c => 
-      c.id === circleId 
-        ? { ...c, current: newCurrent, lastResetYear: currentYear }
-        : c
-    );
+      // Update the circle in SQLite
+      const timestamp = new Date().toISOString();
+      run(`
+        UPDATE numbering_circles 
+        SET current = ?, lastResetYear = ?, updatedAt = ?
+        WHERE id = ?
+      `, [newCurrent, currentYear, timestamp, circleId]);
 
-    // Save immediately
-    await this.updateNumberingCircles(updatedCircles);
-
-    return `${circle.prefix}${newCurrent.toString().padStart(circle.digits, '0')}`;
+      const formattedNumber = `${circle.prefix}${newCurrent.toString().padStart(circle.digits, '0')}`;
+      console.log(`✅ Generated number for ${circleId}: ${formattedNumber}`);
+      
+      return formattedNumber;
+    });
   }
 }

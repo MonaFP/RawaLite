@@ -9,7 +9,7 @@
 - **PowerShell**: v7.5.2 (Core) - pwsh.exe
 - **Git**: v2.51.0.1
 - **GitHub CLI**: v2.78.0
-- **VS Code**: v1.103.2
+- **VS Code**: Latest LTS
 
 ### Frontend & Build
 - **React:** 18.3.1 mit TypeScript 5.9.2
@@ -427,7 +427,7 @@ try {
 **Bevor du Code generierst oder Änderungen vorschlägst:**
 
 1. **📖 Projektstruktur verstehen**
-   - Lies `PROJECT_OVERVIEW.md` für aktuelle Architektur
+   - Lies `docs/PROJECT_OVERVIEW.md` für aktuelle Architektur
    - Analysiere Ordnerstruktur unter `/src`
    - Verstehe vorhandene Adapter, Hooks, Pages
    - Prüfe bestehende Naming-Conventions
@@ -611,13 +611,13 @@ Nur Theme-IDs und Namen dürfen angepasst werden, niemals die Hex-Farbcodes!
 ### **Entwicklungsumgebung**
 - **OS**: Windows mit PowerShell (pwsh.exe)
 - **PowerShell**: v7.5.2 (Core)
-- **System**: ASUS MONAPC mit 16GB RAM
+- **System**: Standard Entwicklungssystem mit ausreichend RAM
 - **Package Manager**: pnpm 10.15.1 (nicht npm!)
 - **Node.js**: v20.18.0
 - **npm**: v10.8.2
 - **Git**: v2.51.0.1
 - **GitHub CLI**: v2.78.0 (C:\Program Files\GitHub CLI\gh.exe)
-- **VS Code**: v1.103.2
+- **VS Code**: Latest LTS
 - **Electron Ports**: Development auf wechselnden Ports (5173, 5174, 5175...)
 
 ### **Konsistenz-Regeln**

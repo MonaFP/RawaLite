@@ -1,18 +1,23 @@
 # 🎨 **RaWaLite - Theme & Navigation Features**
 
-## ✨ **Neue Features**
+> **Design System & Navigation Modi** - Version 1.5.5+ (Integriert seit v1.5.2)
 
-### 🎨 **Klickbare Farbthemen**
-- **5 vordefinierte Themes:** Grün (Standard), Blau (Business), Lila (Modern), Orange (Kreativ), Rot (Dynamisch)
+## ✨ **Aktuelle Features**
+
+### 🎨 **Pastel Color Themes**
+- **5 Pastel Themes:** Salbeigrün (Standard), Himmelblau (Business), Lavendel (Modern), Pfirsich (Kreativ), Rosé (Elegant)
 - **Sofortige Anwendung:** Themes werden live beim Klick angewendet
-- **Persistierung:** Theme-Auswahl wird automatisch in SQLite gespeichert
-- **Vollständige Integration:** Alle UI-Elemente (Sidebar, Buttons, Akzente) werden angepasst
+- **SQLite Persistierung:** Theme-Auswahl wird dauerhaft in `settings.designSettings` gespeichert
+- **Vollständige Integration:** Alle UI-Elemente (Sidebar, Buttons, Header, Akzente) werden angepasst
+- **Reload-Sicherheit:** Theme bleibt nach App-Neustart erhalten
 
-### 🧭 **Navigation-Switch (Sidebar ↔ Header)**
-- **Sidebar-Modus:** Klassische Ansicht mit fixierter Navigation links + Mini-Dashboard
-- **Header-Modus:** Moderne Ansicht mit horizontaler Navigation im oberen Bereich
+### 🧭 **Navigation Switching (Header ↔ Sidebar)**
+- **Header-Modus:** Navigation im Header + Dashboard-Widgets in der Sidebar (240px fix)
+- **Sidebar-Modus:** Navigation in der Sidebar + Dashboard-Widgets im Header (240px fix)
 - **Live-Umschaltung:** Wechsel erfolgt sofort ohne Page-Reload
-- **Layout-Optimierung:** CSS Grid passt sich automatisch an den gewählten Modus an
+- **Stabile Layoutbreite:** Sidebar behält IMMER 240px Breite in beiden Modi
+- **Smart Widget Distribution:** Widgets ergänzen Navigation komplementär
+- **Persistente Einstellungen:** Navigation-Modus wird dauerhaft gespeichert
 
 ## 🛠️ **Technische Implementierung**
 
@@ -41,14 +46,32 @@ interface Settings {
 }
 ```
 
-### **CSS-Theme-System**
+### **CSS-Theme-System (Final Pastel Colors)**
 ```css
-:root[data-theme="blue"] {
-  --theme-primary: #1e3a8a;
-  --theme-secondary: #1e40af;
-  --theme-accent: #3b82f6;
-  --theme-gradient: linear-gradient(160deg, #1e3a8a 0%, #1e40af 40%, #1d4ed8 100%);
+/* KRITISCH: Diese Farbwerte dürfen NIE geändert werden! */
+:root[data-theme="salbeigrün"] {
+  --theme-primary: #4a5d5a;
+  --theme-secondary: #3a4d4a;
+  --theme-accent: #7dd3a0;
+  --theme-gradient: linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%);
 }
+
+:root[data-theme="himmelblau"] {
+  --theme-primary: #4a5b6b;
+  --theme-secondary: #3d4e5e;
+  --theme-accent: #87ceeb;
+  --theme-gradient: linear-gradient(160deg, #4a5b6b 0%, #3d4e5e 40%, #324151 100%);
+}
+
+:root[data-theme="lavendel"] {
+  --theme-primary: #5a4d6b;
+  --theme-secondary: #4d405e;
+  --theme-accent: #b19cd9;
+  --theme-gradient: linear-gradient(160deg, #5a4d6b 0%, #4d405e 40%, #403351 100%);
+}
+
+/* Weitere Themes... */
+```
 ```
 
 ### **SQLite-Schema-Erweiterung**

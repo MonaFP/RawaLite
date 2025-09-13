@@ -1,5 +1,7 @@
 # 🔧 RaWaLite Migration & Update System
 
+> **Database Migration & Update Architecture** - Version 1.5.5 (Current: Dezember 2024)
+
 This document describes the comprehensive database migration and application update system for RaWaLite, designed to ensure safe upgrades without data loss.
 
 ## Overview
@@ -11,6 +13,7 @@ The migration system provides:
 - **Integrity validation** to ensure data consistency
 - **Rollback capabilities** in case of failures
 - **Progress tracking** with user-friendly UI
+- **GitHub Releases Integration** for seamless updates
 - **Cleanup mechanisms** for old backups
 
 ## Architecture
@@ -23,11 +26,16 @@ The migration system provides:
 - Validates data integrity
 - Provides rollback capabilities
 
-#### `UpdateService.ts`
-- Coordinates application updates
+#### `UpdateService.ts` (Real GitHub API Integration)
+- Coordinates application updates via GitHub Releases API
 - Integrates with MigrationService
 - Manages update progress
-- Handles error recovery
+- Handles portable app update workflow
+
+#### `VersionService.ts`
+- Version management (v1.5.5 current)
+- Update notifications to users
+- Build date tracking
 
 #### `useMigration.ts` (React Hook)
 - Provides React integration

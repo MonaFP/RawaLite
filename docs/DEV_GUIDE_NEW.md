@@ -1,34 +1,50 @@
 # 🛠️ RawaLite - Developer Guide
 
-> **Entwickler-Dokumentation für Setup, Standards und Workflows** - Version 1.0.0
+> **Entwickler-Dokumentation für Setup, Standards und Workflows** - Version 1.5.5
 
 ## 🚀 **Quick Start**
 
 ### **System Requirements**
-- **Node.js**: 18.x oder höher (`node --version`)
-- **pnpm**: 8.x oder höher (`pnpm --version`)
-- **Git**: Für Versionskontrolle
-- **VS Code**: Empfohlene IDE mit Extensions
+- **Node.js**: 20.18.0 (getestet und empfohlen)
+- **pnpm**: 10.15.1 (NICHT npm verwenden!)
+- **PowerShell**: 7.5.2 (Core) für Windows Development
+- **Git**: v2.51.0.1 für Versionskontrolle
+- **VS Code**: Latest LTS mit TypeScript Extensions
 
 ### **Projekt-Setup**
 ```powershell
 # Repository klonen
-git clone <repository-url>
+git clone https://github.com/MonaFP/RawaLite.git
 cd RawaLite
 
-# Dependencies installieren
+# Dependencies installieren (wichtig: pnpm verwenden!)
 pnpm install
 
 # Development Server starten
 pnpm dev
+# Läuft auf wechselnden Ports: 5173, 5174, 5175, ...
 
-# Öffnet Electron App mit Hot Reload
+# Öffnet Electron App mit Hot Reload + React DevTools
 ```
 
 ### **Development Umgebung prüfen**
 ```powershell
-# Alle Tests ausführen
+# TypeScript Validierung
+pnpm typecheck
+
+# Unit Tests ausführen (Vitest)
 pnpm test
+
+# Integration Tests (Node.js)
+node tests/integration/database/verification.js
+node tests/integration/design/persistence.js
+node tests/integration/update-system/github-api.js
+
+# E2E Tests (Playwright)
+pnpm e2e
+
+# Code Quality
+pnpm lint
 
 # TypeScript Compiler prüfen
 pnpm type-check

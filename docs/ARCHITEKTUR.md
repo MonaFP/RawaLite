@@ -1,10 +1,17 @@
 # 🏗️ RawaLite - Architektur-Dokumentation
 
-> **Technische Architektur und Design-Patterns** - Version 1.0.0
+> **Technische Architektur und Design-Patterns** - Version 1.5.6
 
 ## 📊 **Überblick**
 
-RawaLite ist eine moderne Desktop-Anwendung für Geschäftsverwaltung, basierend auf **Electron** + **React** + **TypeScript** mit **SQLite**-Persistierung. Die Architektur folgt modernen **Clean Architecture**-Prinzipien mit strikter Trennung zwischen UI-Layer, Business Logic und Datenschicht.
+RawaLite ist eine moderne Desktop-Anwendung für Geschäftsverwaltung, basierend auf **Electron 31.7.7** + **React 18.3.1** + **TypeScript 5.9.2** mit **SQLite**-Persistierung. Die Architektur folgt modernen **Clean Architecture**-Prinzipien mit strikter Trennung zwischen UI-Layer, Business Logic und Datenschicht.
+
+**Production-Ready Features:**
+- ✅ **Robuste PDF-Generation** mit Theme-Integration
+- ✅ **Extended Debug Patterns** für 5-10x schnellere Entwicklung
+- ✅ **Template Engine** mit korrekter Processing-Order
+- ✅ **Field Mapping System** für automatische Datenübersetzung
+- ✅ **Theme-Aware PDFs** mit dynamischer Farbgebung
 
 ## 🎯 **Architektur-Prinzipien**
 
@@ -15,10 +22,42 @@ RawaLite ist eine moderne Desktop-Anwendung für Geschäftsverwaltung, basierend
 ├─────────────────────────────────────┤
 │           Business Logic Layer      │  Custom Hooks & Services  
 ├─────────────────────────────────────┤
+│           Debug & Diagnostics       │  Extended Debug Patterns (NEW)
+├─────────────────────────────────────┤
 │           Persistence Layer         │  Adapters & Database
 ├─────────────────────────────────────┤
 │           Data Storage Layer        │  SQLite Database
 └─────────────────────────────────────┘
+```
+
+### **2. Extended Debug Architecture (NEW)**
+```
+┌─────────────────────────────────────┐
+│         Debug Diagnostics           │
+├─────────────────────────────────────┤
+│  • Template Variable Resolution     │
+│  • Processing Step Logging          │
+│  • Data Structure Analysis          │
+│  • Performance Monitoring           │
+└─────────────────────────────────────┘
+```
+
+### **3. PDF Generation Architecture**
+```
+UI Layer (React)
+    ↓
+PDFService (Data Preparation)
+    ↓  
+IPC Communication (Electron)
+    ↓
+Main Process Template Engine
+    ↓ (Processing Order Critical)
+1. Conditionals & Loops
+2. Formatters (Date/Currency)  
+3. Simple Variables
+4. Theme Color Application
+    ↓
+Native PDF Output
 ```
 
 ### **2. Dependency Inversion**

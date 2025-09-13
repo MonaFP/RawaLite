@@ -4,9 +4,11 @@ import { OfferForm } from '../components/OfferForm';
 import { useOffers } from '../hooks/useOffers';
 import { useCustomers } from '../hooks/useCustomers';
 import { usePackages } from '../hooks/usePackages';
-import { useSettings } from '../hooks/useSettings';
+import { useSettings } from '../contexts/SettingsContext';
+import { useDesignSettings } from '../hooks/useDesignSettings';
 import { useNotifications } from '../contexts/NotificationContext';
 import { ExportService } from '../services/ExportService';
+import { PDFService } from '../services/PDFService';
 import type { Offer } from '../persistence/adapter';
 
 interface AngebotePageProps {
@@ -18,6 +20,7 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const { customers } = useCustomers();
   const { packages } = usePackages();
   const { settings } = useSettings();
+  const { currentTheme, currentCustomColors } = useDesignSettings();
   const { showSuccess, showError } = useNotifications();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Offer | null>(null);
@@ -187,7 +190,31 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
     }
 
     try {
-      await ExportService.exportOfferToPDF(offer, customer, settings, false); // false = direct download
+      console.log('🎯 Starting PDF export for offer:', offer.offerNumber);
+      console.log('🎨 Using theme:', currentTheme, currentCustomColors ? 'with custom colors' : '');
+      
+      // 🚨 CRITICAL DEBUG: Check settings data before PDF generation
+      console.log('🔍 [DEBUG] Settings object:', settings);
+      console.log('🔍 [DEBUG] Settings.companyData:', settings?.companyData);
+      console.log('🔍 [DEBUG] Company name:', settings?.companyData?.name);
+      
+      // Use new PDFService implementation with theme integration
+      const result = await PDFService.exportOfferToPDF(
+        offer, 
+        customer, 
+        settings, 
+        false, // isPreview
+        currentTheme,
+        currentCustomColors
+      );
+      
+      if (result.success) {
+        console.log('✅ PDF export successful:', result.filePath);
+        alert(`� PDF erfolgreich erstellt!\n\nDatei: ${result.filePath}\nGröße: ${Math.round((result.fileSize || 0) / 1024)} KB`);
+      } else {
+        console.error('❌ PDF export failed:', result.error);
+        alert(`❌ PDF-Export fehlgeschlagen:\n\n${result.error}`);
+      }
     } catch (error) {
       console.error('PDF Export failed:', error);
       alert('PDF Export fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
@@ -202,7 +229,31 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
     }
 
     try {
-      await ExportService.exportOfferToPDF(offer, customer, settings, true); // true = preview only
+      console.log('🔍 Starting PDF preview for offer:', offer.offerNumber);
+      console.log('🎨 Using theme:', currentTheme, currentCustomColors ? 'with custom colors' : '');
+      
+      // 🚨 CRITICAL DEBUG: Check settings data before PDF generation
+      console.log('🔍 [DEBUG PREVIEW] Settings object:', settings);
+      console.log('🔍 [DEBUG PREVIEW] Settings.companyData:', settings?.companyData);
+      console.log('🔍 [DEBUG PREVIEW] Company name:', settings?.companyData?.name);
+      
+      // Use new PDFService implementation with theme integration
+      const result = await PDFService.exportOfferToPDF(
+        offer, 
+        customer, 
+        settings, 
+        true, // isPreview
+        currentTheme,
+        currentCustomColors
+      );
+      
+      if (result.success) {
+        console.log('✅ PDF preview successful');
+        // PDFService automatically shows the preview modal
+      } else {
+        console.error('❌ PDF preview failed:', result.error);
+        alert(`❌ PDF-Vorschau fehlgeschlagen:\n\n${result.error}`);
+      }
     } catch (error) {
       console.error('PDF Preview failed:', error);
       alert('PDF Vorschau fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));

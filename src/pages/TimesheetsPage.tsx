@@ -3,6 +3,7 @@ import { Table } from "../components/Table";
 import { useTimesheets } from "../hooks/useTimesheets";
 import { useCustomers } from "../hooks/useCustomers";
 import { useActivities } from "../hooks/useActivities";
+import { useSettings } from "../contexts/SettingsContext";
 import BasicTimesheetForm, { type BasicTimesheetFormValues } from "../components/BasicTimesheetForm";
 import TimesheetActivitiesEditor from "../components/TimesheetActivitiesEditor";
 import type { Timesheet, TimesheetActivity } from "../persistence/adapter";
@@ -14,6 +15,7 @@ export default function TimesheetsPage() {
   const { timesheets, createTimesheet, updateTimesheet, deleteTimesheet } = useTimesheets();
   const { customers } = useCustomers();
   const { activities } = useActivities();
+  const { settings } = useSettings();
 
   // Create columns for Table component
   const columns = useMemo(() => [
@@ -261,7 +263,9 @@ export default function TimesheetsPage() {
   function calculateTimesheetTotal(timesheet: Timesheet): { subtotal: number; vatAmount: number; total: number; totalHours: number } {
     const totalHours = timesheet.activities.reduce((sum, activity) => sum + activity.hours, 0);
     const subtotal = timesheet.activities.reduce((sum, activity) => sum + activity.total, 0);
-    const vatAmount = subtotal * (timesheet.vatRate / 100);
+    // ✅ RECHTLICH KORREKT: Kleinunternehmer dürfen keine MwSt ausweisen (§ 19 UStG)
+    const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
+    const vatAmount = isKleinunternehmer ? 0 : subtotal * (timesheet.vatRate / 100);
     const total = subtotal + vatAmount;
     
     return { subtotal, vatAmount, total, totalHours };

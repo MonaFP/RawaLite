@@ -4,9 +4,11 @@ import { InvoiceForm } from '../components/InvoiceForm';
 import { useInvoices } from '../hooks/useInvoices';
 import { useCustomers } from '../hooks/useCustomers';
 import { useOffers } from '../hooks/useOffers';
-import { useSettings } from '../hooks/useSettings';
+import { useSettings } from '../contexts/SettingsContext';
+import { useDesignSettings } from '../hooks/useDesignSettings';
 import { useNotifications } from '../contexts/NotificationContext';
 import { ExportService } from '../services/ExportService';
+import { PDFService } from '../services/PDFService';
 import type { Invoice } from '../persistence/adapter';
 
 interface RechnungenPageProps {
@@ -18,6 +20,7 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
   const { customers } = useCustomers();
   const { offers } = useOffers();
   const { settings } = useSettings();
+  const { currentTheme, currentCustomColors } = useDesignSettings();
   const { showSuccess, showError } = useNotifications();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Invoice | null>(null);
@@ -194,7 +197,26 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     }
 
     try {
-      await ExportService.exportInvoiceToPDF(invoice, customer, settings, false); // false = direct download
+      console.log('🎯 Starting PDF export for invoice:', invoice.invoiceNumber);
+      
+      // Use new PDFService implementation
+      // Use new PDFService implementation with theme integration
+      const result = await PDFService.exportInvoiceToPDF(
+        invoice, 
+        customer, 
+        settings, 
+        false, // isPreview
+        currentTheme,
+        currentCustomColors
+      );
+      
+      if (result.success) {
+        console.log('✅ PDF export successful:', result.filePath);
+        alert(`� PDF erfolgreich erstellt!\n\nDatei: ${result.filePath}\nGröße: ${Math.round((result.fileSize || 0) / 1024)} KB`);
+      } else {
+        console.error('❌ PDF export failed:', result.error);
+        alert(`❌ PDF-Export fehlgeschlagen:\n\n${result.error}`);
+      }
     } catch (error) {
       console.error('PDF Export failed:', error);
       alert('PDF Export fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
@@ -209,7 +231,26 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     }
 
     try {
-      await ExportService.exportInvoiceToPDF(invoice, customer, settings, true); // true = preview only
+      console.log('🔍 Starting PDF preview for invoice:', invoice.invoiceNumber);
+      
+      // Use new PDFService implementation
+      // Use new PDFService implementation with theme integration
+      const result = await PDFService.exportInvoiceToPDF(
+        invoice, 
+        customer, 
+        settings, 
+        true, // isPreview
+        currentTheme,
+        currentCustomColors
+      );
+      
+      if (result.success) {
+        console.log('✅ PDF preview successful');
+        // PDFService automatically shows the preview modal
+      } else {
+        console.error('❌ PDF preview failed:', result.error);
+        alert(`❌ PDF-Vorschau fehlgeschlagen:\n\n${result.error}`);
+      }
     } catch (error) {
       console.error('PDF Preview failed:', error);
       alert('PDF Vorschau fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));

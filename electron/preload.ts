@@ -15,6 +15,14 @@ contextBridge.exposeInMainWorld('rawalite', {
   },
 });
 
+// PDF API for new PDF generation system
+contextBridge.exposeInMainWorld('electronAPI', {
+  pdf: {
+    generate: (options: any) => ipcRenderer.invoke('pdf:generate', options),
+    getStatus: () => ipcRenderer.invoke('pdf:getStatus'),
+  }
+});
+
 // Erweitere das globale Window-Interface für TypeScript
 declare global {
   interface Window {
@@ -29,6 +37,17 @@ declare global {
       };
       shell: {
         openExternal: (url: string) => Promise<void>;
+      };
+    };
+    electronAPI: {
+      pdf: {
+        generate: (options: any) => Promise<any>;
+        getStatus: () => Promise<{
+          electronAvailable: boolean;
+          ghostscriptAvailable: boolean;
+          veraPDFAvailable: boolean;
+          pdfa2bSupported: boolean;
+        }>;
       };
     };
   }

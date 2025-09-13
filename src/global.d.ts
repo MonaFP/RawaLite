@@ -18,4 +18,21 @@ declare interface Window {
       getVersion: () => Promise<string>;
     };
   };
+  electronAPI?: {
+    pdf?: {
+      generate: (options: any) => Promise<{
+        success: boolean;
+        filePath?: string;
+        previewUrl?: string;
+        fileSize?: number;
+        error?: string;
+      }>;
+      getStatus: () => Promise<{
+        electronAvailable: boolean;
+        ghostscriptAvailable: boolean;
+        veraPDFAvailable: boolean;
+        pdfa2bSupported: boolean;
+      }>;
+    };
+  };
 }

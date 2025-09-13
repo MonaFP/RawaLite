@@ -958,11 +958,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
       try {
         console.log('🔄 Resetting numbering circles to default values');
         
-        // Zuerst localStorage komplett leeren
-        localStorage.removeItem('rawalite-numbering');
-        console.log('🗑️ Cleared localStorage numbering data');
-        
-        // Dann Standard-Nummernkreise mit current: 0 setzen
+        // Standard-Nummernkreise mit current: 0 setzen (nur SQLite, kein localStorage!)
         const resetCircles = defaultSettings.numberingCircles.map(circle => ({
           ...circle,
           current: 0,
@@ -974,9 +970,6 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
         console.log('✅ Numbering circles reset successfully');
       } catch (e) {
         console.warn('Error resetting numbering circles:', e);
-        // Fallback: Clear localStorage directly and set defaults
-        localStorage.removeItem('rawalite-numbering');
-        localStorage.setItem('rawalite-numbering', JSON.stringify(defaultSettings.numberingCircles));
       }
 
       // 🔥 ZUSÄTZLICH: Firmendaten zurücksetzen (optional)

@@ -1,19 +1,22 @@
 # RawaLite Installationsanleitung
 
+> **Installation & Setup Guide** - Version 1.5.5 (Current: Dezember 2024)
+
 ## 📦 **Für Tester - Windows Installation**
 
 ### **Schnelle Installation**
 
-1. **Herunterladen** des Installers: `RawaLite Setup 1.0.0.exe`
-2. **Rechtsklick** → "Als Administrator ausführen"
+1. **Herunterladen** des Installers: `RawaLite Setup 1.5.5.exe` (167MB)
+2. **Rechtsklick** → "Als Administrator ausführen" (empfohlen)
 3. **Installationsassistent** folgen
 4. **Starten** über Startmenü: "RawaLite"
 
 ### **Installationsdetails**
 
-- **Installer-Größe:** ~150-200 MB
+- **Installer-Größe:** 167MB (Electron + Dependencies)
+- **Bundle-Größe:** 553kB (React App)
 - **Installationspfad:** `C:\Users\[Benutzername]\AppData\Local\Programs\RawaLite\`
-- **Datenspeicher:** `C:\Users\[Benutzername]\AppData\Roaming\RawaLite\`
+- **Datenspeicher:** `C:\Users\[Benutzername]\AppData\Roaming\RawaLite\database.sqlite`
 - **Desktop-Verknüpfung:** Wird automatisch erstellt
 - **Startmenü:** Zu Programmliste hinzugefügt
 
@@ -36,33 +39,48 @@ Einstellungen → Logo & Design
 └── Empfohlen: 200x80px
 ```
 
-#### **3. Nummerierungskonfiguration**
+#### **3. Nummerierungskonfiguration (Auto-System)**
 ```
-Einstellungen → Nummernkreise
+Automatische Nummerierung bereits konfiguriert:
 ├── Kundennummern (K-001, K-002, ...)
-├── Rechnungsnummern (R-001, R-002, ...)
-├── Angebotsnummern (A-001, A-002, ...)
+├── Angebotsnummern (AN-2025-0001, AN-2025-0002, ...)
+├── Rechnungsnummern (RE-2025-0001, RE-2025-0002, ...)
+├── Leistungsnachweise (LN-2025-0001, LN-2025-0002, ...)
 └── Paketnummern (P-001, P-002, ...)
 ```
 
-#### **4. Tätigkeiten-Setup (für Leistungsnachweise)**
+#### **4. Design-System (v1.5.2+)**
 ```
-Einstellungen → Tätigkeiten
-├── Tätigkeiten hinzufügen (z.B. "Entwicklung", "Beratung")
-├── Stundensätze pro Tätigkeit festlegen
-└── Als Aktiv/Inaktiv markieren
+Einstellungen → Design & Themes
+├── 5 Pastel Themes: Salbeigrün, Himmelblau, Lavendel, Pfirsich, Rosé
+├── Navigation: Header-Modus ↔ Sidebar-Modus
+├── Sofortige Anwendung (ohne Reload)
+└── Automatische Persistierung in SQLite
 ```
 
 ## 🧪 **Test-Checkliste**
 
 ### **Hauptfunktionen zum Testen**
 
+#### **✅ Auto-Nummerierung System (v1.5.5)**
+- [ ] Kunden: K-001, K-002, K-003...
+- [ ] Angebote: AN-2025-0001, AN-2025-0002...
+- [ ] Rechnungen: RE-2025-0001, RE-2025-0002...
+- [ ] Leistungsnachweise: LN-2025-0001, LN-2025-0002...
+- [ ] Jahreswechsel: Neue Nummerierung ab 2026-0001
+
+#### **✅ Theme System (v1.5.2+)**
+- [ ] Pastel Theme wechseln (5 verfügbare Themes)
+- [ ] Navigation Header ↔ Sidebar umschalten
+- [ ] Theme-Persistierung nach Neustart
+- [ ] Widgets wechseln Position automatisch
+
 #### **✅ Kundenverwaltung**
-- [ ] Neuen Kunden erstellen
+- [ ] Neuen Kunden erstellen (auto K-001)
 - [ ] Kundendetails bearbeiten
 - [ ] Kunden löschen
 - [ ] Kunden suchen
-- [ ] Auto-Nummerierung funktioniert
+- [ ] Kundendaten exportieren
 
 #### **✅ Paketverwaltung**
 - [ ] Paket mit Positionen erstellen
@@ -72,11 +90,11 @@ Einstellungen → Tätigkeiten
 - [ ] Preisberechnungen
 
 #### **✅ Angebots-Workflow**
-- [ ] Angebotsentwurf erstellen
-- [ ] Pakete zu Angebot hinzufügen
-- [ ] PDF-Vorschau generieren
-- [ ] Als versendet markieren
-- [ ] Angebote annehmen/ablehnen
+- [ ] Angebotsentwurf erstellen (AN-2025-0001)
+- [ ] Hierarchische LineItems hinzufügen
+- [ ] Preisberechnung mit/ohne MwSt.
+- [ ] PDF-Export funktioniert
+- [ ] Status-Management (draft → sent → accepted/rejected)
 - [ ] In Rechnung umwandeln
 
 #### **✅ Rechnungsverwaltung**

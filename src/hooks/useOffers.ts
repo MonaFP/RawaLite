@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useUnifiedSettings } from "./useUnifiedSettings";
+import { useSettings } from "../contexts/SettingsContext";
 import { DatabaseError, ValidationError, handleError } from "../lib/errors";
 import type { Offer } from "../persistence/adapter";
 
 export function useOffers() {
   const { adapter } = usePersistence();
   const { getNextNumber } = useUnifiedSettings();
+  const { settings } = useSettings();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +72,9 @@ export function useOffers() {
       item.total = itemTotal;
     });
 
-    const vatAmount = subtotal * (offerData.vatRate / 100);
+    // ✅ RECHTLICH KORREKT: Kleinunternehmer dürfen keine MwSt ausweisen (§ 19 UStG)
+    const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
+    const vatAmount = isKleinunternehmer ? 0 : subtotal * (offerData.vatRate / 100);
     const total = subtotal + vatAmount;
 
     setError(null);
@@ -140,8 +144,10 @@ export function useOffers() {
         item.total = itemTotal;
       });
 
+      // ✅ RECHTLICH KORREKT: Kleinunternehmer dürfen keine MwSt ausweisen (§ 19 UStG)
+      const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
       const vatRate = patch.vatRate ?? 19; // Default VAT rate
-      const vatAmount = subtotal * (vatRate / 100);
+      const vatAmount = isKleinunternehmer ? 0 : subtotal * (vatRate / 100);
       const total = subtotal + vatAmount;
 
       patch.subtotal = subtotal;

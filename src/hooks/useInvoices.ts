@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useUnifiedSettings } from "./useUnifiedSettings";
+import { useSettings } from "../contexts/SettingsContext";
 import { DatabaseError, ValidationError, handleError } from "../lib/errors";
 import type { Invoice } from "../persistence/adapter";
 
 export function useInvoices() {
   const { adapter } = usePersistence();
   const { getNextNumber } = useUnifiedSettings();
+  const { settings } = useSettings(); // ✅ Settings für Kleinunternehmer-Check
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +49,10 @@ export function useInvoices() {
       throw new ValidationError("Kunde ist erforderlich", "customerId");
     }
 
+    if (!invoiceData.dueDate?.trim()) {
+      throw new ValidationError("Fälligkeitsdatum ist erforderlich", "dueDate");
+    }
+
     if (!invoiceData.lineItems || invoiceData.lineItems.length === 0) {
       throw new ValidationError("Mindestens eine Position ist erforderlich", "lineItems");
     }
@@ -70,7 +76,9 @@ export function useInvoices() {
       item.total = itemTotal;
     });
 
-    const vatAmount = subtotal * (invoiceData.vatRate / 100);
+    // ✅ RECHTLICH KORREKT: Kleinunternehmer dürfen keine MwSt ausweisen (§ 19 UStG)
+    const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
+    const vatAmount = isKleinunternehmer ? 0 : subtotal * (invoiceData.vatRate / 100);
     const total = subtotal + vatAmount;
 
     setError(null);
@@ -140,8 +148,10 @@ export function useInvoices() {
         item.total = itemTotal;
       });
 
+      // ✅ RECHTLICH KORREKT: Kleinunternehmer dürfen keine MwSt ausweisen (§ 19 UStG)
+      const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
       const vatRate = patch.vatRate ?? 19; // Default VAT rate
-      const vatAmount = subtotal * (vatRate / 100);
+      const vatAmount = isKleinunternehmer ? 0 : subtotal * (vatRate / 100);
       const total = subtotal + vatAmount;
 
       patch.subtotal = subtotal;

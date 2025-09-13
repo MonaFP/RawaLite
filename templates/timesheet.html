@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     /* Tabelle für Aktivitäten */
+    .activities-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5cm 0;
+      border: 1px solid #d0d0d0;
+      page-break-inside: auto;
+    }
+    
+    .activities-table th,
+    .activities-table td {
+      padding: 0.4cm 0.3cm;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+      border-right: 1px solid #e0e0e0;
+      vertical-align: top;
+      page-break-inside: avoid;
+    }
+    
+    .activities-table thead {
+      page-break-after: avoid;
+    }
+    
+    .activities-table tr {
+      page-break-inside: avoid;
+    }snachweis {{timesheet.timesheetNumber}}</title>
+  
+  <!-- DIN 5008 compliant CSS for professional German business documents -->
+  <style>
+    @page {
+      size: A4;
+      margin: 2.5cm 2cm 2cm 2.5cm; /* DIN 5008: Links 2,5cm, rechts 2cm, oben 2,5cm, unten 2cm */
+    }
+    
+    body {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 11pt; /* DIN 5008 Standard-Schriftgröße */
+      line-height: 1.3;
+      color: #000;
+      margin: 0;
+      padding: 0;
+      background: white;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    /* DIN 5008 Briefkopf-Bereich */
+    .letterhead {
+      position: relative;
+      height: 4.5cm; /* DIN 5008: Briefkopf bis 4,5cm */
+      margin-bottom: 2cm;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .company-info {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      font-size: 9pt;
+      color: #333;
+    }
+    
+    .company-name {
+      font-size: 14pt;
+      font-weight: bold;
+      color: #1e3a2e;
+      margin-bottom: 0.3cm;
+    }
+    
+    .company-details {
+      line-height: 1.2;
+    }
+    
+    .logo {
+      position: absolute;
+      top: 0;
+      right: 0;
+      max-width: 4cm;
+      max-height: 2.5cm;
+      object-fit: contain;
+    }
+    
+    /* DIN 5008 Anschriftenfeld */
+    .address-field {
+      width: 8.5cm; /* DIN 5008: Anschriftenfeld 8,5cm breit */
+      margin-bottom: 2cm;
+      position: relative;
+    }
+    
+    .sender-line {
+      font-size: 8pt;
+      color: #666;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 0.1cm;
+      margin-bottom: 0.3cm;
+      line-height: 1.1;
+    }
+    
+    .recipient-address {
+      font-size: 11pt;
+      line-height: 1.2;
+    }
+    
+    .recipient-name {
+      font-weight: bold;
+      margin-bottom: 0.2cm;
+    }
+    
+    /* Informationsblock */
+    .info-block {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.5cm;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 0.5cm;
+    }
+    
+    .info-left, .info-right {
+      width: 48%;
+    }
+    
+    .info-row {
+      display: flex;
+      margin-bottom: 0.2cm;
+    }
+    
+    .info-label {
+      width: 3.5cm;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .info-value {
+      flex: 1;
+    }
+    
+    /* Dokumenttitel */
+    .document-title {
+      font-size: 16pt;
+      font-weight: bold;
+      color: #1e3a2e;
+      margin: 1.5cm 0 1cm 0;
+      text-align: left;
+    }
+    
+    /* Zeitraum-Hervorhebung */
+    .period-highlight {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 0.3cm;
+      padding: 0.5cm;
+      margin: 1cm 0;
+      text-align: center;
+      font-weight: bold;
+      color: #1e3a2e;
+    }
+    
+    /* Ansprache und Einleitung */
+    .salutation {
+      margin-bottom: 1cm;
+      line-height: 1.4;
+    }
+    
+    /* Tabelle für Aktivitäten/Leistungen */
+    .activities-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5cm 0;
+      border: 1px solid #d0d0d0;
+    }
+    
+    .activities-table th,
+    .activities-table td {
+      padding: 0.4cm 0.3cm;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+      border-right: 1px solid #e0e0e0;
+      vertical-align: top;
+    }
+    
+    .activities-table th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+      color: #1e3a2e;
+      font-size: 10pt;
+    }
+    
+    .activities-table td {
+      font-size: 10pt;
+    }
+    
+    .activity-description {
+      font-size: 9pt;
+      color: #555;
+      margin-top: 0.1cm;
+    }
+    
+    .text-right {
+      text-align: right;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    /* Summen-Bereich speziell für Leistungsnachweise */
+    .totals-section {
+      margin-top: 1cm;
+      display: flex;
+      justify-content: flex-end;
+      page-break-inside: avoid;
+      margin-bottom: 1cm;
+    }
+    
+    .totals-table {
+      width: 7cm;
+      border-collapse: collapse;
+    }
+    
+    .totals-table td {
+      padding: 0.2cm 0.3cm;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .totals-table .label {
+      text-align: left;
+      font-weight: normal;
+    }
+    
+    .totals-table .amount {
+      text-align: right;
+      font-weight: bold;
+    }
+    
+    .rate-row {
+      color: #666;
+      font-size: 10pt;
+    }
+    
+    .hours-row {
+      font-weight: bold;
+    }
+    
+    .total-final {
+      border-top: 2px solid #1e3a2e;
+      font-size: 12pt;
+      font-weight: bold;
+      color: #1e3a2e;
+    }
+    
+    /* Steuerhinweis */
+    .tax-note {
+      font-size: 9pt;
+      color: #666;
+      font-style: italic;
+      margin-top: 0.5cm;
+    }
+    
+    /* Bestätigungsbereich */
+    .confirmation-section {
+      margin: 2cm 0;
+      padding: 0.5cm;
+      border: 1px solid #e0e0e0;
+      border-radius: 0.3cm;
+      background-color: #fafafa;
+    }
+    
+    .confirmation-title {
+      font-weight: bold;
+      color: #1e3a2e;
+      margin-bottom: 0.5cm;
+    }
+    
+    .signature-area {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5cm;
+    }
+    
+    .signature-box {
+      width: 45%;
+      text-align: center;
+      border-top: 1px solid #666;
+      padding-top: 0.3cm;
+      font-size: 9pt;
+      color: #666;
+    }
+    
+    /* Schlusstext */
+    .closing-text {
+      margin: 1.5cm 0;
+      line-height: 1.4;
+    }
+    
+    /* Anmerkungen */
+    .notes-section {
+      margin-top: 2cm;
+      padding-top: 0.5cm;
+      border-top: 1px solid #e0e0e0;
+    }
+    
+    .notes-title {
+      font-weight: bold;
+      color: #1e3a2e;
+      margin-bottom: 0.5cm;
+    }
+    
+    .notes-content {
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+    
+    /* Footer für Geschäftsangaben */
+    .business-footer {
+      margin-top: 3cm;
+      font-size: 8pt;
+      color: #666;
+      line-height: 1.2;
+      border-top: 1px solid #e0e0e0;
+      padding-top: 0.3cm;
+      page-break-inside: avoid;
+    }
+    
+    /* Status-Indicator */
+    .status-indicator {
+      position: absolute;
+      top: 1cm;
+      right: 0;
+      padding: 0.3cm 0.5cm;
+      border-radius: 0.2cm;
+      font-size: 10pt;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    
+    .status-draft {
+      background-color: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fbbf24;
+    }
+    
+    .status-sent {
+      background-color: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #3b82f6;
+    }
+    
+    .status-approved {
+      background-color: #dcfce7;
+      color: #166534;
+      border: 1px solid #22c55e;
+    }
+    
+    .status-rejected {
+      background-color: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #ef4444;
+    }
+    
+    /* Print-spezifische Anpassungen */
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .activities-table th {
+        background-color: #f8f9fa !important;
+      }
+      
+      .period-highlight {
+        background-color: #f8f9fa !important;
+      }
+      
+      .confirmation-section {
+        background-color: #fafafa !important;
+      }
+      
+      .status-indicator {
+        display: none; /* Status nicht in gedruckter Version anzeigen */
+      }
+    }
+    
+    /* Responsive Anpassungen für Vorschau */
+    @media screen and (max-width: 21cm) {
+      body {
+        padding: 1cm;
+      }
+      
+      .address-field {
+        width: 100%;
+        max-width: 8.5cm;
+      }
+      
+      .info-block {
+        flex-direction: column;
+      }
+      
+      .info-left, .info-right {
+        width: 100%;
+      }
+      
+      .signature-area {
+        flex-direction: column;
+      }
+      
+      .signature-box {
+        width: 100%;
+        margin-bottom: 1cm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Status-Indikator (nur in Vorschau) -->
+  <div class="status-indicator status-{{timesheet.status}}">
+    {{#if (eq timesheet.status 'draft')}}Entwurf{{/if}}
+    {{#if (eq timesheet.status 'sent')}}Versendet{{/if}}
+    {{#if (eq timesheet.status 'approved')}}Genehmigt{{/if}}
+    {{#if (eq timesheet.status 'rejected')}}Abgelehnt{{/if}}
+  </div>
+  
+  <!-- Briefkopf nach DIN 5008 -->
+  <div class="letterhead">
+    <div class="company-info">
+      <div class="company-name">{{company.name}}</div>
+      <div class="company-details">
+        {{company.street}}<br>
+        {{company.zip}} {{company.city}}<br>
+        {{#if company.phone}}Tel: {{company.phone}}<br>{{/if}}
+        {{#if company.email}}E-Mail: {{company.email}}<br>{{/if}}
+        {{#if company.website}}Web: {{company.website}}{{/if}}
+      </div>
+    </div>
+    {{#if company.logo}}
+    <img src="{{company.logo}}" alt="{{company.name}} Logo" class="logo">
+    {{/if}}
+  </div>
+  
+  <!-- Anschriftenfeld nach DIN 5008 -->
+  <div class="address-field">
+    <div class="sender-line">
+      {{company.name}} · {{company.street}} · {{company.zip}} {{company.city}}
+    </div>
+    <div class="recipient-address">
+      <div class="recipient-name">{{customer.name}}</div>
+      {{#if customer.street}}{{customer.street}}<br>{{/if}}
+      {{#if customer.zip}}{{customer.zip}} {{customer.city}}{{/if}}
+    </div>
+  </div>
+  
+  <!-- Informationsblock -->
+  <div class="info-block">
+    <div class="info-left">
+      <div class="info-row">
+        <span class="info-label">Leistungsnachweis-Nr.:</span>
+        <span class="info-value">{{timesheet.timesheetNumber}}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Erstellt am:</span>
+        <span class="info-value">{{formatDate timesheet.createdAt}}</span>
+      </div>
+      {{#if customer.email}}
+      <div class="info-row">
+        <span class="info-label">E-Mail:</span>
+        <span class="info-value">{{customer.email}}</span>
+      </div>
+      {{/if}}
+    </div>
+    <div class="info-right">
+      <div class="info-row">
+        <span class="info-label">Stundensatz:</span>
+        <span class="info-value">{{formatCurrency timesheet.hourlyRate}}</span>
+      </div>
+      {{#if customer.phone}}
+      <div class="info-row">
+        <span class="info-label">Telefon:</span>
+        <span class="info-value">{{customer.phone}}</span>
+      </div>
+      {{/if}}
+      {{#if customer.number}}
+      <div class="info-row">
+        <span class="info-label">Kunden-Nr.:</span>
+        <span class="info-value">{{customer.number}}</span>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+  
+  <!-- Dokumenttitel -->
+  <h1 class="document-title">Leistungsnachweis</h1>
+  
+  <!-- Zeitraum-Hervorhebung -->
+  <div class="period-highlight">
+    Leistungszeitraum: {{formatDate timesheet.startDate}} bis {{formatDate timesheet.endDate}}
+  </div>
+  
+  <!-- Ansprache -->
+  <div class="salutation">
+    <p>Sehr geehrte Damen und Herren,</p>
+    <p>hiermit weise ich Ihnen die im oben genannten Zeitraum erbrachten Leistungen nach:</p>
+  </div>
+  
+  <!-- Betreff -->
+  {{#if timesheet.title}}
+  <div style="margin-bottom: 1cm;">
+    <strong>Projekt/Betreff: {{timesheet.title}}</strong>
+  </div>
+  {{/if}}
+  
+  <!-- Aktivitäten-Tabelle -->
+  {{#if timesheet.activities}}
+  <table class="activities-table">
+    <thead>
+      <tr>
+        <th style="width: 15%;">Datum</th>
+        <th style="width: 55%;">Tätigkeit/Beschreibung</th>
+        <th style="width: 15%;" class="text-center">Stunden</th>
+        <th style="width: 15%;" class="text-right">Betrag (€)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each timesheet.activities}}
+      <tr>
+        <td>{{formatDate this.date}}</td>
+        <td>
+          <div>{{this.title}}</div>
+          {{#if this.description}}
+          <div class="activity-description">{{this.description}}</div>
+          {{/if}}
+        </td>
+        <td class="text-center">{{this.hours}}</td>
+        <td class="text-right">{{formatCurrency (multiply this.hours ../timesheet.hourlyRate)}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{else}}
+  <!-- Einfache Darstellung ohne detaillierte Aktivitäten -->
+  <div style="margin: 1.5cm 0; padding: 1cm; background-color: #f8f9fa; border-radius: 0.3cm;">
+    <div style="text-align: center; font-size: 12pt;">
+      <strong>Erbrachte Leistung</strong><br>
+      <div style="margin: 0.5cm 0; font-size: 14pt; color: #1e3a2e;">
+        {{timesheet.totalHours}} Stunden
+      </div>
+      <div style="font-size: 10pt; color: #666;">
+        á {{formatCurrency timesheet.hourlyRate}} pro Stunde
+      </div>
+    </div>
+  </div>
+  {{/if}}
+  
+  <!-- Summen-Bereich -->
+  <div class="totals-section">
+    <table class="totals-table">
+      <tr class="rate-row">
+        <td class="label">Stundensatz:</td>
+        <td class="amount">{{formatCurrency timesheet.hourlyRate}}</td>
+      </tr>
+      <tr class="hours-row">
+        <td class="label">Gesamtstunden:</td>
+        <td class="amount">{{timesheet.totalHours}} h</td>
+      </tr>
+      <tr>
+        <td class="label">Zwischensumme:</td>
+        <td class="amount">{{formatCurrency timesheet.subtotal}}</td>
+      </tr>
+      {{#unless company.kleinunternehmer}}
+      {{#if timesheet.vatAmount}}
+      <tr>
+        <td class="label">MwSt. ({{timesheet.vatRate}}%):</td>
+        <td class="amount">{{formatCurrency timesheet.vatAmount}}</td>
+      </tr>
+      {{/if}}
+      {{/unless}}
+      <tr class="total-final">
+        <td class="label">Gesamtbetrag:</td>
+        <td class="amount">{{formatCurrency timesheet.total}}</td>
+      </tr>
+    </table>
+  </div>
+  
+  <!-- Steuerhinweis bei Kleinunternehmer -->
+  {{#if company.kleinunternehmer}}
+  <div class="tax-note">
+    Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen.
+  </div>
+  {{/if}}
+  
+  <!-- Bestätigungsbereich -->
+  <div class="confirmation-section">
+    <div class="confirmation-title">Bestätigung der erbrachten Leistungen:</div>
+    <div>
+      Hiermit bestätigen wir, dass die oben aufgeführten Leistungen ordnungsgemäß und fristgerecht erbracht wurden.
+      Die angegebenen Stunden entsprechen den tatsächlich geleisteten Arbeitszeiten.
+    </div>
+    
+    <div class="signature-area">
+      <div class="signature-box">
+        Datum, Unterschrift Auftragnehmer<br>
+        {{company.name}}
+      </div>
+      <div class="signature-box">
+        Datum, Unterschrift Auftraggeber<br>
+        {{customer.name}}
+      </div>
+    </div>
+  </div>
+  
+  <!-- Anmerkungen -->
+  {{#if timesheet.notes}}
+  <div class="notes-section">
+    <div class="notes-title">Anmerkungen:</div>
+    <div class="notes-content">{{timesheet.notes}}</div>
+  </div>
+  {{/if}}
+  
+  <!-- Schlusstext -->
+  <div class="closing-text">
+    <p>Bei Fragen zu diesem Leistungsnachweis stehen wir Ihnen gerne zur Verfügung.</p>
+  </div>
+  
+  <!-- Grußformel -->
+  <div style="margin-top: 2cm;">
+    <p>Mit freundlichen Grüßen</p>
+    <div style="margin-top: 1.5cm;">
+      {{company.name}}
+    </div>
+  </div>
+  
+  <!-- Geschäftsangaben im Footer -->
+  <div class="business-footer">
+    <div style="text-align: center;">
+      <strong>{{company.name}}</strong> · {{company.street}} · {{company.zip}} {{company.city}}<br>
+      {{#if company.phone}}Tel: {{company.phone}}{{/if}}
+      {{#if company.email}} · E-Mail: {{company.email}}{{/if}}
+      {{#if company.website}} · Web: {{company.website}}{{/if}}<br>
+      {{#if company.taxId}}Steuernummer: {{company.taxId}}{{/if}}
+      {{#if company.vatId}} · USt-IdNr.: {{company.vatId}}{{/if}}
+      {{#if company.bankName}} · {{company.bankName}}{{/if}}
+      {{#if company.bankAccount}} · IBAN: {{company.bankAccount}}{{/if}}
+      {{#if company.bankBic}} · BIC: {{company.bankBic}}{{/if}}
+    </div>
+  </div>
+</body>
+</html>

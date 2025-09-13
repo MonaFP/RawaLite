@@ -1,5 +1,4 @@
 export * from './persistence/adapter';
-export * from './services/NummernkreisService';
 
 // Page exports
 export { default as AngebotDetailPage } from './pages/AngebotDetailPage';

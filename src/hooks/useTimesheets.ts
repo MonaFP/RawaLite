@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useUnifiedSettings } from "./useUnifiedSettings";
+import { useSettings } from "../contexts/SettingsContext";
 import { DatabaseError, ValidationError, handleError } from "../lib/errors";
 import type { Timesheet } from "../persistence/adapter";
 
 export function useTimesheets() {
   const { adapter } = usePersistence();
   const { getNextNumber } = useUnifiedSettings();
+  const { settings } = useSettings();
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function useTimesheets() {
 
     // Validation
     if (!timesheetData.title?.trim()) {
-      throw new ValidationError("Leistungsnachweis-Titel ist erforderlich", "title");
+      throw new ValidationError("Titel ist erforderlich", "title");
     }
     
     if (!timesheetData.customerId) {
@@ -61,27 +63,36 @@ export function useTimesheets() {
       throw new ValidationError("Enddatum muss nach dem Startdatum liegen", "endDate");
     }
 
-    // Validation for activities - only if they exist
-    if (timesheetData.activities && timesheetData.activities.length > 0) {
-      console.log('useTimesheets.createTimesheet: Validation passed, activities:', timesheetData.activities);
-
-      // Validate activities
-      timesheetData.activities.forEach((activity, index) => {
-        console.log(`useTimesheets.createTimesheet: Validating activity ${index}:`, activity);
-        if (activity.hours < 0) {
-          throw new ValidationError(`Stunden für Tätigkeit ${index + 1} dürfen nicht negativ sein`, `activities.${index}.hours`);
-        }
-        if (activity.hourlyRate < 0) {
-          throw new ValidationError(`Stundensatz für Tätigkeit ${index + 1} darf nicht negativ sein`, `activities.${index}.hourlyRate`);
-        }
-      });
-    } else {
-      console.log('useTimesheets.createTimesheet: Creating timesheet without activities (will be added later)');
+    // Activities are required
+    if (!timesheetData.activities || timesheetData.activities.length === 0) {
+      throw new ValidationError("Mindestens eine Aktivität ist erforderlich", "activities");
     }
 
+    // Validate and calculate activities
+    const calculatedActivities = timesheetData.activities.map((activity, index) => {
+      // Validate activity
+      if (!activity.activityId) {
+        throw new ValidationError(`Aktivität für Position ${index + 1} ist erforderlich`, `activities.${index}.activityId`);
+      }
+      if (activity.hours <= 0) {
+        throw new ValidationError(`Stunden für Position ${index + 1} müssen positiv sein`, `activities.${index}.hours`);
+      }
+      if (activity.hourlyRate < 0) {
+        throw new ValidationError(`Stundensatz für Position ${index + 1} darf nicht negativ sein`, `activities.${index}.hourlyRate`);
+      }
+
+      // Calculate total for this activity
+      return {
+        ...activity,
+        total: activity.hours * activity.hourlyRate
+      };
+    });
+
     // Calculate totals
-    const subtotal = timesheetData.activities ? timesheetData.activities.reduce((sum, activity) => sum + activity.total, 0) : 0;
-    const vatAmount = subtotal * (timesheetData.vatRate / 100);
+    const subtotal = calculatedActivities.reduce((sum, activity) => sum + activity.total, 0);
+    // ✅ RECHTLICH KORREKT: Kleinunternehmer dürfen keine MwSt ausweisen (§ 19 UStG)
+    const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
+    const vatAmount = isKleinunternehmer ? 0 : subtotal * (timesheetData.vatRate / 100);
     const total = subtotal + vatAmount;
     
     console.log('useTimesheets.createTimesheet: Calculated totals - subtotal:', subtotal, 'vatAmount:', vatAmount, 'total:', total);
@@ -108,6 +119,7 @@ export function useTimesheets() {
       console.log('useTimesheets.createTimesheet: Creating timesheet in database...');
       const newTimesheet = await adapter.createTimesheet({
         ...timesheetData,
+        activities: calculatedActivities,
         timesheetNumber,
         subtotal,
         vatAmount,
@@ -140,21 +152,31 @@ export function useTimesheets() {
 
     // Validate activities if provided (but allow empty activities for basic timesheets)
     if (patch.activities && patch.activities.length > 0) {
-      patch.activities.forEach((activity, index) => {
+      // Validate and calculate activities
+      const calculatedActivities = patch.activities.map((activity, index) => {
         if (activity.hours < 0) {
           throw new ValidationError(`Stunden für Tätigkeit ${index + 1} dürfen nicht negativ sein`, `activities.${index}.hours`);
         }
         if (activity.hourlyRate < 0) {
           throw new ValidationError(`Stundensatz für Tätigkeit ${index + 1} darf nicht negativ sein`, `activities.${index}.hourlyRate`);
         }
+
+        // Calculate total for this activity
+        return {
+          ...activity,
+          total: activity.hours * activity.hourlyRate
+        };
       });
 
       // Recalculate totals based on activities
-      const subtotal = patch.activities.reduce((sum, activity) => sum + activity.total, 0);
+      const subtotal = calculatedActivities.reduce((sum, activity) => sum + activity.total, 0);
+      // ✅ RECHTLICH KORREKT: Kleinunternehmer dürfen keine MwSt ausweisen (§ 19 UStG)
+      const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
       const vatRate = patch.vatRate ?? 19;
-      const vatAmount = subtotal * (vatRate / 100);
+      const vatAmount = isKleinunternehmer ? 0 : subtotal * (vatRate / 100);
       const total = subtotal + vatAmount;
 
+      patch.activities = calculatedActivities;
       patch.subtotal = subtotal;
       patch.vatAmount = vatAmount;
       patch.total = total;
