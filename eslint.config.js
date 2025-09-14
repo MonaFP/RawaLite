@@ -45,6 +45,18 @@ export default [
     }
   },
   {
-    ignores: ['node_modules/**', 'dist/**', 'dist-electron/**', 'build/**']
+    ignores: [
+      'node_modules/**', 
+      'dist/**', 
+      'dist-electron/**', 
+      'build/**',
+      // Legacy CommonJS utility scripts (to be migrated)
+      '*.cjs',
+      'fix-*.js',
+      'debug-*.js',
+      'test-*.cjs',
+      '*-migration.js',
+      'tests/integration/**/*.cjs'
+    ]
   }
 ];

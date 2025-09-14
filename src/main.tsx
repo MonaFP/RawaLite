@@ -8,6 +8,7 @@ import { LoadingProvider, LoadingOverlay } from "./contexts/LoadingContext";
 import { NotificationProvider, NotificationContainer } from "./contexts/NotificationContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
 import { MigrationInitializer } from "./components/MigrationInitializer";
+import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { applyThemeToDocument, applyNavigationMode } from "./lib/themes";
 
 // Import pages
@@ -109,19 +110,21 @@ async function initializeApp() {
 initializeApp().then(() => {
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-      <LoadingProvider>
-        <NotificationProvider>
-          <PersistenceProvider mode="sqlite">
-            <SettingsProvider>
-              <MigrationInitializer>
-                <RouterProvider router={router} />
-                <LoadingOverlay />
-                <NotificationContainer />
-              </MigrationInitializer>
-            </SettingsProvider>
-          </PersistenceProvider>
-        </NotificationProvider>
-      </LoadingProvider>
+      <GlobalErrorBoundary>
+        <LoadingProvider>
+          <NotificationProvider>
+            <PersistenceProvider mode="sqlite">
+              <SettingsProvider>
+                <MigrationInitializer>
+                  <RouterProvider router={router} />
+                  <LoadingOverlay />
+                  <NotificationContainer />
+                </MigrationInitializer>
+              </SettingsProvider>
+            </PersistenceProvider>
+          </NotificationProvider>
+        </LoadingProvider>
+      </GlobalErrorBoundary>
     </React.StrictMode>
   );
 });

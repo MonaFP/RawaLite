@@ -15,26 +15,100 @@
 - **React:** 18.3.1 mit TypeScript 5.9.2
 - **Router:** React Router DOM 7.8.2
 - **Desktop:** Electron 31.7.7
-- **Build Tools:** Vite 5.4.20, esbuild 0.23.1
+- **Build Tools:** Vite 5.4.0, esbuild 0.21.5
 - **Package Manager:** pnpm
 
-### Datenbank & Persistence
-- **Primary:** SQL.js 1.13.0 (SQLite im Browser)
-- **Secondary:** Dexie 4.2.0 (IndexedDB)
-- **Backup:** LocalStorage für Einstellungen
+### Datenbank & Persistence ⚡ **CRITICAL UPDATE**
+- **Primary:** SQL.js 1.13.0 (SQLite with file persistence)
+- **Real File Storage:** `%APPDATA%/rawalite/d## 🔍 Debug-Tipps
+
+- **Development**: Chrome DevTools für Renderer, VS Code Debug für Main Process
+- **Database**: SQLite-Browser für Schema-Inspektion
+- **Logs**: Console.log für Development, strukturiertes Logging für Production
+- **IPC**: Electron DevTools für IPC-Message Debugging
+- **Update Testing**: `node test-update-system.js` für GitHub API Tests
+
+## 🔧 **Critical Development Workflows**
+
+### **Database Debug Commands** (USE IN BROWSER CONSOLE)
+```javascript
+// Available in development mode
+window.rawaliteDebug.getDatabaseInfo()    // Check DB status & storage size
+window.rawaliteDebug.exportDatabase()     // Export current SQLite binary
+window.rawaliteDebug.saveDatabase()       // Force manual persistence
+```
+
+### **PDF Generation Workflow**
+```typescript
+// Use PDFService for all PDF operations - NO jsPDF directly!
+import { PDFService } from '../services/PDFService';
+
+// Correct way: Native Electron PDF with save dialog
+const result = await PDFService.exportOfferToPDF(offer, customer, settings);
+if (result.success) {
+  console.log('PDF saved to:', result.filePath);
+}
+```
+
+### **Build & Development Commands**
+```bash
+# ALWAYS use pnpm (not npm!)
+pnpm dev          # Vite + Electron (hot reload)
+pnpm build        # Production build
+pnpm dist         # Electron distributables
+
+# Kill hanging Electron processes (Windows)
+Get-Process electron | Stop-Process
+
+# Database validation
+node debug-database-content.js
+```
+
+### **Auto-Numbering Implementation**
+```typescript
+// Pattern for all entities with auto-numbering
+const { getNextNumber } = useUnifiedSettings();
+
+// Get next number (handles year reset automatically)
+const number = await getNextNumber('offer');  // Returns "AN-2025-0001"
+const number = await getNextNumber('invoice'); // Returns "RE-2025-0001"
+const number = await getNextNumber('timesheet'); // Returns "LN-2025-0001"
+```
+
+### **Theme System Rules** (NEVER CHANGE THESE HEX VALUES!)
+```typescript
+// These colors are FINAL - only IDs/names can be changed
+const IMMUTABLE_THEME_COLORS = {
+  'salbeigrün': { primary: '#4a5d5a', secondary: '#3a4d4a', accent: '#7dd3a0' },
+  'himmelblau': { primary: '#4a5b6b', secondary: '#3d4e5e', accent: '#87ceeb' },
+  'lavendel': { primary: '#5a4d6b', secondary: '#4d405e', accent: '#b19cd9' },
+  'pfirsich': { primary: '#6b5a4d', secondary: '#5e4d40', accent: '#f4a28c' },
+  'rosé': { primary: '#6b4d5a', secondary: '#5e4050', accent: '#e6a8b8' }
+};
+```.sqlite` via Electron IPC
+- **Dual-Mode System:** Electron = Real files, Browser = LocalStorage fallback
+- **Auto-Updater:** electron-updater 6.6.2 (real GitHub integration)
+- **Secondary:** Dexie 4.2.0 (IndexedDB backup)
 
 ### Testing & Development
-- **Unit Tests:** Vitest 2.1.8
-- **E2E Tests:** Playwright 1.55.0
-- **Linting:** ESLint 9.35.0 mit TypeScript-Plugin
+- **Unit Tests:** Vitest 1.6.0
+- **E2E Tests:** Playwright 1.46.0
+- **Linting:** ESLint 9.9.0 mit TypeScript-Plugin
 - **Build Tools**: electron-builder 24.13.3, npm-run-all 4.1.5
 
 ### Business Logic Libraries
-- **PDF Generation:** jsPDF 3.0.2 + html2canvas 1.4.1
-- **Archive:** JSZip 3.10.1
+- **PDF System:** Native Electron PDF + JSZip 3.10.1
+- **Logging:** electron-log 5.4.3
 
 ## 🏢 Projektübersicht
 RawaLite ist eine Electron-basierte Desktop-Anwendung für Geschäftsverwaltung mit React + TypeScript + SQLite.
+
+**Current Version: 1.6.0** - Production-ready business management solution with:
+- Real SQLite file persistence (`%APPDATA%/rawalite/database.sqlite`)
+- Native Electron PDF generation with save dialogs
+- Professional pastel theme system (5 themes)
+- Auto-updater with real GitHub API integration
+- Comprehensive business entity management (Customers, Offers, Invoices, Timesheets)
 
 ## 🏗️ Architektur-Patterns
 
@@ -420,6 +494,61 @@ try {
 4. **Error Boundaries**: Graceful Degradation bei Fehlern
 5. **Auto-Numbering**: Konsistent für alle Entitäten verwenden
 
+## 💼 **Critical Business Logic Patterns**
+
+### **CRUD Hook Pattern** (USE THIS EXACTLY)
+```typescript
+export function useEntity() {
+  const { adapter } = usePersistence();
+  const { getNextNumber } = useUnifiedSettings();
+  const [entities, setEntities] = useState<Entity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function create(data: Omit<Entity, "id" | "createdAt" | "updatedAt" | "number">) {
+    if (!adapter) throw new DatabaseError("Datenbank-Adapter nicht verfügbar");
+    
+    // 1. Validation
+    if (!data.title?.trim()) {
+      throw new ValidationError("Titel ist erforderlich", "title");
+    }
+    
+    // 2. Auto-numbering 
+    const number = await getNextNumber('entity');
+    
+    // 3. Database operation
+    const entity = await adapter.createEntity({...data, number});
+    
+    // 4. State update
+    setEntities(prev => [...prev, entity]);
+    return entity;
+  }
+}
+```
+
+### **Persistence Wrapper Pattern** (CRITICAL)
+```typescript
+// sqlite/db.ts - Database operations MUST trigger persistence
+db.exec = (...args) => {
+  const result = _exec(...args);
+  if (/INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|ALTER/.test(sqlText)) {
+    schedulePersist(); // Triggers %APPDATA%/rawalite/database.sqlite save
+  }
+  return result;
+};
+```
+
+### **Theme Application Pattern**
+```typescript
+// Apply themes via CSS custom properties - DO NOT change hex values!
+export function applyTheme(theme: ThemeDefinition) {
+  document.documentElement.style.setProperty('--primary-color', theme.primary);
+  document.documentElement.style.setProperty('--secondary-color', theme.secondary);
+  document.documentElement.style.setProperty('--accent-color', theme.accent);
+  document.documentElement.style.setProperty('--sidebar-gradient', theme.gradient);
+}
+```
+
 ## 🚨 **Dauerauftrag - Arbeitsweise im Workspace**
 
 ### **👉 IMMER BEFOLGEN: Code-Verständnis vor Implementierung**
@@ -460,7 +589,9 @@ import { SQLiteAdapter } from '../adapters/SQLiteAdapter';
 import { CustomerService } from '../services/CustomerService';
 ```
 
-**🎯 Ziel:** Jede Implementierung fügt sich nahtlos in die bestehende RawaLite-Architektur ein.
+---
+
+**Wichtig**: Dieses Projekt verwendet **deutsche Sprache** für UI, Kommentare und Dokumentation.
 
 ## � GitHub Integration & Release Management
 
@@ -646,14 +777,14 @@ dist                # electron-builder
 
 ### **Installierte Pakete (Current)**
 ```bash
-# Production Dependencies
+# Production Dependencies (package.json v1.6.0)
 @fontsource/roboto@5.1.0
 @types/react@18.3.12
 @types/react-dom@18.3.1
 dexie@4.2.0
 electron@31.7.7
-jspdf@3.0.2
-html2canvas@1.4.1
+electron-log@5.4.3
+electron-updater@6.6.2
 jszip@3.10.1
 react@18.3.1
 react-dom@18.3.1
@@ -662,19 +793,24 @@ sql.js@1.13.0
 typescript@5.9.2
 
 # Development Dependencies
-@eslint/js@9.35.0
-@playwright/test@1.55.0
-@types/node@22.10.2
-@vitejs/plugin-react@4.3.4
+@playwright/test@1.46.0
+@testing-library/jest-dom@6.8.0
+@testing-library/react@16.3.0
+@testing-library/user-event@14.6.1
+@types/node@20.14.10
+@types/sql.js@1.4.9
+@typescript-eslint/eslint-plugin@8.43.0
+@typescript-eslint/parser@8.43.0
+@vitejs/plugin-react@5.0.2
 electron-builder@24.13.3
-esbuild@0.23.1
-eslint@9.35.0
-globals@15.14.0
+esbuild@0.21.5
+eslint@9.9.0
+jsdom@26.1.0
 npm-run-all@4.1.5
-playwright@1.55.0
-typescript-eslint@8.18.2
-vite@5.4.20
-vitest@2.1.8
+tsx@4.20.5
+typescript@5.5.4
+vite@5.4.0
+vitest@1.6.0
 ```
 
 ### **Git Workflow**

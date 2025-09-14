@@ -1,17 +1,24 @@
 // electron/preload.ts
 import { contextBridge, ipcRenderer } from 'electron';
+import type { 
+  RawaliteAPI, 
+  ElectronAPI, 
+  PDFGenerateOptions, 
+  UpdateMessage 
+} from '../src/types/ipc';
+import type { IpcRendererEvent } from 'electron';
 
-contextBridge.exposeInMainWorld('rawalite', {
+const rawaliteAPI: RawaliteAPI = {
   db: {
-    load: () => ipcRenderer.invoke('db:load') as Promise<Uint8Array | null>,
-    save: (data: Uint8Array) => ipcRenderer.invoke('db:save', data) as Promise<boolean>,
+    load: () => ipcRenderer.invoke('db:load'),
+    save: (data: Uint8Array) => ipcRenderer.invoke('db:save', data),
   },
   app: {
-    restart: () => ipcRenderer.invoke('app:restart') as Promise<void>,
-    getVersion: () => ipcRenderer.invoke('app:getVersion') as Promise<string>,
+    restart: () => ipcRenderer.invoke('app:restart'),
+    getVersion: () => ipcRenderer.invoke('app:getVersion'),
   },
   shell: {
-    openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url) as Promise<void>,
+    openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url),
   },
   updater: {
     checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
@@ -20,58 +27,22 @@ contextBridge.exposeInMainWorld('rawalite', {
     getVersion: () => ipcRenderer.invoke('updater:get-version'),
     
     // Event listeners for update messages
-    onUpdateMessage: (callback: (event: any, data: any) => void) => {
+    onUpdateMessage: (callback: (event: IpcRendererEvent, data: UpdateMessage) => void) => {
       ipcRenderer.on('update-message', callback)
     },
     
-    removeUpdateMessageListener: (callback: (event: any, data: any) => void) => {
+    removeUpdateMessageListener: (callback: (event: IpcRendererEvent, data: UpdateMessage) => void) => {
       ipcRenderer.removeListener('update-message', callback)
     }
   }
-});
+};
 
-// PDF API for new PDF generation system
-contextBridge.exposeInMainWorld('electronAPI', {
+const electronAPI: ElectronAPI = {
   pdf: {
-    generate: (options: any) => ipcRenderer.invoke('pdf:generate', options),
+    generate: (options: PDFGenerateOptions) => ipcRenderer.invoke('pdf:generate', options),
     getStatus: () => ipcRenderer.invoke('pdf:getStatus'),
   }
-});
+};
 
-// Erweitere das globale Window-Interface für TypeScript
-declare global {
-  interface Window {
-    rawalite: {
-      db: {
-        load: () => Promise<Uint8Array | null>;
-        save: (data: Uint8Array) => Promise<boolean>;
-      };
-      app: {
-        restart: () => Promise<void>;
-        getVersion: () => Promise<string>;
-      };
-      shell: {
-        openExternal: (url: string) => Promise<void>;
-      };
-      updater: {
-        checkForUpdates: () => Promise<{success: boolean; updateInfo?: any; error?: string}>;
-        startDownload: () => Promise<{success: boolean; error?: string}>;
-        installAndRestart: () => Promise<{success: boolean; error?: string}>;
-        getVersion: () => Promise<{current: string; appName: string}>;
-        onUpdateMessage: (callback: (event: any, data: any) => void) => void;
-        removeUpdateMessageListener: (callback: (event: any, data: any) => void) => void;
-      };
-    };
-    electronAPI: {
-      pdf: {
-        generate: (options: any) => Promise<any>;
-        getStatus: () => Promise<{
-          electronAvailable: boolean;
-          ghostscriptAvailable: boolean;
-          veraPDFAvailable: boolean;
-          pdfa2bSupported: boolean;
-        }>;
-      };
-    };
-  }
-}
+contextBridge.exposeInMainWorld('rawalite', rawaliteAPI);
+contextBridge.exposeInMainWorld('electronAPI', electronAPI);

@@ -1,10 +1,15 @@
-// test-settings-persistence.cjs - Testa Theme & Navigation Persistenz
-const path = require('path');
-const fs = require('fs');
+// ESM Version - test-settings-persistence.mjs
+import path from 'path';
+import fs from 'fs';
+import initSqlJs from 'sql.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function testSettingsPersistence() {
   console.log('🎨 Post-Fix Persistenz-Audit: Settings-Persistenz');
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
   
   const dbPath = path.join(process.env.APPDATA, 'RawaLite', 'database.sqlite');
   
@@ -16,7 +21,6 @@ async function testSettingsPersistence() {
   console.log('✅ Database gefunden:', dbPath);
   
   try {
-    const initSqlJs = require('sql.js');
     const SQL = await initSqlJs();
     const data = fs.readFileSync(dbPath);
     const db = new SQL.Database(data);
@@ -105,4 +109,5 @@ async function testSettingsPersistence() {
   }
 }
 
-testSettingsPersistence().catch(console.error);
+// Top-level await in ESM
+await testSettingsPersistence().catch(console.error);
