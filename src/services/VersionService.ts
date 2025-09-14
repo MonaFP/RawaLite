@@ -24,7 +24,7 @@ export interface UpdateCheckResult {
 
 export class VersionService {
   private readonly BASE_VERSION = '1.5.6';
-  private readonly BUILD_DATE = '2025-09-12';
+  private readonly BUILD_DATE = '2025-09-14';
   
   private updateService: UpdateService;
   private currentVersionInfo: VersionInfo | null = null;
@@ -102,7 +102,7 @@ export class VersionService {
   }
 
   /**
-   * Prüft auf verfügbare Updates via GitHub API mit Private-Repo Fallback
+   * Prüft auf verfügbare Updates via electron-updater mit GitHub API Fallback
    */
   async checkForUpdates(): Promise<UpdateCheckResult> {
     try {
@@ -119,35 +119,64 @@ export class VersionService {
         LoggingService.log(`[VersionService] Migration check failed: ${migrationError}`);
       }
       
-      // GitHub API prüfen
-      let hasGitHubUpdate = false;
+      // Verwende electron-updater falls verfügbar, sonst GitHub API Fallback
+      let hasElectronUpdate = false;
       let latestVersion: string | undefined;
       let releaseNotes: string | undefined;
       
-      try {
-        latestVersion = await this.fetchLatestVersionFromGitHub();
-        hasGitHubUpdate = this.isUpdateAvailable(currentVersion.version, latestVersion);
-        LoggingService.log(`[VersionService] GitHub check: current=${currentVersion.version}, latest=${latestVersion}, hasUpdate=${hasGitHubUpdate}`);
-        
-        if (hasGitHubUpdate) {
-          releaseNotes = await this.fetchReleaseNotesFromGitHub(latestVersion);
+      const isElectron = typeof window !== 'undefined' && window.rawalite?.updater;
+      
+      if (isElectron) {
+        try {
+          LoggingService.log('[VersionService] Using electron-updater for update check');
+          const updateResult = await window.rawalite!.updater.checkForUpdates();
+          
+          if (updateResult.success && updateResult.updateInfo) {
+            hasElectronUpdate = true;
+            latestVersion = updateResult.updateInfo.version;
+            releaseNotes = updateResult.updateInfo.releaseNotes;
+            LoggingService.log(`[VersionService] electron-updater found update: ${latestVersion}`);
+          } else {
+            LoggingService.log('[VersionService] electron-updater: No update available');
+          }
+        } catch (electronError) {
+          LoggingService.log(`[VersionService] electron-updater failed, falling back to GitHub API: ${electronError}`);
+          
+          // Fallback zu GitHub API
+          try {
+            latestVersion = await this.fetchLatestVersionFromGitHub();
+            hasElectronUpdate = this.isUpdateAvailable(currentVersion.version, latestVersion);
+            
+            if (hasElectronUpdate) {
+              releaseNotes = await this.fetchReleaseNotesFromGitHub(latestVersion);
+            }
+          } catch (githubError) {
+            LoggingService.log(`[VersionService] GitHub API also failed: ${githubError}`);
+          }
         }
-      } catch (githubError) {
-        LoggingService.log(`[VersionService] GitHub API failed: ${githubError}`);
-        
-        // Da wir bereits bei Version 1.5.0 sind und GitHub nur 1.3.1 zeigt,
-        // ist kein Update verfügbar
-        LoggingService.log(`[VersionService] Current version ${currentVersion.version} is newer than GitHub ${this.BASE_VERSION}`);
+      } else {
+        // Browser-Modus: Verwende GitHub API
+        try {
+          latestVersion = await this.fetchLatestVersionFromGitHub();
+          hasElectronUpdate = this.isUpdateAvailable(currentVersion.version, latestVersion);
+          LoggingService.log(`[VersionService] GitHub API check: current=${currentVersion.version}, latest=${latestVersion}, hasUpdate=${hasElectronUpdate}`);
+          
+          if (hasElectronUpdate) {
+            releaseNotes = await this.fetchReleaseNotesFromGitHub(latestVersion);
+          }
+        } catch (githubError) {
+          LoggingService.log(`[VersionService] GitHub API failed: ${githubError}`);
+        }
       }
       
-      const hasUpdate = hasGitHubUpdate || migrationRequired;
+      const hasUpdate = hasElectronUpdate || migrationRequired;
       
-      LoggingService.log(`[VersionService] Final update check result: hasUpdate=${hasUpdate}, migration=${migrationRequired}, github=${hasGitHubUpdate}`);
+      LoggingService.log(`[VersionService] Final update check result: hasUpdate=${hasUpdate}, migration=${migrationRequired}, electronUpdater=${hasElectronUpdate}`);
       
       return {
         hasUpdate,
         currentVersion: currentVersion.version,
-        latestVersion: hasGitHubUpdate ? latestVersion : undefined,
+        latestVersion: hasElectronUpdate ? latestVersion : undefined,
         updateNotes: releaseNotes || (migrationRequired ? 'Datenbank-Updates verfügbar' : undefined)
       };
     } catch (error) {

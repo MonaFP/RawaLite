@@ -287,45 +287,42 @@ export class UpdateService {
   private async downloadAndInstallAppUpdate(): Promise<void> {
     try {
       // 1. Prüfe ob wir in Electron-Umgebung sind
-      const isElectron = typeof window !== 'undefined' && (window as any).rawalite;
+      const isElectron = typeof window !== 'undefined' && window.rawalite?.updater;
       
       if (!isElectron) {
         this.log('warn', 'Not in Electron environment - update skipped');
         return;
       }
 
-      // 2. Lade die neueste Release-Info von GitHub
-      const latestVersion = await this.fetchLatestVersion();
-      this.log('info', `Starting update to version ${latestVersion}...`);
+      // 2. Verwende neues electron-updater System statt manueller GitHub Links
+      this.log('info', 'Using electron-updater for automatic download and installation');
 
-      // 3. Informiere User über manuellen Update-Prozess für portable App
-      const message = `Update auf RawaLite v${latestVersion} verfügbar!\n\nDa dies eine portable Anwendung ist:\n• Ihre Daten bleiben automatisch erhalten\n• Laden Sie die neue Version von GitHub herunter\n• Ersetzen Sie die alte .exe mit der neuen\n\nSoll die Download-Seite geöffnet werden?`;
-      
-      // 4. Für echte Electron-Apps: Hier würde electron-updater verwendet
-      // Für portable Apps: Leite zum manuellen Download weiter
-      if (typeof window !== 'undefined' && window.confirm) {
-        const openDownload = window.confirm(message);
-        if (openDownload) {
-          // Öffne GitHub Releases in externem Browser
-          const downloadUrl = `https://github.com/MonaFP/RawaLite/releases/tag/v${latestVersion}`;
-          
-          try {
-            // Verwende Electron Shell API
-            await (window as any).rawalite.shell.openExternal(downloadUrl);
-            this.log('info', `Opened external URL: ${downloadUrl}`);
-          } catch (electronError) {
-            this.log('warn', `Electron shell failed, using fallback: ${electronError}`);
-            // Fallback: window.open
-            window.open(downloadUrl, '_blank');
-          }
-        }
+      // 3. Prüfe auf verfügbare Updates
+      const updateCheckResult = await window.rawalite!.updater.checkForUpdates();
+      if (!updateCheckResult.success) {
+        throw new Error(updateCheckResult.error || 'Update-Prüfung fehlgeschlagen');
       }
 
-      // 5. Markiere Update als "behandelt" aber nicht automatisch installiert
-      localStorage.setItem('rawalite.update.lastNotified', latestVersion);
-      localStorage.setItem('rawalite.update.lastCheck', new Date().toISOString());
-      
-      this.log('info', 'Update notification completed - manual download initiated');
+      // 4. Falls Update verfügbar, starte automatischen Download
+      if (updateCheckResult.updateInfo) {
+        this.log('info', 'Update available, starting automatic download...');
+        
+        const downloadResult = await window.rawalite!.updater.startDownload();
+        if (!downloadResult.success) {
+          throw new Error(downloadResult.error || 'Download fehlgeschlagen');
+        }
+
+        // 5. Download wird automatisch über Event-System verfolgt
+        // Die UI wird über Event-Handler über den Fortschritt informiert
+        this.log('info', 'Update download started successfully - progress will be reported via events');
+        
+        // 6. Markiere Update als "in Bearbeitung" - Installation erfolgt nach Download automatisch
+        localStorage.setItem('rawalite.update.status', 'downloading');
+        localStorage.setItem('rawalite.update.lastCheck', new Date().toISOString());
+        
+      } else {
+        this.log('info', 'No update available');
+      }
 
     } catch (error) {
       this.log('error', `Update process failed: ${error}`);

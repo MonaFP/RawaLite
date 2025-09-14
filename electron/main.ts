@@ -1,9 +1,125 @@
 // electron/main.ts
 import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from 'electron'
+import { autoUpdater } from 'electron-updater'
+import log from 'electron-log'
 import path from 'node:path'
 import fs from 'node:fs'
 import os from 'node:os'
 import { PDFPostProcessor, PDFAConversionOptions } from '../src/services/PDFPostProcessor'
+
+// === AUTO-UPDATER CONFIGURATION ===
+log.transports.file.level = 'info'
+autoUpdater.logger = log
+autoUpdater.autoDownload = false // User confirmation required
+autoUpdater.autoInstallOnAppQuit = true
+
+// Auto-updater events for IPC communication
+autoUpdater.on('checking-for-update', () => {
+  log.info('Checking for update...')
+  sendUpdateMessage('checking-for-update')
+})
+
+autoUpdater.on('update-available', (info) => {
+  log.info('Update available:', info)
+  sendUpdateMessage('update-available', {
+    version: info.version,
+    releaseNotes: info.releaseNotes,
+    releaseDate: info.releaseDate
+  })
+})
+
+autoUpdater.on('update-not-available', (info) => {
+  log.info('Update not available:', info)
+  sendUpdateMessage('update-not-available', info)
+})
+
+autoUpdater.on('error', (err) => {
+  log.error('Update error:', err)
+  sendUpdateMessage('update-error', {
+    message: err.message,
+    stack: err.stack
+  })
+})
+
+autoUpdater.on('download-progress', (progressObj) => {
+  const logMessage = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}% (${progressObj.transferred}/${progressObj.total})`
+  log.info(logMessage)
+  sendUpdateMessage('download-progress', {
+    percent: Math.round(progressObj.percent),
+    transferred: progressObj.transferred,
+    total: progressObj.total,
+    bytesPerSecond: progressObj.bytesPerSecond
+  })
+})
+
+autoUpdater.on('update-downloaded', (info) => {
+  log.info('Update downloaded:', info)
+  sendUpdateMessage('update-downloaded', {
+    version: info.version,
+    releaseNotes: info.releaseNotes
+  })
+})
+
+// Helper function to send update messages to renderer
+function sendUpdateMessage(type: string, data?: any) {
+  const allWindows = BrowserWindow.getAllWindows()
+  allWindows.forEach(window => {
+    window.webContents.send('update-message', { type, data })
+  })
+}
+
+// IPC Handlers for auto-updater
+ipcMain.handle('updater:check-for-updates', async () => {
+  try {
+    log.info('Manual update check requested')
+    const result = await autoUpdater.checkForUpdates()
+    return {
+      success: true,
+      updateInfo: result?.updateInfo || null
+    }
+  } catch (error) {
+    log.error('Check for updates failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('updater:start-download', async () => {
+  try {
+    log.info('Starting download of available update')
+    await autoUpdater.downloadUpdate()
+    return { success: true }
+  } catch (error) {
+    log.error('Download update failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('updater:install-and-restart', async () => {
+  try {
+    log.info('Installing update and restarting application')
+    setImmediate(() => autoUpdater.quitAndInstall(false, true))
+    return { success: true }
+  } catch (error) {
+    log.error('Install and restart failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+ipcMain.handle('updater:get-version', async () => {
+  return {
+    current: app.getVersion(),
+    appName: app.getName()
+  }
+})
 
 // PDF Theme Integration Import
 // Note: Import path needs compilation compatibility
@@ -90,6 +206,34 @@ function createMenu() {
           { label: 'Neu laden', accelerator: 'CmdOrCtrl+R', role: 'reload' },
           { label: 'Erzwungenes Neu laden', accelerator: 'CmdOrCtrl+Shift+R', role: 'forceReload' }
         ] : [])
+      ]
+    },
+    {
+      label: 'Update',
+      submenu: [
+        {
+          label: 'Nach Updates suchen',
+          click: () => {
+            log.info('Manual update check triggered from menu')
+            autoUpdater.checkForUpdates().catch(err => {
+              log.error('Manual update check failed:', err)
+            })
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'App-Version anzeigen',
+          click: () => {
+            const version = app.getVersion()
+            dialog.showMessageBox({
+              type: 'info',
+              title: 'App-Version',
+              message: `RawaLite Version ${version}`,
+              detail: `Electron: ${process.versions.electron}\nNode.js: ${process.versions.node}\nChrome: ${process.versions.chrome}`,
+              buttons: ['OK']
+            })
+          }
+        }
       ]
     },
     {
@@ -729,6 +873,14 @@ app.whenReady().then(() => {
   
   // Initialize theme integration
   loadThemeIntegration()
+  
+  // Auto-check for updates on startup (delayed to avoid blocking app start)
+  setTimeout(() => {
+    log.info('Starting automatic update check on app ready')
+    autoUpdater.checkForUpdates().catch(err => {
+      log.warn('Startup update check failed:', err.message)
+    })
+  }, 5000) // 5 second delay
 })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })

@@ -17,6 +17,17 @@ declare interface Window {
       restart: () => Promise<void>;
       getVersion: () => Promise<string>;
     };
+    shell: {
+      openExternal: (url: string) => Promise<void>;
+    };
+    updater: {
+      checkForUpdates: () => Promise<{success: boolean; updateInfo?: any; error?: string}>;
+      startDownload: () => Promise<{success: boolean; error?: string}>;
+      installAndRestart: () => Promise<{success: boolean; error?: string}>;
+      getVersion: () => Promise<{current: string; appName: string}>;
+      onUpdateMessage: (callback: (event: any, data: any) => void) => void;
+      removeUpdateMessageListener: (callback: (event: any, data: any) => void) => void;
+    };
   };
   electronAPI?: {
     pdf?: {

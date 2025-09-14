@@ -19,6 +19,12 @@ extraResources:
   - from: "templates/"
     to: "app/templates/"
 icon: assets/icon.ico
+publish:
+  provider: github
+  owner: MonaFP
+  repo: RawaLite
+  private: false
+  releaseType: release
 win:
   target:
     - target: nsis

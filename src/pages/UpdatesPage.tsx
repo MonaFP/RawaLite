@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { UpdateService, UpdateInfo, UpdateProgress } from '../services/UpdateService';
+import AutoUpdaterModal from '../components/AutoUpdaterModal';
+import { useAutoUpdater } from '../hooks/useAutoUpdater';
 
 export default function UpdatesPage() {
   const [updateService] = useState(() => new UpdateService());
@@ -8,6 +10,13 @@ export default function UpdatesPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showUpdaterModal, setShowUpdaterModal] = useState(false);
+
+  // Use new auto-updater hook
+  const [autoUpdaterState, autoUpdaterActions] = useAutoUpdater({
+    autoCheckOnStart: false, // Manual control on this page
+    checkInterval: undefined  // No automatic checks
+  });
 
   useEffect(() => {
     updateService.setProgressCallback(setProgress);
@@ -46,6 +55,10 @@ export default function UpdatesPage() {
     }
   };
 
+  const handleElectronUpdate = () => {
+    setShowUpdaterModal(true);
+  };
+
   const getProgressColor = (stage: UpdateProgress['stage']) => {
     switch (stage) {
       case 'error': return '#ef4444';
@@ -53,6 +66,8 @@ export default function UpdatesPage() {
       default: return '#3b82f6';
     }
   };
+
+  const isElectron = typeof window !== 'undefined' && window.rawalite?.updater;
 
   return (
     <div className="page" style={{ padding: "20px" }}>
@@ -65,10 +80,102 @@ export default function UpdatesPage() {
         </p>
       </div>
 
-      {/* Update Status Card */}
+      {/* Electron Auto-Updater Section */}
+      {isElectron && (
+        <div className="card" style={{ marginBottom: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <h3 style={{ margin: 0, color: "var(--accent)" }}>🔄 Automatische Updates</h3>
+            <button 
+              onClick={handleElectronUpdate}
+              style={{
+                padding: "8px 16px",
+                border: "1px solid var(--accent)",
+                borderRadius: "6px",
+                background: "var(--accent)",
+                color: "white",
+                cursor: "pointer",
+                fontWeight: "600"
+              }}
+            >
+              Update-Manager öffnen
+            </button>
+          </div>
+
+          <div style={{ 
+            background: "rgba(59, 130, 246, 0.1)", 
+            border: "1px solid #3b82f6", 
+            borderRadius: "8px", 
+            padding: "16px" 
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+              <span style={{ fontSize: "24px" }}>✨</span>
+              <div>
+                <h4 style={{ margin: 0, color: "#3b82f6" }}>Automatische Updates verfügbar</h4>
+                <p style={{ margin: "4px 0 0 0", color: "var(--muted)", fontSize: "14px" }}>
+                  Aktuelle Version: {autoUpdaterState.currentVersion || 'Wird geladen...'}
+                </p>
+              </div>
+            </div>
+            
+            <p style={{ margin: "0 0 12px 0", color: "var(--muted)", fontSize: "14px" }}>
+              RawaLite kann automatisch nach Updates suchen und diese im Hintergrund herunterladen. 
+              Sie werden benachrichtigt, wenn ein Update zur Installation bereit ist.
+            </p>
+
+            {autoUpdaterState.state === 'available' && (
+              <div style={{
+                background: "rgba(34, 197, 94, 0.2)",
+                border: "1px solid #22c55e",
+                borderRadius: "6px",
+                padding: "12px",
+                marginTop: "12px"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ color: "#22c55e" }}>🎉</span>
+                  <strong style={{ color: "#22c55e" }}>Update verfügbar: v{autoUpdaterState.updateInfo?.version}</strong>
+                </div>
+              </div>
+            )}
+
+            {autoUpdaterState.state === 'not-available' && (
+              <div style={{
+                background: "rgba(34, 197, 94, 0.1)",
+                border: "1px solid #22c55e",
+                borderRadius: "6px",
+                padding: "12px",
+                marginTop: "12px"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ color: "#22c55e" }}>✅</span>
+                  <span style={{ color: "#22c55e" }}>Ihre App ist auf dem neuesten Stand</span>
+                </div>
+              </div>
+            )}
+
+            {autoUpdaterState.error && (
+              <div style={{
+                background: "rgba(239, 68, 68, 0.1)",
+                border: "1px solid #ef4444",
+                borderRadius: "6px",
+                padding: "12px",
+                marginTop: "12px"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ color: "#ef4444" }}>⚠️</span>
+                  <span style={{ color: "#ef4444", fontSize: "14px" }}>{autoUpdaterState.error}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Legacy Update Status Card */}
       <div className="card" style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-          <h3 style={{ margin: 0, color: "var(--accent)" }}>Update-Status</h3>
+          <h3 style={{ margin: 0, color: "var(--accent)" }}>
+            {isElectron ? '📋 Update-Status (Legacy)' : '📋 Update-Status'}
+          </h3>
           <button 
             onClick={checkForUpdates}
             disabled={loading || isUpdating}
@@ -225,6 +332,28 @@ export default function UpdatesPage() {
         <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>
           Changelog
         </h3>
+        
+        {/* Version 1.5.6 - Auto-Updater */}
+        <div style={{ 
+          background: "rgba(30, 58, 46, 0.1)", 
+          border: "1px solid var(--accent)", 
+          borderRadius: "8px", 
+          padding: "16px",
+          marginBottom: "16px"
+        }}>
+          <h4 style={{ color: "var(--accent)", margin: "0 0 12px 0" }}>
+            🚀 Version 1.5.6 - Automatische Updates
+          </h4>
+          <ul style={{ color: "var(--muted)", margin: 0, paddingLeft: "20px" }}>
+            <li><strong>Neu:</strong> Vollautomatisches Update-System mit electron-updater</li>
+            <li><strong>Neu:</strong> Update-Prüfung beim App-Start und im Menü</li>
+            <li><strong>Neu:</strong> Download-Fortschritt und Installationsbestätigung</li>
+            <li><strong>Verbessert:</strong> Deutsche UI für alle Update-Vorgänge</li>
+            <li><strong>Verbessert:</strong> Robuste Fehlerbehandlung bei Updates</li>
+            <li><strong>Entfernt:</strong> Manueller GitHub-Download-Workflow</li>
+          </ul>
+        </div>
+
         <div style={{ 
           background: "rgba(30, 58, 46, 0.1)", 
           border: "1px solid var(--accent)", 
@@ -242,6 +371,13 @@ export default function UpdatesPage() {
           </ul>
         </div>
       </div>
+
+      {/* Auto-Updater Modal */}
+      <AutoUpdaterModal 
+        isOpen={showUpdaterModal}
+        onClose={() => setShowUpdaterModal(false)}
+        autoCheck={true}
+      />
     </div>
   );
 }

@@ -13,6 +13,21 @@ contextBridge.exposeInMainWorld('rawalite', {
   shell: {
     openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url) as Promise<void>,
   },
+  updater: {
+    checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
+    startDownload: () => ipcRenderer.invoke('updater:start-download'),
+    installAndRestart: () => ipcRenderer.invoke('updater:install-and-restart'),
+    getVersion: () => ipcRenderer.invoke('updater:get-version'),
+    
+    // Event listeners for update messages
+    onUpdateMessage: (callback: (event: any, data: any) => void) => {
+      ipcRenderer.on('update-message', callback)
+    },
+    
+    removeUpdateMessageListener: (callback: (event: any, data: any) => void) => {
+      ipcRenderer.removeListener('update-message', callback)
+    }
+  }
 });
 
 // PDF API for new PDF generation system
@@ -37,6 +52,14 @@ declare global {
       };
       shell: {
         openExternal: (url: string) => Promise<void>;
+      };
+      updater: {
+        checkForUpdates: () => Promise<{success: boolean; updateInfo?: any; error?: string}>;
+        startDownload: () => Promise<{success: boolean; error?: string}>;
+        installAndRestart: () => Promise<{success: boolean; error?: string}>;
+        getVersion: () => Promise<{current: string; appName: string}>;
+        onUpdateMessage: (callback: (event: any, data: any) => void) => void;
+        removeUpdateMessageListener: (callback: (event: any, data: any) => void) => void;
       };
     };
     electronAPI: {
