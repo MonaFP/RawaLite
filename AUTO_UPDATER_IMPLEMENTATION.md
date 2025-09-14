@@ -1,4 +1,4 @@
-# 🔄 Auto-Updater Implementation für RawaLite v1.5.6
+# 🔄 Auto-Updater Implementation für RawaLite v1.6.0
 
 ## Übersicht
 

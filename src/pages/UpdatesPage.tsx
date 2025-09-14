@@ -333,7 +333,7 @@ export default function UpdatesPage() {
           Changelog
         </h3>
         
-        {/* Version 1.5.6 - Auto-Updater */}
+        {/* Version 1.6.0 - Auto-Updater */}
         <div style={{ 
           background: "rgba(30, 58, 46, 0.1)", 
           border: "1px solid var(--accent)", 
@@ -342,7 +342,7 @@ export default function UpdatesPage() {
           marginBottom: "16px"
         }}>
           <h4 style={{ color: "var(--accent)", margin: "0 0 12px 0" }}>
-            🚀 Version 1.5.6 - Automatische Updates
+            🚀 Version 1.6.0 - Automatische Updates
           </h4>
           <ul style={{ color: "var(--muted)", margin: 0, paddingLeft: "20px" }}>
             <li><strong>Neu:</strong> Vollautomatisches Update-System mit electron-updater</li>

@@ -23,7 +23,7 @@ export interface UpdateCheckResult {
 }
 
 export class VersionService {
-  private readonly BASE_VERSION = '1.5.6';
+  private readonly BASE_VERSION = '1.6.0';
   private readonly BUILD_DATE = '2025-09-14';
   
   private updateService: UpdateService;
