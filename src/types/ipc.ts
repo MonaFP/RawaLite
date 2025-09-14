@@ -22,6 +22,41 @@ export interface ShellAPI {
   openExternal: (url: string) => Promise<void>;
 }
 
+// === LOGO IPC TYPES ===
+export interface LogoUploadOptions {
+  fileBuffer: ArrayBuffer;
+  fileName: string;
+  mimeType: string;
+}
+
+export interface LogoProcessResult {
+  success: boolean;
+  filePath?: string;
+  fileName?: string;
+  format?: 'svg' | 'png' | 'jpg';
+  width?: number;
+  height?: number;
+  fileSize?: number;
+  error?: string;
+}
+
+export interface LogoMetadata {
+  filePath: string;
+  fileName: string;
+  format: 'svg' | 'png' | 'jpg';
+  width: number;
+  height: number;
+  fileSize: number;
+  updatedAt: string;
+}
+
+export interface LogoAPI {
+  upload: (options: LogoUploadOptions) => Promise<LogoProcessResult>;
+  get: () => Promise<LogoMetadata | null>;
+  delete: () => Promise<{ success: boolean; error?: string }>;
+  getUrl: () => Promise<{ url: string; timestamp: number } | null>;
+}
+
 // === UPDATER IPC TYPES ===
 export interface UpdateInfo {
   version: string;
@@ -146,6 +181,7 @@ export interface RawaliteAPI {
   shell: ShellAPI;
   updater: UpdaterAPI;
   backup: BackupAPI;
+  logo: LogoAPI;
 }
 
 export interface ElectronAPI {
@@ -167,7 +203,11 @@ export type IPCChannels =
   | 'pdf:getStatus'
   | 'backup:create'
   | 'backup:list'
-  | 'backup:prune';
+  | 'backup:prune'
+  | 'logo:upload'
+  | 'logo:get'
+  | 'logo:delete'
+  | 'logo:getUrl';
 
 // === IPC HANDLER TYPE DEFINITIONS ===
 export interface IPCHandlers {
@@ -185,4 +225,8 @@ export interface IPCHandlers {
   'backup:create': (options: BackupCreateOptions) => Promise<BackupCreateResult>;
   'backup:list': () => Promise<BackupListResult>;
   'backup:prune': (options: BackupPruneOptions) => Promise<BackupPruneResult>;
+  'logo:upload': (options: LogoUploadOptions) => Promise<LogoProcessResult>;
+  'logo:get': () => Promise<LogoMetadata | null>;
+  'logo:delete': () => Promise<{ success: boolean; error?: string }>;
+  'logo:getUrl': () => Promise<{ url: string; timestamp: number } | null>;
 }

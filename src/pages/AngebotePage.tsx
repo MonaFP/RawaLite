@@ -6,6 +6,7 @@ import { useCustomers } from '../hooks/useCustomers';
 import { usePackages } from '../hooks/usePackages';
 import { useSettings } from '../contexts/SettingsContext';
 import { useDesignSettings } from '../hooks/useDesignSettings';
+import { useLogoSettings } from '../hooks/useLogoSettings';
 import { useNotifications } from '../contexts/NotificationContext';
 import { ExportService } from '../services/ExportService';
 import { PDFService } from '../services/PDFService';
@@ -21,6 +22,7 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const { packages } = usePackages();
   const { settings } = useSettings();
   const { currentTheme, currentCustomColors } = useDesignSettings();
+  const { getLogoForPdf } = useLogoSettings();
   const { showSuccess, showError } = useNotifications();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Offer | null>(null);
@@ -198,6 +200,10 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       console.log('🔍 [DEBUG] Settings.companyData:', settings?.companyData);
       console.log('🔍 [DEBUG] Company name:', settings?.companyData?.name);
       
+      // Logo für PDF laden
+      const logoData = await getLogoForPdf();
+      console.log('🖼️ [DEBUG] Logo data for PDF:', logoData ? 'Present' : 'None');
+      
       // Use new PDFService implementation with theme integration
       const result = await PDFService.exportOfferToPDF(
         offer, 
@@ -205,7 +211,8 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
         settings, 
         false, // isPreview
         currentTheme,
-        currentCustomColors
+        currentCustomColors,
+        logoData // Logo-Daten für PDF
       );
       
       if (result.success) {
@@ -237,6 +244,10 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       console.log('🔍 [DEBUG PREVIEW] Settings.companyData:', settings?.companyData);
       console.log('🔍 [DEBUG PREVIEW] Company name:', settings?.companyData?.name);
       
+      // Logo für PDF laden
+      const logoData = await getLogoForPdf();
+      console.log('🖼️ [DEBUG PREVIEW] Logo data for PDF:', logoData ? 'Present' : 'None');
+      
       // Use new PDFService implementation with theme integration
       const result = await PDFService.exportOfferToPDF(
         offer, 
@@ -244,7 +255,8 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
         settings, 
         true, // isPreview
         currentTheme,
-        currentCustomColors
+        currentCustomColors,
+        logoData // Logo-Daten für PDF
       );
       
       if (result.success) {

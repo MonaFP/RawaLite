@@ -6,7 +6,8 @@ import type {
   PDFGenerateOptions, 
   UpdateMessage,
   BackupCreateOptions,
-  BackupPruneOptions
+  BackupPruneOptions,
+  LogoUploadOptions
 } from '../src/types/ipc';
 import type { IpcRendererEvent } from 'electron';
 
@@ -41,6 +42,12 @@ const rawaliteAPI: RawaliteAPI = {
     create: (options: BackupCreateOptions) => ipcRenderer.invoke('backup:create', options),
     list: () => ipcRenderer.invoke('backup:list'),
     prune: (options: BackupPruneOptions) => ipcRenderer.invoke('backup:prune', options),
+  },
+  logo: {
+    upload: (options: LogoUploadOptions) => ipcRenderer.invoke('logo:upload', options),
+    get: () => ipcRenderer.invoke('logo:get'),
+    delete: () => ipcRenderer.invoke('logo:delete'),
+    getUrl: () => ipcRenderer.invoke('logo:getUrl'),
   }
 };
 

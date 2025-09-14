@@ -62,6 +62,30 @@ declare interface Window {
         error?: string;
       }>;
     };
+    logo: {
+      upload: (options: {
+        buffer: ArrayBuffer;
+        fileName: string;
+        mimeType: string;
+        maxWidth?: number;
+        maxHeight?: number;
+        quality?: number;
+      }) => Promise<{
+        success: boolean;
+        filePath?: string;
+        error?: string;
+        metadata?: {
+          fileName: string;
+          format: 'svg' | 'png' | 'jpg';
+          width?: number;
+          height?: number;
+          fileSize: number;
+        };
+      }>;
+      get: (filePath: string) => Promise<string | null>;
+      getUrl: (filePath: string) => Promise<string>;
+      delete: (filePath: string) => Promise<boolean>;
+    };
   };
   electronAPI?: {
     pdf?: {

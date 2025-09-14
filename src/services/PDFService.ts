@@ -6,6 +6,7 @@
  * - PDF preview functionality
  * - User-selectable save locations
  * - Theme-aware PDF styling
+ * - Logo embedding with Base64 support
  * - Error handling and validation
  */
 
@@ -36,7 +37,8 @@ export class PDFService {
     settings: Settings,
     isPreview: boolean = false,
     currentTheme?: ThemeColor,
-    customColors?: CustomColorSettings
+    customColors?: CustomColorSettings,
+    logoData?: string | null // Base64-encoded Logo-Daten für PDF
   ): Promise<PDFResult> {
     try {
       console.log(`📄 Exporting offer ${offer.offerNumber} to PDF (preview: ${isPreview})`);
@@ -52,7 +54,8 @@ export class PDFService {
           offer,
           customer,
           settings,
-          currentDate: new Date().toLocaleDateString('de-DE')
+          currentDate: new Date().toLocaleDateString('de-DE'),
+          logo: logoData // Logo-Daten für Template-Einbettung
         },
         // Theme data at the top level for template access
         theme: pdfTheme ? {
@@ -70,7 +73,7 @@ export class PDFService {
         }
       };
 
-      console.log('🔄 Calling PDF generation via IPC...', templateData);
+      console.log('🔄 Calling PDF generation via IPC (with logo:', !!logoData, ')...', templateData);
       const result = await window.electronAPI?.pdf?.generate(templateData);
       console.log('📋 PDF generation result:', result);
       
@@ -107,7 +110,8 @@ export class PDFService {
     settings: Settings,
     isPreview: boolean = false,
     currentTheme?: ThemeColor,
-    customColors?: CustomColorSettings
+    customColors?: CustomColorSettings,
+    logoData?: string | null // Base64-encoded Logo-Daten für PDF
   ): Promise<PDFResult> {
     try {
       console.log(`📄 Exporting invoice ${invoice.invoiceNumber} to PDF (preview: ${isPreview})`);
@@ -123,7 +127,8 @@ export class PDFService {
           invoice,
           customer,
           settings,
-          currentDate: new Date().toLocaleDateString('de-DE')
+          currentDate: new Date().toLocaleDateString('de-DE'),
+          logo: logoData // Logo-Daten für Template-Einbettung
         },
         // Theme data at the top level for template access
         theme: pdfTheme ? {

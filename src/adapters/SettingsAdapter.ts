@@ -1,5 +1,5 @@
 import { getDB, all, run, withTx } from '../persistence/sqlite/db';
-import type { Settings, CompanyData, NumberingCircle, DesignSettings } from '../lib/settings';
+import type { Settings, CompanyData, NumberingCircle, DesignSettings, LogoSettings } from '../lib/settings';
 import { defaultSettings } from '../lib/settings';
 
 export class SettingsAdapter {
@@ -36,6 +36,20 @@ export class SettingsAdapter {
     
     // Return defaults if parsing fails or no settings found
     return defaultSettings.designSettings;
+  }
+
+  // Extract logo settings from company data
+  private extractLogoSettings(row: any): LogoSettings {
+    try {
+      if (row.logoSettings && typeof row.logoSettings === 'string') {
+        return JSON.parse(row.logoSettings);
+      }
+    } catch (error) {
+      console.warn('Error parsing logo settings from database:', error);
+    }
+    
+    // Return empty defaults if parsing fails or no settings found
+    return defaultSettings.logoSettings;
   }
 
   // Convert CompanyData to SQLite format
@@ -96,6 +110,7 @@ export class SettingsAdapter {
 
     const settings: Settings = {
       companyData,
+      logoSettings: this.extractLogoSettings(settingsRow),
       numberingCircles,
       designSettings
     };
@@ -118,19 +133,19 @@ export class SettingsAdapter {
     return settings;
   }
 
-  async updateCompanyData(companyData: CompanyData & { designSettings?: string }): Promise<void> {
+  async updateCompanyData(companyData: CompanyData & { designSettings?: string; logoSettings?: string }): Promise<void> {
     await withTx(async () => {
       const sqliteData = this.mapCompanyDataToSQLite(companyData);
       const timestamp = new Date().toISOString();
 
-      // Update or insert company data (including design settings)
+      // Update or insert company data (including design and logo settings)
       run(`
         INSERT OR REPLACE INTO settings (
           id, companyName, street, zip, city, phone, email, website, 
           taxId, vatId, kleinunternehmer, bankName, bankAccount, bankBic, 
-          logo, designSettings, updatedAt
+          logo, designSettings, logoSettings, updatedAt
         ) VALUES (
-          1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+          1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
       `, [
         sqliteData.companyName,
@@ -148,8 +163,25 @@ export class SettingsAdapter {
         sqliteData.bankBic,
         sqliteData.logo,
         sqliteData.designSettings,
+        companyData.logoSettings || null,
         timestamp
       ]);
+    });
+  }
+
+  async updateLogoSettings(logoSettings: LogoSettings): Promise<void> {
+    await withTx(async () => {
+      const timestamp = new Date().toISOString();
+      const logoSettingsJSON = JSON.stringify(logoSettings);
+
+      // Update nur die logoSettings Spalte
+      run(`
+        UPDATE settings 
+        SET logoSettings = ?, updatedAt = ?
+        WHERE id = 1
+      `, [logoSettingsJSON, timestamp]);
+
+      console.log('💾 Updated logoSettings in database:', logoSettingsJSON);
     });
   }
 

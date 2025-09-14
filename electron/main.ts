@@ -7,6 +7,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import { PDFPostProcessor, PDFAConversionOptions } from '../src/services/PDFPostProcessor'
 import { initializeBackupSystem } from './backup'
+import { initializeLogoSystem } from './logo'
 
 // === AUTO-UPDATER CONFIGURATION ===
 log.transports.file.level = 'info'
@@ -877,6 +878,9 @@ app.whenReady().then(() => {
   
   // Initialize backup system
   initializeBackupSystem()
+  
+  // Initialize logo system
+  initializeLogoSystem()
   
   // Auto-check for updates on startup (delayed to avoid blocking app start)
   setTimeout(() => {

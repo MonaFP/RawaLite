@@ -91,6 +91,7 @@ function createSchemaIfNeeded() {
       bankName TEXT, bankAccount TEXT, bankBic TEXT,
       logo TEXT,
       designSettings TEXT,
+      logoSettings TEXT,
       nextCustomerNumber INTEGER DEFAULT 1,
       nextOfferNumber INTEGER DEFAULT 1,
       nextInvoiceNumber INTEGER DEFAULT 1,
@@ -141,10 +142,12 @@ function createSchemaIfNeeded() {
     const settingsInfo = db.exec(`PRAGMA table_info(settings)`);
     let hasTimesheetNumberColumn = false;
     let hasDesignSettingsColumn = false;
+    let hasLogoSettingsColumn = false;
     
     if (settingsInfo.length > 0 && settingsInfo[0].values) {
       hasTimesheetNumberColumn = settingsInfo[0].values.some((row: any[]) => row[1] === 'nextTimesheetNumber');
       hasDesignSettingsColumn = settingsInfo[0].values.some((row: any[]) => row[1] === 'designSettings');
+      hasLogoSettingsColumn = settingsInfo[0].values.some((row: any[]) => row[1] === 'logoSettings');
     }
     
     if (!hasTimesheetNumberColumn) {
@@ -168,6 +171,11 @@ function createSchemaIfNeeded() {
       } catch (updateError) {
         console.warn('⚠️ Could not initialize default design settings:', updateError);
       }
+    }
+
+    if (!hasLogoSettingsColumn) {
+      db.exec(`ALTER TABLE settings ADD COLUMN logoSettings TEXT;`);
+      console.log('✅ Added logoSettings column to settings table');
     }
   } catch (error) {
     console.warn('⚠️ Settings table migration error:', error);

@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useCustomers } from "../hooks/useCustomers";
 import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
 import { usePackages } from "../hooks/usePackages";
 import { useDesignSettings } from "../hooks/useDesignSettings";
+import { useLogoSettings } from "../hooks/useLogoSettings";
+import { useSettings } from "../contexts/SettingsContext";
 
 interface DashboardPageProps{
   title?: string;
@@ -15,6 +17,22 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
   const { invoices } = useInvoices();
   const { packages } = usePackages();
   const { currentNavigationMode } = useDesignSettings();
+  const { logoSettings, hasLogo, getLogoUrl } = useLogoSettings();
+  const { settings } = useSettings();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  // Logo-URL laden
+  useEffect(() => {
+    async function loadLogo() {
+      if (hasLogo) {
+        const url = await getLogoUrl();
+        setLogoUrl(url);
+      } else {
+        setLogoUrl(null);
+      }
+    }
+    loadLogo();
+  }, [hasLogo, getLogoUrl]);
 
   // Statistiken berechnen
   const stats = {
@@ -75,6 +93,88 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
 
   return (
     <div className="card">
+      {/* Header mit Logo und Unternehmensdaten */}
+      {(logoUrl || settings.companyData.name !== 'RawaLite') && (
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "16px",
+          marginBottom: "24px",
+          padding: "16px",
+          backgroundColor: "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "8px"
+        }}>
+          {logoUrl && (
+            <div style={{
+              flexShrink: 0,
+              width: "80px",
+              height: "80px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "8px",
+              backgroundColor: "rgba(255,255,255,0.1)",
+              borderRadius: "8px"
+            }}>
+              <img
+                src={logoUrl}
+                alt="Firmenlogo"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  objectFit: "contain"
+                }}
+              />
+            </div>
+          )}
+          <div style={{ flex: 1 }}>
+            <h3 style={{ 
+              margin: "0 0 8px 0", 
+              color: "var(--accent)",
+              fontSize: "18px",
+              fontWeight: "600"
+            }}>
+              {settings.companyData.name || 'RawaLite'}
+            </h3>
+            {(settings.companyData.street || settings.companyData.city) && (
+              <div style={{ 
+                fontSize: "14px", 
+                opacity: 0.8, 
+                lineHeight: "1.4",
+                color: "var(--foreground)"
+              }}>
+                {settings.companyData.street && (
+                  <div>{settings.companyData.street}</div>
+                )}
+                {(settings.companyData.postalCode || settings.companyData.city) && (
+                  <div>
+                    {settings.companyData.postalCode} {settings.companyData.city}
+                  </div>
+                )}
+              </div>
+            )}
+            {(logoSettings.fileName || hasLogo) && (
+              <div style={{
+                fontSize: "12px",
+                marginTop: "8px",
+                padding: "4px 8px",
+                backgroundColor: "rgba(0,255,0,0.1)",
+                border: "1px solid rgba(0,255,0,0.3)",
+                borderRadius: "4px",
+                display: "inline-block",
+                color: "var(--foreground)"
+              }}>
+                📸 Logo: {logoSettings.format?.toUpperCase()} 
+                {logoSettings.width && logoSettings.height && 
+                  ` (${logoSettings.width}×${logoSettings.height}px)`
+                }
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <h2 style={{marginTop:0}}>{title}</h2>
       <p>Willkommen in RaWaLite. Hier ist deine Übersicht:</p>
       

@@ -5,6 +5,7 @@ import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
 import { useDesignSettings } from "../hooks/useDesignSettings";
+import { useLogoSettings } from "../hooks/useLogoSettings";
 import { CustomColorPicker } from "../components/CustomColorPicker";
 import { MigrationManager } from "../components/MigrationManager";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
@@ -22,6 +23,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const location = useLocation();
   const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useSettings();
   const { currentTheme, currentNavigationMode, currentCustomColors, updateTheme, updateNavigationMode, loading: designLoading } = useDesignSettings();
+  const { logoSettings, isUploading: uploadingLogo, uploadProgress, uploadLogo, getLogoUrl, removeLogo, hasLogo } = useLogoSettings();
   const { adapter } = usePersistence();
   const { showError, showSuccess } = useNotifications();
   const { activities, createActivity, updateActivity, deleteActivity } = useActivities();
@@ -29,7 +31,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const [companyFormData, setCompanyFormData] = useState<CompanyData>(settings.companyData);
   const [numberingFormData, setNumberingFormData] = useState<NumberingCircle[]>(settings.numberingCircles);
   const [saving, setSaving] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [importType, setImportType] = useState<'customers' | 'invoices' | 'offers'>('customers');
   const [selectedCSVFile, setSelectedCSVFile] = useState<File | null>(null);
   const [activityFormData, setActivityFormData] = useState<Partial<Activity>>({});
@@ -56,10 +58,23 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
 
   // Update form data when settings change
   React.useEffect(() => {
-    console.log('🔍 Settings loaded - Logo length:', settings.companyData.logo?.length || 0);
+    console.log('🔍 Settings loaded - Logo settings:', logoSettings);
     setCompanyFormData(settings.companyData);
     setNumberingFormData(settings.numberingCircles);
-  }, [settings]);
+  }, [settings, logoSettings]);
+
+  // Logo preview laden
+  useEffect(() => {
+    async function loadLogoPreview() {
+      if (hasLogo) {
+        const url = await getLogoUrl();
+        setLogoPreviewUrl(url);
+      } else {
+        setLogoPreviewUrl(null);
+      }
+    }
+    loadLogoPreview();
+  }, [hasLogo, getLogoUrl]);
 
   // Update custom colors when current settings change
   React.useEffect(() => {
@@ -82,48 +97,48 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('❌ Fehler: Bitte wählen Sie eine Bilddatei aus (PNG, JPG, GIF, etc.)');
-      event.target.value = ''; // Reset input
-      return;
-    }
-
-    // Validate file size (max 2MB)
-    const maxSizeMB = 2;
-    const fileSizeMB = file.size / (1024 * 1024);
-    if (file.size > maxSizeMB * 1024 * 1024) {
-      alert(`❌ Datei zu groß: ${fileSizeMB.toFixed(2)} MB\n\nMaximum erlaubt: ${maxSizeMB} MB\nBitte verkleinern Sie das Bild oder wählen Sie eine andere Datei.`);
-      event.target.value = ''; // Reset input
-      return;
-    }
+    console.log('🖼️ [Logo] Starting upload with new API:', file.name, file.type, file.size);
 
     try {
-      setUploadingLogo(true);
-      showSuccess(`✅ Logo wird hochgeladen... (${fileSizeMB.toFixed(2)} MB)`);
-      
-      // Convert to base64
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        setCompanyFormData(prev => ({ ...prev, logo: base64 }));
-        showSuccess('Logo erfolgreich geladen! Vergessen Sie nicht zu speichern.');
-      };
-      reader.onerror = () => {
-        showError('Fehler beim Lesen der Datei');
-        event.target.value = ''; // Reset input
-      };
-      reader.readAsDataURL(file);
+      const result = await uploadLogo({
+        file,
+        maxWidth: 800,
+        maxHeight: 600,
+        quality: 0.85
+      });
+
+      if (result.success) {
+        showSuccess(`✅ Logo erfolgreich hochgeladen! (${logoSettings.fileName})`);
+        // Neue Preview-URL laden
+        const url = await getLogoUrl();
+        setLogoPreviewUrl(url);
+      } else {
+        showError(`❌ Logo-Upload fehlgeschlagen: ${result.error}`);
+      }
     } catch (error) {
+      console.error('❌ [Logo] Upload error:', error);
       showError('Fehler beim Verarbeiten des Logos');
-      event.target.value = ''; // Reset input
-    } finally {
-      setUploadingLogo(false);
     }
+
+    // Input zurücksetzen für wiederholte Uploads
+    event.target.value = '';
   };
 
-  const handleLogoRemove = () => {
-    setCompanyFormData(prev => ({ ...prev, logo: '' }));
+  const handleLogoRemove = async () => {
+    console.log('🗑️ [Logo] Removing logo via new API');
+    
+    try {
+      const success = await removeLogo();
+      if (success) {
+        showSuccess('✅ Logo erfolgreich entfernt');
+        setLogoPreviewUrl(null);
+      } else {
+        showError('❌ Fehler beim Entfernen des Logos');
+      }
+    } catch (error) {
+      console.error('❌ [Logo] Remove error:', error);
+      showError('Fehler beim Entfernen des Logos');
+    }
   };
 
   const handleCompanySubmit = async (e: React.FormEvent) => {
@@ -144,7 +159,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
       bankName: companyFormData.bankName || settings.companyData.bankName || '',
       bankAccount: companyFormData.bankAccount || settings.companyData.bankAccount || '',
       bankBic: companyFormData.bankBic || settings.companyData.bankBic || '',
-      logo: companyFormData.logo || settings.companyData.logo || ''
+      logo: settings.companyData.logo || '' // Logo wird separat über useLogoSettings verwaltet
     };
     console.log('🏢 Company form submitted with safe data:', safeCompanyData);
     try {
@@ -170,22 +185,6 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     } catch (error) {
       console.error('Tax settings save error:', error);
       showError('Fehler beim Speichern der steuerlichen Einstellungen');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleLogoSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('🖼️ Logo form submitted, saving logo only');
-    try {
-      setSaving(true);
-  await updateCompanyData({ ...companyFormData, designSettings: JSON.stringify(settings.designSettings) } as CompanyData & { designSettings?: string });
-      showSuccess('Logo erfolgreich gespeichert!');
-      // KEIN window.location.reload() hier - Logo bleibt im aktuellen Tab
-    } catch (error) {
-      console.error('Logo save error:', error);
-      showError('Fehler beim Speichern des Logos');
     } finally {
       setSaving(false);
     }
@@ -1339,29 +1338,29 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
 
       {/* Logo & Design Tab */}
       {activeTab === 'logo' && (
-        <form onSubmit={handleLogoSubmit}>
-          <div style={{ display: "grid", gap: "16px", maxWidth: "600px" }}>
-            <div>
-              <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Logo & Design</h3>
-            </div>
-            
-            <div>
-              <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
-                Firmenlogo
-              </label>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {companyFormData.logo && (
-                  <div style={{ 
-                    position: "relative", 
-                    display: "inline-block",
-                    maxWidth: "300px",
-                    padding: "16px",
-                    border: "1px solid rgba(255,255,255,.1)",
-                    borderRadius: "8px",
-                    backgroundColor: "rgba(255,255,255,.05)"
-                  }}>
+        <div style={{ display: "grid", gap: "16px", maxWidth: "600px" }}>
+          <div>
+            <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Logo & Design</h3>
+          </div>
+          
+          <div>
+            <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+              Firmenlogo
+            </label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {(logoPreviewUrl || hasLogo) && (
+                <div style={{ 
+                  position: "relative", 
+                  display: "inline-block",
+                  maxWidth: "300px",
+                  padding: "16px",
+                  border: "1px solid rgba(255,255,255,.1)",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(255,255,255,.05)"
+                }}>
+                  {logoPreviewUrl ? (
                     <img 
-                      src={companyFormData.logo} 
+                      src={logoPreviewUrl} 
                       alt="Firmenlogo" 
                       style={{ 
                         maxWidth: "100%", 
@@ -1370,74 +1369,113 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                         display: "block"
                       }} 
                     />
-                    <button
-                      type="button"
-                      onClick={handleLogoRemove}
-                      style={{
-                        position: "absolute",
-                        top: "-8px",
-                        right: "-8px",
-                        background: "#ef4444",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "24px",
-                        height: "24px",
-                        fontSize: "14px",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center"
-                      }}
-                      title="Logo entfernen"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  disabled={uploadingLogo}
-                  style={{
-                    padding: "12px",
-                    borderRadius: "4px",
-                    border: "1px solid rgba(255,255,255,.2)",
-                    backgroundColor: "rgba(255,255,255,.05)",
-                    color: "var(--foreground)",
-                    cursor: "pointer"
-                  }}
-                />
-                <div style={{ fontSize: "14px", opacity: 0.7, lineHeight: "1.4" }}>
-                  <strong>Empfehlungen:</strong><br/>
-                  • Dateiformate: PNG, JPG, GIF<br/>
-                  • Maximale Dateigröße: 2MB<br/>
-                  • Empfohlene Größe: 200x80px<br/>
-                  • Transparenter Hintergrund für beste Ergebnisse
+                  ) : (
+                    <div style={{ 
+                      width: "100%", 
+                      height: "120px", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "center",
+                      backgroundColor: "rgba(255,255,255,.1)",
+                      borderRadius: "4px",
+                      fontSize: "14px",
+                      opacity: 0.7
+                    }}>
+                      Logo wird geladen...
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleLogoRemove}
+                    style={{
+                      position: "absolute",
+                      top: "-8px",
+                      right: "-8px",
+                      background: "#ef4444",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "24px",
+                      height: "24px",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}
+                    title="Logo entfernen"
+                  >
+                    ×
+                  </button>
                 </div>
-              </div>
-            </div>
-
-            <div style={{ marginTop: "24px" }}>
-              <button
-                type="submit"
-                disabled={saving || uploadingLogo}
+              )}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                onChange={handleLogoUpload}
+                disabled={uploadingLogo}
                 style={{
-                  backgroundColor: "var(--accent)",
-                  color: "white",
-                  border: "none",
-                  padding: "12px 24px",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: "500"
+                  padding: "12px",
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255,255,255,.2)",
+                  backgroundColor: "rgba(255,255,255,.05)",
+                  color: "var(--foreground)",
+                  cursor: uploadingLogo ? "not-allowed" : "pointer",
+                  opacity: uploadingLogo ? 0.6 : 1
                 }}
-              >
-                {saving ? "Speichere..." : "Logo speichern"}
-              </button>
+              />
+              
+              {uploadingLogo && (
+                <div style={{ fontSize: "14px", color: "var(--accent)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div>Lade hoch... {uploadProgress > 0 ? `${uploadProgress}%` : ''}</div>
+                    {uploadProgress > 0 && (
+                      <div style={{
+                        width: "100px",
+                        height: "4px",
+                        backgroundColor: "rgba(255,255,255,.2)",
+                        borderRadius: "2px",
+                        overflow: "hidden"
+                      }}>
+                        <div style={{
+                          width: `${uploadProgress}%`,
+                          height: "100%",
+                          backgroundColor: "var(--accent)",
+                          transition: "width 0.3s ease"
+                        }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ fontSize: "14px", opacity: 0.7, lineHeight: "1.4" }}>
+                <strong>Unterstützte Formate:</strong><br/>
+                • SVG (vektorbasiert, ideal für scharfe Darstellung)<br/>
+                • PNG/JPG (automatische Optimierung und Skalierung)<br/>
+                • Maximale Dateigröße: 5MB<br/>
+                • SVGs werden sicherheitsgeprüft und bereinigt<br/>
+                • Rasterbilder werden automatisch auf 800x600px optimiert
+              </div>
+
+              {logoSettings.fileName && (
+                <div style={{ 
+                  fontSize: "13px", 
+                  padding: "8px 12px",
+                  backgroundColor: "rgba(0,255,0,.1)",
+                  border: "1px solid rgba(0,255,0,.3)",
+                  borderRadius: "4px",
+                  color: "var(--foreground)"
+                }}>
+                  <strong>Aktuelles Logo:</strong> {logoSettings.fileName}<br/>
+                  <strong>Format:</strong> {logoSettings.format?.toUpperCase()}<br/>
+                  <strong>Größe:</strong> {logoSettings.width && logoSettings.height ? `${logoSettings.width}×${logoSettings.height}px` : 'Unbekannt'}<br/>
+                  <strong>Dateigröße:</strong> {logoSettings.fileSize ? `${(logoSettings.fileSize / 1024).toFixed(1)} KB` : 'Unbekannt'}
+                </div>
+              )}
             </div>
           </div>
-        </form>
+        </div>
       )}
 
       {/* Tax Tab - Steuerliche Angaben */}
