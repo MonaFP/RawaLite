@@ -6,26 +6,33 @@ export default function UpdatesPage() {
   const [showUpdaterModal, setShowUpdaterModal] = useState(false);
 
   // Verwende das neue einheitliche Update-System
-  const updateOrchestrator = useUpdateOrchestrator({
-    autoCheckOnStart: false, // Manual control on this page
-    checkInterval: undefined  // No automatic checks
-  });
+  const [orchestratedState, orchestratedActions] = useUpdateOrchestrator();
 
   const {
-    state,
-    isChecking,
-    isDownloading,
-    canDownload,
-    canInstall,
     checkForUpdates,
     startDownload,
+    prepareInstallation,
     installAndRestart,
     reset
-  } = updateOrchestrator;
+  } = orchestratedActions;
+
+  const {
+    electronUpdate,
+    migration,
+    backup,
+    overall
+  } = orchestratedState;
 
   const handleElectronUpdate = () => {
     setShowUpdaterModal(true);
   };
+
+  // Computed states
+  const isChecking = electronUpdate.state === 'checking';
+  const isDownloading = electronUpdate.state === 'downloading';
+  const canDownload = electronUpdate.state === 'available';
+  const canInstall = overall.canInstall;
+  const hasError = electronUpdate.error || migration.error || backup.error;
 
   const getProgressColor = (phase: string) => {
     switch (phase) {
@@ -100,8 +107,8 @@ export default function UpdatesPage() {
 
           {/* Current State Display */}
           <div style={{
-            background: state.phase === 'error' ? "rgba(231, 76, 60, 0.1)" : "rgba(46, 204, 113, 0.1)",
-            border: `1px solid ${state.phase === 'error' ? '#e74c3c' : '#2ecc71'}`,
+            background: hasError ? "rgba(231, 76, 60, 0.1)" : "rgba(46, 204, 113, 0.1)",
+            border: `1px solid ${hasError ? '#e74c3c' : '#2ecc71'}`,
             borderRadius: "6px",
             padding: "12px",
             marginBottom: "16px"
@@ -111,18 +118,23 @@ export default function UpdatesPage() {
                 width: "12px",
                 height: "12px",
                 borderRadius: "50%",
-                background: getProgressColor(state.phase)
+                background: getProgressColor(electronUpdate.state)
               }}></div>
               <strong style={{ color: "var(--text)" }}>
-                Status: {state.phase.charAt(0).toUpperCase() + state.phase.slice(1)}
+                Status: {electronUpdate.state.charAt(0).toUpperCase() + electronUpdate.state.slice(1)}
               </strong>
             </div>
             
             <div style={{ color: "var(--muted)", fontSize: "14px", marginBottom: "8px" }}>
-              {state.message}
+              Aktuelle Version: {overall.currentVersion || 'Wird geladen...'}
+              {electronUpdate.updateInfo && (
+                <span style={{ marginLeft: "8px", color: "#3b82f6" }}>
+                  → Update auf v{electronUpdate.updateInfo.version} verfügbar
+                </span>
+              )}
             </div>
 
-            {state.progress > 0 && (
+            {electronUpdate.progress && isDownloading && (
               <div style={{
                 background: "rgba(0,0,0,0.1)",
                 borderRadius: "4px",
@@ -131,17 +143,17 @@ export default function UpdatesPage() {
                 marginBottom: "8px"
               }}>
                 <div style={{
-                  background: getProgressColor(state.phase),
-                  width: `${state.progress}%`,
+                  background: getProgressColor(electronUpdate.state),
+                  width: `${electronUpdate.progress.percent}%`,
                   height: "100%",
                   transition: "width 0.3s ease"
                 }}></div>
               </div>
             )}
 
-            {state.error && (
+            {hasError && (
               <div style={{ color: "#e74c3c", fontSize: "12px", marginTop: "8px" }}>
-                ❌ {state.error}
+                ❌ {hasError}
               </div>
             )}
           </div>
@@ -184,6 +196,20 @@ export default function UpdatesPage() {
               </button>
             )}
 
+            {electronUpdate.state === 'not-available' && (
+              <div style={{
+                padding: "10px 16px",
+                background: "rgba(34, 197, 94, 0.1)",
+                border: "1px solid #22c55e",
+                borderRadius: "6px",
+                color: "#22c55e",
+                fontSize: "14px",
+                fontWeight: "500"
+              }}>
+                ✅ App ist aktuell (v{overall.currentVersion})
+              </div>
+            )}
+
             {canInstall && (
               <button
                 onClick={installAndRestart}
@@ -202,7 +228,7 @@ export default function UpdatesPage() {
               </button>
             )}
 
-            {state.phase === 'error' && (
+            {electronUpdate.state === 'error' && (
               <button
                 onClick={reset}
                 style={{
@@ -222,7 +248,7 @@ export default function UpdatesPage() {
           </div>
 
           {/* Update Info */}
-          {state.updateInfo && (
+          {electronUpdate.updateInfo && (
             <div style={{
               background: "rgba(52, 152, 219, 0.1)",
               border: "1px solid #3498db",
@@ -234,9 +260,15 @@ export default function UpdatesPage() {
                 📦 Update verfügbar
               </h4>
               <div style={{ color: "var(--muted)", fontSize: "14px" }}>
-                <strong>Version:</strong> {state.updateInfo.version || 'Unbekannt'}<br />
-                <strong>Größe:</strong> {state.updateInfo.files?.[0]?.size ? 
-                  `${Math.round(state.updateInfo.files[0].size / 1024 / 1024)} MB` : 'Unbekannt'}
+                <strong>Version:</strong> {electronUpdate.updateInfo.version || 'Unbekannt'}<br />
+                {electronUpdate.updateInfo.releaseNotes && (
+                  <div style={{ marginTop: "8px" }}>
+                    <strong>Release Notes:</strong>
+                    <pre style={{ margin: "4px 0", fontSize: "12px", whiteSpace: "pre-wrap" }}>
+                      {electronUpdate.updateInfo.releaseNotes}
+                    </pre>
+                  </div>
+                )}
               </div>
             </div>
           )}

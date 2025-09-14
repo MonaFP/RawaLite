@@ -244,19 +244,35 @@ function createMenu() {
         {
           label: 'Über RawaLite',
           click: () => {
-            shell.openExternal('https://github.com/MonaFP/RawaLite')
+            // In-App Über-Dialog statt externe URL
+            const allWindows = BrowserWindow.getAllWindows();
+            const mainWindow = allWindows[0];
+            if (mainWindow) {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Über RawaLite',
+                message: `RawaLite v${app.getVersion()}`,
+                detail: 'Professional Business Management Solution\n\nCopyright © 2025 MonaFP. All rights reserved.',
+                buttons: ['OK']
+              });
+            }
           }
         },
         {
-          label: 'Dokumentation',
+          label: 'App-Version anzeigen',
           click: () => {
-            shell.openExternal('https://github.com/MonaFP/RawaLite#readme')
-          }
-        },
-        {
-          label: 'Support & Feedback',
-          click: () => {
-            shell.openExternal('https://github.com/MonaFP/RawaLite/issues')
+            // Version Info statt Dokumentation
+            const allWindows = BrowserWindow.getAllWindows();
+            const mainWindow = allWindows[0];
+            if (mainWindow) {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Version Information',
+                message: `RawaLite v${app.getVersion()}`,
+                detail: `Electron: ${process.versions.electron}\nNode.js: ${process.versions.node}\nChrome: ${process.versions.chrome}`,
+                buttons: ['OK']
+              });
+            }
           }
         }
       ]
@@ -296,7 +312,8 @@ function createWindow() {
   }
 
   win.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
+    // SECURITY: Externe Navigation blockiert gemäß COPILOT_INSTRUCTIONS.md
+    console.log('External navigation blocked:', url)
     return { action: 'deny' }
   })
 }
@@ -311,10 +328,11 @@ ipcMain.handle('app:getVersion', async () => {
   return app.getVersion()
 })
 
-// IPC Handler für Shell-Operationen
-ipcMain.handle('shell:openExternal', async (_, url: string) => {
-  shell.openExternal(url)
-})
+// IPC Handler für Shell-Operationen (DEPRECATED: externe Navigation verboten)
+// ipcMain.handle('shell:openExternal', async (_, url: string) => {
+//   shell.openExternal(url)
+// })
+// SECURITY: shell:openExternal IPC-Handler entfernt gemäß COPILOT_INSTRUCTIONS.md
 
 // IPC Handler für Datenbank-Operationen
 ipcMain.handle('db:load', async (): Promise<Uint8Array | null> => {

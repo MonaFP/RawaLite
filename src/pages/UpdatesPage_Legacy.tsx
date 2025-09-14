@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useUpdateOrchestrator } from '../hooks/useUpdateOrchestrator';
+import { useState, useEffect } from 'react';
+import { UpdateService, UpdateInfo, UpdateProgress } from '../services/UpdateService';
+import { useAutoUpdater } from '../hooks/useAutoUpdater';
 import AutoUpdaterModal from '../components/AutoUpdaterModal';
 
 export default function UpdatesPage() {

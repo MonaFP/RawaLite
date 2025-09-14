@@ -4,6 +4,7 @@ import typescript from '@typescript-eslint/eslint-plugin';
 export default [
   {
     files: ['**/*.{js,mjs,cjs,ts,tsx}'],
+    ignores: ['tests/scripts/**/*.{js,cjs}', 'dist/**', 'dist-electron/**'],
     languageOptions: {
       parser: typescriptParser,
       ecmaVersion: 'latest',

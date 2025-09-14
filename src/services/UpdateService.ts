@@ -1,11 +1,15 @@
 /**
- * 🔄 RawaLite Update Service
+ * 🔄 RawaLite Update Service (LEGACY/FALLBACK)
  * 
- * Koordiniert sichere App-Updates mit Datenbank-Migrationen:
- * - App-Update-Management
- * - Integration mit MigrationService und BackupService
- * - Rollback-Mechanismus bei Fehlern
- * - User-Benachrichtigungen
+ * DEPRECATED: Koordiniert Update-Orchestration OHNE direkte GitHub-HTTP-Calls
+ * 
+ * Aktueller Zweck (v1.7.1+):
+ * - Orchestrator für Migration/Backup-Integration
+ * - UI-State-Management für komplexe Update-Flows
+ * - Rollback-Mechanismus bei Update-Fehlern
+ * 
+ * NICHT mehr: direkter Update-Transport via GitHub API
+ * VERWENDE STATTDESSEN: electron-updater + useAutoUpdater Hook
  * 
  * WICHTIG: Verwendet BackupService für Dateisystem-basierte Backups
  * (behebt QuotaExceededError bei großen Backups)
@@ -61,7 +65,9 @@ export class UpdateService {
   }
 
   /**
-   * Prüft auf verfügbare Updates
+   * Prüft auf verfügbare Updates (LEGACY-Mode: Nur Migrations-Status)
+   * 
+   * NEUER WEG: Verwende VersionService.checkForUpdates() mit electron-updater Integration
    */
   async checkForUpdates(): Promise<UpdateInfo> {
     this.updateProgress('checking', 10, 'Checking for updates...');
@@ -69,11 +75,7 @@ export class UpdateService {
     try {
       const currentVersion = await this.getCurrentAppVersion();
       
-      // Simuliere Update-Check (in echter App: API-Call oder GitHub Releases)
-      const latestVersion = await this.fetchLatestVersion();
-      const updateAvailable = this.isUpdateAvailable(currentVersion, latestVersion);
-      
-      // Prüfe ob Migration erforderlich ist
+      // LEGACY: Nur noch lokale Migration-Prüfung, kein GitHub-HTTP
       const migrationStatus = await this.migrationService.getMigrationStatus();
       const migrationRequired = migrationStatus.needsMigration;
 
@@ -81,14 +83,14 @@ export class UpdateService {
 
       const updateInfo: UpdateInfo = {
         currentVersion,
-        latestVersion,
-        updateAvailable,
-        requiresRestart: updateAvailable,
+        latestVersion: currentVersion, // Keine Remote-Version mehr abfragen
+        updateAvailable: false, // electron-updater übernimmt das
+        requiresRestart: migrationRequired,
         migrationRequired,
-        releaseNotes: updateAvailable ? await this.fetchReleaseNotes(latestVersion) : undefined
+        releaseNotes: migrationRequired ? 'Datenbank-Migrationen verfügbar' : undefined
       };
 
-      this.log('info', 'Update check completed', updateInfo);
+      this.log('info', 'Legacy update check completed (migrations only)', updateInfo);
       return updateInfo;
 
     } catch (error) {
@@ -273,48 +275,20 @@ export class UpdateService {
   }
 
   private async fetchLatestVersion(): Promise<string> {
-    try {
-      const response = await fetch('https://api.github.com/repos/MonaFP/RawaLite/releases/latest', {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'RawaLite-App'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.status}`);
-      }
-      
-      const release = await response.json();
-      const version = release.tag_name?.replace(/^v/, '') || '1.0.0';
-      
-      this.log('info', 'Fetched latest version from GitHub', { version });
-      return version;
-    } catch (error) {
-      this.log('warn', 'Failed to fetch from GitHub, using fallback', { error: error instanceof Error ? error.message : String(error) });
-      return '1.0.0'; // Fallback
-    }
+    // DEPRECATED: Entfernt GitHub-HTTP-Calls gemäß COPILOT_INSTRUCTIONS.md
+    // Verwende stattdessen: VersionService.checkForUpdates() mit electron-updater
+    this.log('warn', 'fetchLatestVersion is deprecated - use VersionService with electron-updater instead');
+    
+    // Fallback: return current version to avoid breaking existing code
+    return await this.getCurrentAppVersion();
   }
 
   private async fetchReleaseNotes(version: string): Promise<string> {
-    try {
-      const response = await fetch('https://api.github.com/repos/MonaFP/RawaLite/releases/latest', {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'RawaLite-App'
-        }
-      });
-      
-      if (!response.ok) {
-        return `🆕 Version ${version} verfügbar!\n• Verbesserungen und Fehlerbehebungen`;
-      }
-      
-      const release = await response.json();
-      return release.body || `🆕 Version ${version} verfügbar!\n• Verbesserungen und Fehlerbehebungen`;
-    } catch (error) {
-      this.log('warn', 'Failed to fetch release notes', { error: error instanceof Error ? error.message : String(error) });
-      return `🆕 Version ${version} verfügbar!\n• Verbesserungen und Fehlerbehebungen`;
-    }
+    // DEPRECATED: Entfernt GitHub-HTTP-Calls gemäß COPILOT_INSTRUCTIONS.md  
+    // Verwende stattdessen: VersionService.checkForUpdates() mit electron-updater
+    this.log('warn', 'fetchReleaseNotes is deprecated - use VersionService with electron-updater instead');
+    
+    return `🆕 Version ${version} verfügbar!\n• Verbesserungen und Fehlerbehebungen`;
   }
 
   private isUpdateAvailable(current: string, latest: string): boolean {

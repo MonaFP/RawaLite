@@ -23,7 +23,7 @@ export interface UpdateCheckResult {
 }
 
 export class VersionService {
-  private readonly BASE_VERSION = '1.7.1';
+  private readonly BASE_VERSION = '1.7.2';
   private readonly BUILD_DATE = '2025-09-14';
   
   private updateService: UpdateService;
@@ -289,7 +289,8 @@ export class VersionService {
    */
   private async fetchLatestVersionFromGitHub(): Promise<string> {
     try {
-      // Kurzes Timeout für GitHub API
+      // ⚠️ GITHUB-HTTP-CALL: Erlaubter FALLBACK wenn electron-updater fehlschlägt
+      // (Gemäß COPILOT_INSTRUCTIONS.md: "Fallback zu GitHub API wenn electron-updater fehlschlägt")
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 Sekunden Timeout
       
@@ -316,7 +317,7 @@ export class VersionService {
       const release = await response.json();
       const version = release.tag_name?.replace(/^v/, '') || this.BASE_VERSION;
       
-      LoggingService.log(`[VersionService] Fetched latest version from GitHub: ${version}`);
+      LoggingService.log(`[VersionService] FALLBACK: Fetched latest version from GitHub: ${version}`);
       return version;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -330,10 +331,12 @@ export class VersionService {
   }
 
   /**
-   * Holt Release Notes von GitHub
+   * Holt Release Notes von GitHub (ERLAUBTER FALLBACK)
    */
   private async fetchReleaseNotesFromGitHub(version: string): Promise<string> {
     try {
+      // ⚠️ GITHUB-HTTP-CALL: Erlaubter FALLBACK wenn electron-updater fehlschlägt
+      // (Gemäß COPILOT_INSTRUCTIONS.md: "Fallback zu GitHub API wenn electron-updater fehlschlägt")
       const response = await fetch('https://api.github.com/repos/MonaFP/RawaLite/releases/latest', {
         headers: {
           'Accept': 'application/vnd.github.v3+json',
