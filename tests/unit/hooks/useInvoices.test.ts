@@ -30,6 +30,16 @@ vi.mock('@/hooks/useUnifiedSettings', () => ({
   useUnifiedSettings: () => mockUnifiedSettings
 }));
 
+vi.mock('@/contexts/SettingsContext', () => ({
+  useSettings: () => ({
+    settings: {
+      kleinunternehmer: false,
+      vatRate: 19
+    },
+    updateSettings: vi.fn()
+  })
+}));
+
 describe('useInvoices Hook', () => {
   beforeEach(() => {
     vi.clearAllMocks();

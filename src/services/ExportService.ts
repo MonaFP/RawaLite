@@ -26,9 +26,6 @@ export class ExportService {
     this.downloadFile(csvContent, `kunden_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
   }
 
-  // TODO: PDF export methods will be replaced by new PDFService
-  // Old jsPDF/html2canvas implementation removed in favor of Electron webContents.printToPDF
-
   private static downloadFile(content: string, filename: string, mimeType: string): void {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);

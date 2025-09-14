@@ -16,6 +16,8 @@ extraResources:
     to: "app/rawalite-logo.png"
   - from: "assets/"
     to: "app/assets/"
+  - from: "templates/"
+    to: "app/templates/"
 icon: assets/icon.ico
 win:
   target:

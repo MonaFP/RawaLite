@@ -470,8 +470,15 @@ ipcMain.handle('pdf:generate', async (event, options: {
 
 // Helper: Get template file path
 function getTemplatePath(templateType: string): string {
-  const rootPath = isDev ? process.cwd() : app.getAppPath();
-  return path.join(rootPath, 'templates', `${templateType}.html`);
+  if (isDev) {
+    // Development: Templates im Projekt-Root/templates
+    const rootPath = process.cwd();
+    return path.join(rootPath, 'templates', `${templateType}.html`);
+  } else {
+    // Production: Templates in extraResources/app/templates
+    const resourcesPath = process.resourcesPath;
+    return path.join(resourcesPath, 'app', 'templates', `${templateType}.html`);
+  }
 }
 
 // Helper: Render template with data using simple string replacement

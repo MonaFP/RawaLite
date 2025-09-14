@@ -233,9 +233,8 @@ interface Timesheet {
   status: 'draft' | 'sent' | 'approved' | 'rejected';
   startDate: string;            // Zeitraum Start
   endDate: string;              // Zeitraum Ende
-  hourlyRate: number;           // Stundensatz
-  totalHours: number;           // Gesamtstunden
-  subtotal: number;             // hourlyRate * totalHours
+  activities: TimesheetActivity[]; // Separate Activities-Entitäten
+  subtotal: number;             // Summe aller Activities
   vatRate: number;
   vatAmount: number;
   total: number;
@@ -246,6 +245,27 @@ interface Timesheet {
   rejectedAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface Activity {
+  id: number;
+  name: string;                 // z.B. "Webdesign", "Entwicklung", "Beratung"
+  description?: string;         // Optionale Beschreibung der Tätigkeit
+  defaultHourlyRate: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface TimesheetActivity {
+  id?: number;
+  timesheetId: number;
+  activityId: number;
+  hours: number;
+  hourlyRate: number;           // Kann vom Standard abweichen
+  total: number;
+  description?: string;
+  position?: string;            // z.B. "Homepage erstellt", "Meeting mit Kunde"
 }
 ```
 
