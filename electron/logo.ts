@@ -113,13 +113,21 @@ class LogoService {
    * PNG/JPG Skalierung und Optimierung
    * Nutzt Node.js Buffer-Operationen für einfache Größenreduktion
    */
-  private async processRasterImage(buffer: Buffer, fileName: string): Promise<{
+  private async processRasterImage(
+    buffer: Buffer, 
+    fileName: string,
+    options?: {
+      maxWidth?: number;
+      maxHeight?: number;
+      quality?: number;
+    }
+  ): Promise<{
     processedBuffer: Buffer;
     width: number;
     height: number;
     format: 'png' | 'jpg';
   }> {
-    console.log('🖼️ Processing raster image:', fileName);
+    console.log('🖼️ Processing raster image:', fileName, options);
     
     // Einfache EXIF/Metadaten-Entfernung durch Buffer-Manipulation
     // Für PNG: Entferne optionale Chunks außer IHDR, IDAT, IEND
@@ -256,7 +264,11 @@ class LogoService {
     try {
       console.log('🚀 Starting logo upload:', options.fileName, options.mimeType);
       
-      const buffer = Buffer.from(options.fileBuffer);
+      if (!options.buffer) {
+        throw new Error('No buffer provided for logo upload');
+      }
+      
+      const buffer = Buffer.from(options.buffer);
       const fileExtension = path.extname(options.fileName).toLowerCase();
       const isSVG = options.mimeType === 'image/svg+xml' || fileExtension === '.svg';
       
@@ -278,8 +290,12 @@ class LogoService {
         format = 'svg';
         
       } else {
-        // PNG/JPG-Verarbeitung
-        const processed = await this.processRasterImage(buffer, options.fileName);
+        // PNG/JPG-Verarbeitung mit Skalierung
+        const processed = await this.processRasterImage(buffer, options.fileName, {
+          maxWidth: options.maxWidth || 800,
+          maxHeight: options.maxHeight || 600,
+          quality: options.quality || 0.85
+        });
         processedContent = processed.processedBuffer;
         width = processed.width;
         height = processed.height;

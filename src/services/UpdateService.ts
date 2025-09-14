@@ -67,7 +67,7 @@ export class UpdateService {
     this.updateProgress('checking', 10, 'Checking for updates...');
 
     try {
-      const currentVersion = this.getCurrentAppVersion();
+      const currentVersion = await this.getCurrentAppVersion();
       
       // Simuliere Update-Check (in echter App: API-Call oder GitHub Releases)
       const latestVersion = await this.fetchLatestVersion();
@@ -109,7 +109,7 @@ export class UpdateService {
       // 1. Pre-Update-Backup erstellen (jetzt über BackupService)
       this.updateProgress('backing-up', 20, 'Creating pre-update backup...');
       
-      const currentVersion = this.getCurrentAppVersion();
+      const currentVersion = await this.getCurrentAppVersion();
       const backupResult = await backupService.createPreUpdateBackup(currentVersion);
       
       if (!backupResult.success || !backupResult.backupId) {
@@ -254,9 +254,22 @@ export class UpdateService {
    * Private Helper Methods
    */
 
-  private getCurrentAppVersion(): string {
-    // Version mit echtem Update-System (kein Auto-Updater, aber reale GitHub-Integration)
-    return '1.5.6';
+  private async getCurrentAppVersion(): Promise<string> {
+    try {
+      // Verwende IPC-System um echte App-Version aus package.json zu holen
+      const version = await window.rawalite?.app.getVersion();
+      if (!version) {
+        throw new Error('Failed to get version via IPC - version is undefined');
+      }
+      this.log('info', 'Retrieved app version via IPC', { version });
+      return version;
+    } catch (error) {
+      this.log('error', 'Failed to get app version via IPC', { 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+      // Fallback auf VersionService falls IPC fehlschlägt
+      return '1.6.1'; // Aktuelle App-Version als Fallback
+    }
   }
 
   private async fetchLatestVersion(): Promise<string> {

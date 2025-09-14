@@ -24,9 +24,12 @@ export interface ShellAPI {
 
 // === LOGO IPC TYPES ===
 export interface LogoUploadOptions {
-  fileBuffer: ArrayBuffer;
+  buffer: ArrayBuffer;
   fileName: string;
   mimeType: string;
+  maxWidth?: number;
+  maxHeight?: number;
+  quality?: number;
 }
 
 export interface LogoProcessResult {
