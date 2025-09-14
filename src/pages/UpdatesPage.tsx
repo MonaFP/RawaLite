@@ -1,69 +1,43 @@
-import { useState, useEffect } from 'react';
-import { UpdateService, UpdateInfo, UpdateProgress } from '../services/UpdateService';
+import { useState } from 'react';
+import { useUpdateOrchestrator } from '../hooks/useUpdateOrchestrator';
 import AutoUpdaterModal from '../components/AutoUpdaterModal';
-import { useAutoUpdater } from '../hooks/useAutoUpdater';
 
 export default function UpdatesPage() {
-  const [updateService] = useState(() => new UpdateService());
-  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
-  const [progress, setProgress] = useState<UpdateProgress | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
   const [showUpdaterModal, setShowUpdaterModal] = useState(false);
 
-  // Use new auto-updater hook
-  const [autoUpdaterState, autoUpdaterActions] = useAutoUpdater({
+  // Verwende das neue einheitliche Update-System
+  const updateOrchestrator = useUpdateOrchestrator({
     autoCheckOnStart: false, // Manual control on this page
     checkInterval: undefined  // No automatic checks
   });
 
-  useEffect(() => {
-    updateService.setProgressCallback(setProgress);
-    checkForUpdates();
-  }, [updateService]);
-
-  const checkForUpdates = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const info = await updateService.checkForUpdates();
-      setUpdateInfo(info);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler beim Prüfen auf Updates');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdate = async () => {
-    if (!updateInfo?.updateAvailable) return;
-    
-    setIsUpdating(true);
-    setError(null);
-    
-    try {
-      await updateService.performUpdate();
-      // Update erfolgreich - Neustart anbieten
-      if (window.confirm('Update erfolgreich installiert! Möchten Sie die Anwendung neu starten?')) {
-        await updateService.restartApplication();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Update fehlgeschlagen');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+  const {
+    state,
+    isChecking,
+    isDownloading,
+    canDownload,
+    canInstall,
+    checkForUpdates,
+    startDownload,
+    installAndRestart,
+    reset
+  } = updateOrchestrator;
 
   const handleElectronUpdate = () => {
     setShowUpdaterModal(true);
   };
 
-  const getProgressColor = (stage: UpdateProgress['stage']) => {
-    switch (stage) {
-      case 'error': return '#ef4444';
-      case 'complete': return 'var(--accent)';
-      default: return '#3b82f6';
+  const getProgressColor = (phase: string) => {
+    switch (phase) {
+      case 'checking': return '#3498db';
+      case 'available': return '#2ecc71';
+      case 'preparing': return '#f39c12';
+      case 'downloading': return '#9b59b6';
+      case 'downloaded': return '#27ae60';
+      case 'installing': return '#e74c3c';
+      case 'complete': return '#2ecc71';
+      case 'error': return '#e74c3c';
+      default: return '#95a5a6';
     }
   };
 
@@ -71,309 +45,284 @@ export default function UpdatesPage() {
 
   return (
     <div className="page" style={{ padding: "20px" }}>
-      <div className="page-header" style={{ marginBottom: "24px" }}>
-        <h1 style={{ margin: 0, color: "var(--accent)", fontSize: "24px", fontWeight: "600" }}>
-          Updates & Changelog
-        </h1>
-        <p style={{ margin: "8px 0 0 0", color: "var(--muted)", fontSize: "14px" }}>
-          Neue Funktionen, Verbesserungen und Fehlerbehebungen
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
+        <h2 style={{ margin: 0, color: "var(--accent)" }}>🔄 Updates</h2>
+        <div style={{
+          background: "var(--accent)",
+          color: "white",
+          padding: "4px 12px",
+          borderRadius: "20px",
+          fontSize: "12px",
+          fontWeight: "600"
+        }}>
+          ORCHESTRATOR-SYSTEM
+        </div>
+      </div>
+
+      <div style={{ 
+        background: "rgba(30, 58, 138, 0.1)", 
+        border: "1px solid var(--accent)", 
+        borderRadius: "8px", 
+        padding: "16px", 
+        marginBottom: "20px" 
+      }}>
+        <h4 style={{ margin: "0 0 8px 0", color: "var(--accent)" }}>
+          ℹ️ Einheitliches Update-System
+        </h4>
+        <p style={{ margin: 0, color: "var(--muted)", fontSize: "14px" }}>
+          Dieses System kombiniert <strong>electron-updater</strong> (Standard) mit 
+          <strong> Custom Orchestrator-Hooks</strong> für Backup & Migration. 
+          Ein Transport, eine State-Machine, robuste Hooks.
         </p>
       </div>
 
-      {/* Electron Auto-Updater Section */}
+      {/* electron-updater Section */}
       {isElectron && (
         <div className="card" style={{ marginBottom: "20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <h3 style={{ margin: 0, color: "var(--accent)" }}>🔄 Automatische Updates</h3>
-            <button 
+            <h3 style={{ margin: 0, color: "var(--accent)" }}>🔄 Update-System</h3>
+            <button
               onClick={handleElectronUpdate}
               style={{
                 padding: "8px 16px",
                 border: "1px solid var(--accent)",
                 borderRadius: "6px",
-                background: "var(--accent)",
-                color: "white",
+                background: "transparent",
+                color: "var(--accent)",
                 cursor: "pointer",
-                fontWeight: "600"
+                fontSize: "14px",
+                fontWeight: "500"
               }}
             >
-              Update-Manager öffnen
+              📱 Update-Modal öffnen
             </button>
           </div>
 
-          <div style={{ 
-            background: "rgba(59, 130, 246, 0.1)", 
-            border: "1px solid #3b82f6", 
-            borderRadius: "8px", 
-            padding: "16px" 
+          {/* Current State Display */}
+          <div style={{
+            background: state.phase === 'error' ? "rgba(231, 76, 60, 0.1)" : "rgba(46, 204, 113, 0.1)",
+            border: `1px solid ${state.phase === 'error' ? '#e74c3c' : '#2ecc71'}`,
+            borderRadius: "6px",
+            padding: "12px",
+            marginBottom: "16px"
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-              <span style={{ fontSize: "24px" }}>✨</span>
-              <div>
-                <h4 style={{ margin: 0, color: "#3b82f6" }}>Automatische Updates verfügbar</h4>
-                <p style={{ margin: "4px 0 0 0", color: "var(--muted)", fontSize: "14px" }}>
-                  Aktuelle Version: {autoUpdaterState.currentVersion || 'Wird geladen...'}
-                </p>
-              </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+              <div style={{
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                background: getProgressColor(state.phase)
+              }}></div>
+              <strong style={{ color: "var(--text)" }}>
+                Status: {state.phase.charAt(0).toUpperCase() + state.phase.slice(1)}
+              </strong>
             </div>
             
-            <p style={{ margin: "0 0 12px 0", color: "var(--muted)", fontSize: "14px" }}>
-              RawaLite kann automatisch nach Updates suchen und diese im Hintergrund herunterladen. 
-              Sie werden benachrichtigt, wenn ein Update zur Installation bereit ist.
-            </p>
+            <div style={{ color: "var(--muted)", fontSize: "14px", marginBottom: "8px" }}>
+              {state.message}
+            </div>
 
-            {autoUpdaterState.state === 'available' && (
+            {state.progress > 0 && (
               <div style={{
-                background: "rgba(34, 197, 94, 0.2)",
-                border: "1px solid #22c55e",
-                borderRadius: "6px",
-                padding: "12px",
-                marginTop: "12px"
+                background: "rgba(0,0,0,0.1)",
+                borderRadius: "4px",
+                height: "6px",
+                overflow: "hidden",
+                marginBottom: "8px"
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ color: "#22c55e" }}>🎉</span>
-                  <strong style={{ color: "#22c55e" }}>Update verfügbar: v{autoUpdaterState.updateInfo?.version}</strong>
-                </div>
+                <div style={{
+                  background: getProgressColor(state.phase),
+                  width: `${state.progress}%`,
+                  height: "100%",
+                  transition: "width 0.3s ease"
+                }}></div>
               </div>
             )}
 
-            {autoUpdaterState.state === 'not-available' && (
-              <div style={{
-                background: "rgba(34, 197, 94, 0.1)",
-                border: "1px solid #22c55e",
-                borderRadius: "6px",
-                padding: "12px",
-                marginTop: "12px"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ color: "#22c55e" }}>✅</span>
-                  <span style={{ color: "#22c55e" }}>Ihre App ist auf dem neuesten Stand</span>
-                </div>
-              </div>
-            )}
-
-            {autoUpdaterState.error && (
-              <div style={{
-                background: "rgba(239, 68, 68, 0.1)",
-                border: "1px solid #ef4444",
-                borderRadius: "6px",
-                padding: "12px",
-                marginTop: "12px"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ color: "#ef4444" }}>⚠️</span>
-                  <span style={{ color: "#ef4444", fontSize: "14px" }}>{autoUpdaterState.error}</span>
-                </div>
+            {state.error && (
+              <div style={{ color: "#e74c3c", fontSize: "12px", marginTop: "8px" }}>
+                ❌ {state.error}
               </div>
             )}
           </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <button
+              onClick={checkForUpdates}
+              disabled={isChecking || isDownloading}
+              style={{
+                padding: "10px 20px",
+                background: isChecking ? "#95a5a6" : "var(--accent)",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                cursor: isChecking ? "not-allowed" : "pointer",
+                fontSize: "14px",
+                fontWeight: "500"
+              }}
+            >
+              {isChecking ? "🔄 Prüfe..." : "🔍 Nach Updates suchen"}
+            </button>
+
+            {canDownload && (
+              <button
+                onClick={startDownload}
+                disabled={isDownloading}
+                style={{
+                  padding: "10px 20px",
+                  background: "#27ae60",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500"
+                }}
+              >
+                {isDownloading ? "⬇️ Lädt..." : "⬇️ Download starten"}
+              </button>
+            )}
+
+            {canInstall && (
+              <button
+                onClick={installAndRestart}
+                style={{
+                  padding: "10px 20px",
+                  background: "#e74c3c",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500"
+                }}
+              >
+                🔄 Installieren & Neustarten
+              </button>
+            )}
+
+            {state.phase === 'error' && (
+              <button
+                onClick={reset}
+                style={{
+                  padding: "10px 20px",
+                  background: "#95a5a6",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500"
+                }}
+              >
+                🔄 Zurücksetzen
+              </button>
+            )}
+          </div>
+
+          {/* Update Info */}
+          {state.updateInfo && (
+            <div style={{
+              background: "rgba(52, 152, 219, 0.1)",
+              border: "1px solid #3498db",
+              borderRadius: "6px",
+              padding: "12px",
+              marginTop: "16px"
+            }}>
+              <h4 style={{ margin: "0 0 8px 0", color: "#3498db" }}>
+                📦 Update verfügbar
+              </h4>
+              <div style={{ color: "var(--muted)", fontSize: "14px" }}>
+                <strong>Version:</strong> {state.updateInfo.version || 'Unbekannt'}<br />
+                <strong>Größe:</strong> {state.updateInfo.files?.[0]?.size ? 
+                  `${Math.round(state.updateInfo.files[0].size / 1024 / 1024)} MB` : 'Unbekannt'}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Legacy Update Status Card */}
+      {/* Development Mode Warning */}
+      {!isElectron && (
+        <div className="card" style={{ marginBottom: "20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+            <h3 style={{ margin: 0, color: "#f39c12" }}>⚠️ Development Mode</h3>
+          </div>
+          <p style={{ color: "var(--muted)", margin: 0 }}>
+            Update-Funktionalität ist nur in der Desktop-Version (Electron) verfügbar.
+            In der Entwicklungsumgebung sind Updates deaktiviert.
+          </p>
+        </div>
+      )}
+
+      {/* Changelog Section */}
       <div className="card" style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-          <h3 style={{ margin: 0, color: "var(--accent)" }}>
-            {isElectron ? '📋 Update-Status (Legacy)' : '📋 Update-Status'}
-          </h3>
-          <button 
-            onClick={checkForUpdates}
-            disabled={loading || isUpdating}
-            style={{
-              padding: "8px 16px",
-              border: "1px solid var(--accent)",
-              borderRadius: "6px",
-              background: "transparent",
-              color: "var(--accent)",
-              cursor: loading || isUpdating ? "not-allowed" : "pointer",
-              opacity: loading || isUpdating ? 0.6 : 1
-            }}
-          >
-            {loading ? "Prüfe..." : "Aktualisieren"}
-          </button>
+          <h3 style={{ margin: 0, color: "var(--accent)" }}>📝 Changelog</h3>
         </div>
 
-        {updateInfo && (
-          <div>
-            <div style={{ marginBottom: "12px" }}>
-              <strong>Aktuelle Version:</strong> {updateInfo.currentVersion}
-            </div>
-            <div style={{ marginBottom: "12px" }}>
-              <strong>Verfügbare Version:</strong> {updateInfo.latestVersion}
-            </div>
-            
-            {updateInfo.updateAvailable ? (
-              <div style={{
-                background: "rgba(59, 130, 246, 0.1)",
-                border: "1px solid #3b82f6",
-                borderRadius: "8px",
-                padding: "16px",
-                marginTop: "16px"
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <h4 style={{ color: "#3b82f6", margin: "0 0 8px 0" }}>
-                      🆕 Update verfügbar!
-                    </h4>
-                    <p style={{ margin: 0, color: "var(--muted)" }}>
-                      Version {updateInfo.latestVersion} ist verfügbar
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleUpdate}
-                    disabled={isUpdating}
-                    style={{
-                      padding: "12px 24px",
-                      background: "#3b82f6",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: isUpdating ? "not-allowed" : "pointer",
-                      opacity: isUpdating ? 0.6 : 1,
-                      fontWeight: "600"
-                    }}
-                  >
-                    {isUpdating ? "Wird aktualisiert..." : "Jetzt aktualisieren"}
-                  </button>
-                </div>
-                
-                {updateInfo.releaseNotes && (
-                  <div style={{ marginTop: "16px", padding: "12px", background: "rgba(0,0,0,0.1)", borderRadius: "6px" }}>
-                    <strong>Release Notes:</strong>
-                    <pre style={{ 
-                      margin: "8px 0 0 0", 
-                      whiteSpace: "pre-wrap", 
-                      fontSize: "14px", 
-                      color: "var(--muted)" 
-                    }}>
-                      {updateInfo.releaseNotes}
-                    </pre>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div style={{
-                background: "rgba(34, 197, 94, 0.1)",
-                border: "1px solid #22c55e",
-                borderRadius: "8px",
-                padding: "16px",
-                marginTop: "16px"
-              }}>
-                <h4 style={{ color: "#22c55e", margin: "0 0 8px 0" }}>
-                  ✅ Aktuell
-                </h4>
-                <p style={{ margin: 0, color: "var(--muted)" }}>
-                  Sie verwenden die neueste Version von RawaLite
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {error && (
-          <div style={{
-            background: "rgba(239, 68, 68, 0.1)",
-            border: "1px solid #ef4444",
-            borderRadius: "8px",
-            padding: "16px",
-            marginTop: "16px"
-          }}>
-            <h4 style={{ color: "#ef4444", margin: "0 0 8px 0" }}>
-              ❌ Fehler
-            </h4>
-            <p style={{ margin: 0, color: "var(--muted)" }}>
-              {error}
-            </p>
-          </div>
-        )}
-
-        {/* Update Progress */}
-        {progress && isUpdating && (
-          <div style={{
-            background: "rgba(0,0,0,0.05)",
-            borderRadius: "8px",
-            padding: "16px",
-            marginTop: "16px"
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-              <span style={{ fontWeight: "600", textTransform: "capitalize" }}>
-                {progress.stage}
-              </span>
-              <span>{progress.progress}%</span>
-            </div>
-            <div style={{
-              width: "100%",
-              height: "8px",
-              background: "rgba(0,0,0,0.1)",
-              borderRadius: "4px",
-              overflow: "hidden"
-            }}>
-              <div style={{
-                width: `${progress.progress}%`,
-                height: "100%",
-                background: getProgressColor(progress.stage),
-                transition: "width 0.3s ease"
-              }} />
-            </div>
-            <div style={{ marginTop: "8px", fontSize: "14px", color: "var(--muted)" }}>
-              {progress.message}
-            </div>
-            {progress.error && (
-              <div style={{ marginTop: "8px", fontSize: "14px", color: "#ef4444" }}>
-                Fehler: {progress.error}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Version History */}
-      <div className="card">
-        <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>
-          Changelog
-        </h3>
-        
-        {/* Version 1.6.0 - Auto-Updater */}
-        <div style={{ 
-          background: "rgba(30, 58, 46, 0.1)", 
-          border: "1px solid var(--accent)", 
-          borderRadius: "8px", 
+        {/* Version 1.7.1 - Update System Redesign */}
+        <div style={{
+          background: "rgba(30, 58, 46, 0.1)",
+          border: "1px solid var(--accent)",
+          borderRadius: "6px",
           padding: "16px",
           marginBottom: "16px"
         }}>
-          <h4 style={{ color: "var(--accent)", margin: "0 0 12px 0" }}>
-            🚀 Version 1.6.0 - Automatische Updates
+          <h4 style={{ margin: "0 0 12px 0", color: "var(--accent)" }}>
+            🔄 Version 1.7.1 - Update System Redesign
           </h4>
           <ul style={{ color: "var(--muted)", margin: 0, paddingLeft: "20px" }}>
-            <li><strong>Neu:</strong> Vollautomatisches Update-System mit electron-updater</li>
-            <li><strong>Neu:</strong> Update-Prüfung beim App-Start und im Menü</li>
-            <li><strong>Neu:</strong> Download-Fortschritt und Installationsbestätigung</li>
-            <li><strong>Verbessert:</strong> Deutsche UI für alle Update-Vorgänge</li>
-            <li><strong>Verbessert:</strong> Robuste Fehlerbehandlung bei Updates</li>
-            <li><strong>Entfernt:</strong> Manueller GitHub-Download-Workflow</li>
+            <li><strong>Neu:</strong> Einheitliches Update-System mit UpdateOrchestrator</li>
+            <li><strong>Neu:</strong> electron-updater + Custom Backup/Migration-Hooks</li>
+            <li><strong>Fix:</strong> Release-Assets werden korrekt mit latest.yml publiziert</li>
+            <li><strong>Fix:</strong> Logo-Upload BufferParameter-Fehler behoben</li>
+            <li><strong>Verbessert:</strong> Eine State-Machine für alle Update-Flows</li>
           </ul>
         </div>
 
-        <div style={{ 
-          background: "rgba(30, 58, 46, 0.1)", 
-          border: "1px solid var(--accent)", 
-          borderRadius: "8px", 
-          padding: "16px"
+        {/* Version 1.7.0 - Logo System */}
+        <div style={{
+          background: "rgba(30, 58, 46, 0.1)",
+          border: "1px solid var(--accent)",
+          borderRadius: "6px",
+          padding: "16px",
+          marginBottom: "16px"
         }}>
-          <h4 style={{ color: "var(--accent)", margin: "0 0 12px 0" }}>
-            🆕 Version 1.5.1 - Dashboard & Logo Fixes
+          <h4 style={{ margin: "0 0 12px 0", color: "var(--accent)" }}>
+            🖼️ Version 1.7.0 - Logo System Release
           </h4>
           <ul style={{ color: "var(--muted)", margin: 0, paddingLeft: "20px" }}>
-            <li>Dashboard-Routing optimiert</li>
-            <li>Logo-Anzeige-Probleme behoben</li>
-            <li>Verbesserte Navigation</li>
-            <li>Stabilität erhöht</li>
+            <li><strong>Neu:</strong> Vollständiges Logo-Upload und Management-System</li>
+            <li><strong>Neu:</strong> Automatische Bildoptimierung mit Größenanpassung</li>
+            <li><strong>Neu:</strong> Logo-Integration in PDF-Exports (Angebote, Rechnungen)</li>
+            <li><strong>Security:</strong> File-Validation und sichere Buffer-Verarbeitung</li>
+          </ul>
+        </div>
+
+        {/* Version 1.6.1 - Audit System */}
+        <div style={{
+          background: "rgba(30, 58, 46, 0.1)",
+          border: "1px solid var(--accent)",
+          borderRadius: "6px",
+          padding: "16px",
+          marginBottom: "16px"
+        }}>
+          <h4 style={{ margin: "0 0 12px 0", color: "var(--accent)" }}>
+            🔍 Version 1.6.1 - Universal App-Audit Implementation
+          </h4>
+          <ul style={{ color: "var(--muted)", margin: 0, paddingLeft: "20px" }}>
+            <li><strong>Neu:</strong> Vollständiges Audit-System für alle Geschäftsobjekte</li>
+            <li><strong>Neu:</strong> Aktivitäts-Timeline mit Benutzer-Tracking</li>
+            <li><strong>Neu:</strong> Export-Funktionalität für Audit-Logs</li>
+            <li><strong>Verbessert:</strong> Performance-Optimierungen bei großen Datenmengen</li>
           </ul>
         </div>
       </div>
 
       {/* Auto-Updater Modal */}
-      <AutoUpdaterModal 
+      <AutoUpdaterModal
         isOpen={showUpdaterModal}
         onClose={() => setShowUpdaterModal(false)}
         autoCheck={true}
