@@ -25,6 +25,12 @@
     "version:check": "node validate-version-sync.mjs",
     "version:sync": "node sync-versions.mjs",
     "ipc:validate": "node validate-ipc-types.mjs",
+    "guard:external": "git grep -nE \"shell\\.openExternal|window\\.open|target=\\\"_blank\\\"|https?://\" -- . ':!docs' ':!README*' || echo \"NO EXTERNALS FOUND\"",
+    "guard:pdf": "git grep -nE \"<link[^>]+https?://|<script[^>]+https?://|<img[^>]+https?://\" templates || echo \"NO EXTERNAL ASSETS\"",
+    "guard:backup": "node guard-backup-storage.mjs",
+    "validate:backup": "node validate-backup-integration.mjs",
+    "test:backup": "node test-backup-system-complete.cjs",
+    "precommit": "pnpm typecheck && pnpm lint && pnpm guard:external && pnpm guard:pdf && pnpm guard:backup && pnpm ipc:validate && pnpm version:check",
     "postinstall": "node -e \"require('fs').mkdirSync('public',{recursive:true});require('fs').cpSync(require.resolve('sql.js/dist/sql-wasm.wasm'),'public/sql-wasm.wasm',{force:true})\""
   },
   "dependencies": {

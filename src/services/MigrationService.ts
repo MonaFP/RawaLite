@@ -2,10 +2,14 @@
  * 🔧 RawaLite Migration Service
  * 
  * Robustes Update-/Migrationssystem für sichere App-Updates ohne Datenverlust
+ * 
+ * WICHTIG: Verwendet jetzt BackupService für Dateisystem-basierte Backups
+ * statt localStorage (behebt QuotaExceededError)
  */
 
 import { getDB, all, run, withTx } from '../persistence/sqlite/db';
 import { LoggingService } from './LoggingService';
+import { backupService } from './BackupService';
 
 export interface MigrationStep {
   version: number;
@@ -416,21 +420,20 @@ export class MigrationService {
   }
 
   async createDatabaseBackup(description: string): Promise<string> {
-    const db = await getDB();
-    const backupId = this.generateBackupId();
-    const timestamp = new Date().toISOString();
-    const currentVersion = await this.getCurrentSchemaVersion();
-    
     try {
-      const dbData = db.export();
-      const size = dbData.byteLength;
+      this.log('info', 'Creating database backup using BackupService', { description });
       
-      const checksum = await this.calculateChecksum(dbData);
+      // Use new BackupService instead of localStorage
+      const result = await backupService.createManualBackup(description);
       
-      const backupKey = `rawalite.backup.${backupId}`;
-      localStorage.setItem(backupKey, this.base64FromUint8Array(dbData));
+      if (!result.success || !result.backupId) {
+        throw new Error(result.error || 'Backup creation failed');
+      }
+
+      // Still track in database metadata for compatibility
+      const currentVersion = await this.getCurrentSchemaVersion();
+      const timestamp = new Date().toISOString();
       
-      // Insert backup metadata in its own transaction to avoid nesting issues
       try {
         await withTx(async () => {
           await run(`
@@ -438,17 +441,17 @@ export class MigrationService {
             (id, version, appVersion, size, createdAt, description, checksumSHA256)
             VALUES (?, ?, ?, ?, ?, ?, ?)
           `, [
-            backupId,
+            result.backupId,
             currentVersion.version,
             this.getAppVersion(),
-            size,
+            result.size || 0,
             timestamp,
             description,
-            checksum
+            'filesystem' // Indicates this is a filesystem backup
           ]);
         });
       } catch (txError) {
-        // If transaction fails, try direct insert (might already be in a transaction)
+        // If transaction fails, try direct insert
         this.log('warn', 'Transaction failed, trying direct insert for backup metadata', { 
           error: txError instanceof Error ? txError.message : String(txError) 
         });
@@ -458,18 +461,23 @@ export class MigrationService {
           (id, version, appVersion, size, createdAt, description, checksumSHA256)
           VALUES (?, ?, ?, ?, ?, ?, ?)
         `, [
-          backupId,
+          result.backupId,
           currentVersion.version,
           this.getAppVersion(),
-          size,
+          result.size || 0,
           timestamp,
           description,
-          checksum
+          'filesystem'
         ]);
       }
       
-      this.log('info', 'Database backup created', { backupId, size });
-      return backupId;
+      this.log('info', 'Database backup created successfully', { 
+        backupId: result.backupId, 
+        size: result.size,
+        filePath: result.filePath 
+      });
+      
+      return result.backupId;
     } catch (error) {
       this.log('error', 'Failed to create backup', { error: error instanceof Error ? error.message : String(error) });
       throw new Error(`Backup creation failed: ${error}`);
@@ -515,22 +523,53 @@ export class MigrationService {
 
   async cleanupOldBackups(keepCount: number = 5): Promise<void> {
     try {
-      const backups = await all<BackupMetadata>(`
-        SELECT * FROM ${this.BACKUP_METADATA_TABLE} 
-        ORDER BY createdAt DESC
-      `);
+      this.log('info', 'Cleaning up old backups', { keepCount });
       
-      if (backups.length <= keepCount) return;
+      // Use BackupService for filesystem cleanup
+      const pruneResult = await backupService.prune({ 
+        keep: keepCount, 
+        maxTotalMB: 500 
+      });
       
-      const toDelete = backups.slice(keepCount);
-      
-      for (const backup of toDelete) {
-        const backupKey = `rawalite.backup.${backup.id}`;
-        localStorage.removeItem(backupKey);
+      if (pruneResult.success) {
+        this.log('info', 'Backup cleanup completed', { 
+          removedCount: pruneResult.removedCount 
+        });
+      } else {
+        this.log('warn', 'Backup cleanup failed', { 
+          error: pruneResult.error 
+        });
+      }
+
+      // Also clean up old localStorage entries (legacy cleanup)
+      try {
+        const legacyBackups = await all<BackupMetadata>(`
+          SELECT * FROM ${this.BACKUP_METADATA_TABLE} 
+          WHERE checksumSHA256 != 'filesystem'
+          ORDER BY createdAt DESC
+        `);
         
-        await run(`DELETE FROM ${this.BACKUP_METADATA_TABLE} WHERE id = ?`, [backup.id]);
-        
-        this.log('info', 'Cleaned up old backup', { backupId: backup.id });
+        if (legacyBackups.length > keepCount) {
+          const toDelete = legacyBackups.slice(keepCount);
+          
+          for (const backup of toDelete) {
+            const backupKey = `rawalite.backup.${backup.id}`;
+            try {
+              localStorage.removeItem(backupKey);
+              await run(`DELETE FROM ${this.BACKUP_METADATA_TABLE} WHERE id = ?`, [backup.id]);
+              this.log('info', 'Cleaned up legacy backup', { backupId: backup.id });
+            } catch (error) {
+              this.log('warn', 'Failed to clean up legacy backup', { 
+                backupId: backup.id, 
+                error: error instanceof Error ? error.message : String(error) 
+              });
+            }
+          }
+        }
+      } catch (error) {
+        this.log('warn', 'Legacy backup cleanup failed', { 
+          error: error instanceof Error ? error.message : String(error) 
+        });
       }
       
     } catch (error) {
@@ -547,10 +586,49 @@ export class MigrationService {
 
   async listBackups(): Promise<BackupMetadata[]> {
     try {
-      return await all<BackupMetadata>(`
+      // Get both filesystem and legacy backups
+      const dbBackups = await all<BackupMetadata>(`
         SELECT * FROM ${this.BACKUP_METADATA_TABLE} 
         ORDER BY createdAt DESC
       `);
+      
+      // Get filesystem backups from BackupService
+      const filesystemBackups = await backupService.list();
+      
+      // Merge and deduplicate (prefer filesystem backups)
+      const backupMap = new Map<string, BackupMetadata>();
+      
+      // Add filesystem backups first (these are preferred)
+      for (const fsBackup of filesystemBackups) {
+        backupMap.set(fsBackup.id, {
+          id: fsBackup.id,
+          version: parseInt(fsBackup.version) || 0,
+          appVersion: fsBackup.version,
+          size: fsBackup.size,
+          createdAt: fsBackup.createdAt,
+          description: fsBackup.description,
+          checksumSHA256: 'filesystem'
+        });
+      }
+      
+      // Add database backups that aren't already in filesystem
+      for (const dbBackup of dbBackups) {
+        if (!backupMap.has(dbBackup.id)) {
+          backupMap.set(dbBackup.id, dbBackup);
+        }
+      }
+      
+      const mergedBackups = Array.from(backupMap.values()).sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      
+      this.log('info', 'Listed merged backups', { 
+        total: mergedBackups.length,
+        filesystem: filesystemBackups.length,
+        database: dbBackups.length
+      });
+      
+      return mergedBackups;
     } catch (error) {
       this.log('warn', 'Error listing backups', { error: error instanceof Error ? error.message : String(error) });
       return [];

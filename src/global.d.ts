@@ -28,6 +28,40 @@ declare interface Window {
       onUpdateMessage: (callback: (event: any, data: any) => void) => void;
       removeUpdateMessageListener: (callback: (event: any, data: any) => void) => void;
     };
+    backup: {
+      create: (options: {
+        kind: 'pre-update' | 'manual' | 'post-download';
+        description?: string;
+        payloadMeta?: { version?: string; sizeEst?: number; };
+      }) => Promise<{
+        success: boolean;
+        backupId?: string;
+        filePath?: string;
+        size?: number;
+        error?: string;
+      }>;
+      list: () => Promise<{
+        success: boolean;
+        backups?: Array<{
+          id: string;
+          kind: string;
+          filePath: string;
+          size: number;
+          createdAt: string;
+          description: string;
+          version: string;
+        }>;
+        error?: string;
+      }>;
+      prune: (options: {
+        keep?: number;
+        maxTotalMB?: number;
+      }) => Promise<{
+        success: boolean;
+        removedCount?: number;
+        error?: string;
+      }>;
+    };
   };
   electronAPI?: {
     pdf?: {

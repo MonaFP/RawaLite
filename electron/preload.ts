@@ -4,7 +4,9 @@ import type {
   RawaliteAPI, 
   ElectronAPI, 
   PDFGenerateOptions, 
-  UpdateMessage 
+  UpdateMessage,
+  BackupCreateOptions,
+  BackupPruneOptions
 } from '../src/types/ipc';
 import type { IpcRendererEvent } from 'electron';
 
@@ -34,6 +36,11 @@ const rawaliteAPI: RawaliteAPI = {
     removeUpdateMessageListener: (callback: (event: IpcRendererEvent, data: UpdateMessage) => void) => {
       ipcRenderer.removeListener('update-message', callback)
     }
+  },
+  backup: {
+    create: (options: BackupCreateOptions) => ipcRenderer.invoke('backup:create', options),
+    list: () => ipcRenderer.invoke('backup:list'),
+    prune: (options: BackupPruneOptions) => ipcRenderer.invoke('backup:prune', options),
   }
 };
 

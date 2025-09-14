@@ -90,12 +90,62 @@ export interface PDFAPI {
   getStatus: () => Promise<PDFStatus>;
 }
 
+// === BACKUP IPC TYPES ===
+export interface BackupCreateOptions {
+  kind: 'pre-update' | 'manual' | 'post-download';
+  description?: string;
+  payloadMeta?: {
+    version?: string;
+    sizeEst?: number;
+  };
+}
+
+export interface BackupCreateResult {
+  success: boolean;
+  backupId?: string;
+  filePath?: string;
+  size?: number;
+  error?: string;
+}
+
+export interface BackupListResult {
+  success: boolean;
+  backups?: Array<{
+    id: string;
+    kind: string;
+    filePath: string;
+    size: number;
+    createdAt: string;
+    description: string;
+    version: string;
+  }>;
+  error?: string;
+}
+
+export interface BackupPruneOptions {
+  keep?: number;
+  maxTotalMB?: number;
+}
+
+export interface BackupPruneResult {
+  success: boolean;
+  removedCount?: number;
+  error?: string;
+}
+
+export interface BackupAPI {
+  create: (options: BackupCreateOptions) => Promise<BackupCreateResult>;
+  list: () => Promise<BackupListResult>;
+  prune: (options: BackupPruneOptions) => Promise<BackupPruneResult>;
+}
+
 // === COMBINED IPC API INTERFACE ===
 export interface RawaliteAPI {
   db: DatabaseAPI;
   app: AppAPI;
   shell: ShellAPI;
   updater: UpdaterAPI;
+  backup: BackupAPI;
 }
 
 export interface ElectronAPI {
@@ -114,7 +164,10 @@ export type IPCChannels =
   | 'updater:install-and-restart'
   | 'updater:get-version'
   | 'pdf:generate'
-  | 'pdf:getStatus';
+  | 'pdf:getStatus'
+  | 'backup:create'
+  | 'backup:list'
+  | 'backup:prune';
 
 // === IPC HANDLER TYPE DEFINITIONS ===
 export interface IPCHandlers {
@@ -129,4 +182,7 @@ export interface IPCHandlers {
   'updater:get-version': () => Promise<UpdateVersionResult>;
   'pdf:generate': (options: PDFGenerateOptions) => Promise<PDFGenerateResult>;
   'pdf:getStatus': () => Promise<PDFStatus>;
+  'backup:create': (options: BackupCreateOptions) => Promise<BackupCreateResult>;
+  'backup:list': () => Promise<BackupListResult>;
+  'backup:prune': (options: BackupPruneOptions) => Promise<BackupPruneResult>;
 }

@@ -3,12 +3,16 @@
  * 
  * Koordiniert sichere App-Updates mit Datenbank-Migrationen:
  * - App-Update-Management
- * - Integration mit MigrationService
+ * - Integration mit MigrationService und BackupService
  * - Rollback-Mechanismus bei Fehlern
  * - User-Benachrichtigungen
+ * 
+ * WICHTIG: Verwendet BackupService für Dateisystem-basierte Backups
+ * (behebt QuotaExceededError bei großen Backups)
  */
 
 import { MigrationService, BackupMetadata } from './MigrationService';
+import { backupService } from './BackupService';
 import { LoggingService } from './LoggingService';
 
 export interface UpdateInfo {
@@ -102,19 +106,35 @@ export class UpdateService {
     let backupId: string | null = null;
 
     try {
-      // 1. Pre-Update-Backup erstellen
+      // 1. Pre-Update-Backup erstellen (jetzt über BackupService)
       this.updateProgress('backing-up', 20, 'Creating pre-update backup...');
-      backupId = await this.migrationService.createManualBackup('Pre-update backup');
-      this.log('info', 'Pre-update backup created', { backupId });
+      
+      const currentVersion = this.getCurrentAppVersion();
+      const backupResult = await backupService.createPreUpdateBackup(currentVersion);
+      
+      if (!backupResult.success || !backupResult.backupId) {
+        throw new Error(backupResult.error || 'Pre-update backup creation failed');
+      }
+      
+      backupId = backupResult.backupId;
+      this.log('info', 'Pre-update backup created successfully', { 
+        backupId, 
+        filePath: backupResult.filePath,
+        size: backupResult.size
+      });
 
-      // 2. Datenbank-Integrität prüfen
+      // 2. Cleanup old backups before proceeding
+      this.updateProgress('backing-up', 30, 'Cleaning up old backups...');
+      await backupService.autoCleanup();
+
+      // 3. Datenbank-Integrität prüfen
       this.updateProgress('backing-up', 40, 'Verifying database integrity...');
       const integrityCheck = await this.migrationService.runIntegrityCheck();
       if (!integrityCheck) {
         throw new Error('Database integrity check failed - aborting update');
       }
 
-      // 3. Migrationen ausführen
+      // 4. Migrationen ausführen
       const migrationStatus = await this.migrationService.getMigrationStatus();
       if (migrationStatus.needsMigration) {
         this.updateProgress('migrating', 60, `Running ${migrationStatus.pendingMigrations} database migrations...`);
@@ -124,17 +144,17 @@ export class UpdateService {
         this.log('info', 'No database migrations required');
       }
 
-      // 4. App-Files aktualisieren (simuliert - in echter App würde hier Electron Updater verwendet)
+      // 5. App-Files aktualisieren (simuliert - in echter App würde hier Electron Updater verwendet)
       this.updateProgress('downloading', 80, 'Downloading and installing application updates...');
       await this.downloadAndInstallAppUpdate();
 
-      // 5. Post-Update-Validierung
+      // 6. Post-Update-Validierung
       this.updateProgress('finalizing', 90, 'Validating update...');
       await this.validateUpdate();
 
-      // 6. Cleanup
+      // 7. Cleanup (keep more backups after successful update)
       this.updateProgress('finalizing', 95, 'Cleaning up...');
-      await this.migrationService.cleanupOldBackups(3); // Behalte nur 3 neueste Backups
+      await backupService.prune({ keep: 5, maxTotalMB: 500 });
 
       this.updateProgress('complete', 100, 'Update completed successfully!');
       this.log('info', 'Update completed successfully');
@@ -168,7 +188,23 @@ export class UpdateService {
    * Holt verfügbare Backups für Wiederherstellung
    */
   async getAvailableBackups(): Promise<BackupMetadata[]> {
-    return this.migrationService.listBackups();
+    try {
+      const backups = await backupService.list();
+      
+      // Convert BackupInfo[] to BackupMetadata[] format
+      return backups.map((backup, index) => ({
+        id: backup.id,
+        version: index + 1, // Simple versioning for compatibility
+        appVersion: backup.version,
+        size: backup.size,
+        createdAt: backup.createdAt,
+        description: backup.description,
+        checksumSHA256: '' // Not available in BackupInfo, but required by BackupMetadata
+      }));
+    } catch (error) {
+      this.log('error', 'Failed to list backups', { error: error instanceof Error ? error.message : String(error) });
+      throw new Error('Failed to list backups');
+    }
   }
 
   /**

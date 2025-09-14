@@ -6,6 +6,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import os from 'node:os'
 import { PDFPostProcessor, PDFAConversionOptions } from '../src/services/PDFPostProcessor'
+import { initializeBackupSystem } from './backup'
 
 // === AUTO-UPDATER CONFIGURATION ===
 log.transports.file.level = 'info'
@@ -873,6 +874,9 @@ app.whenReady().then(() => {
   
   // Initialize theme integration
   loadThemeIntegration()
+  
+  // Initialize backup system
+  initializeBackupSystem()
   
   // Auto-check for updates on startup (delayed to avoid blocking app start)
   setTimeout(() => {
