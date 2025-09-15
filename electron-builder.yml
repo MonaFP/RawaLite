@@ -5,6 +5,14 @@ productName: RawaLite
 directories:
   output: release                 # <- NEU: Builder schreibt in release/
 
+# 🔄 CRITICAL FIX: GitHub Auto-Update Integration
+publish:
+  provider: github
+  owner: MonaFP
+  repo: RawaLite
+  private: false
+  releaseType: release
+
 files:
   - dist/**                       # Renderer-Bundle von Vite
   - dist-electron/**              # Main/Preload

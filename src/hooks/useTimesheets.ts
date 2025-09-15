@@ -63,13 +63,8 @@ export function useTimesheets() {
       throw new ValidationError("Enddatum muss nach dem Startdatum liegen", "endDate");
     }
 
-    // Activities are required
-    if (!timesheetData.activities || timesheetData.activities.length === 0) {
-      throw new ValidationError("Mindestens eine Aktivität ist erforderlich", "activities");
-    }
-
-    // Validate and calculate activities
-    const calculatedActivities = timesheetData.activities.map((activity, index) => {
+    // Activities sind optional bei Erstellung - können später hinzugefügt werden
+    const calculatedActivities = timesheetData.activities?.map((activity, index) => {
       // Validate activity
       if (!activity.activityId) {
         throw new ValidationError(`Aktivität für Position ${index + 1} ist erforderlich`, `activities.${index}.activityId`);
@@ -86,9 +81,9 @@ export function useTimesheets() {
         ...activity,
         total: activity.hours * activity.hourlyRate
       };
-    });
+    }) || [];
 
-    // Calculate totals
+    // Calculate totals (0 wenn keine Activities vorhanden)
     const subtotal = calculatedActivities.reduce((sum, activity) => sum + activity.total, 0);
     // ✅ RECHTLICH KORREKT: Kleinunternehmer dürfen keine MwSt ausweisen (§ 19 UStG)
     const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;

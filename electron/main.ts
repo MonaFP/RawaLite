@@ -58,11 +58,18 @@ log.info('Auto-updater feed URL will be:', 'https://github.com/MonaFP/RawaLite')
 log.info('autoDownload setting:', autoUpdater.autoDownload)
 log.info('autoInstallOnAppQuit setting:', autoUpdater.autoInstallOnAppQuit)
 
+// === AUTO-UPDATER STATE MANAGEMENT ===
+let isUpdateAvailable = false
+let currentUpdateInfo: any = null
+
 // Auto-updater events for IPC communication
 autoUpdater.on('checking-for-update', () => {
   log.info('🔍 [UPDATE-PHASE] Starting update check...')
   log.info('🔍 [UPDATE-PHASE] Current app version:', app.getVersion())
   log.info('🔍 [UPDATE-PHASE] Checking against GitHub releases API')
+  // Reset state when starting new check
+  isUpdateAvailable = false
+  currentUpdateInfo = null
   sendUpdateMessage('checking-for-update')
 })
 
@@ -78,6 +85,9 @@ autoUpdater.on('update-available', (info) => {
     log.info('📦 [UPDATE-AVAILABLE] Download URL:', info.files[0].url)
     log.info('📦 [UPDATE-AVAILABLE] SHA512:', info.files[0].sha512)
   }
+  // Store state for download phase
+  isUpdateAvailable = true
+  currentUpdateInfo = info
   sendUpdateMessage('update-available', {
     version: info.version,
     releaseNotes: info.releaseNotes,
@@ -90,6 +100,9 @@ autoUpdater.on('update-not-available', (info) => {
   log.info('❌ [UPDATE-NOT-AVAILABLE] Current version:', app.getVersion())
   log.info('❌ [UPDATE-NOT-AVAILABLE] Latest version:', info?.version || 'unknown')
   log.info('❌ [UPDATE-NOT-AVAILABLE] Full info:', JSON.stringify(info, null, 2))
+  // Reset state when no update available
+  isUpdateAvailable = false
+  currentUpdateInfo = null
   sendUpdateMessage('update-not-available', info)
 })
 
@@ -174,6 +187,17 @@ ipcMain.handle('updater:check-for-updates', async () => {
 ipcMain.handle('updater:start-download', async () => {
   try {
     log.info('Starting download of available update')
+    
+    // 🚨 CRITICAL FIX: Check if update is available before download
+    if (!isUpdateAvailable || !currentUpdateInfo) {
+      log.error('Cannot download: No update available or check not performed')
+      return {
+        success: false,
+        error: 'Bitte prüfe zuerst auf Updates bevor der Download gestartet wird'
+      }
+    }
+    
+    log.info('Update state verified, proceeding with download')
     await autoUpdater.downloadUpdate()
     return { success: true }
   } catch (error) {
@@ -205,7 +229,7 @@ ipcMain.handle('updater:install-and-restart', async () => {
     
     // For Windows NSIS installer: isForceRunAfter=true ensures app restarts after install
     log.info('Executing quitAndInstall for Windows NSIS installer')
-    autoUpdater.quitAndInstall(false, true)
+    autoUpdater.quitAndInstall(false, false)
     
     return { success: true }
   } catch (error) {
