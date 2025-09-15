@@ -2,7 +2,7 @@
 
 ![RawaLite Logo](assets/rawalite-logo.png)
 
-> **Version 1.7.1** - Desktop-Anwendung für Geschäftsverwaltung mit einheitlichem Update-System
+> **Version 1.7.5** - Desktop-Anwendung für Geschäftsverwaltung mit einheitlichem Update-System
 
 ## 🏢 **Proprietäre Software**
 
@@ -20,7 +20,7 @@
 - 📄 **PDF-Export** - Theme-Integration, DIN 5008
 - 🔄 **Einheitliches Update-System** - electron-updater + Backups
 
-## 🚀 **Tech-Stack (v1.7.1)**
+## 🚀 **Tech-Stack (v1.7.5)**
 
 - **Runtime:** Node.js 20, **pnpm 10.15.1** (Primary Package Manager)
 - **Desktop:** Electron 31.7.7 + electron-updater 6.6.2

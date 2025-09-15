@@ -1,13 +1,13 @@
 {
   "name": "rawalite",
-  "version": "1.7.3",
+  "version": "1.7.5",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
   "description": "RawaLite - Professional Business Management Solution",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": "^20"
   },
   "main": "dist-electron/main.cjs",
   "scripts": {
@@ -67,7 +67,6 @@
     "jsdom": "^26.1.0",
     "npm-run-all2": "^8.0.4",
     "tsx": "^4.20.5",
-    "typescript": "^5.5.4",
     "vite": "^5.4.0",
     "vitest": "^1.6.0"
   }

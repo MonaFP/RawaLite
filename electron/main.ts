@@ -13,7 +13,7 @@ import { initializeLogoSystem } from './logo'
 log.transports.file.level = 'info'
 autoUpdater.logger = log
 autoUpdater.autoDownload = false // User confirmation required
-autoUpdater.autoInstallOnAppQuit = true
+autoUpdater.autoInstallOnAppQuit = false // Manual installation via quitAndInstall nur
 
 // Auto-updater events for IPC communication
 autoUpdater.on('checking-for-update', () => {
@@ -56,6 +56,7 @@ autoUpdater.on('download-progress', (progressObj) => {
 
 autoUpdater.on('update-downloaded', (info) => {
   log.info('Update downloaded:', info)
+  log.info(`Update ready for installation: v${info.version}`)
   sendUpdateMessage('update-downloaded', {
     version: info.version,
     releaseNotes: info.releaseNotes
@@ -105,7 +106,25 @@ ipcMain.handle('updater:start-download', async () => {
 ipcMain.handle('updater:install-and-restart', async () => {
   try {
     log.info('Installing update and restarting application')
-    setImmediate(() => autoUpdater.quitAndInstall(false, true))
+    
+    // Ensure all windows are properly closed before update
+    const allWindows = BrowserWindow.getAllWindows()
+    log.info(`Closing ${allWindows.length} windows before update`)
+    
+    // Close all windows gracefully
+    allWindows.forEach(window => {
+      if (!window.isDestroyed()) {
+        window.close()
+      }
+    })
+    
+    // Wait for windows to close
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    // For Windows NSIS installer: isForceRunAfter=true ensures app restarts after install
+    log.info('Executing quitAndInstall for Windows NSIS installer')
+    autoUpdater.quitAndInstall(false, true)
+    
     return { success: true }
   } catch (error) {
     log.error('Install and restart failed:', error)
@@ -956,5 +975,17 @@ app.whenReady().then(() => {
     })
   }, 5000) // 5 second delay
 })
-app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
-app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
+app.on('window-all-closed', () => { 
+  log.info('All windows closed')
+  if (process.platform !== 'darwin') app.quit() 
+})
+app.on('activate', () => { 
+  log.info('App activated')
+  if (BrowserWindow.getAllWindows().length === 0) createWindow() 
+})
+app.on('before-quit', (event) => {
+  log.info('App is about to quit')
+})
+app.on('will-quit', (event) => {
+  log.info('App will quit')
+})

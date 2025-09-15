@@ -12,7 +12,12 @@ jobs:
         uses: pnpm/action-setup@v2
         with: { version: 9 }
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+      - name: Security Guards
+        run: |
+          pnpm guard:external
+          pnpm guard:pdf
+          pnpm ipc:validate
       - name: Enforce ESM (no CommonJS)
         shell: bash
         run: |
@@ -34,4 +39,5 @@ jobs:
           name: rawalite-artifacts
           path: |
             dist/*.exe
-            dist/*.zip
+            dist/*.blockmap
+            dist/latest.yml

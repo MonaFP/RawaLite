@@ -23,7 +23,7 @@ export interface UpdateCheckResult {
 }
 
 export class VersionService {
-  private readonly BASE_VERSION = '1.7.3';
+  private readonly BASE_VERSION = '1.7.5';
   private readonly BUILD_DATE = '2025-09-14';
   
   private updateService: UpdateService;
@@ -32,13 +32,10 @@ export class VersionService {
   constructor() {
     this.updateService = new UpdateService();
     
-    // Bereinige falsche Version im localStorage beim Start (moderate Cleanup)
-    const storedVersion = localStorage.getItem('rawalite.app.version');
-    if (storedVersion && storedVersion !== this.BASE_VERSION) {
-      localStorage.setItem('rawalite.app.version', this.BASE_VERSION);
-      localStorage.setItem('rawalite.app.hasUpdate', 'false');
-      LoggingService.log(`[VersionService] Updated stored version from ${storedVersion} to ${this.BASE_VERSION}`);
-    }
+    // ENTFERNT: Bereinige localStorage nicht mehr automatisch beim Start
+    // Das würde echte App-Updates nach dem Neustart überschreiben!
+    // Der localStorage kann legimitiert eine neuere Version enthalten nach Updates.
+    LoggingService.log(`[VersionService] Constructor initialisiert, BASE_VERSION: ${this.BASE_VERSION}`);
   }
 
   /**
@@ -278,16 +275,22 @@ export class VersionService {
   // Private Hilfsfunktionen
 
   /**
-   * Holt die Version aus der package.json (für Development builds)
+   * Holt die echte App-Version aus Electron (nach Updates wichtig!)
    */
   private async getPackageVersion(): Promise<string | null> {
     try {
-      // In Electron können wir die package.json über das main process laden
-      // Für jetzt verwenden wir die BASE_VERSION als Fallback
+      // In Electron: Hole die echte App-Version über IPC
+      if (typeof window !== 'undefined' && window.rawalite?.app) {
+        const electronVersion = await window.rawalite.app.getVersion();
+        console.log('[VersionService] Got Electron app version:', electronVersion);
+        return electronVersion;
+      }
       
-      // Für Testing: Verwende die echte Version aus package.json
+      // Fallback für Development oder wenn IPC nicht verfügbar
+      console.log('[VersionService] Using fallback BASE_VERSION:', this.BASE_VERSION);
       return this.BASE_VERSION;
     } catch (error) {
+      console.warn('[VersionService] Failed to get version from Electron:', error);
       return null;
     }
   }

@@ -39,6 +39,11 @@ nsis:
   uninstallerIcon: assets/icon.ico
   createDesktopShortcut: true
   createStartMenuShortcut: true
+  # Force proper uninstall/reinstall cycle
+  deleteAppDataOnUninstall: false
+  runAfterFinish: true
+  # Ensure NSIS properly replaces existing installation
+  allowElevation: true
 mac:
   target:
     - target: dmg
