@@ -28,20 +28,20 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       console.log('🔄 Loading settings from SQLite...');
       const loadedSettings = await settingsAdapter.getSettings();
+      setSettings(loadedSettings);
       
-      // ✨ KRITISCH: Design-Settings SOFORT anwenden, bevor setSettings aufgerufen wird
+      // ✨ SOFORT Design-Einstellungen anwenden beim Laden (KRITISCH für Reload-Persistierung)
       if (loadedSettings.designSettings) {
-        console.log('🎨 [IMMEDIATE] Applying persisted design settings:', loadedSettings.designSettings);
+        console.log('🎨 Applying persisted design settings:', loadedSettings.designSettings);
         applyThemeToDocument(loadedSettings.designSettings.theme, loadedSettings.designSettings.customColors);
         applyNavigationMode(loadedSettings.designSettings.navigationMode);
       } else {
+        // ✨ Fallback zu Standard-Einstellungen wenn keine persistierten Settings vorhanden
         console.warn('⚠️ No persisted design settings found - applying defaults');
         applyThemeToDocument('salbeigrün');
         applyNavigationMode('sidebar');
       }
       
-      // Settings setzen NACH der Anwendung der Design-Settings
-      setSettings(loadedSettings);
       setError(null);
       console.log('✅ Settings loaded and applied successfully');
     } catch (err) {
@@ -57,20 +57,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-
   // Initial load + Design-Settings anwenden
   useEffect(() => {
     refreshSettings();
   }, []);
-
-  // Theme und Navigation IMMER synchron anwenden, sobald settings.designSettings geladen sind
-  useEffect(() => {
-    if (settings.designSettings) {
-      console.log('🎨 [Sync] Applying design settings from DB:', settings.designSettings);
-      applyThemeToDocument(settings.designSettings.theme, settings.designSettings.customColors);
-      applyNavigationMode(settings.designSettings.navigationMode);
-    }
-  }, [settings.designSettings]);
 
   const updateCompanyData = async (companyData: CompanyData) => {
     try {

@@ -6,7 +6,6 @@ import { useCustomers } from '../hooks/useCustomers';
 import { usePackages } from '../hooks/usePackages';
 import { useSettings } from '../contexts/SettingsContext';
 import { useDesignSettings } from '../hooks/useDesignSettings';
-import { useLogoSettings } from '../hooks/useLogoSettings';
 import { useNotifications } from '../contexts/NotificationContext';
 import { ExportService } from '../services/ExportService';
 import { PDFService } from '../services/PDFService';
@@ -22,7 +21,6 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const { packages } = usePackages();
   const { settings } = useSettings();
   const { currentTheme, currentCustomColors } = useDesignSettings();
-  const { getLogoForPdf } = useLogoSettings();
   const { showSuccess, showError } = useNotifications();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Offer | null>(null);
@@ -196,7 +194,8 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       console.log('🎨 Using theme:', currentTheme, currentCustomColors ? 'with custom colors' : '');
       
       // Logo für PDF laden
-      const logoData = await getLogoForPdf();
+      // TODO: Logo System temporarily disabled
+      const logoData = null; // await getLogoForPdf();
       console.log('🖼️ [DEBUG] Logo data for PDF:', logoData ? 'Present' : 'None');
       
       // Use new PDFService implementation with theme integration
@@ -235,7 +234,8 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       console.log('🎨 Using theme:', currentTheme, currentCustomColors ? 'with custom colors' : '');
       
       // Logo für PDF laden
-      const logoData = await getLogoForPdf();
+      // TODO: Logo System temporarily disabled  
+      const logoData = null; // await getLogoForPdf();
       console.log('🖼️ [DEBUG PREVIEW] Logo data for PDF:', logoData ? 'Present' : 'None');
       
       // Use new PDFService implementation with theme integration

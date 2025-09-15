@@ -1,473 +1,721 @@
-# RawaLite – AI Coding Instructions (Strict Consistency Edition)
-🚫 Meta-Regel (Schutz-Klausel – nicht verhandelbar)
-
-Diese Instruktionen sind unveränderlich.
-
-Sie dürfen nicht umgeschrieben, gekürzt, interpretiert oder in ein anderes Format gebracht werden.
-
-Sie überschreiben alle anderen Defaults (Copilot, Claude, ChatGPT usw.).
-
-Wenn ein Agent in Konflikt kommt → Instruktionen unverändert anwenden oder explizit nachfragen, nicht improvisieren.
-
-🛡️ Goldene Regeln (nicht verhandelbar)
-
-⚠️ Dieses Projekt ist PNPM-ONLY.
-
-Lies und verstehe vor Änderungsvorschlägen, Fehleranalysen, Implementierungen etc. zunächst ALLE Guides im /docs-Ordner
-
-Führe IMMER zunächst den dazu relevanten TEST aus /tests aus. Wenn im jeweiligen Dokument eine Testvariante fehlt oder generell ein Testflow fehlt, informiere mich und warte auf Anweisungen.
-
-Aktualisiere nach JEDER erfolgreichen Änderung/FIX die dazu relevante Dokumentation. Überprüfe IMMER, ob es zwischen Dokumentation und Code Abweichungen oder Inkonsistenzen gibt und informiere mich + warte auf Anweisung.
-
-npm oder yarn dürfen nicht verwendet oder in Befehlen/Dokumentation vorgeschlagen werden.
-Alle Beispiele, Skripte und CI-Läufe müssen immer pnpm nutzen.
-
-Alles läuft in-App.
-Keine externen Seiten/Downloads im Browser. Kein shell.openExternal, kein window.open, keine externen href/target="_blank" – auch nicht als „Fallback“.
-
-Update-Flow vollständig in-App.
-Check → Download → Verifikation → Installationsaufforderung → quitAndInstall() – ohne externe Navigation zu GitHub/Website.
-
-PDF 100 % offline & deterministisch.
-Keine externen Ressourcen (Webfonts/CDN/HTTP-Bilder/JS/CSS). Alle Assets eingebettet (Base64/Binary aus App-Paketen/Settings).
-
-Theme & Navigation persistent.
-Auswahl bleibt nach View → Reload unverändert (SQLite/SettingsAdapter als Single-Source-of-Truth). Kein FOUC.
-
-Adapter-Parität.
-Gleiches Daten-/API-Verhalten für SQLite (sql.js, Datei-Persist) und IndexedDB/Dexie (Dev-Fallback). Keine Schema-Drifts.
-
-Nummernkreise transaktional.
-Atomare Vergabe ohne Doppelnummern; Jahr-Reset gemäß Konfiguration.
-
-Security: ESM + contextIsolation: true.
-IPC whitelist-basiert & typisiert; Renderer ohne direkten Node/Shell.
-
----
-
-## 🔧 Technologie-Stack (konsistenz-geführt)
-
-* **Runtime/Tools:** Node 20, pnpm (Primary), Vite + esbuild, Electron (Main/Preload gebündelt), TypeScript strict.
-* **Frontend:** React 18 + React Router.
-* **Persistenz:** SQLite (sql.js) + Datei-Persist via IPC im AppData; Dexie/IndexedDB als Dev-Fallback.
-* **Updater:** `electron-updater` – **nur In-App-Workflow**.
-* **PDF:** `PDFService` + `PDFPostProcessor` (Electron PDF).
-
-> Versions-Up/Downgrades nur, wenn bestehende Projektdateien es verlangen. Keine blinden Tool-Änderungen.
-
----
-
-## 🚨 Verbotene Patterns (Hard-Stop + CI-Fail)
-
-* `shell.openExternal(`, `window.open(`, `<a target="_blank" …>`, `href="http://|https://"`
-* Update-UI mit Links/Buttons zu GitHub/Releases/Webseiten
-* PDF außerhalb von `PDFService`/`PDFPostProcessor`
-* Renderer-Zugriff auf Node/Shell ohne IPC
-* Externe Ressourcen in `templates/*.html` (Webfonts/CDN/CSS/JS/HTTP-Bilder)
-
-**CI-Guards (Beispiele):**
-
-```bash
-# verbiete externe Navigation (Code/Doku ausgenommen)
-git grep -nE 'shell\.openExternal|window\.open|target="_blank"|https?://' -- \
-  :^docs :^README* || true
-
-# verbiete externe Assets in PDF-Templates
-git grep -nE '<link[^>]+https?://|<script[^>]+https?://|<img[^>]+https?://' templates || true
-```
-
----
-
-## 🔄 Update-System – In-App-Only (Kanon)
-
-**Muss:**
-
-* `autoDownload: false`; Download startet bewusst aus In-App-Modal.
-* Fortschritt im `AutoUpdaterModal`; nach Download: Button „Jetzt installieren“ → `quitAndInstall()`.
-* **Keine** externen Links/Texte „auf GitHub herunterladen“.
-
-**Anfasspunkte:**
-
-* `electron/main.ts` (Updater-Events, Menü **ohne** externe Hilfe-Links)
-* `src/hooks/useAutoUpdater.ts` (State-Maschine/IPC)
-* `src/components/AutoUpdaterModal.tsx`, `src/pages/UpdatesPage.tsx` (nur In-App-Aktionen)
-* `src/services/UpdateService.ts` (steuert **nicht** via Browser, sondern via `electron-updater`)
-* `electron-builder.yml` (publish-Quelle konsistent)
-
-**Tests:**
-
-* `tests/integration/update-system/*` → kein externer Link, Download→Ready→Install-Prompt grün.
-
----
-
-## 🧾 PDF-System – Offline, stabil, reproduzierbar
-
-**Muss:**
-
-* `templates/*.html` ohne externe `<link>/<script>/<img>`
-* Logos/Fonts/CSS lokal/eingebettet (Settings/Assets/Base64)
-* Datenvalidierung vor Render (Defaults/Placeholders)
-* Ausschließlich über `PDFService` + `PDFPostProcessor` exportieren
-
-**Anfasspunkte:**
-`src/services/PDFService.ts`, `src/services/PDFPostProcessor.ts`, `templates/*`, `src/lib/pdfThemes.ts`, `src/lib/settings.ts`
-
-**Tests:**
-`test-pdf-system.js` ohne Netzwerk; Snapshots für deterministisches Layout.
-
----
-
-## 🎨 Theme & Navigation – Persistenz & Stabilität
-
-**Muss:**
-
-* Persistenz in **SQLite/Settings** (nicht `localStorage`).
-* Kein FOUC: Theme sofort am App-Start anwenden.
-* Komplementäre Widgets:
-
-  * **Sidebar-Navigation** ⇒ Widgets **im Header**
-  * **Header-Navigation** ⇒ Widgets **in der Sidebar**
-* **Sidebar immer 240 px**, identische Typografie in beiden Modi.
-
-**Anfasspunkte:**
-`src/adapters/SettingsAdapter.ts`, `src/contexts/SettingsContext.tsx`, Hooks `useUnifiedSettings`, `useDesignSettings`, Doku `docs/THEMES_NAVIGATION.md`
-
-**Tests:**
-`tests/integration/design/theme-persistence.js`, `tests/integration/persistence/reload-test.js`
-
----
-
-## 🗄️ Persistenz-Adapter – Parität & Migration
-
-**Muss:**
-
-* Gemeinsames Interface `src/persistence/adapter.ts` für SQLite/Dexie
-* Jede schreibende Operation triggert Datei-Persist
-* Migrationen additiv/idempotent (`ALTER TABLE` in try/catch)
-
-**Anfasspunkte:**
-`src/adapters/SQLiteAdapter.ts`, `src/adapters/IndexedDBAdapter.ts`, `src/persistence/sqlite/db.ts`
-**Tests:** `tests/integration/database/*`, `complete-test.js`, `verification.js`
-
----
-
-## 🔢 Nummernkreise – Atomar & konsistent
-
-**Muss:**
-
-* Zentrale Vergabe via `useUnifiedSettings().getNextNumber(kind)`
-* Atomar/Transaktion/Lock; Jahr-Reset gemäß Konfiguration
-
-**Anfasspunkte:**
-`src/lib/numbering.ts`, Fix-Skripte `fix-numbering*.cjs`, `validate-version-sync.mjs`
-**Tests:** Parallelitäts-Unit-Tests + Roundtrip-Integration
-
----
-
-## 🔐 Security/IPC – Whitelist & Types
-
-**Muss:**
-
-* `contextIsolation: true`, `sandbox: true`
-* IPC strikt getypt (`src/types/ipc.ts`) & nur in `preload.ts` exponiert
-* Keine dynamischen/unbestimmten IPC-Kanäle
-
-**Anfasspunkte:**
-`electron/preload.ts`, `electron/main.ts`, `src/types/ipc.ts`, `validate-ipc-types.mjs`
-**Tests:** `validate-ipc-types.mjs` in CI, Negative-Tests für verbotene Kanäle
-
----
-
-## 🧰 Arbeitsweise
-
-1. **Einlesen**: `docs/PROJECT_OVERVIEW.md`, Struktur, Adapter/Hooks/Pages, Naming.
-2. **Impact-Analyse** auf Update/PDF/Persistenz/IPC/Nummernkreise.
-3. **Warten auf Arbeitsauftrag** – keine Umsetzung vor Freigabe.
-4. **Implementieren** strikt innerhalb bestehender Patterns/Pfade.
-5. **Validieren**: `pnpm typecheck && pnpm lint && pnpm test && pnpm e2e`.
-6. **CI-Guards** (unten) müssen grün sein.
-
----
-
-## ✅ Qualitäts-Checkliste (vor jedem PR/Release)
-
-* [ ] Kein `shell.openExternal` / `window.open` / externe `href`/`target`.
-* [ ] Update-Flow vollständig in-App; Download→Install getestet.
-* [ ] PDF-Templates ohne externe Ressourcen; Export offline deterministisch.
-* [ ] Theme/Navigation persistieren über Reload; kein FOUC.
-* [ ] Adapter-Parität; Migrationen idempotent.
-* [ ] Nummernvergabe atomar; Parallel-Tests grün.
-* [ ] IPC getypt/whitelisted; `contextIsolation` aktiv.
-* [ ] Version-Sync: `package.json` == Versionservice (Script grün).
-* [ ] Lint/Typecheck/Unit/E2E/Guards alle grün.
-
----
-Perfekt — hier ist der **fertige Abschnitt** für deine `COPILOT_INSTRUCTIONS.md`, exakt im Stil deiner bestehenden Regeln. Einfach unter die Goldenen Regeln/Update-System einfügen.
-
----
-
-## 🚀 Release/Publish – automatisiert (pnpm-only, electron-builder → GitHub)
-
-**Prinzipien (nicht verhandelbar)**
-
-* Quelle der Wahrheit ist **electron-builder** mit **publish: github**.
-* **Keine** manuellen Releases ohne Assets. `gh release upload` ist **nur Fallback**.
-* **Dateinamen dürfen nicht umbenannt werden**: `latest.yml`, `.exe`, `.blockmap` müssen **1:1** zu den Einträgen in `latest.yml` passen.
-* **PNPM-ONLY** in allen Befehlen, Skripten und CI-Jobs.
-* **ZIP-Target entfernt**: Reduziert Upload-Zeit und -größe drastisch (von 1.3GB auf ~170MB).
-
-**electron-builder.yml (Optimiert)**
-
-```yaml
-appId: com.rawalite.app
-productName: RawaLite
-directories:
-  output: dist
-publish:
-  - provider: github
-    owner: MonaFP
-    repo: RawaLite
-win:
-  target:
-    - nsis  # Nur NSIS, ZIP entfernt für schnellere Uploads
-  artifactName: "RawaLite-Setup-${version}.${ext}"
-nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
-```
-
-**package.json – Skripte (pnpm)**
-
-```jsonc
-{
-  "scripts": {
-    "//": "Release: immer Builder → GitHub. Optimiert ohne ZIP-Target.",
-    "dist": "electron-builder --win --x64 --publish always",
-    "release:dry": "electron-builder --win --x64 --publish never",
-
-    "//guard": "CI-Guards: Release ist nur gültig, wenn latest.yml + exe + blockmap existieren",
-    "guard:release:assets": "node guard-release-assets.mjs"
-  }
+# RawaLite - AI Coding Instructions
+
+## 🔍 **Technologie-Stack**
+
+### Laufzeitumgebung & Tools
+- **Node.js**: v20.18.0
+- **npm**: v10.8.2  
+- **pnpm**: 10.15.1 (Primary Package Manager)
+- **PowerShell**: v7.5.2 (Core) - pwsh.exe
+- **Git**: v2.51.0.1
+- **GitHub CLI**: v2.78.0
+- **VS Code**: v1.103.2
+
+### Frontend & Build
+- **React:** 18.3.1 mit TypeScript 5.9.2
+- **Router:** React Router DOM 7.8.2
+- **Desktop:** Electron 31.7.7
+- **Build Tools:** Vite 5.4.20, esbuild 0.23.1
+- **Package Manager:** pnpm
+
+### Datenbank & Persistence
+- **Primary:** SQL.js 1.13.0 (SQLite im Browser)
+- **Secondary:** Dexie 4.2.0 (IndexedDB)
+- **Backup:** LocalStorage für Einstellungen
+
+### Testing & Development
+- **Unit Tests:** Vitest 2.1.8
+- **E2E Tests:** Playwright 1.55.0
+- **Linting:** ESLint 9.35.0 mit TypeScript-Plugin
+- **Build Tools**: electron-builder 24.13.3, npm-run-all 4.1.5
+
+### Business Logic Libraries
+- **PDF Generation:** jsPDF 3.0.2 + html2canvas 1.4.1
+- **Archive:** JSZip 3.10.1
+
+## 🏢 Projektübersicht
+RawaLite ist eine Electron-basierte Desktop-Anwendung für Geschäftsverwaltung mit React + TypeScript + SQLite.
+
+## 🏗️ Architektur-Patterns
+
+### **Layered Architecture**
+- **UI Layer**: React Components (`src/components/`, `src/pages/`)
+- **Business Logic**: Custom Hooks (`src/hooks/`)
+- **Data Layer**: Adapters (`src/adapters/`) + SQLite (`src/persistence/sqlite/`)
+
+### **Key Design Patterns**
+- **Context + Custom Hooks**: Business Logic in Hooks, UI-State über React Context
+- **Adapter Pattern**: `SQLiteAdapter`, `IndexedDBAdapter`, `SettingsAdapter`
+- **Auto-Numbering**: Alle Entitäten haben automatische Nummerierung (K-0001, AN-2025-0001, etc.)
+- **Hierarchical Data**: Pakete und LineItems unterstützen Parent-Child-Beziehungen
+
+## � **Vollständiges Datenmodell & Entitäten**
+
+### Core Business Entities
+
+#### 🏢 **Settings**
+```typescript
+interface Settings {
+  companyData: CompanyData;     // Firmendaten, Logo, Steuern
+  numberingCircles: NumberingCircle[]; // Auto-Nummerierung
 }
 ```
 
-**CI/Local Voraussetzungen**
-
-* `GH_TOKEN` mit Repo-Rechten gesetzt (GitHub Actions: Secrets).
-* Netzwerkzugriff zu `uploads.github.com` (HTTPS).
-* Version‐Sync: Tag `vX.Y.Z` == `package.json.version`.
-
-**CI-Schritt: Publish + Asset-Guard (Optimiert)**
-
-```bash
-# Build & Publish (pnpm) - Nur .exe, .blockmap, latest.yml
-pnpm i --frozen-lockfile
-pnpm dist
-
-# Guard: sicherstellen, dass auf dem Release die Kern-Assets liegen
-VERSION=$(node -p "require('./package.json').version")
-gh release view "v$VERSION" --repo MonaFP/RawaLite --json assets --jq '
-  [ .assets[].name ] as $a
-  | ( ($a | index("latest.yml")) != null )
-    and ( any($a[]; endswith(".exe")) )
-    and ( any($a[]; endswith(".blockmap")) )
-' | grep -q true || { echo "❌ Release-Assets fehlen oder heißen falsch."; exit 1; }
-```
-
-**Fallback (nur wenn absolut nötig)**
-
-```powershell
-# Vorher prüfen, was bereits hängt:
-gh release view v1.7.2 --repo MonaFP/RawaLite --json assets --jq '.assets[].name'
-
-# Upload (überschreiben). Achtung: Dateinamen exakt wie im latest.yml!
-$env:GH_DEBUG="api"
-gh release upload v1.7.2 `
-  dist/latest.yml `
-  "dist/RawaLite-Setup-1.7.2.exe" `
-  "dist/RawaLite-Setup-1.7.2.exe.blockmap" `
-  --repo MonaFP/RawaLite --clobber
-
-# HINWEIS: ZIP nicht mehr erforderlich - electron-updater nutzt nur .exe + .blockmap
-```
-
-**Dev vs Prod (wichtig)**
-
-* **Dev/`electron:dev`**: Updater standardmäßig **aus** (Logs wie „Skip checkForUpdates…" sind normal).
-* **Prod (gepackt)**: Updater **an**; Tests des Update-Flows nur im gepackten Build bewerten.
-
-**Definition of Done – Release (Optimiert)**
-
-* `pnpm dist` erzeugt **latest.yml + .exe + .blockmap** (ZIP entfernt).
-* GitHub-Release „vX.Y.Z" enthält **alle kritischen** Assets (Guard grün).
-* `electron-updater` findet „latest" und installiert **in-App** (kein externer Link).
-* Version in UI stammt **nur** aus `app.getVersion()` via IPC.
-* **Upload-Zeit reduziert**: ~170MB statt 1.3GB durch ZIP-Wegfall.
-
----
-
----
-
-
-## 🛠️ Nützliche Skripte (ergänzen in `package.json`)
-
-```jsonc
-{
-  "scripts": {
-    "guard:external": "git grep -nE \"shell\\.openExternal|window\\.open|target=\\\"_blank\\\"|https?://\" -- . ':!docs' ':!README*' && echo \"NO EXTERNALS FOUND\"",
-    "guard:pdf": "git grep -nE \"<link[^>]+https?://|<script[^>]+https?://|<img[^>]+https?://\" templates && echo \"NO EXTERNAL ASSETS\"",
-    "validate:ipc": "node validate-ipc-types.mjs",
-    "validate:versions": "node validate-version-sync.mjs",
-    "precommit": "pnpm typecheck && pnpm lint && pnpm guard:external && pnpm guard:pdf && pnpm validate:ipc && pnpm validate:versions"
-  }
+#### 👤 **Customer**
+```typescript
+interface Customer {
+  id: number;
+  number: string;               // Auto-generiert (K-0001)
+  name: string;
+  email?: string;
+  phone?: string;
+  street?: string;
+  zip?: string;
+  city?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
----
-
-## 🏗️ Architektur-Patterns – Sofort produktiv werden
-
-**Adapter-Pattern (Persistenz):**
-```ts
-// Einheitliche Schnittstelle für SQLite + IndexedDB
-src/persistence/adapter.ts          // Interface-Definition
-src/adapters/SQLiteAdapter.ts       // Production (sql.js + file persist)
-src/adapters/IndexedDBAdapter.ts    // Dev-Fallback (Dexie)
+#### 📦 **Package**
+```typescript
+interface Package {
+  id: number;
+  internalTitle: string;
+  lineItems: PackageLineItem[]; // Hierarchische Positionen
+  parentPackageId?: number;     // Sub-Pakete möglich
+  total: number;
+  addVat: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 ```
 
-**React-Hook-Pattern (Business Logic):**
-```ts
-// Standard-Struktur für Entity-Management
-export function useCustomers() {
+#### 📋 **Offer**
+```typescript
+interface Offer {
+  id: number;
+  offerNumber: string;          // Auto-generiert (AN-2025-0001)
+  customerId: number;
+  title: string;
+  status: 'draft' | 'sent' | 'accepted' | 'rejected';
+  validUntil: string;
+  lineItems: OfferLineItem[];   // Hierarchische Positionen
+  subtotal: number;
+  vatRate: number;
+  vatAmount: number;
+  total: number;
+  notes?: string;
+  // Status-Tracking
+  sentAt?: string;
+  acceptedAt?: string;
+  rejectedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+#### 🧾 **Invoice**
+```typescript
+interface Invoice {
+  id: number;
+  invoiceNumber: string;        // Auto-generiert (RE-2025-0001)
+  customerId: number;
+  offerId?: number;             // Optional: Bezug zu Angebot
+  title: string;
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  dueDate: string;
+  lineItems: InvoiceLineItem[]; // Hierarchische Positionen
+  subtotal: number;
+  vatRate: number;
+  vatAmount: number;
+  total: number;
+  notes?: string;
+  // Status-Tracking
+  sentAt?: string;
+  paidAt?: string;
+  overdueAt?: string;
+  cancelledAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+#### ⏰ **Timesheet** (Leistungsnachweis)
+```typescript
+interface Timesheet {
+  id: number;
+  timesheetNumber: string;      // Auto-generiert (LN-2025-0001)
+  customerId: number;
+  title: string;
+  status: 'draft' | 'sent' | 'approved' | 'rejected';
+  startDate: string;            // Zeitraum Start
+  endDate: string;              // Zeitraum Ende
+  hourlyRate: number;           // Stundensatz
+  totalHours: number;           // Gesamtstunden
+  subtotal: number;             // hourlyRate * totalHours
+  vatRate: number;
+  vatAmount: number;
+  total: number;
+  notes?: string;
+  // Status-Tracking
+  sentAt?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+## �🗃️ Datenbank-Schema (SQLite)
+
+### **Core Tables**
+```sql
+-- Firmeneinstellungen
+CREATE TABLE settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  companyName TEXT, street TEXT, zip TEXT, city TEXT,
+  phone TEXT, email TEXT, website TEXT,
+  taxId TEXT, vatId TEXT,
+  kleinunternehmer INTEGER DEFAULT 1,
+  bankName TEXT, bankAccount TEXT, bankBic TEXT,
+  logo TEXT,                    -- Base64-encoded Logo
+  nextCustomerNumber INTEGER DEFAULT 1,
+  nextOfferNumber INTEGER DEFAULT 1,
+  nextInvoiceNumber INTEGER DEFAULT 1,
+  createdAt TEXT, updatedAt TEXT
+);
+
+-- Kunden
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  number TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  email TEXT, phone TEXT,
+  street TEXT, zip TEXT, city TEXT,
+  notes TEXT,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
+);
+
+-- Pakete
+CREATE TABLE packages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  internalTitle TEXT NOT NULL,
+  parentPackageId INTEGER REFERENCES packages(id) ON DELETE CASCADE,
+  total REAL NOT NULL,
+  addVat INTEGER DEFAULT 0,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
+);
+
+-- Paket-Positionen (mit Hierarchie)
+CREATE TABLE package_line_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  packageId INTEGER NOT NULL REFERENCES packages(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  amount REAL NOT NULL DEFAULT 0,
+  parentItemId INTEGER REFERENCES package_line_items(id) ON DELETE CASCADE,
+  description TEXT
+);
+
+-- Angebote
+CREATE TABLE offers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  offerNumber TEXT NOT NULL UNIQUE,
+  customerId INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft',
+  validUntil TEXT NOT NULL,
+  subtotal REAL NOT NULL DEFAULT 0,
+  vatRate REAL NOT NULL DEFAULT 19,
+  vatAmount REAL NOT NULL DEFAULT 0,
+  total REAL NOT NULL DEFAULT 0,
+  notes TEXT,
+  sentAt TEXT, acceptedAt TEXT, rejectedAt TEXT,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
+);
+
+-- Angebots-Positionen (mit Hierarchie)
+CREATE TABLE offer_line_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  offerId INTEGER NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  unitPrice REAL NOT NULL DEFAULT 0,
+  total REAL NOT NULL DEFAULT 0,
+  parentItemId INTEGER REFERENCES offer_line_items(id) ON DELETE CASCADE
+);
+
+-- Rechnungen
+CREATE TABLE invoices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  invoiceNumber TEXT NOT NULL UNIQUE,
+  customerId INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  offerId INTEGER REFERENCES offers(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft',
+  dueDate TEXT NOT NULL,
+  subtotal REAL NOT NULL DEFAULT 0,
+  vatRate REAL NOT NULL DEFAULT 19,
+  vatAmount REAL NOT NULL DEFAULT 0,
+  total REAL NOT NULL DEFAULT 0,
+  notes TEXT,
+  sentAt TEXT, paidAt TEXT, overdueAt TEXT, cancelledAt TEXT,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
+);
+
+-- Rechnungs-Positionen (mit Hierarchie)
+CREATE TABLE invoice_line_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  invoiceId INTEGER NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  unitPrice REAL NOT NULL DEFAULT 0,
+  total REAL NOT NULL DEFAULT 0,
+  parentItemId INTEGER REFERENCES invoice_line_items(id) ON DELETE CASCADE
+);
+
+-- Leistungsnachweise
+CREATE TABLE timesheets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timesheetNumber TEXT NOT NULL UNIQUE,
+  customerId INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft',
+  startDate TEXT NOT NULL,
+  endDate TEXT NOT NULL,
+  hourlyRate REAL NOT NULL DEFAULT 0,
+  totalHours REAL NOT NULL DEFAULT 0,
+  subtotal REAL NOT NULL DEFAULT 0,
+  vatRate REAL NOT NULL DEFAULT 19,
+  vatAmount REAL NOT NULL DEFAULT 0,
+  total REAL NOT NULL DEFAULT 0,
+  notes TEXT,
+  sentAt TEXT, approvedAt TEXT, rejectedAt TEXT,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
+);
+```
+
+### **Migration System**
+- Automatische Schema-Migrationen in `src/persistence/sqlite/db.ts`
+- ALTER TABLE für neue Spalten mit Fehlerbehandlung
+- Backward-kompatible Datenbank-Updates
+
+## 🎣 Business Logic Hooks
+
+### **CRUD Pattern**
+```typescript
+export function useEntity() {
   const { adapter } = usePersistence();
   const { getNextNumber } = useUnifiedSettings();
   
-  // CRUD + Auto-Numbering + Validation + Error-Handling
-  async function createCustomer(input) {
-    const customerNumber = await getNextNumber('customers'); // K-0001
-    return await adapter.createCustomer({ ...input, number: customerNumber });
+  async function create(data) {
+    // 1. Validation
+    validateEntityData(data);
+    
+    // 2. Auto-numbering 
+    const number = await getNextNumber('entity');
+    
+    // 3. Database operation
+    const entity = await adapter.createEntity({...data, number});
+    
+    // 4. State update
+    setEntities(prev => [...prev, entity]);
   }
 }
 ```
 
-**IPC-Pattern (Electron-Security):**
-```ts
-// 1. Type-Definition (src/types/ipc.ts)
-export interface DatabaseAPI {
-  save: (data: Uint8Array) => Promise<boolean>;
-}
+### **Settings Management**
+- **Central Hub**: `useUnifiedSettings()` für alle Konfiguration
+- **SQLite-First**: Settings werden in SQLite gespeichert, nicht localStorage
+- **Auto-Numbering Service**: Integriert in Settings für Nummernkreise
 
-// 2. Preload-Exposing (electron/preload.ts)
-const rawaliteAPI: RawaliteAPI = {
-  db: { save: (data) => ipcRenderer.invoke('db:save', data) }
-};
+## 🧩 Komponenten-Konventionen
 
-// 3. Main-Handler (electron/main.ts)
-ipcMain.handle('db:save', async (_, data: Uint8Array) => { /* impl */ });
+### **Form Components**
+- Alle Formulare in `src/components/` mit einheitlichem Pattern
+- Error Handling über `ValidationError` und field-specific errors
+- Auto-save für kritische Daten (Settings, etc.)
+
+### **Table Components** 
+- Generische `Table.tsx` für Listen-Darstellung
+- Status-Badges für Workflow-States (draft, sent, accepted, etc.)
+- Click-to-edit Pattern für inline editing
+
+## 🔄 Electron Integration
+
+### **IPC Pattern**
+```typescript
+// Main Process (electron/main.ts)
+ipcMain.handle('db:save', async (event, data) => { ... });
+
+// Preload (electron/preload.ts)  
+contextBridge.exposeInMainWorld('electronAPI', { ... });
+
+// Renderer (React)
+window.electronAPI.persistenceExecute(sql, params);
 ```
 
-**Component-Composition-Pattern:**
-```tsx
-// Pages orchestrieren Hooks + zeigen Tabellen/Formulare
-export default function AngebotePage() {
-  const { offers, createOffer, updateOffer } = useOffers();
-  const { customers } = useCustomers();
-  
-  return mode === "list" 
-    ? <Table data={offers} columns={columns} onEdit={setEditMode} />
-    : <OfferForm onSubmit={handleSubmit} customers={customers} />;
-}
-```
+### **File Paths**
+- **Development**: Vite Dev Server (http://localhost:5173)
+- **Production**: Static files aus `dist/`
+- **Database**: `%APPDATA%/RawaLite/database.sqlite`
 
----
+## 🚀 Build & Development
 
-## 🔍 Debug-Tipps & Workflows (konkret)
-
-**DB-Debug (Dev, Browser Console):**
-
-```js
-window.rawaliteDebug.getDatabaseInfo();
-window.rawaliteDebug.exportDatabase();
-window.rawaliteDebug.saveDatabase();
-```
-
-**Hooks testen (Vitest):**
-
-```ts
-// tests/unit/hooks/useCustomers.test.ts - Standard-Pattern
-import { renderHook, act } from '@testing-library/react';
-import { useCustomers } from '@/hooks/useCustomers';
-
-// Mock PersistenceContext + useUnifiedSettings
-const { result } = renderHook(() => useCustomers());
-await act(async () => {
-  await result.current.createCustomer({ name: 'Test' });
-});
-```
-
-**PDF-Export (einzig gültiger Weg):**
-
-```ts
-import { PDFService } from '../services/PDFService';
-const result = await PDFService.exportOfferToPDF(offer, customer, settings);
-if (result.success) console.log('PDF saved to:', result.filePath);
-```
-
-**Auto-Numbering (zentral):**
-
-```ts
-const { getNextNumber } = useUnifiedSettings();
-await getNextNumber('customers');  // "K-0001"
-await getNextNumber('offers');     // "AN-2025-0001"
-await getNextNumber('invoices');   // "RE-2025-0001"
-await getNextNumber('timesheets'); // "LN-2025-0001"
-```
-
-**Theme-Anwendung (stabil, keine HEX-Änderungen):**
-
-```ts
-export function applyTheme(theme: ThemeDefinition) {
-  document.documentElement.style.setProperty('--primary-color', theme.primary);
-  document.documentElement.style.setProperty('--secondary-color', theme.secondary);
-  document.documentElement.style.setProperty('--accent-color', theme.accent);
-  document.documentElement.style.setProperty('--sidebar-gradient', theme.gradient);
-}
-```
-
-**Integration Tests ausführen:**
-
+### **Key Commands**
 ```bash
-# Database & Schema
-node tests/integration/database/verification.js
-
-# Theme Persistence 
-node tests/integration/design/theme-persistence.js
-
-# Update System
-node tests/integration/update-system/github-api.js
+pnpm dev          # Vite + Electron Development
+pnpm build        # Production Build
+pnpm dist         # Electron Distributables
+pnpm typecheck    # TypeScript Validation
+pnpm test         # Vitest Unit Tests
+pnpm e2e          # Playwright E2E Tests
+pnpm lint         # ESLint Code Quality
 ```
 
+### **Critical Files**
+- `vite.config.mts`: Build-Konfiguration
+- `electron-builder.yml`: Packaging-Konfiguration  
+- `package.json`: Scripts und Dependencies
+
+## 🐛 Common Patterns
+
+### **Error Handling**
+```typescript
+import { handleError, ValidationError, DatabaseError } from '../lib/errors';
+
+try {
+  await operation();
+} catch (err) {
+  const appError = handleError(err);
+  setError(appError.message);
+  throw appError;
+}
+```
+
+### **Database Migrations**
+```typescript
+// In sqlite/db.ts - always use try/catch for ALTER TABLE
+try {
+  db.exec(`ALTER TABLE settings ADD COLUMN newColumn TEXT DEFAULT 'value'`);
+} catch (error) {
+  console.warn('Migration warning:', error);
+}
+```
+
+## 🎯 Development Guidelines
+
+1. **TypeScript First**: Alle neuen Files mit strengen Types
+2. **Hooks für Business Logic**: UI-Komponenten bleiben dünn
+3. **SQLite Schema Evolution**: Nur additive Änderungen, keine Breaking Changes
+4. **Error Boundaries**: Graceful Degradation bei Fehlern
+5. **Auto-Numbering**: Konsistent für alle Entitäten verwenden
+
+## 🚨 **Dauerauftrag - Arbeitsweise im Workspace**
+
+### **👉 IMMER BEFOLGEN: Code-Verständnis vor Implementierung**
+
+**Bevor du Code generierst oder Änderungen vorschlägst:**
+
+1. **📖 Projektstruktur verstehen**
+   - Lies `PROJECT_OVERVIEW.md` für aktuelle Architektur
+   - Analysiere Ordnerstruktur unter `/src`
+   - Verstehe vorhandene Adapter, Hooks, Pages
+   - Prüfe bestehende Naming-Conventions
+
+2. **🔍 Konsistenz sicherstellen**
+   - Verwende exakt die vorhandenen Pfade (`src/hooks/`, `src/pages/`, `src/adapters/`)
+   - Richte dich nach Naming-Conventions (`useOffers`, `useInvoices`, `useCustomers`)
+   - Füge neue Entitäten sauber in SQLite-Schema (`sqlite/db.ts`) ein
+   - Befolge etablierte Patterns (Adapter Pattern, CRUD Hooks, etc.)
+
+3. **⚡ Vor jeder Implementierung**
+   - Lade und verstehe den kompletten App-Code
+   - **WARTE auf den konkreten Arbeitsauftrag**
+   - Analysiere Impact auf bestehende Komponenten
+   - Prüfe TypeScript-Interfaces und Domain-Models
+
+4. **✅ Output-Qualität**
+   - Keine Abweichungen von bestehender Struktur
+   - Konsistente Implementierung zur Architektur
+   - Vollständige Integration in vorhandene Systeme
+   - Fehlerfreie Pfade und Imports
+
+**Beispiele für korrekte Arbeitsweise:**
+```typescript
+// ✅ Korrekt: Bestehende Struktur verwenden
+import { useCustomers } from '../hooks/useCustomers';
+import { SQLiteAdapter } from '../adapters/SQLiteAdapter';
+
+// ❌ Falsch: Neue, inkonsistente Struktur
+import { CustomerService } from '../services/CustomerService';
+```
+
+**🎯 Ziel:** Jede Implementierung fügt sich nahtlos in die bestehende RawaLite-Architektur ein.
+
+## � GitHub Integration & Release Management
+
+### **Repository Information**
+- **Repository**: `MonaFP/RawaLite` (GitHub)
+- **Branch**: `main` (primary development branch)
+- **Releases**: GitHub Releases für Versionierung und Distribution
+
+### **GitHub CLI Setup**
+- **Installation Path**: `C:\Program Files\GitHub CLI\gh.exe`
+- **Status**: ✅ Installiert und authentifiziert
+- **Usage Pattern**: `& "C:\Program Files\GitHub CLI\gh.exe" <command>`
+
+### **Release Workflow**
+```bash
+# 1. Version aktualisieren
+# package.json + VersionService.ts BASE_VERSION
+
+# 2. Build erstellen (optional für reine Code-Releases)
+pnpm build && pnpm dist
+
+# 3. Git commit & tag
+git add -A && git commit -m "vX.Y.Z: Feature description"
+git tag vX.Y.Z && git push origin main --tags
+
+# 4. GitHub Release erstellen (BEWÄHRTER WEG - nur Source Code)
+& "C:\Program Files\GitHub CLI\gh.exe" release create vX.Y.Z \
+  --title "RawaLite vX.Y.Z - Title" \
+  --notes "Release notes..."
+
+# NICHT: Setup.exe anhängen (außer bei Major Releases mit neuen Binaries)
+# GitHub erstellt automatisch Source Code ZIP/TAR für Updates
+```
+
+### **Distribution Files**
+- **Setup**: `RawaLite Setup X.Y.Z.exe` (nur bei Major Releases mit neuen Binaries)
+- **Portable**: `RawaLite-X.Y.Z-portable.zip` (nur bei Major Releases)
+- **Standard Updates**: Nur Source Code via GitHub Release (schnell & effizient)
+- **Location**: `dist/` nach `pnpm dist`
+
+## 🔄 Update System Architecture
+
+### **Update Service Pattern**
+```typescript
+// Real GitHub API Integration (NOT simulation)
+UpdateService.ts -> GitHub Releases API
+VersionService.ts -> Version management & user notifications
+```
+
+### **Key Components**
+- **VersionService.ts**: Version management, update checks, user notifications
+- **UpdateService.ts**: Real GitHub API integration, download workflow
+- **Electron IPC**: Shell API für externe URLs (`shell:openExternal`)
+- **GitHub API**: `https://api.github.com/repos/MonaFP/RawaLite/releases/latest`
+
+### **Update Workflow (Real System)**
+1. **Auto Check**: App prüft GitHub API auf neue Releases
+2. **Version Compare**: Semantic versioning comparison (nicht simulation!)
+3. **User Notification**: Modal mit Download-Anweisungen
+4. **Browser Redirect**: Electron shell öffnet GitHub Releases
+5. **Manual Install**: User lädt neue Version, ersetzt .exe (Daten bleiben erhalten)
+
+### **Critical Implementation Notes**
+- **NO SIMULATION**: Echte GitHub API Integration verwenden
+- **Portable App Logic**: Manuelle Download-Workflow für portable Anwendungen
+- **Data Preservation**: SQLite-Datei in `%APPDATA%/RawaLite/` bleibt erhalten
+- **Version Sync**: `package.json` UND `VersionService.ts` BASE_VERSION aktualisieren
+
+## 🎨 Theme System (Current: v1.5.2+)
+
+**🚨 KRITISCHE REGEL - THEME-FARBEN:**
+Die nachfolgenden Farbwerte sind **FINAL** und dürfen **NIE GEÄNDERT** werden!
+Sie wurden sorgfältig ausgewählt, visuell getestet und sind perfekt implementiert.
+Nur Theme-IDs und Namen dürfen angepasst werden, niemals die Hex-Farbcodes!
+
+### **Pastel Color Palette**
+```typescript
+// themes.ts - 5 Pastel Themes (AKTUELLE IMPLEMENTIERUNG - NICHT ÄNDERN!)
+'salbeigrün': { 
+  primary: '#4a5d5a', 
+  secondary: '#3a4d4a', 
+  accent: '#7dd3a0',
+  gradient: 'linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%)'
+}
+'himmelblau': { 
+  primary: '#4a5b6b', 
+  secondary: '#3d4e5e', 
+  accent: '#87ceeb',
+  gradient: 'linear-gradient(160deg, #4a5b6b 0%, #3d4e5e 40%, #324151 100%)'
+}
+'lavendel': { 
+  primary: '#5a4d6b', 
+  secondary: '#4d405e', 
+  accent: '#b19cd9',
+  gradient: 'linear-gradient(160deg, #5a4d6b 0%, #4d405e 40%, #403351 100%)'
+}
+'pfirsich': { 
+  primary: '#6b5a4d', 
+  secondary: '#5e4d40', 
+  accent: '#f4a28c',
+  gradient: 'linear-gradient(160deg, #6b5a4d 0%, #5e4d40 40%, #514033 100%)'
+}
+'rosé': { 
+  primary: '#6b4d5a', 
+  secondary: '#5e4050', 
+  accent: '#e6a8b8',
+  gradient: 'linear-gradient(160deg, #6b4d5a 0%, #5e4050 40%, #513343 100%)'
+}
+
+// ⚠️ WICHTIG: Diese Farbwerte sind final und dürfen NICHT geändert werden!
+// Sie sind bereits perfekt implementiert und visuell getestet.
+```
+
+### **Navigation Modes**
+- **Header-Modus**: Navigation im Header + Widgets in der Sidebar (240px Sidebar)
+- **Sidebar-Modus**: Navigation in der Sidebar + Widgets im Header (240px Sidebar)
+- **Sidebar behält IMMER 240px Breite**: Keine Verschiebung beim Mode-Wechsel
+- **Komplementäre Widget-Positionierung**: Widgets wechseln Position basierend auf Navigation-Modus
+
+#### **Stabile Layout-Philosophie:**
+- **Feste Breite**: 240px in BEIDEN Modi (keine Anpassung)
+- **Gleiche Schriftgrößen**: Identische Lesbarkeit in Header- und Sidebar-Modus
+- **Keine Verschiebung**: Layout bleibt beim Wechsel stabil
+- **Smart Widget Distribution**: Widgets ergänzen Navigation optimal
+
+#### **Widget-System:**
+- **Header-Navigation**: Dashboard-Widgets werden in der Sidebar angezeigt (vollständig)
+- **Sidebar-Navigation**: Dashboard-Widgets werden im Header angezeigt (kompakt)
+- **HeaderWidgets Component**: Kompakte horizontale Widget-Darstellung
+- **Responsive Design**: Widgets passen sich automatisch an verfügbaren Platz an
+
+#### **Persistente Design-Einstellungen:**
+- **SQLite Storage**: Design-Settings werden in `settings.designSettings` Spalte gespeichert
+- **Sofortige Anwendung**: Theme wird bei Settings-Load automatisch angewendet
+- **Reload-Sicherheit**: Navigation-Modus und Farbtheme bleiben nach App-Reload erhalten
+- **Backup-Mechanismus**: Standard-Theme wird beim App-Start als Fallback angewendet
+
+## �🔍 Debug-Tipps
+
+- **Development**: Chrome DevTools für Renderer, VS Code Debug für Main Process
+- **Database**: SQLite-Browser für Schema-Inspektion
+- **Logs**: Console.log für Development, strukturiertes Logging für Production
+- **IPC**: Electron DevTools für IPC-Message Debugging
+- **Update Testing**: `node test-update-system.js` für GitHub API Tests
+
+## 🚨 Wichtige Workspace-Spezifika
+
+### **Entwicklungsumgebung**
+- **OS**: Windows mit PowerShell (pwsh.exe)
+- **PowerShell**: v7.5.2 (Core)
+- **System**: ASUS MONAPC mit 16GB RAM
+- **Package Manager**: pnpm 10.15.1 (nicht npm!)
+- **Node.js**: v20.18.0
+- **npm**: v10.8.2
+- **Git**: v2.51.0.1
+- **GitHub CLI**: v2.78.0 (C:\Program Files\GitHub CLI\gh.exe)
+- **VS Code**: v1.103.2
+- **Electron Ports**: Development auf wechselnden Ports (5173, 5174, 5175...)
+
+### **Konsistenz-Regeln**
+1. **GitHub CLI**: Immer vollständigen Pfad verwenden: `& "C:\Program Files\GitHub CLI\gh.exe"`
+2. **Versioning**: package.json UND VersionService.ts synchron halten
+3. **Release Assets**: Setup.exe UND portable.zip für jedes Release
+4. **Update System**: NIE Simulation - immer echte GitHub API verwenden
+5. **Build Date**: VersionService.ts BUILD_DATE bei Releases aktualisieren
+
+### **PowerShell Scripts**
+```bash
+# Available pnpm scripts
+test                 # vitest
+postinstall         # SQL.js WASM setup
+dev                 # npm-run-all -l -p vite electron:dev
+vite                # vite
+electron:dev        # npm-run-all -s build:preload build:main && electron
+build               # vite build && npm-run-all -s build:preload build:main
+build:preload       # esbuild electron/preload.ts
+build:main          # esbuild electron/main.ts
+typecheck           # tsc --noEmit
+lint                # eslint .
+e2e                 # playwright
+dist                # electron-builder
+```
+
+### **Installierte Pakete (Current)**
+```bash
+# Production Dependencies
+@fontsource/roboto@5.1.0
+@types/react@18.3.12
+@types/react-dom@18.3.1
+dexie@4.2.0
+electron@31.7.7
+jspdf@3.0.2
+html2canvas@1.4.1
+jszip@3.10.1
+react@18.3.1
+react-dom@18.3.1
+react-router-dom@7.8.2
+sql.js@1.13.0
+typescript@5.9.2
+
+# Development Dependencies
+@eslint/js@9.35.0
+@playwright/test@1.55.0
+@types/node@22.10.2
+@vitejs/plugin-react@4.3.4
+electron-builder@24.13.3
+esbuild@0.23.1
+eslint@9.35.0
+globals@15.14.0
+npm-run-all@4.1.5
+playwright@1.55.0
+typescript-eslint@8.18.2
+vite@5.4.20
+vitest@2.1.8
+```
+
+### **Git Workflow**
+- **Commit Messages**: Deutsche Sprache mit Feature-Beschreibung
+- **Tagging**: Immer `vX.Y.Z` Format
+- **Pushing**: Tags mit `--tags` Flag pushen
+
 ---
 
-## 📁 Kritische Dateipfade (Orientierung)
+**Wichtig**: Dieses Projekt verwendet **deutsche Sprache** für UI, Kommentare und Dokumentation.
+## 🟢 Non-Interactive Release Policy (Claude)
 
-**Core Business Logic:**
-- `src/hooks/use{Customers,Offers,Invoices,Timesheets}.ts` – Entity-Management
-- `src/adapters/SQLiteAdapter.ts` – Hauptdatenbank-Implementation
-- `src/lib/numbering.ts` – Automatische Nummernvergabe
-- `src/services/{PDFService,UpdateService}.ts` – Externe Integration
+**Ziel:** Bei eindeutigem Release-Intent führt Claude den Release **ohne Rückfragen** aus – PNPM-only, kein `--publish`, keine Datei-Edits.
 
-**Architektur-Schnittstellen:**
-- `src/persistence/adapter.ts` – Persistenz-Interface
-- `src/types/ipc.ts` – Electron-IPC-Definitionen  
-- `src/contexts/{PersistenceContext,SettingsContext}.tsx` – State-Management
+### Trigger
+- Nachricht enthält **genau**: `🚀 Release v<semver> - JETZT ausführen`
+- oder: `RUN RELEASE <semver>`
+- optional: `RUNMODE: noninteractive`
 
-**Config & Validation:**
-- `validate-ipc-types.mjs` – Security & Type-Safety CI-Guard
-- `electron-builder.yml` – Release-Konfiguration
-- `tests/integration/*` – System-Tests ohne UI-Dependencies
+### Erlaubte Aktionen (nur diese)
+1) `rd /s /q .\dist .\release 2>$null`
+2) `pnpm install`
+3) `pnpm run build`
+4) `pnpm run dist`  *(ohne `--publish`)*
+5) GitHub-Upload **nur via `gh`** (CLI ist authentifiziert):
+   - `gh release create v<ver> --title "RawaLite <ver>" --notes-file RELEASE_NOTES.md --repo MonaFP/RawaLite` *(existiert → ignorieren)*
+   - `gh release upload v<ver> release\RawaLite-Setup-<ver>.exe release\RawaLite-Setup-<ver>.exe.blockmap release\latest.yml --clobber --repo MonaFP/RawaLite`
 
----
+### Harte Verbote
+- **Kein** `electron-builder --publish` (auch nicht „always“)
+- **Keine** Änderungen an `electron-builder.yml` oder `latest.yml`
+- **Keine** Registry-Änderungen, **keine** Silent-Installer-Runs
 
-**Sprache & Doku:** Deutsch für UI/Kommentare/Dokumentation.
-**Konsistenz vor Features:** Erst Guardrails grün, dann neue Funktionalität.
+### Preflight (ohne Rückfrage; nur prüfen)
+- Dateien existieren: `release\RawaLite-Setup-<ver>.exe`, `.blockmap`, `latest.yml`
+- Installer-Größe `< 300 MB`
+- **EXE-SHA512 (Base64)** kommt in `latest.yml` vor
+- Optional: `builder-effective-config.yaml` → `appId` stabil, `nsis.perMachine=false`
+
+> **Wenn ein Check fehlschlägt → sofort ABBRUCH mit 1-Zeilen-Fehlermeldung. Keine Rückfragen.**  
+> Bei Erfolg → ausführen, **keine Rückfragen**.
+
+### Output (zum Schluss, kurz)
+`DONE | ver=<ver> | exe=<MB> MB | sha512(base64)=<…> | release=<url/slug>`

@@ -4,7 +4,6 @@ import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
 import { usePackages } from "../hooks/usePackages";
 import { useDesignSettings } from "../hooks/useDesignSettings";
-import { useLogoSettings } from "../hooks/useLogoSettings";
 import { useSettings } from "../contexts/SettingsContext";
 
 interface DashboardPageProps{
@@ -17,22 +16,26 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
   const { invoices } = useInvoices();
   const { packages } = usePackages();
   const { currentNavigationMode } = useDesignSettings();
-  const { logoSettings, hasLogo, getLogoUrl } = useLogoSettings();
   const { settings } = useSettings();
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
-  // Logo-URL laden
+    // Logo-URL laden
   useEffect(() => {
+    // TODO: Logo System temporarily disabled
+    /*
     async function loadLogo() {
-      if (hasLogo) {
-        const url = await getLogoUrl();
-        setLogoUrl(url);
-      } else {
-        setLogoUrl(null);
+      try {
+        if (hasLogo) {
+          const url = await getLogoUrl();
+          setLogoUrl(url);
+        }
+      } catch (error) {
+        console.error('Error loading logo:', error);
       }
     }
     loadLogo();
-  }, [hasLogo, getLogoUrl]);
+    */
+  }, []); // [hasLogo, getLogoUrl]);
 
   // Statistiken berechnen
   const stats = {
@@ -154,6 +157,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
                 )}
               </div>
             )}
+            {/* TODO: Logo System temporarily disabled
             {(logoSettings.fileName || hasLogo) && (
               <div style={{
                 fontSize: "12px",
@@ -171,6 +175,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
                 }
               </div>
             )}
+            */}
           </div>
         </div>
       )}

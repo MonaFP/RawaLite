@@ -12,17 +12,7 @@ export type CompanyData = {
   bankName?: string;
   bankAccount?: string;
   bankBic?: string;
-  logo?: string; // DEPRECATED: Base64-encoded Logo (für Migration)
-};
-
-export type LogoSettings = {
-  filePath?: string; // Relativer Pfad: templates/logo.svg|png|jpg
-  fileName?: string; // logo.svg, logo.png, logo.jpg
-  format?: 'svg' | 'png' | 'jpg';
-  width?: number;
-  height?: number;
-  fileSize?: number;
-  updatedAt?: string; // ISO-String
+  logo?: string; // Base64-encoded Logo
 };
 
 export type ThemeColor = 'salbeigrün' | 'himmelblau' | 'lavendel' | 'pfirsich' | 'rosé' | 'custom';
@@ -52,7 +42,6 @@ export type NumberingCircle = {
 
 export type Settings = {
   companyData: CompanyData;
-  logoSettings: LogoSettings; // NEUE strukturierte Logo-Verwaltung
   numberingCircles: NumberingCircle[];
   designSettings: DesignSettings;
 };
@@ -73,9 +62,6 @@ export const defaultSettings: Settings = {
     bankAccount: '',
     bankBic: '',
     logo: ''
-  },
-  logoSettings: {
-    // Standardmäßig kein Logo - wird bei Upload befüllt
   },
   designSettings: {
     theme: 'salbeigrün',

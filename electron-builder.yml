@@ -1,68 +1,42 @@
-appId: com.rawalite.app
+# electron-builder.yml
+appId: com.rawalite.app           # KONSTANT lassen
 productName: RawaLite
-copyright: "Copyright © 2025 MonaFP. All rights reserved."
+
 directories:
-  output: dist
+  output: release                 # <- NEU: Builder schreibt in release/
+
 files:
-  - dist-electron
-  - dist/**/*
+  - dist/**                       # Renderer-Bundle von Vite
+  - dist-electron/**              # Main/Preload
   - package.json
+  # Sicherheitsausschlüsse (falls doch mal was in dist liegt):
+  - "!dist/win-unpacked{,/**}"
+  - "!dist/*.exe"
+  - "!dist/*.blockmap"
+  - "!dist/latest.yml"
+  - "!dist/builder-*.yml"
+  # generische Ausschlüsse:
   - "!node_modules"
   - "!src"
   - "!public"
   - "!electron"
+  - "!tests"
+
 extraResources:
-  - from: "public/rawalite-logo.png"
-    to: "app/rawalite-logo.png"
-  - from: "assets/"
-    to: "app/assets/"
-  - from: "templates/"
-    to: "app/templates/"
-icon: assets/icon.ico
-publish:
-  provider: github
-  owner: MonaFP
-  repo: RawaLite
-  private: false
-  releaseType: release
-win:
-  target:
-    - target: nsis
-      arch:
-        - x64
-  icon: assets/icon.ico
-  artifactName: "RawaLite-Setup-${version}.${ext}"
-  # Verbesserte differential download performance
-  compression: normal
+  # reicht:
+  - from: assets/
+    to: app/assets/
+  - from: templates/
+    to: app/templates/
+  # Den Einzeleintrag aus public/rawalite-logo.png kannst du entfernen
+  # (liegt bereits in assets/ und wird doppelt).
+  
 nsis:
   oneClick: false
-  allowToChangeInstallationDirectory: true
-  installerIcon: assets/icon.ico
-  uninstallerIcon: assets/icon.ico
+  perMachine: false
+  deleteAppDataOnUninstall: false
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  # Force proper uninstall/reinstall cycle
-  deleteAppDataOnUninstall: false
-  runAfterFinish: true
-  # Ensure NSIS properly replaces existing installation
-  allowElevation: true
-  # Konsistente App-ID für Windows Registry
-  guid: "b6b5b9b2-7b8b-4b9b-8b7b-7b8b7b8b7b8b"
-  # Preserve shortcuts and registry entries
-  perMachine: false
-  # Windows integration optimizations
-  menuCategory: "RawaLite"
-  shortcutName: "RawaLite"
-mac:
-  target:
-    - target: dmg
-      arch:
-        - x64
-        - arm64
-  icon: assets/icon.ico
-linux:
-  target:
-    - target: AppImage
-      arch:
-        - x64
-  icon: assets/icon.ico
+  installerIcon: assets/icon.ico
+  uninstallerIcon: assets/icon.ico
+  artifactName: "RawaLite-Setup-${version}.${ext}"

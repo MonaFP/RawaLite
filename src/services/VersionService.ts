@@ -23,8 +23,8 @@ export interface UpdateCheckResult {
 }
 
 export class VersionService {
-  private readonly BASE_VERSION = '1.7.6';
-  private readonly BUILD_DATE = '2025-09-14';
+  private readonly BASE_VERSION = '1.7.9';
+  private readonly BUILD_DATE = '2025-09-15';
   
   private updateService: UpdateService;
   private currentVersionInfo: VersionInfo | null = null;
@@ -35,6 +35,16 @@ export class VersionService {
     // ENTFERNT: Bereinige localStorage nicht mehr automatisch beim Start
     // Das würde echte App-Updates nach dem Neustart überschreiben!
     // Der localStorage kann legimitiert eine neuere Version enthalten nach Updates.
+    
+    // ✨ CACHE-CLEARING: Bei neuer BASE_VERSION den Cache leeren
+    const cachedVersion = localStorage.getItem('rawalite.app.version');
+    if (cachedVersion && this.isVersionOutdated(cachedVersion, this.BASE_VERSION)) {
+      console.log(`[VersionService] Clearing outdated cache: ${cachedVersion} -> ${this.BASE_VERSION}`);
+      localStorage.removeItem('rawalite.app.version');
+      localStorage.removeItem('rawalite.app.lastUpdate');
+      localStorage.setItem('rawalite.app.hasUpdate', 'false');
+    }
+    
     LoggingService.log(`[VersionService] Constructor initialisiert, BASE_VERSION: ${this.BASE_VERSION}`);
   }
 
@@ -55,6 +65,12 @@ export class VersionService {
       const packageVersion = await this.getPackageVersion();
       if (packageVersion) {
         version = packageVersion;
+        // ✨ Cache-Fix: Wenn Electron eine neuere Version liefert, verwende diese und leere localStorage
+        const storedVersion = localStorage.getItem('rawalite.app.version');
+        if (storedVersion && this.isUpdateAvailable(storedVersion, packageVersion)) {
+          console.log(`[VersionService] Clearing outdated localStorage version ${storedVersion} -> ${packageVersion}`);
+          localStorage.removeItem('rawalite.app.version');
+        }
       } else {
         // Fallback: Aus localStorage gespeicherte Version lesen
         const storedVersion = localStorage.getItem('rawalite.app.version');
@@ -376,6 +392,13 @@ export class VersionService {
    * Vergleicht zwei Versionen nach Semantic Versioning
    */
   private isUpdateAvailable(current: string, latest: string): boolean {
+    return this.isVersionOutdated(current, latest);
+  }
+
+  /**
+   * Prüft ob eine Version veraltet ist (current < latest)
+   */
+  private isVersionOutdated(current: string, latest: string): boolean {
     try {
       const currentParts = current.split('.').map(n => parseInt(n) || 0);
       const latestParts = latest.split('.').map(n => parseInt(n) || 0);

@@ -5,11 +5,6 @@ let SQL: SqlJsStatic | null = null;
 let db: Database | null = null;
 let persistTimer: number | undefined;
 
-function isElectron() {
-  // window.process.type ist nur in Electron vorhanden
-  return typeof window !== 'undefined' && !!(window as any).rawalite && !!(window as any).rawalite.db;
-}
-
 function u8FromBase64(b64: string) {
   const bin = atob(b64);
   const len = bin.length;
@@ -24,57 +19,12 @@ function base64FromU8(u8: Uint8Array) {
 }
 function schedulePersist() {
   if (persistTimer) window.clearTimeout(persistTimer);
-  persistTimer = window.setTimeout(async () => {
+  persistTimer = window.setTimeout(() => {
     if (!db) return;
-    console.log('🔄 schedulePersist: Starting database persistence...');
     const data = db.export();
-    console.log('📊 Database export size:', data.length, 'bytes');
-    
-    if (isElectron()) {
-      // Electron: persistiere als Datei
-      try {
-        console.log('💾 Saving database via Electron IPC...');
-        const success = await window.rawalite?.db.save(data);
-        console.log('✅ Electron DB save result:', success);
-      } catch (err) {
-        console.error('❌ Electron DB save error:', err);
-        // Fallback to localStorage if Electron fails
-        console.log('🔄 Falling back to localStorage...');
-        localStorage.setItem(LS_KEY, base64FromU8(data));
-      }
-    } else {
-      // Browser: persistiere in LocalStorage
-      console.log('💾 Saving database to localStorage...');
-      localStorage.setItem(LS_KEY, base64FromU8(data));
-      console.log('✅ LocalStorage save completed');
-    }
-    console.log('✅ schedulePersist completed');
+    localStorage.setItem(LS_KEY, base64FromU8(data));
   }, 250);
 }
-
-// Debug-Export für Testing
-(window as any).rawaliteDebug = {
-  exportDatabase: () => {
-    if (!db) return null;
-    const data = db.export();
-    console.log('🔍 Debug: Database exported', data.length, 'bytes');
-    return data;
-  },
-  saveDatabase: async () => {
-    if (!db) return false;
-    console.log('🔍 Debug: Manual database save triggered');
-    schedulePersist();
-    return true;
-  },
-  getDatabaseInfo: () => {
-    const hasDB = !!db;
-    const isElectronMode = isElectron();
-    const lsSize = localStorage.getItem(LS_KEY)?.length || 0;
-    console.log('🔍 Debug: Database info', { hasDB, isElectronMode, lsSize });
-    return { hasDB, isElectronMode, lsSize };
-  }
-};
-
 function createSchemaIfNeeded() {
   if (!db) return;
   
@@ -91,7 +41,6 @@ function createSchemaIfNeeded() {
       bankName TEXT, bankAccount TEXT, bankBic TEXT,
       logo TEXT,
       designSettings TEXT,
-      logoSettings TEXT,
       nextCustomerNumber INTEGER DEFAULT 1,
       nextOfferNumber INTEGER DEFAULT 1,
       nextInvoiceNumber INTEGER DEFAULT 1,
@@ -99,42 +48,9 @@ function createSchemaIfNeeded() {
       createdAt TEXT, updatedAt TEXT
     );
 
-    CREATE TABLE IF NOT EXISTS numbering_circles (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      prefix TEXT NOT NULL,
-      digits INTEGER NOT NULL DEFAULT 4,
-      current INTEGER NOT NULL DEFAULT 0,
-      resetMode TEXT NOT NULL DEFAULT 'never',
-      lastResetYear INTEGER,
-      createdAt TEXT NOT NULL,
-      updatedAt TEXT NOT NULL
-    );
-
     INSERT INTO settings (id, createdAt, updatedAt)
     SELECT 1, datetime('now'), datetime('now')
     WHERE NOT EXISTS (SELECT 1 FROM settings WHERE id = 1);
-
-    -- Initialize default numbering circles if they don't exist
-    INSERT INTO numbering_circles (id, name, prefix, digits, current, resetMode, createdAt, updatedAt)
-    SELECT 'customers', 'Kunden', 'K-', 3, 0, 'never', datetime('now'), datetime('now')
-    WHERE NOT EXISTS (SELECT 1 FROM numbering_circles WHERE id = 'customers');
-    
-    INSERT INTO numbering_circles (id, name, prefix, digits, current, resetMode, lastResetYear, createdAt, updatedAt)
-    SELECT 'offers', 'Angebote', 'AN-2025-', 4, 0, 'yearly', 2025, datetime('now'), datetime('now')
-    WHERE NOT EXISTS (SELECT 1 FROM numbering_circles WHERE id = 'offers');
-    
-    INSERT INTO numbering_circles (id, name, prefix, digits, current, resetMode, lastResetYear, createdAt, updatedAt)
-    SELECT 'invoices', 'Rechnungen', 'RE-2025-', 4, 0, 'yearly', 2025, datetime('now'), datetime('now')
-    WHERE NOT EXISTS (SELECT 1 FROM numbering_circles WHERE id = 'invoices');
-    
-    INSERT INTO numbering_circles (id, name, prefix, digits, current, resetMode, lastResetYear, createdAt, updatedAt)
-    SELECT 'packages', 'Pakete', 'PAK-', 3, 0, 'never', NULL, datetime('now'), datetime('now')
-    WHERE NOT EXISTS (SELECT 1 FROM numbering_circles WHERE id = 'packages');
-    
-    INSERT INTO numbering_circles (id, name, prefix, digits, current, resetMode, lastResetYear, createdAt, updatedAt)
-    SELECT 'timesheets', 'Leistungsnachweise', 'LN-2025-', 4, 0, 'yearly', 2025, datetime('now'), datetime('now')
-    WHERE NOT EXISTS (SELECT 1 FROM numbering_circles WHERE id = 'timesheets');
   `);
 
   // Add migration columns with better error handling
@@ -142,12 +58,10 @@ function createSchemaIfNeeded() {
     const settingsInfo = db.exec(`PRAGMA table_info(settings)`);
     let hasTimesheetNumberColumn = false;
     let hasDesignSettingsColumn = false;
-    let hasLogoSettingsColumn = false;
     
     if (settingsInfo.length > 0 && settingsInfo[0].values) {
       hasTimesheetNumberColumn = settingsInfo[0].values.some((row: any[]) => row[1] === 'nextTimesheetNumber');
       hasDesignSettingsColumn = settingsInfo[0].values.some((row: any[]) => row[1] === 'designSettings');
-      hasLogoSettingsColumn = settingsInfo[0].values.some((row: any[]) => row[1] === 'logoSettings');
     }
     
     if (!hasTimesheetNumberColumn) {
@@ -171,11 +85,6 @@ function createSchemaIfNeeded() {
       } catch (updateError) {
         console.warn('⚠️ Could not initialize default design settings:', updateError);
       }
-    }
-
-    if (!hasLogoSettingsColumn) {
-      db.exec(`ALTER TABLE settings ADD COLUMN logoSettings TEXT;`);
-      console.log('✅ Added logoSettings column to settings table');
     }
   } catch (error) {
     console.warn('⚠️ Settings table migration error:', error);
@@ -423,46 +332,19 @@ export async function getDB(): Promise<Database> {
       locateFile: (file: string) => `${import.meta.env.BASE_URL}sql-wasm.wasm`,
     });
   }
-  
-  let stored: string | Uint8Array | null = null;
-  if (isElectron()) {
-    // Electron: lade Datei über IPC
-    try {
-      console.log('🔄 Loading database via Electron IPC...');
-      stored = await window.rawalite?.db.load() || null;
-      console.log('📊 Loaded database size:', stored ? stored.length : 0, 'bytes');
-    } catch (err) {
-      console.error('❌ Electron DB load error:', err);
-      stored = null;
-    }
-    db = stored ? new SQL!.Database(stored as Uint8Array) : new SQL!.Database();
-  } else {
-    // Browser: lade aus LocalStorage
-    console.log('🔄 Loading database from localStorage...');
-    stored = localStorage.getItem(LS_KEY);
-    db = stored ? new SQL!.Database(u8FromBase64(stored as string)) : new SQL!.Database();
-  }
-  
-  // Apply persistence wrapper BEFORE schema creation
+  const stored = localStorage.getItem(LS_KEY);
+  db = stored ? new SQL!.Database(u8FromBase64(stored)) : new SQL!.Database();
+  createSchemaIfNeeded();
+
   const _exec = db.exec.bind(db);
   db.exec = (...args: Parameters<Database["exec"]>) => {
     const result = _exec(...args);
     const sqlText = String(args[0] ?? "").toUpperCase();
     if (/INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|ALTER/.test(sqlText)) {
-      console.log('🔄 SQL operation triggered persistence:', sqlText.substring(0, 50) + '...');
       schedulePersist();
     }
     return result;
   };
-  
-  // Now create schema (this will trigger persistence)
-  console.log('🔄 Creating database schema...');
-  createSchemaIfNeeded();
-  
-  // Force initial persistence to ensure database.sqlite is created
-  console.log('🔄 Forcing initial persistence...');
-  schedulePersist();
-  
   return db;
 }
 export function all<T = any>(sql: string, params: any[] = []): T[] {
@@ -483,9 +365,6 @@ export function run(sql: string, params: any[] = []): void {
   try {
     stmt.bind(params);
     stmt.step();
-    
-    // 🔥 CRITICAL FIX: Persistiere nach jeder Datenänderung!
-    schedulePersist();
   } finally {
     stmt.free();
   }
@@ -496,10 +375,6 @@ export async function withTx<T>(fn: () => T | Promise<T>): Promise<T> {
   try {
     const res = await fn();
     d.exec("COMMIT");
-    
-    // 🔥 CRITICAL FIX: Persistiere nach erfolgreicher Transaktion!
-    schedulePersist();
-    
     return res;
   } catch (e) {
     d.exec("ROLLBACK");
