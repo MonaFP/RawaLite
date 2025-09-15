@@ -9,6 +9,27 @@ import { PDFPostProcessor, PDFAConversionOptions } from '../src/services/PDFPost
 import { initializeBackupSystem } from './backup'
 import { initializeLogoSystem } from './logo'
 
+// === SINGLE INSTANCE LOCK ===
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  // Another instance is already running, quit this instance
+  log.info('Another instance is already running, quitting...')
+  app.quit()
+} else {
+  // Handle second instance attempt - focus existing window
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    log.info('Second instance detected, focusing existing window')
+    // Someone tried to run a second instance, focus our existing window instead
+    const windows = BrowserWindow.getAllWindows()
+    if (windows.length > 0) {
+      const mainWindow = windows[0]
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.focus()
+    }
+  })
+}
+
 // === AUTO-UPDATER CONFIGURATION ===
 log.transports.file.level = 'info'
 autoUpdater.logger = log
