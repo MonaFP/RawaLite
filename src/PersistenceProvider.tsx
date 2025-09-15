@@ -2,8 +2,6 @@ import { ReactNode, useEffect, useMemo, useState } from "react";
 import { PersistenceContext } from "./contexts/PersistenceContext";
 import type { PersistenceAdapter } from "./persistence/adapter";
 import { SQLiteAdapter } from "./adapters/SQLiteAdapter";
-// Falls du noch LocalStorageAdapter behalten willst:
-// import { LocalStorageAdapter } from "./persistence/localStorageAdapter";
 
 interface Props {
   children: ReactNode;
@@ -17,7 +15,6 @@ export default function PersistenceProvider({ children, mode = "sqlite" }: Props
 
   const instance = useMemo(() => {
     if (mode === "sqlite") return new SQLiteAdapter();
-    // return new LocalStorageAdapter();
     return new SQLiteAdapter();
   }, [mode]);
 

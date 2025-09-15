@@ -3,32 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     /* Tabelle für Aktivitäten */
-    .activities-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1.5cm 0;
-      border: 1px solid #d0d0d0;
-      page-break-inside: auto;
-    }
-    
-    .activities-table th,
-    .activities-table td {
-      padding: 0.4cm 0.3cm;
-      text-align: left;
-      border-bottom: 1px solid #e0e0e0;
-      border-right: 1px solid #e0e0e0;
-      vertical-align: top;
-      page-break-inside: avoid;
-    }
-    
-    .activities-table thead {
-      page-break-after: avoid;
-    }
-    
-    .activities-table tr {
-      page-break-inside: avoid;
-    }snachweis {{timesheet.timesheetNumber}}</title>
+  <title>Stundennachweis {{timesheet.timesheetNumber}}</title>
   
   <!-- DIN 5008 compliant CSS for professional German business documents -->
   <style>
@@ -149,30 +124,19 @@
       text-align: left;
     }
     
-    /* Zeitraum-Hervorhebung */
-    .period-highlight {
-      background-color: #f8f9fa;
-      border: 1px solid #e9ecef;
-      border-radius: 0.3cm;
-      padding: 0.5cm;
-      margin: 1cm 0;
-      text-align: center;
-      font-weight: bold;
-      color: #1e3a2e;
-    }
-    
     /* Ansprache und Einleitung */
     .salutation {
       margin-bottom: 1cm;
       line-height: 1.4;
     }
     
-    /* Tabelle für Aktivitäten/Leistungen */
+    /* Tabelle für Aktivitäten */
     .activities-table {
       width: 100%;
       border-collapse: collapse;
       margin: 1.5cm 0;
       border: 1px solid #d0d0d0;
+      page-break-inside: auto;
     }
     
     .activities-table th,
@@ -182,6 +146,15 @@
       border-bottom: 1px solid #e0e0e0;
       border-right: 1px solid #e0e0e0;
       vertical-align: top;
+      page-break-inside: avoid;
+    }
+    
+    .activities-table thead {
+      page-break-after: avoid;
+    }
+    
+    .activities-table tr {
+      page-break-inside: avoid;
     }
     
     .activities-table th {
@@ -195,10 +168,15 @@
       font-size: 10pt;
     }
     
+    .activity-title {
+      font-weight: bold;
+      margin-bottom: 0.1cm;
+    }
+    
     .activity-description {
       font-size: 9pt;
       color: #555;
-      margin-top: 0.1cm;
+      font-style: italic;
     }
     
     .text-right {
@@ -209,7 +187,7 @@
       text-align: center;
     }
     
-    /* Summen-Bereich speziell für Leistungsnachweise */
+    /* Summen-Bereich */
     .totals-section {
       margin-top: 1cm;
       display: flex;
@@ -219,7 +197,7 @@
     }
     
     .totals-table {
-      width: 7cm;
+      width: 6cm;
       border-collapse: collapse;
     }
     
@@ -238,15 +216,6 @@
       font-weight: bold;
     }
     
-    .rate-row {
-      color: #666;
-      font-size: 10pt;
-    }
-    
-    .hours-row {
-      font-weight: bold;
-    }
-    
     .total-final {
       border-top: 2px solid #1e3a2e;
       font-size: 12pt;
@@ -254,48 +223,19 @@
       color: #1e3a2e;
     }
     
-    /* Steuerhinweis */
-    .tax-note {
-      font-size: 9pt;
-      color: #666;
-      font-style: italic;
-      margin-top: 0.5cm;
-    }
-    
-    /* Bestätigungsbereich */
-    .confirmation-section {
-      margin: 2cm 0;
+    /* Periode-Bereich */
+    .period-info {
+      margin: 1.5cm 0;
       padding: 0.5cm;
-      border: 1px solid #e0e0e0;
-      border-radius: 0.3cm;
-      background-color: #fafafa;
+      background-color: #f8f9fa;
+      border-left: 4px solid #1e3a2e;
+      line-height: 1.4;
     }
     
-    .confirmation-title {
+    .period-title {
       font-weight: bold;
       color: #1e3a2e;
       margin-bottom: 0.5cm;
-    }
-    
-    .signature-area {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 1.5cm;
-    }
-    
-    .signature-box {
-      width: 45%;
-      text-align: center;
-      border-top: 1px solid #666;
-      padding-top: 0.3cm;
-      font-size: 9pt;
-      color: #666;
-    }
-    
-    /* Schlusstext */
-    .closing-text {
-      margin: 1.5cm 0;
-      line-height: 1.4;
     }
     
     /* Anmerkungen */
@@ -345,7 +285,7 @@
       border: 1px solid #fbbf24;
     }
     
-    .status-sent {
+    .status-submitted {
       background-color: #dbeafe;
       color: #1e40af;
       border: 1px solid #3b82f6;
@@ -355,12 +295,6 @@
       background-color: #dcfce7;
       color: #166534;
       border: 1px solid #22c55e;
-    }
-    
-    .status-rejected {
-      background-color: #fee2e2;
-      color: #dc2626;
-      border: 1px solid #ef4444;
     }
     
     /* Print-spezifische Anpassungen */
@@ -374,12 +308,8 @@
         background-color: #f8f9fa !important;
       }
       
-      .period-highlight {
+      .period-info {
         background-color: #f8f9fa !important;
-      }
-      
-      .confirmation-section {
-        background-color: #fafafa !important;
       }
       
       .status-indicator {
@@ -405,15 +335,6 @@
       .info-left, .info-right {
         width: 100%;
       }
-      
-      .signature-area {
-        flex-direction: column;
-      }
-      
-      .signature-box {
-        width: 100%;
-        margin-bottom: 1cm;
-      }
     }
   </style>
 </head>
@@ -421,9 +342,8 @@
   <!-- Status-Indikator (nur in Vorschau) -->
   <div class="status-indicator status-{{timesheet.status}}">
     {{#if (eq timesheet.status 'draft')}}Entwurf{{/if}}
-    {{#if (eq timesheet.status 'sent')}}Versendet{{/if}}
+    {{#if (eq timesheet.status 'submitted')}}Eingereicht{{/if}}
     {{#if (eq timesheet.status 'approved')}}Genehmigt{{/if}}
-    {{#if (eq timesheet.status 'rejected')}}Abgelehnt{{/if}}
   </div>
   
   <!-- Briefkopf nach DIN 5008 -->
@@ -459,8 +379,12 @@
   <div class="info-block">
     <div class="info-left">
       <div class="info-row">
-        <span class="info-label">Leistungsnachweis-Nr.:</span>
+        <span class="info-label">Leistungsnachweis:</span>
         <span class="info-value">{{timesheet.timesheetNumber}}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Periode:</span>
+        <span class="info-value">{{formatDate timesheet.startDate}} - {{formatDate timesheet.endDate}}</span>
       </div>
       <div class="info-row">
         <span class="info-label">Erstellt am:</span>
@@ -474,10 +398,6 @@
       {{/if}}
     </div>
     <div class="info-right">
-      <div class="info-row">
-        <span class="info-label">Stundensatz:</span>
-        <span class="info-value">{{formatCurrency timesheet.hourlyRate}}</span>
-      </div>
       {{#if customer.phone}}
       <div class="info-row">
         <span class="info-label">Telefon:</span>
@@ -490,39 +410,41 @@
         <span class="info-value">{{customer.number}}</span>
       </div>
       {{/if}}
+      {{#if timesheet.hourlyRate}}
+      <div class="info-row">
+        <span class="info-label">Stundensatz:</span>
+        <span class="info-value">{{formatCurrency timesheet.hourlyRate}}/h</span>
+      </div>
+      {{/if}}
     </div>
   </div>
   
   <!-- Dokumenttitel -->
-  <h1 class="document-title">Leistungsnachweis</h1>
-  
-  <!-- Zeitraum-Hervorhebung -->
-  <div class="period-highlight">
-    Leistungszeitraum: {{formatDate timesheet.startDate}} bis {{formatDate timesheet.endDate}}
-  </div>
+  <h1 class="document-title">Stundennachweis</h1>
   
   <!-- Ansprache -->
   <div class="salutation">
     <p>Sehr geehrte Damen und Herren,</p>
-    <p>hiermit weise ich Ihnen die im oben genannten Zeitraum erbrachten Leistungen nach:</p>
+    <p>hiermit lege ich Ihnen den Stundennachweis für den oben genannten Zeitraum vor:</p>
   </div>
   
   <!-- Betreff -->
   {{#if timesheet.title}}
   <div style="margin-bottom: 1cm;">
-    <strong>Projekt/Betreff: {{timesheet.title}}</strong>
+    <strong>Betreff: {{timesheet.title}}</strong>
   </div>
   {{/if}}
   
   <!-- Aktivitäten-Tabelle -->
-  {{#if timesheet.activities}}
   <table class="activities-table">
     <thead>
       <tr>
         <th style="width: 15%;">Datum</th>
-        <th style="width: 55%;">Tätigkeit/Beschreibung</th>
+        <th style="width: 45%;">Aktivität</th>
         <th style="width: 15%;" class="text-center">Stunden</th>
-        <th style="width: 15%;" class="text-right">Betrag (€)</th>
+        {{#if timesheet.hourlyRate}}
+        <th style="width: 25%;" class="text-right">Betrag (€)</th>
+        {{/if}}
       </tr>
     </thead>
     <tbody>
@@ -530,86 +452,48 @@
       <tr>
         <td>{{formatDate this.date}}</td>
         <td>
-          <div>{{this.title}}</div>
-          {{#if this.description}}
-          <div class="activity-description">{{this.description}}</div>
+          <div class="activity-title">{{this.description}}</div>
+          {{#if this.notes}}
+          <div class="activity-description">{{this.notes}}</div>
           {{/if}}
         </td>
-        <td class="text-center">{{this.hours}}</td>
-        <td class="text-right">{{formatCurrency (multiply this.hours ../timesheet.hourlyRate)}}</td>
+        <td class="text-center">{{this.hours}}h</td>
+        {{#if ../timesheet.hourlyRate}}
+        <td class="text-right">{{formatCurrency this.amount}}</td>
+        {{/if}}
       </tr>
       {{/each}}
     </tbody>
   </table>
-  {{else}}
-  <!-- Einfache Darstellung ohne detaillierte Aktivitäten -->
-  <div style="margin: 1.5cm 0; padding: 1cm; background-color: #f8f9fa; border-radius: 0.3cm;">
-    <div style="text-align: center; font-size: 12pt;">
-      <strong>Erbrachte Leistung</strong><br>
-      <div style="margin: 0.5cm 0; font-size: 14pt; color: #1e3a2e;">
-        {{timesheet.totalHours}} Stunden
-      </div>
-      <div style="font-size: 10pt; color: #666;">
-        á {{formatCurrency timesheet.hourlyRate}} pro Stunde
-      </div>
-    </div>
-  </div>
-  {{/if}}
   
   <!-- Summen-Bereich -->
   <div class="totals-section">
     <table class="totals-table">
-      <tr class="rate-row">
-        <td class="label">Stundensatz:</td>
-        <td class="amount">{{formatCurrency timesheet.hourlyRate}}</td>
-      </tr>
-      <tr class="hours-row">
+      <tr>
         <td class="label">Gesamtstunden:</td>
-        <td class="amount">{{timesheet.totalHours}} h</td>
+        <td class="amount">{{timesheet.totalHours}}h</td>
       </tr>
+      {{#if timesheet.hourlyRate}}
       <tr>
-        <td class="label">Zwischensumme:</td>
-        <td class="amount">{{formatCurrency timesheet.subtotal}}</td>
+        <td class="label">Stundensatz:</td>
+        <td class="amount">{{formatCurrency timesheet.hourlyRate}}/h</td>
       </tr>
-      {{#unless company.kleinunternehmer}}
-      {{#if timesheet.vatAmount}}
-      <tr>
-        <td class="label">MwSt. ({{timesheet.vatRate}}%):</td>
-        <td class="amount">{{formatCurrency timesheet.vatAmount}}</td>
-      </tr>
-      {{/if}}
-      {{/unless}}
       <tr class="total-final">
         <td class="label">Gesamtbetrag:</td>
-        <td class="amount">{{formatCurrency timesheet.total}}</td>
+        <td class="amount">{{formatCurrency timesheet.totalAmount}}</td>
       </tr>
+      {{/if}}
     </table>
   </div>
   
-  <!-- Steuerhinweis bei Kleinunternehmer -->
-  {{#if company.kleinunternehmer}}
-  <div class="tax-note">
-    Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen.
-  </div>
-  {{/if}}
-  
-  <!-- Bestätigungsbereich -->
-  <div class="confirmation-section">
-    <div class="confirmation-title">Bestätigung der erbrachten Leistungen:</div>
+  <!-- Periode-Information -->
+  <div class="period-info">
+    <div class="period-title">Leistungszeitraum:</div>
     <div>
-      Hiermit bestätigen wir, dass die oben aufgeführten Leistungen ordnungsgemäß und fristgerecht erbracht wurden.
-      Die angegebenen Stunden entsprechen den tatsächlich geleisteten Arbeitszeiten.
-    </div>
-    
-    <div class="signature-area">
-      <div class="signature-box">
-        Datum, Unterschrift Auftragnehmer<br>
-        {{company.name}}
-      </div>
-      <div class="signature-box">
-        Datum, Unterschrift Auftraggeber<br>
-        {{customer.name}}
-      </div>
+      <strong>Von:</strong> {{formatDate timesheet.startDate}}<br>
+      <strong>Bis:</strong> {{formatDate timesheet.endDate}}<br>
+      <strong>Arbeitstage:</strong> {{timesheet.workingDays}} Tage<br>
+      <strong>Gesamtstunden:</strong> {{timesheet.totalHours}} Stunden
     </div>
   </div>
   
@@ -622,15 +506,20 @@
   {{/if}}
   
   <!-- Schlusstext -->
-  <div class="closing-text">
-    <p>Bei Fragen zu diesem Leistungsnachweis stehen wir Ihnen gerne zur Verfügung.</p>
+  <div style="margin: 1.5cm 0;">
+    <p>Ich bestätige hiermit die Richtigkeit der oben aufgeführten Angaben.</p>
+    <p>Bei Fragen stehe ich Ihnen gerne zur Verfügung.</p>
   </div>
   
-  <!-- Grußformel -->
-  <div style="margin-top: 2cm;">
-    <p>Mit freundlichen Grüßen</p>
-    <div style="margin-top: 1.5cm;">
-      {{company.name}}
+  <!-- Unterschriftenbereich -->
+  <div style="margin-top: 3cm; display: flex; justify-content: space-between;">
+    <div style="width: 45%; text-align: center;">
+      <div style="border-bottom: 1px solid #333; margin-bottom: 0.3cm; height: 1.5cm;"></div>
+      <small>Datum, Unterschrift Auftragnehmer</small>
+    </div>
+    <div style="width: 45%; text-align: center;">
+      <div style="border-bottom: 1px solid #333; margin-bottom: 0.3cm; height: 1.5cm;"></div>
+      <small>Datum, Unterschrift Auftraggeber</small>
     </div>
   </div>
   
@@ -643,9 +532,6 @@
       {{#if company.website}} · Web: {{company.website}}{{/if}}<br>
       {{#if company.taxId}}Steuernummer: {{company.taxId}}{{/if}}
       {{#if company.vatId}} · USt-IdNr.: {{company.vatId}}{{/if}}
-      {{#if company.bankName}} · {{company.bankName}}{{/if}}
-      {{#if company.bankAccount}} · IBAN: {{company.bankAccount}}{{/if}}
-      {{#if company.bankBic}} · BIC: {{company.bankBic}}{{/if}}
     </div>
   </div>
 </body>

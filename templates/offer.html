@@ -9,22 +9,7 @@
   <style>
     @page {
       size: A4;
-      margin: 2.5cm 2cm 2cm 2.5cm; /* DIN 5008: Links 2,5cm, re  <!-- DEBUG: Theme Test (can be removed after verification) -->
-  {{#if theme}}
-  <div style="background-color: red; color: white; padding: 10px; margin: 10px 0; font-size: 12px;">
-    DEBUG: Theme detected!<br>
-    ID: "{{theme.themeId}}"<br>
-    Primary: "{{theme.primary}}" (should be #6b4d5a for rosé)<br>
-    Secondary: "{{theme.secondary}}" (should be #5e4050 for rosé)<br>
-    Accent: "{{theme.accent}}" (should be #e6a8b8 for rosé)<br>
-    Theme.theme.primary: "{{theme.theme.primary}}"<br>
-    Theme object exists: {{#if theme.theme}}YES{{else}}NO{{/if}}
-  </div>
-  {{else}}
-  <div style="background-color: orange; color: white; padding: 10px; margin: 10px 0;">
-    DEBUG: NO THEME DATA DETECTED
-  </div>
-  {{/if}}2,5cm, unten 2cm */
+      margin: 2.5cm 2cm 2cm 2.5cm; /* DIN 5008: Links 2,5cm, re      margin: 2.5cm 2cm 2cm 2.5cm; /* DIN 5008: Links 2,5cm, rechts 2cm, oben 2,5cm, unten 2cm */
     }
     
     body {
@@ -389,22 +374,6 @@
   
   <!-- Dokumenttitel -->
   <h1 class="document-title">Angebot</h1>
-  
-  <!-- DEBUG: Theme Test (can be removed after verification) -->
-  {{#if theme}}
-  <div style="background-color: red; color: white; padding: 10px; margin: 10px 0; font-size: 12px;">
-    DEBUG: Theme detected!<br>
-    ID: "{{theme.themeId}}"<br>
-    Primary: "{{theme.theme.primary}}"<br>
-    Secondary: "{{theme.theme.secondary}}"<br>
-    Accent: "{{theme.theme.accent}}"<br>
-    Full theme object keys: {{#each theme}}{{@key}} {{/each}}
-  </div>
-  {{else}}
-  <div style="background-color: orange; color: white; padding: 10px; margin: 10px 0;">
-    DEBUG: NO THEME DATA DETECTED
-  </div>
-  {{/if}}
   
   <!-- Ansprache -->
   <div class="salutation">

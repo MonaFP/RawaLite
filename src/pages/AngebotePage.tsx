@@ -195,11 +195,6 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       console.log('🎯 Starting PDF export for offer:', offer.offerNumber);
       console.log('🎨 Using theme:', currentTheme, currentCustomColors ? 'with custom colors' : '');
       
-      // 🚨 CRITICAL DEBUG: Check settings data before PDF generation
-      console.log('🔍 [DEBUG] Settings object:', settings);
-      console.log('🔍 [DEBUG] Settings.companyData:', settings?.companyData);
-      console.log('🔍 [DEBUG] Company name:', settings?.companyData?.name);
-      
       // Logo für PDF laden
       const logoData = await getLogoForPdf();
       console.log('🖼️ [DEBUG] Logo data for PDF:', logoData ? 'Present' : 'None');
@@ -238,11 +233,6 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
     try {
       console.log('🔍 Starting PDF preview for offer:', offer.offerNumber);
       console.log('🎨 Using theme:', currentTheme, currentCustomColors ? 'with custom colors' : '');
-      
-      // 🚨 CRITICAL DEBUG: Check settings data before PDF generation
-      console.log('🔍 [DEBUG PREVIEW] Settings object:', settings);
-      console.log('🔍 [DEBUG PREVIEW] Settings.companyData:', settings?.companyData);
-      console.log('🔍 [DEBUG PREVIEW] Company name:', settings?.companyData?.name);
       
       // Logo für PDF laden
       const logoData = await getLogoForPdf();

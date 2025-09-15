@@ -4,7 +4,7 @@ import typescript from '@typescript-eslint/eslint-plugin';
 export default [
   {
     files: ['**/*.{js,mjs,cjs,ts,tsx}'],
-    ignores: ['tests/scripts/**/*.{js,cjs}', 'dist/**', 'dist-electron/**'],
+    ignores: ['tests/scripts/**/*.{js,cjs}', 'dist/**', 'dist-electron/**', '_cleanup_backup/**', '_final_cleanup_legacy_docs/**'],
     languageOptions: {
       parser: typescriptParser,
       ecmaVersion: 'latest',
@@ -51,6 +51,8 @@ export default [
       'dist/**', 
       'dist-electron/**', 
       'build/**',
+      '_cleanup_backup/**',
+      '_final_cleanup_legacy_docs/**',
       // Legacy CommonJS utility scripts (to be migrated)
       '*.cjs',
       'fix-*.js',

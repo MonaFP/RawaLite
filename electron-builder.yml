@@ -30,9 +30,6 @@ win:
     - target: nsis
       arch:
         - x64
-    - target: zip
-      arch:
-        - x64
   icon: assets/icon.ico
   artifactName: "RawaLite-Setup-${version}.${ext}"
 nsis:

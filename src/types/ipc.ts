@@ -17,11 +17,6 @@ export interface AppAPI {
   getVersion: () => Promise<string>;
 }
 
-// === SHELL IPC TYPES ===
-export interface ShellAPI {
-  openExternal: (url: string) => Promise<void>;
-}
-
 // === LOGO IPC TYPES ===
 export interface LogoUploadOptions {
   buffer: ArrayBuffer;
@@ -181,7 +176,6 @@ export interface BackupAPI {
 export interface RawaliteAPI {
   db: DatabaseAPI;
   app: AppAPI;
-  shell: ShellAPI;
   updater: UpdaterAPI;
   backup: BackupAPI;
   logo: LogoAPI;

@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
@@ -30,11 +30,10 @@
     "ipc:validate": "node validate-ipc-types.mjs",
     "guard:external": "git grep -nE \"shell\\.openExternal|window\\.open|target=\\\"_blank\\\"\" src/ electron/ templates/ && echo \"FOUND EXTERNALS - CHECK ABOVE\" || echo \"NO EXTERNALS FOUND\"",
     "guard:pdf": "git grep -nE \"<link[^>]+https?://|<script[^>]+https?://|<img[^>]+https?://\" templates || echo \"NO EXTERNAL ASSETS\"",
+    "guard:templates": "node guard-template-migrations.mjs",
     "guard:backup": "node guard-backup-storage.mjs",
     "guard:release:assets": "node guard-release-assets.mjs",
-    "validate:backup": "node validate-backup-integration.mjs",
-    "test:backup": "node test-backup-system-complete.cjs",
-    "precommit": "pnpm typecheck && pnpm lint && pnpm guard:external && pnpm guard:pdf && pnpm guard:backup && pnpm ipc:validate && pnpm version:check",
+    "precommit": "pnpm typecheck && pnpm lint && pnpm guard:external && pnpm guard:pdf && pnpm guard:templates && pnpm guard:backup && pnpm ipc:validate && pnpm version:check",
     "postinstall": "node -e \"require('fs').mkdirSync('public',{recursive:true});require('fs').cpSync(require.resolve('sql.js/dist/sql-wasm.wasm'),'public/sql-wasm.wasm',{force:true})\""
   },
   "dependencies": {

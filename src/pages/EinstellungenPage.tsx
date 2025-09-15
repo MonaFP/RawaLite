@@ -40,22 +40,6 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     currentCustomColors || defaultCustomColors
   );
 
-  // Debug: Watch activity form data changes
-  useEffect(() => {
-    const hourlyRateNumber = Number(activityFormData.defaultHourlyRate);
-    console.log('🔍 Activity form data changed:', {
-      activityFormData,
-      name: activityFormData.name,
-      nameValid: !!activityFormData.name?.trim(),
-      hourlyRate: activityFormData.defaultHourlyRate,
-      hourlyRateNumber,
-      hourlyRateType: typeof activityFormData.defaultHourlyRate,
-      isNaN: isNaN(hourlyRateNumber),
-      hourlyRateValid: !!(activityFormData.defaultHourlyRate && !isNaN(hourlyRateNumber) && hourlyRateNumber > 0),
-      isButtonDisabled: saving || !activityFormData.name?.trim() || !activityFormData.defaultHourlyRate || activityFormData.defaultHourlyRate <= 0
-    });
-  }, [activityFormData, saving]);
-
   // Update form data when settings change
   React.useEffect(() => {
     console.log('🔍 Settings loaded - Logo settings:', logoSettings);

@@ -73,7 +73,23 @@ node validate-ipc-types.mjs       # IPC Security Check
 node guard-release-assets.mjs     # electron-updater Assets
 ```
 
-## 🔧 **Architektur**
+## � **Dokumentation**
+
+### 📖 **Hauptdokumentation**
+- **[📊 System Status (v1.7.2)](docs/SYSTEM_STATUS_V1_7_2.md)** - Vollständiger aktueller Status
+- **[📋 Projekt-Übersicht](docs/PROJECT_OVERVIEW.md)** - Architektur & Features
+- **[🛠️ Developer Guide](docs/DEV_GUIDE.md)** - Setup & Development
+- **[📚 Dokumentations-Übersicht](docs/README.md)** - Alle verfügbaren Docs
+
+### 🔧 **Spezial-Dokumentation**
+- **[🎨 Themes & Navigation](docs/THEMES_NAVIGATION.md)** - UI/UX System
+- **[📄 PDF System](docs/PDF_SYSTEM.md)** - Template Engine & Generation
+- **[🔄 Auto-Updater](docs/AUTO_UPDATER_IMPLEMENTATION.md)** - Update-System
+- **[🚀 Release Process](docs/RELEASE_PROCESS.md)** - Build & Deployment
+
+---
+
+## �🔧 **Architektur**
 
 ### **Update-System (v1.7.1)**
 ```

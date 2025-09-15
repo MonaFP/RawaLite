@@ -6,7 +6,9 @@
  * - latest.yml
  * - .exe file
  * - .blockmap file  
- * - .zip file (optional but recommended)
+ * 
+ * HINWEIS: ZIP wurde aus der Build-Pipeline entfernt (electron-builder.yml optimiert)
+ *          für schnellere Uploads und kleinere Release-Größen.
  *
  * Usage:
  *   node guard-release-assets.mjs
@@ -55,7 +57,7 @@ const checks = [
     name: '.zip package',
     pattern: /.*\.zip$/,
     required: false,
-    description: 'Portable Windows package'
+    description: 'Portable Windows package (entfernt für optimierte Uploads)'
   }
 ];
 

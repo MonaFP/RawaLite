@@ -328,12 +328,6 @@ ipcMain.handle('app:getVersion', async () => {
   return app.getVersion()
 })
 
-// IPC Handler für Shell-Operationen (DEPRECATED: externe Navigation verboten)
-// ipcMain.handle('shell:openExternal', async (_, url: string) => {
-//   shell.openExternal(url)
-// })
-// SECURITY: shell:openExternal IPC-Handler entfernt gemäß COPILOT_INSTRUCTIONS.md
-
 // IPC Handler für Datenbank-Operationen
 ipcMain.handle('db:load', async (): Promise<Uint8Array | null> => {
   try {
@@ -385,6 +379,20 @@ ipcMain.handle('pdf:generate', async (event, options: {
 }) => {
   try {
     console.log(`🎯 PDF generation requested: ${options.templateType} - ${options.options.filename}`);
+    
+    // 🚨 IPC DEBUG: Check what arrives via IPC
+    console.log('🔍 IPC TRANSMISSION DEBUG:');
+    console.log('  - options.data exists:', !!options.data);
+    console.log('  - options.data.offer exists:', !!options.data.offer);
+    if (options.data.offer) {
+      console.log('  - offer.offerNumber:', options.data.offer.offerNumber);
+      console.log('  - offer.lineItems exists:', !!options.data.offer.lineItems);
+      console.log('  - offer.lineItems length:', options.data.offer.lineItems?.length || 0);
+      if (options.data.offer.lineItems && options.data.offer.lineItems.length > 0) {
+        console.log('  - First line item structure:', Object.keys(options.data.offer.lineItems[0] || {}));
+        console.log('  - First line item values:', options.data.offer.lineItems[0]);
+      }
+    }
     
     // 1. Validate inputs
     if (!options.templateType || !options.data || !options.options) {
@@ -463,6 +471,24 @@ ipcMain.handle('pdf:generate', async (event, options: {
       console.log('  - Offer VAT Amount:', templateData.offer.vatAmount);
       console.log('  - Offer VAT Rate:', templateData.offer.vatRate);
       console.log('  - Line Items Count:', templateData.offer.lineItems?.length || 0);
+      
+      // 🚨 CRITICAL DEBUG: Line Items Details
+      if (templateData.offer.lineItems && templateData.offer.lineItems.length > 0) {
+        console.log('🔍 LINE ITEMS DETAILED ANALYSIS:');
+        templateData.offer.lineItems.forEach((item: any, index: number) => {
+          console.log(`  Item ${index}:`, {
+            title: item.title,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            total: item.total,
+            types: {
+              quantity: typeof item.quantity,
+              unitPrice: typeof item.unitPrice,
+              total: typeof item.total
+            }
+          });
+        });
+      }
     }
     if (templateData.settings) {
       console.log('  - Settings exists:', !!templateData.settings);
@@ -680,14 +706,36 @@ async function renderTemplate(templatePath: string, data: any): Promise<string> 
       console.log(`📋 Processing ${array.length} items in loop...`);
       return array.map((item, index) => {
         console.log(`  📄 Item ${index}:`, Object.keys(item || {}));
+        
+        // 🚨 CRITICAL DEBUG: Check actual values
+        if (item && typeof item === 'object') {
+          console.log(`    🔍 Item values:`, {
+            title: item.title,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            total: item.total
+          });
+        }
+        
         return itemTemplate.replace(/\{\{this\.([^}]+)\}\}/g, (_match: string, prop: string) => {
           const itemValue = String(item[prop] || '');
           if (itemValue) {
             console.log(`    ✅ {{this.${prop}}} = "${itemValue}"`);
           } else {
-            console.log(`    ⚠️ Empty {{this.${prop}}}`);
+            console.log(`    ⚠️ Empty {{this.${prop}}} (value was: ${item[prop]})`);
           }
           return itemValue;
+        }).replace(/\{\{formatCurrency\s+this\.([^}]+)\}\}/g, (_match: string, prop: string) => {
+          // CRITICAL FIX: Handle formatCurrency within loop context
+          const amount = item[prop];
+          console.log(`💰 [LOOP] Formatting currency: this.${prop} = ${amount}`);
+          if (typeof amount === 'number') {
+            const formatted = amount.toFixed(2).replace('.', ',') + ' €';
+            console.log(`✅ [LOOP] Currency formatted: ${amount} → ${formatted}`);
+            return formatted;
+          }
+          console.log(`⚠️ [LOOP] Invalid currency value for: this.${prop}`);
+          return '0,00 €';
         });
       }).join('');
     });

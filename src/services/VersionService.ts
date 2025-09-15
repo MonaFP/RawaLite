@@ -23,7 +23,7 @@ export interface UpdateCheckResult {
 }
 
 export class VersionService {
-  private readonly BASE_VERSION = '1.7.2';
+  private readonly BASE_VERSION = '1.7.3';
   private readonly BUILD_DATE = '2025-09-14';
   
   private updateService: UpdateService;
@@ -126,7 +126,14 @@ export class VersionService {
       
       const isElectron = typeof window !== 'undefined' && window.rawalite?.updater;
       
-      if (isElectron) {
+      // CRITICAL FIX: Erkenne Development-Modus besser
+      const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV === 'development' || 
+                           location?.hostname === 'localhost' ||
+                           location?.hostname === '127.0.0.1' ||
+                           location?.port === '5173' ||
+                           currentVersion.isDevelopment;
+      
+      if (isElectron && !isDevelopment) {
         try {
           LoggingService.log('[VersionService] Using electron-updater for update check');
           const updateResult = await window.rawalite!.updater.checkForUpdates();
@@ -154,11 +161,17 @@ export class VersionService {
             LoggingService.log(`[VersionService] GitHub API also failed: ${githubError}`);
           }
         }
+      } else if (isDevelopment) {
+        LoggingService.log('[VersionService] Development mode detected - skipping update checks');
+        // Im Development-Modus: Keine externen Update-Checks
+        hasElectronUpdate = false;
+        latestVersion = currentVersion.version;
       } else {
         // Browser-Modus: Verwende GitHub API
         try {
           latestVersion = await this.fetchLatestVersionFromGitHub();
           hasElectronUpdate = this.isUpdateAvailable(currentVersion.version, latestVersion);
+          
           LoggingService.log(`[VersionService] GitHub API check: current=${currentVersion.version}, latest=${latestVersion}, hasUpdate=${hasElectronUpdate}`);
           
           if (hasElectronUpdate) {

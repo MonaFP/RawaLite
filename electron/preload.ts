@@ -20,9 +20,6 @@ const rawaliteAPI: RawaliteAPI = {
     restart: () => ipcRenderer.invoke('app:restart'),
     getVersion: () => ipcRenderer.invoke('app:getVersion'),
   },
-  shell: {
-    openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url),
-  },
   updater: {
     checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
     startDownload: () => ipcRenderer.invoke('updater:start-download'),

@@ -788,14 +788,12 @@ export class SQLiteAdapter implements PersistenceAdapter {
   }
 
   private async _createTimesheetActivityInternal(data: Omit<TimesheetActivity, "id">): Promise<TimesheetActivity> {
-    console.log('SQLiteAdapter._createTimesheetActivityInternal: Creating with data:', data);
     run(
       `INSERT INTO timesheet_activities (timesheetId, activityId, hours, hourlyRate, total, description, position) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [data.timesheetId, data.activityId, data.hours, data.hourlyRate, data.total, data.description || null, data.position || null]
     );
     
     const rows = all<TimesheetActivity>(`SELECT * FROM timesheet_activities WHERE rowid = last_insert_rowid()`);
-    console.log('SQLiteAdapter._createTimesheetActivityInternal: Created activity:', rows[0]);
     return rows[0];
   }
 
@@ -827,5 +825,103 @@ export class SQLiteAdapter implements PersistenceAdapter {
     await withTx(async () => {
       run(`DELETE FROM timesheet_activities WHERE id = ?`, [id]);
     });
+  }
+
+  /**
+   * 🔧 DATA FIX: Korrigiert Line Items mit undefined/null unitPrice und total
+   * Berechnet fehlende Werte basierend auf quantity * unitPrice = total
+   */
+  async fixLineItemPrices(): Promise<{ fixed: number; errors: string[] }> {
+    let fixed = 0;
+    const errors: string[] = [];
+
+    try {
+      await withTx(async () => {
+        // Fix Offer Line Items
+        const offerItems = all<any>(`
+          SELECT id, offerId, quantity, unitPrice, total 
+          FROM offer_line_items 
+          WHERE unitPrice IS NULL OR total IS NULL OR unitPrice = 0 OR total = 0
+        `);
+
+        for (const item of offerItems) {
+          try {
+            // Default values for missing prices
+            const quantity = item.quantity || 1;
+            const unitPrice = item.unitPrice || 0;
+            const total = item.total || 0;
+            
+            // Calculate missing values
+            let newUnitPrice = unitPrice;
+            let newTotal = total;
+            
+            if ((unitPrice === 0 || unitPrice === null) && total > 0) {
+              // Calculate unitPrice from total and quantity
+              newUnitPrice = total / quantity;
+            } else if ((total === 0 || total === null) && unitPrice > 0) {
+              // Calculate total from unitPrice and quantity
+              newTotal = unitPrice * quantity;
+            } else if (unitPrice === 0 && total === 0) {
+              // Set reasonable defaults for completely empty items
+              newUnitPrice = 0;
+              newTotal = 0;
+            }
+
+            run(`
+              UPDATE offer_line_items 
+              SET unitPrice = ?, total = ? 
+              WHERE id = ?
+            `, [newUnitPrice, newTotal, item.id]);
+            
+            fixed++;
+          } catch (error) {
+            errors.push(`Failed to fix offer line item ${item.id}: ${error}`);
+          }
+        }
+
+        // Fix Invoice Line Items (same logic)
+        const invoiceItems = all<any>(`
+          SELECT id, invoiceId, quantity, unitPrice, total 
+          FROM invoice_line_items 
+          WHERE unitPrice IS NULL OR total IS NULL OR unitPrice = 0 OR total = 0
+        `);
+
+        for (const item of invoiceItems) {
+          try {
+            const quantity = item.quantity || 1;
+            const unitPrice = item.unitPrice || 0;
+            const total = item.total || 0;
+            
+            let newUnitPrice = unitPrice;
+            let newTotal = total;
+            
+            if ((unitPrice === 0 || unitPrice === null) && total > 0) {
+              newUnitPrice = total / quantity;
+            } else if ((total === 0 || total === null) && unitPrice > 0) {
+              newTotal = unitPrice * quantity;
+            } else if (unitPrice === 0 && total === 0) {
+              newUnitPrice = 0;
+              newTotal = 0;
+            }
+
+            run(`
+              UPDATE invoice_line_items 
+              SET unitPrice = ?, total = ? 
+              WHERE id = ?
+            `, [newUnitPrice, newTotal, item.id]);
+            
+            fixed++;
+          } catch (error) {
+            errors.push(`Failed to fix invoice line item ${item.id}: ${error}`);
+          }
+        }
+      });
+
+      console.log(`✅ Line Item Data Fix: ${fixed} items corrected, ${errors.length} errors`);
+      return { fixed, errors };
+    } catch (error) {
+      errors.push(`Transaction failed: ${error}`);
+      return { fixed, errors };
+    }
   }
 }
