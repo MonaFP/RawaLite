@@ -24,10 +24,22 @@ export type CustomColorSettings = {
   accent: string;
 };
 
+export type LogoSettings = {
+  fileName?: string;
+  format?: 'svg' | 'png' | 'jpg' | 'jpeg';
+  width?: number;
+  height?: number;
+  fileSize?: number;
+  filePath?: string;
+  base64Data?: string;
+  uploadedAt?: string;
+};
+
 export type DesignSettings = {
   theme: ThemeColor;
   navigationMode: NavigationMode;
   customColors?: CustomColorSettings;
+  logoSettings?: LogoSettings;
 };
 
 export type NumberingCircle = {

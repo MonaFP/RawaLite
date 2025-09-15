@@ -1112,7 +1112,7 @@ app.whenReady().then(() => {
   // Initialize backup system
   initializeBackupSystem()
   
-  // Initialize logo system
+  // Initialize logo system (using consolidated ./logo implementation)
   initializeLogoSystem()
   
   // Auto-check for updates on startup (delayed to avoid blocking app start)

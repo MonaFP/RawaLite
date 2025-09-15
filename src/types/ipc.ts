@@ -37,12 +37,14 @@ export interface LogoUploadOptions {
 export interface LogoProcessResult {
   success: boolean;
   filePath?: string;
-  fileName?: string;
-  format?: 'svg' | 'png' | 'jpg';
-  width?: number;
-  height?: number;
-  fileSize?: number;
   error?: string;
+  metadata?: {
+    fileName: string;
+    format: 'svg' | 'png' | 'jpg' | 'jpeg';
+    width?: number;
+    height?: number;
+    fileSize: number;
+  };
 }
 
 export interface LogoMetadata {
@@ -57,9 +59,9 @@ export interface LogoMetadata {
 
 export interface LogoAPI {
   upload: (options: LogoUploadOptions) => Promise<LogoProcessResult>;
-  get: () => Promise<LogoMetadata | null>;
-  delete: () => Promise<{ success: boolean; error?: string }>;
-  getUrl: () => Promise<{ url: string; timestamp: number } | null>;
+  get: (filePath: string) => Promise<string | null>; // Returns base64 data
+  delete: (filePath: string) => Promise<boolean>;
+  getUrl: (filePath: string) => Promise<string | null>; // Returns file:// URL
 }
 
 // === UPDATER IPC TYPES ===
@@ -232,7 +234,7 @@ export interface IPCHandlers {
   'backup:list': () => Promise<BackupListResult>;
   'backup:prune': (options: BackupPruneOptions) => Promise<BackupPruneResult>;
   'logo:upload': (options: LogoUploadOptions) => Promise<LogoProcessResult>;
-  'logo:get': () => Promise<LogoMetadata | null>;
-  'logo:delete': () => Promise<{ success: boolean; error?: string }>;
-  'logo:getUrl': () => Promise<{ url: string; timestamp: number } | null>;
+  'logo:get': (filePath: string) => Promise<string | null>;
+  'logo:delete': (filePath: string) => Promise<boolean>;
+  'logo:getUrl': (filePath: string) => Promise<string | null>;
 }

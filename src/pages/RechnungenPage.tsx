@@ -7,6 +7,7 @@ import { useOffers } from '../hooks/useOffers';
 import { useSettings } from '../contexts/SettingsContext';
 import { useDesignSettings } from '../hooks/useDesignSettings';
 import { useNotifications } from '../contexts/NotificationContext';
+import { useLogoSettings } from '../hooks/useLogoSettings';
 import { ExportService } from '../services/ExportService';
 import { PDFService } from '../services/PDFService';
 import type { Invoice } from '../persistence/adapter';
@@ -22,6 +23,7 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
   const { settings } = useSettings();
   const { currentTheme, currentCustomColors } = useDesignSettings();
   const { showSuccess, showError } = useNotifications();
+  const { getLogoForPdf } = useLogoSettings();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Invoice | null>(null);
 
@@ -199,7 +201,10 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     try {
       console.log('🎯 Starting PDF export for invoice:', invoice.invoiceNumber);
       
-      // Use new PDFService implementation
+      // Logo für PDF laden
+      const logoData = await getLogoForPdf();
+      console.log('🖼️ [DEBUG] Logo data for PDF:', logoData ? 'Present' : 'None');
+      
       // Use new PDFService implementation with theme integration
       const result = await PDFService.exportInvoiceToPDF(
         invoice, 
@@ -207,7 +212,8 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
         settings, 
         false, // isPreview
         currentTheme,
-        currentCustomColors
+        currentCustomColors,
+        logoData // Logo-Daten für PDF
       );
       
       if (result.success) {
@@ -233,7 +239,10 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     try {
       console.log('🔍 Starting PDF preview for invoice:', invoice.invoiceNumber);
       
-      // Use new PDFService implementation
+      // Logo für PDF laden
+      const logoData = await getLogoForPdf();
+      console.log('🖼️ [DEBUG PREVIEW] Logo data for PDF:', logoData ? 'Present' : 'None');
+      
       // Use new PDFService implementation with theme integration
       const result = await PDFService.exportInvoiceToPDF(
         invoice, 
@@ -241,7 +250,8 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
         settings, 
         true, // isPreview
         currentTheme,
-        currentCustomColors
+        currentCustomColors,
+        logoData // Logo-Daten für PDF
       );
       
       if (result.success) {

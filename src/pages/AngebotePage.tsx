@@ -7,6 +7,7 @@ import { usePackages } from '../hooks/usePackages';
 import { useSettings } from '../contexts/SettingsContext';
 import { useDesignSettings } from '../hooks/useDesignSettings';
 import { useNotifications } from '../contexts/NotificationContext';
+import { useLogoSettings } from '../hooks/useLogoSettings';
 import { ExportService } from '../services/ExportService';
 import { PDFService } from '../services/PDFService';
 import type { Offer } from '../persistence/adapter';
@@ -22,6 +23,7 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const { settings } = useSettings();
   const { currentTheme, currentCustomColors } = useDesignSettings();
   const { showSuccess, showError } = useNotifications();
+  const { getLogoForPdf } = useLogoSettings();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Offer | null>(null);
 
@@ -194,8 +196,7 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       console.log('🎨 Using theme:', currentTheme, currentCustomColors ? 'with custom colors' : '');
       
       // Logo für PDF laden
-      // TODO: Logo System temporarily disabled
-      const logoData = null; // await getLogoForPdf();
+      const logoData = await getLogoForPdf();
       console.log('🖼️ [DEBUG] Logo data for PDF:', logoData ? 'Present' : 'None');
       
       // Use new PDFService implementation with theme integration
@@ -234,8 +235,7 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       console.log('🎨 Using theme:', currentTheme, currentCustomColors ? 'with custom colors' : '');
       
       // Logo für PDF laden
-      // TODO: Logo System temporarily disabled  
-      const logoData = null; // await getLogoForPdf();
+      const logoData = await getLogoForPdf();
       console.log('🖼️ [DEBUG PREVIEW] Logo data for PDF:', logoData ? 'Present' : 'None');
       
       // Use new PDFService implementation with theme integration

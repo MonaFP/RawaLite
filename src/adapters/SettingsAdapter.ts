@@ -1,5 +1,5 @@
 import { getDB, all, run, withTx } from '../persistence/sqlite/db';
-import type { Settings, CompanyData, NumberingCircle, DesignSettings } from '../lib/settings';
+import type { Settings, CompanyData, NumberingCircle, DesignSettings, LogoSettings } from '../lib/settings';
 import { defaultSettings } from '../lib/settings';
 
 export class SettingsAdapter {
@@ -207,5 +207,28 @@ export class SettingsAdapter {
     await this.updateNumberingCircles(updatedCircles);
 
     return `${circle.prefix}${newCurrent.toString().padStart(circle.digits, '0')}`;
+  }
+
+  async updateLogoSettings(logoSettings: LogoSettings): Promise<void> {
+    const currentSettings = await this.getSettings();
+    
+    // Update design settings with logo information
+    const updatedDesignSettings: DesignSettings = {
+      ...currentSettings.designSettings,
+      logoSettings
+    };
+
+    // Save via company data update
+    const companyDataWithDesign = {
+      ...currentSettings.companyData,
+      designSettings: JSON.stringify(updatedDesignSettings)
+    };
+
+    await this.updateCompanyData(companyDataWithDesign);
+  }
+
+  async getLogoSettings(): Promise<LogoSettings> {
+    const settings = await this.getSettings();
+    return settings.designSettings.logoSettings || {};
   }
 }

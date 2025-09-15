@@ -5,6 +5,7 @@ import { useInvoices } from "../hooks/useInvoices";
 import { usePackages } from "../hooks/usePackages";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import { useSettings } from "../contexts/SettingsContext";
+import { useLogoSettings } from "../hooks/useLogoSettings";
 
 interface DashboardPageProps{
   title?: string;
@@ -17,25 +18,21 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
   const { packages } = usePackages();
   const { currentNavigationMode } = useDesignSettings();
   const { settings } = useSettings();
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const { logoUrl, hasLogo, getLogoUrl } = useLogoSettings();
 
-    // Logo-URL laden
+  // Logo-URL laden beim Mount und wenn sich Logo-Settings ändern
   useEffect(() => {
-    // TODO: Logo System temporarily disabled
-    /*
     async function loadLogo() {
       try {
         if (hasLogo) {
-          const url = await getLogoUrl();
-          setLogoUrl(url);
+          await getLogoUrl(); // This updates logoUrl state automatically
         }
       } catch (error) {
         console.error('Error loading logo:', error);
       }
     }
     loadLogo();
-    */
-  }, []); // [hasLogo, getLogoUrl]);
+  }, [hasLogo, getLogoUrl]);
 
   // Statistiken berechnen
   const stats = {

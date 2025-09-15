@@ -43,9 +43,9 @@ const rawaliteAPI: RawaliteAPI = {
   },
   logo: {
     upload: (options: LogoUploadOptions) => ipcRenderer.invoke('logo:upload', options),
-    get: () => ipcRenderer.invoke('logo:get'),
-    delete: () => ipcRenderer.invoke('logo:delete'),
-    getUrl: () => ipcRenderer.invoke('logo:getUrl'),
+    get: (filePath: string) => ipcRenderer.invoke('logo:get', filePath),
+    delete: (filePath: string) => ipcRenderer.invoke('logo:delete', filePath),
+    getUrl: (filePath: string) => ipcRenderer.invoke('logo:getUrl', filePath),
   }
 };
 
