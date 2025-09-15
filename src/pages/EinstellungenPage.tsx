@@ -875,6 +875,35 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
     }
   };
 
+  // Log-Export-Funktion
+  const handleExportLogs = async () => {
+    try {
+      setSaving(true);
+      
+      // Prüfe ob wir in Electron sind
+      if (!window.rawalite?.app?.exportLogs) {
+        showError('Log-Export ist nur in der Desktop-Version verfügbar');
+        return;
+      }
+
+      console.log('🔍 LOG-EXPORT: Starting log export from UI...');
+      const result = await window.rawalite.app.exportLogs();
+      
+      if (result.success) {
+        showSuccess('Debug-Logs erfolgreich exportiert');
+        console.log('✅ LOG-EXPORT: Success - File saved to:', result.filePath);
+      } else {
+        showError(`Fehler beim Exportieren der Logs: ${result.error || 'Unbekannter Fehler'}`);
+        console.error('❌ LOG-EXPORT: Failed -', result.error);
+      }
+    } catch (error) {
+      console.error('❌ LOG-EXPORT: Exception -', error);
+      showError('Fehler beim Exportieren der Logs');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleClearAllData = async () => {
     console.log('🚨 CRITICAL: handleClearAllData was called! This should only happen from the Clear All Data button!');
     console.trace('Call stack:');
@@ -2688,6 +2717,62 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               >
                 📦 Pakete exportieren (CSV)
               </button>
+            </div>
+          </div>
+
+          {/* Debug & Logging Section */}
+          <div style={{ marginBottom: "32px" }}>
+            <h4 style={{ margin: "0 0 12px 0", color: "#374151" }}>Debug & Logging</h4>
+            <p style={{ margin: "0 0 16px 0", color: "#6b7280", fontSize: "14px" }}>
+              Exportieren Sie Debug-Logs für die Fehleranalyse oder öffnen Sie die Entwicklertools.
+            </p>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={handleExportLogs}
+                disabled={saving}
+                className="btn"
+                style={{
+                  backgroundColor: "#7c3aed",
+                  color: "white",
+                  border: "none",
+                  padding: "10px 20px",
+                  borderRadius: "6px",
+                  cursor: saving ? "not-allowed" : "pointer",
+                  fontWeight: "500",
+                  opacity: saving ? 0.6 : 1
+                }}
+              >
+                {saving ? "Exportiere..." : "🔍 Debug-Logs exportieren"}
+              </button>
+              {typeof window !== 'undefined' && window.rawalite && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    // DevTools über das Menü öffnen (F12 Shortcut)
+                    const event = new KeyboardEvent('keydown', {
+                      key: 'F12',
+                      code: 'F12',
+                      keyCode: 123,
+                      which: 123,
+                      bubbles: true
+                    });
+                    document.dispatchEvent(event);
+                  }}
+                  className="btn btn-secondary"
+                  style={{
+                    backgroundColor: "#6b7280",
+                    color: "white",
+                    border: "none",
+                    padding: "10px 20px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontWeight: "500"
+                  }}
+                >
+                  🛠️ Entwicklertools öffnen
+                </button>
+              )}
             </div>
           </div>
 

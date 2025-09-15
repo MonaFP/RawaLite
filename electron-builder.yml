@@ -32,6 +32,10 @@ win:
         - x64
   icon: assets/icon.ico
   artifactName: "RawaLite-Setup-${version}.${ext}"
+  # Optimierungen für electron-updater
+  disableWebInstaller: true
+  # Verbesserte differential download performance
+  compression: normal
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
@@ -44,6 +48,13 @@ nsis:
   runAfterFinish: true
   # Ensure NSIS properly replaces existing installation
   allowElevation: true
+  # Konsistente App-ID für Windows Registry
+  guid: "b6b5b9b2-7b8b-4b9b-8b7b-7b8b7b8b7b8b"
+  # Preserve shortcuts and registry entries
+  perMachine: false
+  # Windows integration optimizations
+  menuCategory: "RawaLite"
+  shortcutName: "RawaLite"
 mac:
   target:
     - target: dmg

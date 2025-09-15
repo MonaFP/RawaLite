@@ -16,6 +16,7 @@ declare interface Window {
     app: {
       restart: () => Promise<void>;
       getVersion: () => Promise<string>;
+      exportLogs: () => Promise<{success: boolean; filePath?: string; error?: string}>;
     };
     shell: {
       openExternal: (url: string) => Promise<void>;

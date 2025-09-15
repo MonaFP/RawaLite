@@ -31,19 +31,53 @@ if (!gotTheLock) {
 }
 
 // === AUTO-UPDATER CONFIGURATION ===
-log.transports.file.level = 'info'
+// Configure enhanced logging
+log.transports.file.level = 'debug'
+log.transports.file.maxSize = 1024 * 1024 * 10 // 10MB max log file
+log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}'
+log.transports.console.level = 'debug'
+
+// Enable more detailed auto-updater logging
 autoUpdater.logger = log
 autoUpdater.autoDownload = false // User confirmation required
 autoUpdater.autoInstallOnAppQuit = false // Manual installation via quitAndInstall nur
 
+// 🔍 ENHANCED DEBUG: Comprehensive environment logging
+log.info('=== AUTO-UPDATER ENVIRONMENT DEBUG ===')
+log.info('App Version:', app.getVersion())
+log.info('App Name:', app.getName())
+log.info('Product Name:', app.getName())
+log.info('App ID:', 'com.rawalite.app')
+log.info('Is Packaged:', app.isPackaged)
+log.info('Platform:', process.platform, process.arch)
+log.info('Electron Version:', process.versions.electron)
+log.info('Node Version:', process.versions.node)
+log.info('App Path:', app.getAppPath())
+log.info('User Data Path:', app.getPath('userData'))
+log.info('Auto-updater feed URL will be:', 'https://github.com/MonaFP/RawaLite')
+log.info('autoDownload setting:', autoUpdater.autoDownload)
+log.info('autoInstallOnAppQuit setting:', autoUpdater.autoInstallOnAppQuit)
+
 // Auto-updater events for IPC communication
 autoUpdater.on('checking-for-update', () => {
-  log.info('Checking for update...')
+  log.info('🔍 [UPDATE-PHASE] Starting update check...')
+  log.info('🔍 [UPDATE-PHASE] Current app version:', app.getVersion())
+  log.info('🔍 [UPDATE-PHASE] Checking against GitHub releases API')
   sendUpdateMessage('checking-for-update')
 })
 
 autoUpdater.on('update-available', (info) => {
-  log.info('Update available:', info)
+  log.info('✅ [UPDATE-PHASE] Update available!')
+  log.info('📦 [UPDATE-AVAILABLE] Available version:', info.version)
+  log.info('📦 [UPDATE-AVAILABLE] Current version:', app.getVersion())
+  log.info('📦 [UPDATE-AVAILABLE] Release notes length:', info.releaseNotes?.length || 0)
+  log.info('📦 [UPDATE-AVAILABLE] Release date:', info.releaseDate)
+  log.info('📦 [UPDATE-AVAILABLE] Files to download:', JSON.stringify(info.files, null, 2))
+  if (info.files && info.files[0]) {
+    log.info('📦 [UPDATE-AVAILABLE] Download size:', info.files[0].size, 'bytes')
+    log.info('📦 [UPDATE-AVAILABLE] Download URL:', info.files[0].url)
+    log.info('📦 [UPDATE-AVAILABLE] SHA512:', info.files[0].sha512)
+  }
   sendUpdateMessage('update-available', {
     version: info.version,
     releaseNotes: info.releaseNotes,
@@ -52,21 +86,44 @@ autoUpdater.on('update-available', (info) => {
 })
 
 autoUpdater.on('update-not-available', (info) => {
-  log.info('Update not available:', info)
+  log.info('❌ [UPDATE-PHASE] Update not available')
+  log.info('❌ [UPDATE-NOT-AVAILABLE] Current version:', app.getVersion())
+  log.info('❌ [UPDATE-NOT-AVAILABLE] Latest version:', info?.version || 'unknown')
+  log.info('❌ [UPDATE-NOT-AVAILABLE] Full info:', JSON.stringify(info, null, 2))
   sendUpdateMessage('update-not-available', info)
 })
 
 autoUpdater.on('error', (err) => {
-  log.error('Update error:', err)
+  log.error('💥 [UPDATE-ERROR] Update system error occurred!')
+  log.error('💥 [UPDATE-ERROR] Error type:', err.constructor.name)
+  log.error('💥 [UPDATE-ERROR] Error message:', err.message)
+  log.error('💥 [UPDATE-ERROR] Error code:', (err as any).code)
+  log.error('💥 [UPDATE-ERROR] Error stack:', err.stack)
+  log.error('💥 [UPDATE-ERROR] Current app version:', app.getVersion())
+  log.error('💥 [UPDATE-ERROR] App is packaged:', app.isPackaged)
   sendUpdateMessage('update-error', {
     message: err.message,
-    stack: err.stack
+    stack: err.stack,
+    code: (err as any).code
   })
 })
 
 autoUpdater.on('download-progress', (progressObj) => {
-  const logMessage = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}% (${progressObj.transferred}/${progressObj.total})`
-  log.info(logMessage)
+  const percent = Math.round(progressObj.percent * 100) / 100
+  const speedMBps = Math.round(progressObj.bytesPerSecond / 1024 / 1024 * 100) / 100
+  
+  // Log every 5% or at critical checkpoints
+  if (percent % 5 < 0.1 || percent >= 74 && percent <= 76) {
+    log.info(`📥 [DOWNLOAD-PROGRESS] ${percent}% - ${speedMBps} MB/s`)
+    log.info(`📥 [DOWNLOAD-PROGRESS] ${progressObj.transferred}/${progressObj.total} bytes`)
+    
+    // Special logging for the problematic 74% range
+    if (percent >= 74 && percent <= 76) {
+      log.info('⚠️ [DOWNLOAD-CRITICAL] Entering 74-76% range - potential checksum validation phase')
+      log.info('⚠️ [DOWNLOAD-CRITICAL] This phase may take longer due to differential download validation')
+    }
+  }
+  
   sendUpdateMessage('download-progress', {
     percent: Math.round(progressObj.percent),
     transferred: progressObj.transferred,
@@ -76,8 +133,12 @@ autoUpdater.on('download-progress', (progressObj) => {
 })
 
 autoUpdater.on('update-downloaded', (info) => {
-  log.info('Update downloaded:', info)
-  log.info(`Update ready for installation: v${info.version}`)
+  log.info('🎉 [UPDATE-DOWNLOADED] Update successfully downloaded!')
+  log.info('🎉 [UPDATE-DOWNLOADED] Downloaded version:', info.version)
+  log.info('🎉 [UPDATE-DOWNLOADED] Current version:', app.getVersion())
+  log.info('🎉 [UPDATE-DOWNLOADED] Download completed at:', new Date().toISOString())
+  log.info('🎉 [UPDATE-DOWNLOADED] Files info:', JSON.stringify(info.files, null, 2))
+  log.info('🎉 [UPDATE-DOWNLOADED] Ready for quitAndInstall()')
   sendUpdateMessage('update-downloaded', {
     version: info.version,
     releaseNotes: info.releaseNotes
@@ -242,12 +303,26 @@ function createMenu() {
       label: 'Ansicht',
       submenu: [
         { label: 'Vollbild', accelerator: 'F11', role: 'togglefullscreen' },
-        ...(isDev ? [
-          { type: 'separator' },
-          { label: 'Entwicklertools', accelerator: 'F12', role: 'toggledevtools' },
-          { label: 'Neu laden', accelerator: 'CmdOrCtrl+R', role: 'reload' },
-          { label: 'Erzwungenes Neu laden', accelerator: 'CmdOrCtrl+Shift+R', role: 'forceReload' }
-        ] : [])
+        { type: 'separator' },
+        { label: 'Neu laden', accelerator: 'CmdOrCtrl+R', role: 'reload' },
+        { label: 'Erzwungenes Neu laden', accelerator: 'CmdOrCtrl+Shift+R', role: 'forceReload' },
+        { type: 'separator' },
+        { label: 'Entwicklertools', accelerator: 'F12', role: 'toggledevtools' },
+        ...(isDev ? [] : [
+          {
+            label: 'Debug-Logs exportieren',
+            click: async () => {
+              try {
+                const mainWindow = BrowserWindow.getAllWindows()[0];
+                if (mainWindow) {
+                  mainWindow.webContents.send('export-logs');
+                }
+              } catch (error) {
+                log.error('Error triggering log export:', error);
+              }
+            }
+          }
+        ])
       ]
     },
     {
@@ -974,6 +1049,58 @@ function cleanupTempFile(filePath: string): void {
   
   attemptCleanup();
 }
+
+// IPC Handler für Log-Export
+ipcMain.handle('app:exportLogs', async () => {
+  try {
+    const logPath = log.transports.file.getFile().path;
+    const userData = app.getPath('userData');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const exportPath = path.join(userData, `rawalite-logs-${timestamp}.log`);
+    
+    log.info('LOG-EXPORT: Starting log export process...');
+    
+    // Check if log file exists
+    if (!fs.existsSync(logPath)) {
+      log.warn('LOG-EXPORT: No log file found at:', logPath);
+      return {
+        success: false,
+        error: 'Log-Datei nicht gefunden'
+      };
+    }
+    
+    // Copy log file to export location
+    await fs.promises.copyFile(logPath, exportPath);
+    
+    log.info('LOG-EXPORT: Log file copied to:', exportPath);
+    
+    // Show dialog to reveal file in explorer
+    const result = await dialog.showMessageBox({
+      type: 'info',
+      title: 'Logs exportiert',
+      message: 'Debug-Logs wurden erfolgreich exportiert.',
+      detail: `Gespeichert unter:\n${exportPath}`,
+      buttons: ['Im Explorer anzeigen', 'OK']
+    });
+    
+    if (result.response === 0) {
+      // Show in explorer
+      shell.showItemInFolder(exportPath);
+    }
+    
+    return {
+      success: true,
+      filePath: exportPath
+    };
+    
+  } catch (error) {
+    log.error('LOG-EXPORT: Export failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unbekannter Fehler'
+    };
+  }
+});
 
 app.whenReady().then(() => {
   createMenu()

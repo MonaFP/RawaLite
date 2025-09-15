@@ -297,3 +297,29 @@
     text-align: center;
   }
 }
+
+/* Status Details Styling */
+.auto-updater-status-details {
+  margin: 16px 0;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #2196f3;
+}
+
+.auto-updater-status-details p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.auto-updater-note {
+  margin-top: 16px !important;
+  padding: 12px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  font-size: 13px !important;
+  color: #856404 !important;
+}

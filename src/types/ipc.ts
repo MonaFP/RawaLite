@@ -15,6 +15,13 @@ export interface DatabaseAPI {
 export interface AppAPI {
   restart: () => Promise<void>;
   getVersion: () => Promise<string>;
+  exportLogs: () => Promise<LogExportResult>;
+}
+
+export interface LogExportResult {
+  success: boolean;
+  filePath?: string;
+  error?: string;
 }
 
 // === LOGO IPC TYPES ===
@@ -191,6 +198,7 @@ export type IPCChannels =
   | 'db:save'
   | 'app:restart'
   | 'app:getVersion'
+  | 'app:exportLogs'
   | 'shell:openExternal'
   | 'updater:check-for-updates'
   | 'updater:start-download'
@@ -212,6 +220,7 @@ export interface IPCHandlers {
   'db:save': (data: Uint8Array) => Promise<boolean>;
   'app:restart': () => Promise<void>;
   'app:getVersion': () => Promise<string>;
+  'app:exportLogs': () => Promise<LogExportResult>;
   'shell:openExternal': (url: string) => Promise<void>;
   'updater:check-for-updates': () => Promise<UpdateCheckResult>;
   'updater:start-download': () => Promise<UpdateDownloadResult>;

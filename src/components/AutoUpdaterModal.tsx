@@ -301,13 +301,40 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
                   />
                 </div>
                 <div className="auto-updater-progress-info">
-                  <span>{progress.percent}%</span>
+                  <span>{progress.percent.toFixed(1)}%</span>
                   <span>{formatBytes(progress.transferred)} / {formatBytes(progress.total)}</span>
                   <span>{formatSpeed(progress.bytesPerSecond)}</span>
                 </div>
               </div>
               
-              <p>Bitte warten Sie, während das Update heruntergeladen wird...</p>
+              {/* Detaillierte Status-Texte basierend auf Fortschritt */}
+              <div className="auto-updater-status-details">
+                {progress.percent < 10 && (
+                  <p>🔄 Verbindung zu GitHub wird hergestellt...</p>
+                )}
+                {progress.percent >= 10 && progress.percent < 30 && (
+                  <p>📥 Download wird initialisiert...</p>
+                )}
+                {progress.percent >= 30 && progress.percent < 50 && (
+                  <p>⚙️ Grundkomponenten werden heruntergeladen...</p>
+                )}
+                {progress.percent >= 50 && progress.percent < 74 && (
+                  <p>📦 Hauptanwendung wird übertragen...</p>
+                )}
+                {progress.percent >= 74 && progress.percent < 90 && (
+                  <p>🔐 Checksummen werden validiert... (Bitte warten, dies kann etwas dauern)</p>
+                )}
+                {progress.percent >= 90 && progress.percent < 100 && (
+                  <p>✅ Download wird abgeschlossen...</p>
+                )}
+                {progress.percent >= 100 && (
+                  <p>🎉 Download erfolgreich! Installation wird vorbereitet...</p>
+                )}
+              </div>
+              
+              <p className="auto-updater-note">
+                <strong>Hinweis:</strong> Bei ~74% kann es zu einer längeren Pause kommen (Checksum-Validierung).
+              </p>
             </div>
           )}
 
