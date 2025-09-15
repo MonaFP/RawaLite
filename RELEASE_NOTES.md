@@ -1,48 +1,35 @@
-# RawaLite v1.8.0 - Vollständiges Logo-System
+# RawaLite v1.8.1 - Kritische System-Reparaturen
 
-## ✨ Neue Features
+## 🔧 Kritische Bugfixes
 
-### 🖼️ Professionelle Logo-Verwaltung
-- **SVG/PNG/JPG Support** mit vollständiger Format-Unterstützung
-- **SVG-Sanitization** mit Whitelist-basierter Filterung für maximale Sicherheit
-- **PNG/JPG-Optimierung** mit automatischer Metadaten-Entfernung (EXIF/ICC)
-- **Logo-Anzeige im Dashboard** mit Live-Preview-Funktionalität
-- **Vollständige PDF-Integration** in Angeboten und Rechnungen
+### � Update-System repariert
+- **quitAndInstall Parameter korrigiert**: `quitAndInstall(false, true)` → `quitAndInstall(false, false)`
+- **App-Restart Probleme behoben**: Updates werden nun korrekt installiert
+- **Electron-Updater Stabilität**: Keine Hanging-Prozesse mehr nach Update-Download
 
-### 🔄 Dual-Path Storage
-- **IPC-basierte Speicherung** für optimale Performance
-- **Base64-Fallback** für maximale Kompatibilität
-- **Automatische Pfad-Validierung** und Sicherheitschecks
+### 📋 Leistungsnachweise funktionsfähig
+- **Activities-Validation entfernt**: Leistungsnachweise können jetzt ohne Activities erstellt werden
+- **Workflow korrigiert**: BasicForm → Speichern → Activities später hinzufügen
+- **ValidationError behoben**: "Mindestens eine Aktivität erforderlich" nicht mehr bei Erstellung
 
-### 🎨 Theme-Integration
-- **Dashboard-Integration** mit Theme-konformen Farben
-- **PDF-Template-Support** für brandkonforme Dokumente
-- **Responsive Design** mit automatischer Größenanpassung
+### 🖼️ Logo-System vollständig funktional
+- **IPC-Handler korrekt initialisiert**: `initializeLogoSystem()` beim App-Start
+- **Base64-Fallback aktiv**: Funktioniert auch wenn IPC nicht verfügbar
+- **SVG-Sanitization**: Sicherheitsstandards vollständig implementiert
 
-## 🔧 Technische Verbesserungen
+## � System-Status
 
-### 📐 Architektur
-- **Konsolidierte Logo IPC-Handler** in `electron/logo.ts`
-- **TypeScript-strict Implementierung** ohne Kompilierungsfehler
-- **Layered Architecture** vollständig eingehalten
-- **Security-konforme IPC-Handler** mit Pfad-Validierung
+### ✅ Behobene Probleme
+- **Update-Installation**: Funktioniert wieder korrekt
+- **Leistungsnachweis-Erstellung**: Keine Validation-Errors mehr
+- **Logo-Upload**: Vollständig implementiert mit Fallback-Mechanismus
 
-### 🛠️ Code-Qualität
-- **Extended Debug Pattern** nach DEBUGGING_STANDARDS.md
-- **Professional Error Handling** nach RawaLite-Standards
-- **Vollständige Test-Coverage** für alle Logo-Funktionen
-- **Production-ready Implementierung** ohne Breaking Changes
+### 🎯 Sofortige Verbesserungen
+- Apps können sich nach Updates korrekt neu starten
+- Benutzer können Leistungsnachweise ohne Vorab-Activities erstellen
+- Logo-System arbeitet zuverlässig in allen Szenarien
 
-## 🎯 Qualitätssicherung
-- ✅ Alle TypeScript-Kompilierungen erfolgreich
-- ✅ Security-Standards eingehalten
-- ✅ Performance-optimiert
-- ✅ Backward-kompatibel
+## � Upgrade-Empfehlung
+**Sofortiges Update dringend empfohlen** - behebt drei kritische System-Ausfälle.
 
-## 📋 Verwendung
-
-1. **Logo hochladen**: Einstellungen → Design → Logo hochladen
-2. **Dashboard-Anzeige**: Automatische Anzeige im Header-Bereich
-3. **PDF-Integration**: Logos erscheinen automatisch in generierten PDFs
-
-Das Logo-System ist vollständig produktionsbereit und folgt allen etablierten RawaLite-Qualitätsstandards.
+Alle gemeldeten Probleme aus v1.8.0 sind vollständig behoben.
