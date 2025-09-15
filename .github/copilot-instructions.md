@@ -12,6 +12,13 @@ Wenn ein Agent in Konflikt kommt → Instruktionen unverändert anwenden oder ex
 🛡️ Goldene Regeln (nicht verhandelbar)
 
 ⚠️ Dieses Projekt ist PNPM-ONLY.
+
+Lies und verstehe vor Änderungsvorschlägen, Fehleranalysen, Implementierungen etc. zunächst ALLE Guides im /docs-Ordner
+
+Führe IMMER zunächst den dazu relevanten TEST aus /tests aus. Wenn im jeweiligen Dokument eine Testvariante fehlt oder generell ein Testflow fehlt, informiere mich und warte auf Anweisungen.
+
+Aktualisiere nach JEDER erfolgreichen Änderung/FIX die dazu relevante Dokumentation. Überprüfe IMMER, ob es zwischen Dokumentation und Code Abweichungen oder Inkonsistenzen gibt und informiere mich + warte auf Anweisung.
+
 npm oder yarn dürfen nicht verwendet oder in Befehlen/Dokumentation vorgeschlagen werden.
 Alle Beispiele, Skripte und CI-Läufe müssen immer pnpm nutzen.
 
