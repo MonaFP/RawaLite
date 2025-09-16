@@ -4,7 +4,9 @@ declare interface Window {
     addCustomer: (data: { Name: string; Adresse?: string }) => Promise<any>;
     deleteCustomer: (id: string) => Promise<void>;
     getCounters: () => Promise<any>;
-    getNextId: (entity: 'customers'|'invoices'|'offers'|'packages') => Promise<string>;
+    getNextId: (
+      entity: "customers" | "invoices" | "offers" | "packages"
+    ) => Promise<string>;
     getSettings: () => Promise<any>;
     setKleinunternehmer: (val: boolean) => Promise<void>;
   };
@@ -16,24 +18,36 @@ declare interface Window {
     app: {
       restart: () => Promise<void>;
       getVersion: () => Promise<string>;
-      exportLogs: () => Promise<{success: boolean; filePath?: string; error?: string}>;
+      exportLogs: () => Promise<{
+        success: boolean;
+        filePath?: string;
+        error?: string;
+      }>;
     };
     shell: {
       openExternal: (url: string) => Promise<void>;
     };
     updater: {
-      checkForUpdates: () => Promise<{success: boolean; updateInfo?: any; error?: string}>;
-      startDownload: () => Promise<{success: boolean; error?: string}>;
-      installAndRestart: () => Promise<{success: boolean; error?: string}>;
-      getVersion: () => Promise<{current: string; appName: string}>;
-      onUpdateMessage: (callback: (event: any, data: any) => void) => void;
-      removeUpdateMessageListener: (callback: (event: any, data: any) => void) => void;
+      checkForUpdates: () => Promise<{
+        success: boolean;
+        updateInfo?: any;
+        error?: string;
+      }>;
+      startDownload: () => Promise<{ success: boolean; error?: string }>;
+      installAndRestart: () => Promise<{ success: boolean; error?: string }>;
+      getVersion: () => Promise<{ current: string; appName: string }>;
+      onUpdateMessage: (
+        callback: (event: any, data: { type: string; data?: any }) => void
+      ) => void;
+      removeUpdateMessageListener: (
+        callback: (event: any, data: { type: string; data?: any }) => void
+      ) => void;
     };
     backup: {
       create: (options: {
-        kind: 'pre-update' | 'manual' | 'post-download';
+        kind: "pre-update" | "manual" | "post-download";
         description?: string;
-        payloadMeta?: { version?: string; sizeEst?: number; };
+        payloadMeta?: { version?: string; sizeEst?: number };
       }) => Promise<{
         success: boolean;
         backupId?: string;
@@ -54,10 +68,7 @@ declare interface Window {
         }>;
         error?: string;
       }>;
-      prune: (options: {
-        keep?: number;
-        maxTotalMB?: number;
-      }) => Promise<{
+      prune: (options: { keep?: number; maxTotalMB?: number }) => Promise<{
         success: boolean;
         removedCount?: number;
         error?: string;
@@ -77,7 +88,7 @@ declare interface Window {
         error?: string;
         metadata?: {
           fileName: string;
-          format: 'svg' | 'png' | 'jpg';
+          format: "svg" | "png" | "jpg";
           width?: number;
           height?: number;
           fileSize: number;
