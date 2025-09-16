@@ -37,6 +37,7 @@ export interface UpdateHookState {
   progress: UpdateProgress | null;
   error: string | null;
   currentVersion: string;
+  installInitiated: boolean; // 🔧 CRITICAL FIX: Track install state
 }
 
 export interface UpdateHookActions {
@@ -59,6 +60,9 @@ export function useAutoUpdater(options: {
   const [error, setError] = useState<string | null>(null);
   const [currentVersion, setCurrentVersion] = useState<string>('');
   
+  // 🔧 CRITICAL FIX: Track if install has been initiated to prevent "success" before actual install
+  const [installInitiated, setInstallInitiated] = useState<boolean>(false);
+  
   const intervalRef = useRef<NodeJS.Timeout>();
   const isElectron = typeof window !== 'undefined' && window.rawalite?.updater;
 
@@ -70,6 +74,7 @@ export function useAutoUpdater(options: {
       case 'checking-for-update':
         setState('checking');
         setError(null);
+        setInstallInitiated(false); // Reset install tracking
         break;
         
       case 'update-available':
@@ -79,26 +84,34 @@ export function useAutoUpdater(options: {
           releaseNotes: data.data?.releaseNotes,
           releaseDate: data.data?.releaseDate
         });
+        setInstallInitiated(false); // Reset install tracking
         break;
         
       case 'update-not-available':
         setState('not-available');
         setUpdateInfo(null);
+        setInstallInitiated(false); // Reset install tracking
         break;
         
       case 'download-progress':
         setState('downloading');
         setProgress(data.data);
+        // Do NOT show success during download - only progress
         break;
         
       case 'update-downloaded':
-        setState('downloaded');
+        // 🔧 CRITICAL FIX: Only set to 'downloaded', not 'success' yet
+        console.log('[useAutoUpdater] Update downloaded - ready for installation');
+        setState('downloaded'); 
         setProgress(null);
+        setInstallInitiated(false); // Reset install tracking
+        // UI should show "Ready to install" button, not "Update successful"
         break;
         
       case 'update-error':
         setState('error');
         setError(data.data?.message || 'Unbekannter Fehler beim Update');
+        setInstallInitiated(false); // Reset install tracking on error
         break;
     }
   }, []);
@@ -168,6 +181,7 @@ export function useAutoUpdater(options: {
       console.log('[useAutoUpdater] Manual update check triggered');
       setState('checking');
       setError(null);
+      setInstallInitiated(false); // Reset install tracking
       
       const result = await window.rawalite!.updater.checkForUpdates();
       if (!result.success) {
@@ -192,6 +206,7 @@ export function useAutoUpdater(options: {
     try {
       console.log('[useAutoUpdater] Starting update download');
       setError(null);
+      setInstallInitiated(false); // Reset install tracking
       
       const result = await window.rawalite!.updater.startDownload();
       if (!result.success) {
@@ -217,22 +232,31 @@ export function useAutoUpdater(options: {
       console.log('[useAutoUpdater] Installing update and restarting');
       setError(null);
       
+      // 🔧 CRITICAL FIX: Mark install as initiated BEFORE calling IPC
+      setInstallInitiated(true);
+      console.log('[useAutoUpdater] Install initiated - app should quit and restart now');
+      
       const result = await window.rawalite!.updater.installAndRestart();
       if (!result.success) {
         setError(result.error || 'Installation fehlgeschlagen');
         setState('error');
+        setInstallInitiated(false); // Reset on error
+      } else {
+        console.log('[useAutoUpdater] Install command sent successfully - app should be restarting');
+        // App wird automatisch neu gestartet - installInitiated bleibt true
       }
-      // App wird automatisch neu gestartet
     } catch (err) {
       console.error('[useAutoUpdater] Update install failed:', err);
       setError('Installation fehlgeschlagen');
       setState('error');
+      setInstallInitiated(false); // Reset on error
     }
   }, [isElectron]);
 
   const dismissError = useCallback(() => {
     setError(null);
     setState('idle');
+    setInstallInitiated(false); // Reset install tracking
   }, []);
 
   const reset = useCallback(() => {
@@ -240,6 +264,7 @@ export function useAutoUpdater(options: {
     setUpdateInfo(null);
     setProgress(null);
     setError(null);
+    setInstallInitiated(false); // Reset install tracking
   }, []);
 
   const hookState: UpdateHookState = {
@@ -247,7 +272,8 @@ export function useAutoUpdater(options: {
     updateInfo,
     progress,
     error,
-    currentVersion
+    currentVersion,
+    installInitiated // 🔧 CRITICAL FIX: Include install state in hook state
   };
 
   const hookActions: UpdateHookActions = {

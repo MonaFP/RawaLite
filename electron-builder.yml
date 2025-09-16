@@ -1,50 +1,54 @@
-# electron-builder.yml
-appId: com.rawalite.app           # KONSTANT lassen
+appId: com.rawalite.app
 productName: RawaLite
+artifactName: "${productName} Setup ${version}.${ext}"
 
 directories:
-  output: release                 # <- NEU: Builder schreibt in release/
+  output: dist
+  buildResources: assets
 
-# 🔄 CRITICAL FIX: GitHub Auto-Update Integration
+files:
+  - "dist/**/*"
+  - "dist-electron/**/*"
+  - "templates/**/*"
+  - "package.json"
+
+extraResources:
+  - from: "templates"
+    to: "app/templates"
+    filter: ["**/*"]
+
+win:
+  icon: assets/icon.ico
+  target:
+    - target: nsis
+      arch: x64
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  allowElevation: true
+  runAfterFinish: true
+  createDesktopShortcut: true
+
 publish:
   provider: github
   owner: MonaFP
   repo: RawaLite
-  private: false
   releaseType: release
 
-files:
-  - dist/**                       # Renderer-Bundle von Vite
-  - dist-electron/**              # Main/Preload
-  - package.json
-  # Sicherheitsausschlüsse (falls doch mal was in dist liegt):
-  - "!dist/win-unpacked{,/**}"
-  - "!dist/*.exe"
-  - "!dist/*.blockmap"
-  - "!dist/latest.yml"
-  - "!dist/builder-*.yml"
-  # generische Ausschlüsse:
-  - "!node_modules"
-  - "!src"
-  - "!public"
-  - "!electron"
-  - "!tests"
+# File associations
+fileAssociations:
+  - ext: rawalite
+    name: RawaLite Document
+    description: RawaLite Document File
 
-extraResources:
-  # reicht:
-  - from: assets/
-    to: app/assets/
-  - from: templates/
-    to: app/templates/
-  # Den Einzeleintrag aus public/rawalite-logo.png kannst du entfernen
-  # (liegt bereits in assets/ und wird doppelt).
-  
-nsis:
-  oneClick: false
-  perMachine: false
-  deleteAppDataOnUninstall: false
-  createDesktopShortcut: true
-  createStartMenuShortcut: true
-  installerIcon: assets/icon.ico
-  uninstallerIcon: assets/icon.ico
-  artifactName: "RawaLite-Setup-${version}.${ext}"
+# Build optimization
+nodeGypRebuild: false
+buildDependenciesFromSource: false
+
+# Metadata for proper update detection
+extraMetadata:
+  main: dist-electron/main.cjs
+  homepage: https://github.com/MonaFP/RawaLite
+  repository: https://github.com/MonaFP/RawaLite

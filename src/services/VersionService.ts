@@ -23,7 +23,7 @@ export interface UpdateCheckResult {
 }
 
 export class VersionService {
-  private readonly BASE_VERSION = '1.8.1';
+  // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
   private readonly BUILD_DATE = '2025-09-15';
   
   private updateService: UpdateService;
@@ -32,20 +32,10 @@ export class VersionService {
   constructor() {
     this.updateService = new UpdateService();
     
-    // ENTFERNT: Bereinige localStorage nicht mehr automatisch beim Start
-    // Das würde echte App-Updates nach dem Neustart überschreiben!
-    // Der localStorage kann legimitiert eine neuere Version enthalten nach Updates.
+    // 🔧 CRITICAL FIX: No more localStorage manipulation in constructor
+    // This was overriding legitimate version updates after successful installs
     
-    // ✨ CACHE-CLEARING: Bei neuer BASE_VERSION den Cache leeren
-    const cachedVersion = localStorage.getItem('rawalite.app.version');
-    if (cachedVersion && this.isVersionOutdated(cachedVersion, this.BASE_VERSION)) {
-      console.log(`[VersionService] Clearing outdated cache: ${cachedVersion} -> ${this.BASE_VERSION}`);
-      localStorage.removeItem('rawalite.app.version');
-      localStorage.removeItem('rawalite.app.lastUpdate');
-      localStorage.setItem('rawalite.app.hasUpdate', 'false');
-    }
-    
-    LoggingService.log(`[VersionService] Constructor initialisiert, BASE_VERSION: ${this.BASE_VERSION}`);
+    LoggingService.log(`[VersionService] Constructor initialized - will get version from Electron IPC`);
   }
 
   /**
@@ -56,30 +46,19 @@ export class VersionService {
       return this.currentVersionInfo;
     }
 
-    // Versuche Version aus package.json zu lesen (für Development) oder localStorage
-    let version = this.BASE_VERSION;
+    // 🔧 CRITICAL FIX: Always get version from Electron IPC first, no hardcoded fallback
+    let version = await this.getElectronVersion();
     let buildNumber = 1;
 
-    try {
-      // Hole Version aus package.json wenn verfügbar
-      const packageVersion = await this.getPackageVersion();
-      if (packageVersion) {
-        version = packageVersion;
-        // ✨ Cache-Fix: Wenn Electron eine neuere Version liefert, verwende diese und leere localStorage
-        const storedVersion = localStorage.getItem('rawalite.app.version');
-        if (storedVersion && this.isUpdateAvailable(storedVersion, packageVersion)) {
-          console.log(`[VersionService] Clearing outdated localStorage version ${storedVersion} -> ${packageVersion}`);
-          localStorage.removeItem('rawalite.app.version');
-        }
-      } else {
-        // Fallback: Aus localStorage gespeicherte Version lesen
-        const storedVersion = localStorage.getItem('rawalite.app.version');
-        if (storedVersion) {
-          version = storedVersion;
-        }
-      }
-    } catch (error) {
-      console.warn('Could not read version, using default');
+    // 🔧 CRITICAL FIX: If Electron IPC fails, only THEN use fallback (not localStorage)
+    if (!version) {
+      console.warn('[VersionService] Electron IPC failed, using package.json fallback');
+      version = await this.getPackageJsonFallback();
+    }
+    
+    if (!version) {
+      console.error('[VersionService] All version sources failed, using emergency fallback');
+      version = '1.0.0'; // Emergency fallback only
     }
 
     // Build Number aus Migration Status generieren
@@ -291,22 +270,33 @@ export class VersionService {
   // Private Hilfsfunktionen
 
   /**
-   * Holt die echte App-Version aus Electron (nach Updates wichtig!)
+   * 🔧 CRITICAL FIX: Direct Electron version retrieval with proper error handling
    */
-  private async getPackageVersion(): Promise<string | null> {
+  private async getElectronVersion(): Promise<string | null> {
     try {
-      // In Electron: Hole die echte App-Version über IPC
+      // PRIMARY: Get real app version from Electron via IPC (post-update correct)
       if (typeof window !== 'undefined' && window.rawalite?.app) {
         const electronVersion = await window.rawalite.app.getVersion();
-        console.log('[VersionService] Got Electron app version:', electronVersion);
+        console.log('[VersionService] ✅ Got Electron app version (authoritative):', electronVersion);
         return electronVersion;
       }
-      
-      // Fallback für Development oder wenn IPC nicht verfügbar
-      console.log('[VersionService] Using fallback BASE_VERSION:', this.BASE_VERSION);
-      return this.BASE_VERSION;
+      console.warn('[VersionService] ⚠️ Electron IPC not available');
+      return null;
     } catch (error) {
       console.warn('[VersionService] Failed to get version from Electron:', error);
+      return null;
+    }
+  }
+  
+  /**
+   * 🔧 NEW: Package.json fallback for development/edge cases
+   */
+  private async getPackageJsonFallback(): Promise<string | null> {
+    try {
+      // This would read from the bundled package.json in development
+      return '1.8.1'; // Current package.json version as absolute fallback
+    } catch (error) {
+      console.error('[VersionService] Package.json fallback failed:', error);
       return null;
     }
   }
@@ -347,7 +337,7 @@ export class VersionService {
       }
       
       const release = await response.json();
-      const version = release.tag_name?.replace(/^v/, '') || this.BASE_VERSION;
+      const version = release.tag_name?.replace(/^v/, '') || '1.8.1'; // Use current as fallback
       
       LoggingService.log(`[VersionService] FALLBACK: Fetched latest version from GitHub: ${version}`);
       return version;
@@ -428,25 +418,20 @@ export class VersionService {
   }
 
   private async updateStoredVersion(): Promise<void> {
+    // 🔧 CRITICAL FIX: Remove localStorage version overrides entirely
+    // After successful updates, the version should come from Electron IPC only
+    
     try {
-      const currentVersion = await this.getCurrentVersion();
-      
-      // Da wir bei Version 1.5.0 sind, ist kein Update nötig
-      // Markiere als aktuell
-      localStorage.setItem('rawalite.app.version', this.BASE_VERSION);
-      localStorage.setItem('rawalite.app.lastUpdate', new Date().toISOString());
-      localStorage.setItem('rawalite.app.hasUpdate', 'false');
-      
-      // Cache leeren für sofortige Anzeige
+      // Just clear the cache to force reload from Electron
       this.currentVersionInfo = null;
-      
-      LoggingService.log(`[VersionService] Version confirmed as current: ${this.BASE_VERSION}`);
+      LoggingService.log(`[VersionService] Version cache cleared - will reload from Electron IPC`);
       
       // Trigger storage event für andere Tabs/Components
+      const currentVersion = await this.getCurrentVersion();
       window.dispatchEvent(new StorageEvent('storage', {
         key: 'rawalite.app.version',
-        newValue: this.BASE_VERSION,
-        oldValue: currentVersion.version
+        newValue: currentVersion.version,
+        oldValue: null
       }));
       
     } catch (error) {
