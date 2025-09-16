@@ -37,10 +37,14 @@ log.transports.file.maxSize = 1024 * 1024 * 10 // 10MB max log file
 log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}'
 log.transports.console.level = 'debug'
 
-// Enable more detailed auto-updater logging
+// 🔧 CRITICAL FIX: Proper autoUpdater configuration
 autoUpdater.logger = log
-autoUpdater.autoDownload = false // User confirmation required
-autoUpdater.autoInstallOnAppQuit = false // Manual installation via quitAndInstall nur
+autoUpdater.autoDownload = false              // User confirmation required
+autoUpdater.autoInstallOnAppQuit = false     // Manual installation only
+autoUpdater.allowDowngrade = false           // Prevent version downgrades
+autoUpdater.allowPrerelease = false          // Stable releases only
+autoUpdater.disableWebInstaller = true       // Disable web installer fallback
+autoUpdater.forceDevUpdateConfig = false     // Production behavior always
 
 // 🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info('=== AUTO-UPDATER ENVIRONMENT DEBUG ===')
@@ -57,6 +61,9 @@ log.info('User Data Path:', app.getPath('userData'))
 log.info('Auto-updater feed URL will be:', 'https://github.com/MonaFP/RawaLite')
 log.info('autoDownload setting:', autoUpdater.autoDownload)
 log.info('autoInstallOnAppQuit setting:', autoUpdater.autoInstallOnAppQuit)
+log.info('allowDowngrade setting:', autoUpdater.allowDowngrade)
+log.info('allowPrerelease setting:', autoUpdater.allowPrerelease)  
+log.info('disableWebInstaller setting:', autoUpdater.disableWebInstaller)
 
 // === AUTO-UPDATER STATE MANAGEMENT ===
 let isUpdateAvailable = false
@@ -209,27 +216,42 @@ ipcMain.handle('updater:start-download', async () => {
   }
 })
 
+// 🔧 CRITICAL FIX: Completely rewritten install handler
 ipcMain.handle('updater:install-and-restart', async () => {
   try {
-    log.info('Installing update and restarting application')
+    log.info('🚀 [INSTALL-AND-RESTART] Starting installation process')
+    log.info('🚀 [INSTALL-AND-RESTART] Current app version before install:', app.getVersion())
     
-    // Ensure all windows are properly closed before update
+    // Ensure update is actually downloaded before installing
+    if (!isUpdateAvailable || !currentUpdateInfo) {
+      log.error('🚀 [INSTALL-ERROR] No update downloaded - cannot install')
+      return {
+        success: false,
+        error: 'Kein Update zum Installieren verfügbar. Bitte erst herunterladen.'
+      }
+    }
+    
+    // Close all windows gracefully before update
     const allWindows = BrowserWindow.getAllWindows()
-    log.info(`Closing ${allWindows.length} windows before update`)
+    log.info(`🚀 [INSTALL-AND-RESTART] Closing ${allWindows.length} windows before update`)
     
-    // Close all windows gracefully
     allWindows.forEach(window => {
       if (!window.isDestroyed()) {
         window.close()
       }
     })
     
-    // Wait for windows to close
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // 🔧 CRITICAL FIX: Proper timing and parameters for NSIS installer
+    log.info('🚀 [INSTALL-AND-RESTART] Executing quitAndInstall with proper NSIS parameters')
     
-    // For Windows NSIS installer: isForceRunAfter=true ensures app restarts after install
-    log.info('Executing quitAndInstall for Windows NSIS installer')
-    autoUpdater.quitAndInstall(false, false)
+    // Wait for graceful window closure
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // For Windows NSIS: isSilent=false (show progress), isForceRunAfter=true (restart after install)
+    setImmediate(() => {
+      log.info('🚀 [INSTALL-AND-RESTART] Calling quitAndInstall(false, true) for NSIS')
+      autoUpdater.quitAndInstall(false, true)
+    })
     
     return { success: true }
   } catch (error) {

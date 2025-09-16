@@ -50,6 +50,9 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [currentVersion, setCurrentVersion] = useState<string>('');
 
+  // 🔧 CRITICAL FIX: Track installation state to prevent premature success messages
+  const [installInitiated, setInstallInitiated] = useState<boolean>(false);
+
   // Update message handler
   const handleUpdateMessage = useCallback((event: any, data: { type: string; data?: any }) => {
     console.log('Update message received:', data);
@@ -58,6 +61,7 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
       case 'checking-for-update':
         setUpdateState('checking');
         setError(null);
+        setInstallInitiated(false); // Reset installation tracking
         break;
         
       case 'update-available':
@@ -67,26 +71,34 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
           releaseNotes: data.data?.releaseNotes,
           releaseDate: data.data?.releaseDate
         });
+        setInstallInitiated(false); // Reset installation tracking
         break;
         
       case 'update-not-available':
         setUpdateState('not-available');
         setUpdateInfo(null);
+        setInstallInitiated(false); // Reset installation tracking
         break;
         
       case 'download-progress':
         setUpdateState('downloading');
         setProgress(data.data);
+        // Do NOT set installInitiated during download
         break;
         
       case 'update-downloaded':
-        setUpdateState('downloaded');
+        // 🔧 CRITICAL FIX: Update is downloaded but not yet installed
+        console.log('Update downloaded successfully - ready for installation');
+        setUpdateState('downloaded'); // This should show "Ready to install" UI
         setProgress(null);
+        setInstallInitiated(false); // Reset installation tracking
+        // Do NOT show "Update successful" until after app restart
         break;
         
       case 'update-error':
         setUpdateState('error');
         setError(data.data?.message || 'Unbekannter Fehler beim Update');
+        setInstallInitiated(false); // Reset on error
         break;
     }
   }, []);
@@ -127,6 +139,7 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
     try {
       setUpdateState('checking');
       setError(null);
+      setInstallInitiated(false); // Reset installation tracking
       
       const result = await window.rawalite.updater.checkForUpdates();
       if (!result.success) {
@@ -149,6 +162,7 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
 
     try {
       setError(null);
+      setInstallInitiated(false); // Reset installation tracking
       const result = await window.rawalite.updater.startDownload();
       if (!result.success) {
         setError(result.error || 'Download fehlgeschlagen');
@@ -170,16 +184,25 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
 
     try {
       setError(null);
+      
+      // 🔧 CRITICAL FIX: Mark installation as initiated
+      setInstallInitiated(true);
+      console.log('Installation initiated - app should quit and restart');
+      
       const result = await window.rawalite.updater.installAndRestart();
       if (!result.success) {
         setError(result.error || 'Installation fehlgeschlagen');
         setUpdateState('error');
+        setInstallInitiated(false); // Reset on error
+      } else {
+        console.log('Install command successful - waiting for app restart');
+        // installInitiated bleibt true bis App neu startet
       }
-      // App wird automatisch neu gestartet
     } catch (err) {
       console.error('Update install failed:', err);
       setError('Installation fehlgeschlagen');
       setUpdateState('error');
+      setInstallInitiated(false); // Reset on error
     }
   };
 
@@ -340,25 +363,42 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
 
           {updateState === 'downloaded' && (
             <div className="auto-updater-downloaded">
-              <div className="auto-updater-success-icon">✓</div>
-              <h3>Update bereit zur Installation</h3>
-              <p>Das Update wurde erfolgreich heruntergeladen und ist bereit zur Installation.</p>
-              <p><strong>Hinweis:</strong> Die Anwendung wird für die Installation neu gestartet.</p>
-              
-              <div className="auto-updater-actions">
-                <button
-                  className="auto-updater-button primary"
-                  onClick={handleInstallAndRestart}
-                >
-                  Jetzt installieren und neu starten
-                </button>
-                <button
-                  className="auto-updater-button"
-                  onClick={onClose}
-                >
-                  Später installieren
-                </button>
-              </div>
+              {!installInitiated ? (
+                // 🔧 CRITICAL FIX: Show "Ready to install" BEFORE install button click
+                <>
+                  <div className="auto-updater-download-icon">📦</div>
+                  <h3>Update bereit zur Installation</h3>
+                  <p>Das Update wurde erfolgreich heruntergeladen und ist bereit zur Installation.</p>
+                  <p><strong>Hinweis:</strong> Die Anwendung wird für die Installation neu gestartet.</p>
+                  
+                  <div className="auto-updater-actions">
+                    <button
+                      className="auto-updater-button primary"
+                      onClick={handleInstallAndRestart}
+                    >
+                      Jetzt installieren und neu starten
+                    </button>
+                    <button
+                      className="auto-updater-button"
+                      onClick={onClose}
+                    >
+                      Später installieren
+                    </button>
+                  </div>
+                </>
+              ) : (
+                // 🔧 CRITICAL FIX: Show different UI AFTER install button clicked
+                <>
+                  <div className="auto-updater-spinner"></div>
+                  <h3>Update wird installiert...</h3>
+                  <p>Die Anwendung wird neu gestartet. Bitte warten...</p>
+                  <div className="auto-updater-install-progress">
+                    <p>🚀 Installer wird gestartet...</p>
+                    <p>⏳ App wird automatisch neu gestartet</p>
+                    <p>✨ Nach dem Neustart ist die neue Version verfügbar</p>
+                  </div>
+                </>
+              )}
             </div>
           )}
 

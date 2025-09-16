@@ -1,60 +1,42 @@
-// electron/preload.ts
+// ============================================================
+// FILE: electron/preload.ts
+// ============================================================
 import { contextBridge, ipcRenderer } from 'electron';
-import type { 
-  RawaliteAPI, 
-  ElectronAPI, 
-  PDFGenerateOptions, 
-  UpdateMessage,
-  BackupCreateOptions,
-  BackupPruneOptions,
-  LogoUploadOptions
-} from '../src/types/ipc';
-import type { IpcRendererEvent } from 'electron';
 
-const rawaliteAPI: RawaliteAPI = {
-  db: {
-    load: () => ipcRenderer.invoke('db:load'),
-    save: (data: Uint8Array) => ipcRenderer.invoke('db:save', data),
-  },
-  app: {
-    restart: () => ipcRenderer.invoke('app:restart'),
-    getVersion: () => ipcRenderer.invoke('app:getVersion'),
-    exportLogs: () => ipcRenderer.invoke('app:exportLogs'),
-  },
-  updater: {
-    checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
-    startDownload: () => ipcRenderer.invoke('updater:start-download'),
-    installAndRestart: () => ipcRenderer.invoke('updater:install-and-restart'),
-    getVersion: () => ipcRenderer.invoke('updater:get-version'),
-    
-    // Event listeners for update messages
-    onUpdateMessage: (callback: (event: IpcRendererEvent, data: UpdateMessage) => void) => {
-      ipcRenderer.on('update-message', callback)
-    },
-    
-    removeUpdateMessageListener: (callback: (event: IpcRendererEvent, data: UpdateMessage) => void) => {
-      ipcRenderer.removeListener('update-message', callback)
-    }
-  },
-  backup: {
-    create: (options: BackupCreateOptions) => ipcRenderer.invoke('backup:create', options),
-    list: () => ipcRenderer.invoke('backup:list'),
-    prune: (options: BackupPruneOptions) => ipcRenderer.invoke('backup:prune', options),
-  },
-  logo: {
-    upload: (options: LogoUploadOptions) => ipcRenderer.invoke('logo:upload', options),
-    get: (filePath: string) => ipcRenderer.invoke('logo:get', filePath),
-    delete: (filePath: string) => ipcRenderer.invoke('logo:delete', filePath),
-    getUrl: (filePath: string) => ipcRenderer.invoke('logo:getUrl', filePath),
-  }
+type CheckResult = { ok: true } | { ok: false; reason: string };
+type DownloadResult = { ok: true } | { ok: false; reason: string };
+
+type UpdaterEvents = {
+  'updater:update-available': (payload: { info: unknown }) => void;
+  'updater:update-not-available': (payload: { info: unknown }) => void;
+  'updater:error': (payload: { message: string }) => void;
+  'updater:progress': (payload: { percent: number; transferred: number; total: number }) => void;
+  'updater:ready': (payload: { version?: string; releaseName?: string }) => void;
 };
 
-const electronAPI: ElectronAPI = {
-  pdf: {
-    generate: (options: PDFGenerateOptions) => ipcRenderer.invoke('pdf:generate', options),
-    getStatus: () => ipcRenderer.invoke('pdf:getStatus'),
-  }
+const updater = {
+  check: (): Promise<CheckResult> => ipcRenderer.invoke('updater:check'),
+  download: (): Promise<DownloadResult> => ipcRenderer.invoke('updater:download'),
+  quitAndInstall: (): Promise<{ ok: true }> => ipcRenderer.invoke('updater:quitAndInstall'),
+  on<T extends keyof UpdaterEvents>(channel: T, cb: UpdaterEvents[T]) {
+    ipcRenderer.on(channel, (_e, payload) => cb(payload));
+  },
+  off<T extends keyof UpdaterEvents>(channel: T, cb: UpdaterEvents[T]) {
+    ipcRenderer.removeListener(channel, cb as any);
+  },
 };
 
-contextBridge.exposeInMainWorld('rawalite', rawaliteAPI);
-contextBridge.exposeInMainWorld('electronAPI', electronAPI);
+const system = {
+  getVersion: (): Promise<string> => ipcRenderer.invoke('system:getVersion'),
+};
+
+contextBridge.exposeInMainWorld('api', { updater, system });
+
+declare global {
+  interface Window {
+    api: {
+      updater: typeof updater;
+      system: typeof system;
+    };
+  }
+}
