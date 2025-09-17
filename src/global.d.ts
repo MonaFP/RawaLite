@@ -90,6 +90,18 @@ declare interface Window {
     };
   };
   electronAPI?: {
+    // Event Listeners
+    on?: (channel: string, callback: (event: any, data: any) => void) => void;
+    removeListener?: (channel: string, callback: (event: any, data: any) => void) => void;
+    
+    // Updater API
+    updater?: {
+      checkForUpdates: () => Promise<{success: boolean; updateInfo?: any; error?: string}>;
+      startDownload: () => Promise<{success: boolean; error?: string}>;
+      installAndRestart: () => Promise<{success: boolean; error?: string}>;
+      getVersion: () => Promise<{current: string; appName: string}>;
+    };
+    
     pdf?: {
       generate: (options: any) => Promise<{
         success: boolean;

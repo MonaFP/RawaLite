@@ -6,7 +6,7 @@ import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import { CustomColorPicker } from "../components/CustomColorPicker";
-// MigrationManager entfernt - nicht mehr benötigt
+import { UpdateManagement } from "../components/UpdateManagement";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
 import type { Activity } from "../persistence/adapter";
 import { defaultSettings } from "../lib/settings";
@@ -2534,16 +2534,15 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
         </div>
       )}
 
-      {/* Updates Tab */}
-      {/* Updates Tab - Migration & Update Management */}
+      {/* Updates Tab - App-Update Management */}
       {activeTab === 'updates' && (
         <div>
-          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Datenbank-Migration & App-Updates</h3>
+          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>App-Updates & Versionsverwaltung</h3>
           <p style={{ margin: "0 0 24px 0", color: "#6b7280", fontSize: "14px" }}>
-            Verwalten Sie Datenbank-Migrationen und App-Updates sicher mit automatischen Backups.
+            Verwalten Sie App-Updates sicher mit automatischen Backups vor jedem Update.
           </p>
-          
-          {/* MigrationManager entfernt - Update-System konsolidiert */}
+
+          <UpdateManagement />
         </div>
       )}
 

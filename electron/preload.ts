@@ -50,6 +50,22 @@ const app = {
   exportLogs: (): Promise<{success: boolean; filePath?: string; error?: string}> => ipcRenderer.invoke('app:exportLogs')
 };
 
+// Also expose as electronAPI for UpdateManagement component compatibility
+contextBridge.exposeInMainWorld('electronAPI', {
+  updater,
+  // Event handlers for update messages
+  on: (channel: string, callback: (event: any, data: any) => void) => {
+    if (channel === 'update-message') {
+      ipcRenderer.on(channel, callback);
+    }
+  },
+  removeListener: (channel: string, callback: (event: any, data: any) => void) => {
+    if (channel === 'update-message') {
+      ipcRenderer.removeListener(channel, callback);
+    }
+  }
+});
+
 // 🔧 CRITICAL FIX: Match global.d.ts interface exactly - use 'rawalite' not 'api'
 contextBridge.exposeInMainWorld('rawalite', { updater, app });
 
