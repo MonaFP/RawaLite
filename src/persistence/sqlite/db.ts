@@ -324,6 +324,19 @@ function createSchemaIfNeeded() {
   } catch (error) {
     console.warn('Migration warning:', error);
   }
+
+  // Migration: Add listPreferences column to settings
+  try {
+    const settingsColumns = all<any>("PRAGMA table_info(settings)");
+    const hasListPreferencesColumn = settingsColumns.some(col => col.name === 'listPreferences');
+    
+    if (!hasListPreferencesColumn) {
+      run("ALTER TABLE settings ADD COLUMN listPreferences TEXT DEFAULT '{}'");
+      console.log('Added listPreferences column to settings table');
+    }
+  } catch (error) {
+    console.warn('Migration warning (listPreferences):', error);
+  }
 }
 export async function getDB(): Promise<Database> {
   if (db) return db;

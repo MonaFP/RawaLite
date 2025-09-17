@@ -10,6 +10,7 @@ export interface Settings {
   nextOfferNumber?: number;
   nextInvoiceNumber?: number;
   nextTimesheetNumber?: number;
+  listPreferences?: string; // JSON string mit ListPreferences
   createdAt?: string;
   updatedAt?: string;
 }
@@ -155,12 +156,20 @@ export interface Timesheet {
   updatedAt: string;
 }
 
+// Import für ListPreferences Types
+import type { ListPreferences, EntityKey, ListPreference } from '../lib/listPreferences';
+
 export interface PersistenceAdapter {
   ready(): Promise<void>;
 
   // Settings
   getSettings(): Promise<Settings>;
   updateSettings(patch: Partial<Settings>): Promise<Settings>;
+  
+  // List Preferences (neue Methoden)
+  getListPreferences(): Promise<ListPreferences>;
+  setListPreferences(preferences: ListPreferences): Promise<void>;
+  updateListPreference(entity: EntityKey, preference: Partial<ListPreference>): Promise<void>;
 
   // Customers
   listCustomers(): Promise<Customer[]>;

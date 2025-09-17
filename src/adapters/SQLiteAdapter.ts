@@ -1,5 +1,6 @@
 import { PersistenceAdapter, Settings, Customer, Package, Offer, Invoice, Timesheet, Activity, TimesheetActivity } from "../persistence/adapter";
 import { getDB, all, run, withTx } from "../persistence/sqlite/db";
+import type { ListPreferences, EntityKey, ListPreference, defaultListPreferences, mergeWithDefaults } from "../lib/listPreferences";
 
 function nowIso() {
   return new Date().toISOString();
@@ -62,7 +63,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         UPDATE settings SET
           companyName = ?, street = ?, zip = ?, city = ?, taxId = ?,
           kleinunternehmer = ?, nextCustomerNumber = ?, nextOfferNumber = ?, nextInvoiceNumber = ?, nextTimesheetNumber = ?,
-          updatedAt = ?
+          listPreferences = ?, updatedAt = ?
         WHERE id = 1
       `,
         [
@@ -76,6 +77,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
           next.nextOfferNumber ?? 1,
           next.nextInvoiceNumber ?? 1,
           next.nextTimesheetNumber ?? 1,
+          next.listPreferences ?? '{}',
           next.updatedAt,
         ]
       );
@@ -923,5 +925,40 @@ export class SQLiteAdapter implements PersistenceAdapter {
       errors.push(`Transaction failed: ${error}`);
       return { fixed, errors };
     }
+  }
+
+  // LIST PREFERENCES
+  async getListPreferences(): Promise<ListPreferences> {
+    await getDB();
+    const settings = await this.getSettings();
+    
+    try {
+      return settings.listPreferences ? JSON.parse(settings.listPreferences) : {};
+    } catch (error) {
+      console.warn('Error parsing listPreferences:', error);
+      return {};
+    }
+  }
+
+  async setListPreferences(preferences: ListPreferences): Promise<void> {
+    return withTx(async () => {
+      const serialized = JSON.stringify(preferences);
+      
+      run(
+        `UPDATE settings SET listPreferences = ?, updatedAt = ? WHERE id = 1`,
+        [serialized, nowIso()]
+      );
+    });
+  }
+
+  async updateListPreference(entity: EntityKey, preference: Partial<ListPreference>): Promise<void> {
+    return withTx(async () => {
+      const current = await this.getListPreferences();
+      const entityPrefs = current[entity] || {};
+      const updated = { ...entityPrefs, ...preference };
+      
+      const newPreferences = { ...current, [entity]: updated };
+      await this.setListPreferences(newPreferences);
+    });
   }
 }
