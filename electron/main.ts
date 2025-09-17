@@ -1127,26 +1127,68 @@ ipcMain.handle('app:exportLogs', async () => {
   }
 });
 
-app.whenReady().then(() => {
-  createMenu()
-  createWindow()
-  
-  // Initialize theme integration
-  loadThemeIntegration()
-  
-  // Initialize backup system
-  initializeBackupSystem()
-  
-  // Initialize logo system (using consolidated ./logo implementation)
-  initializeLogoSystem()
-  
-  // Auto-check for updates on startup (delayed to avoid blocking app start)
-  setTimeout(() => {
-    log.info('Starting automatic update check on app ready')
-    autoUpdater.checkForUpdates().catch(err => {
-      log.warn('Startup update check failed:', err.message)
-    })
-  }, 5000) // 5 second delay
+app.whenReady().then(async () => {
+  try {
+    log.info('🚀 App startup: Beginning initialization sequence...')
+    
+    // 1. Create menu system first
+    createMenu()
+    log.info('✅ Menu system initialized')
+    
+    // 2. Initialize critical systems BEFORE window creation
+    try {
+      // Initialize backup system with better error handling
+      initializeBackupSystem()
+      log.info('✅ Backup system initialized')
+    } catch (backupError) {
+      log.error('❌ Backup system initialization failed:', backupError)
+      // Continue startup even if backup fails - it's not critical
+    }
+    
+    try {
+      // Initialize logo system with error handling
+      initializeLogoSystem()
+      log.info('✅ Logo system initialized')
+    } catch (logoError) {
+      log.error('❌ Logo system initialization failed:', logoError)
+      // Continue startup - logo is not critical for basic functionality
+    }
+    
+    try {
+      // Initialize theme integration
+      await loadThemeIntegration()
+      log.info('✅ Theme integration initialized')
+    } catch (themeError) {
+      log.error('❌ Theme integration failed:', themeError)
+      // Continue startup - themes have fallbacks
+    }
+    
+    // 3. Create main window after systems are initialized
+    createWindow()
+    log.info('✅ Main window created')
+    
+    // 4. Auto-check for updates (non-blocking, delayed)
+    setTimeout(() => {
+      log.info('🔍 Starting delayed update check...')
+      autoUpdater.checkForUpdates().catch(err => {
+        log.warn('⚠️ Startup update check failed (non-critical):', err.message)
+      })
+    }, 5000) // 5 second delay
+    
+    log.info('🎉 App startup sequence completed successfully')
+    
+  } catch (startupError) {
+    log.error('💥 Critical startup error:', startupError)
+    
+    // Try to create window anyway as fallback
+    try {
+      createWindow()
+      log.info('🔄 Fallback: Created window despite startup errors')
+    } catch (windowError) {
+      log.error('💥 Failed to create window as fallback:', windowError)
+      app.quit()
+    }
+  }
 })
 app.on('window-all-closed', () => { 
   log.info('All windows closed')
