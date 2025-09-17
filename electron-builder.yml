@@ -3,7 +3,7 @@ productName: RawaLite
 artifactName: "${productName} Setup ${version}.${ext}"
 
 directories:
-  output: dist
+  output: release
   buildResources: assets
 
 files:
@@ -22,6 +22,8 @@ win:
   target:
     - target: nsis
       arch: x64
+  # 🔧 CRITICAL FIX: Prevent registry duplication
+  compression: "normal"
 
 nsis:
   oneClick: false
@@ -30,6 +32,10 @@ nsis:
   allowElevation: true
   runAfterFinish: true
   createDesktopShortcut: true
+  # 🔧 CRITICAL FIX: Feste GUID verhindert mehrfache App-Registrierung
+  guid: "b6b5b9b2-7b8b-4b9b-8b7b-7b8b7b8b7b8b"
+  menuCategory: "RawaLite"
+  shortcutName: "RawaLite"
 
 publish:
   provider: github

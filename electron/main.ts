@@ -37,14 +37,15 @@ log.transports.file.maxSize = 1024 * 1024 * 10 // 10MB max log file
 log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}'
 log.transports.console.level = 'debug'
 
-// 🔧 CRITICAL FIX: Proper autoUpdater configuration
+// 🔧 CRITICAL FIX: Proper autoUpdater configuration for NSIS
 autoUpdater.logger = log
 autoUpdater.autoDownload = false              // User confirmation required
 autoUpdater.autoInstallOnAppQuit = false     // Manual installation only
 autoUpdater.allowDowngrade = false           // Prevent version downgrades
 autoUpdater.allowPrerelease = false          // Stable releases only
-autoUpdater.disableWebInstaller = true       // Disable web installer fallback
+autoUpdater.disableWebInstaller = true       // 🔧 CRITICAL: Disable web installer fallback
 autoUpdater.forceDevUpdateConfig = false     // Production behavior always
+autoUpdater.fullChangelog = true             // Include full changelog
 
 // 🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info('=== AUTO-UPDATER ENVIRONMENT DEBUG ===')
@@ -216,7 +217,7 @@ ipcMain.handle('updater:start-download', async () => {
   }
 })
 
-// 🔧 CRITICAL FIX: Completely rewritten install handler
+// 🔧 CRITICAL FIX: Completely rewritten install handler with correct NSIS parameters
 ipcMain.handle('updater:install-and-restart', async () => {
   try {
     log.info('🚀 [INSTALL-AND-RESTART] Starting installation process')
@@ -235,22 +236,24 @@ ipcMain.handle('updater:install-and-restart', async () => {
     const allWindows = BrowserWindow.getAllWindows()
     log.info(`🚀 [INSTALL-AND-RESTART] Closing ${allWindows.length} windows before update`)
     
-    allWindows.forEach(window => {
+    for (const window of allWindows) {
       if (!window.isDestroyed()) {
         window.close()
       }
-    })
+    }
     
-    // 🔧 CRITICAL FIX: Proper timing and parameters for NSIS installer
-    log.info('🚀 [INSTALL-AND-RESTART] Executing quitAndInstall with proper NSIS parameters')
+    // 🔧 CRITICAL FIX: Correct NSIS parameters and timing
+    log.info('🚀 [INSTALL-AND-RESTART] Executing quitAndInstall with correct NSIS parameters')
     
     // Wait for graceful window closure
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // For Windows NSIS: isSilent=false (show progress), isForceRunAfter=true (restart after install)
+    // 🔧 CRITICAL FIX: For NSIS installer, use (isSilent=false, isForceRunAfter=false)
+    // isSilent=false: Show installer UI (required for elevation prompt)
+    // isForceRunAfter=false: Let NSIS handle restart logic (prevents duplicate processes)
     setImmediate(() => {
-      log.info('🚀 [INSTALL-AND-RESTART] Calling quitAndInstall(false, true) for NSIS')
-      autoUpdater.quitAndInstall(false, true)
+      log.info('🚀 [INSTALL-AND-RESTART] Calling quitAndInstall(false, false) for proper NSIS behavior')
+      autoUpdater.quitAndInstall(false, false)
     })
     
     return { success: true }
@@ -371,66 +374,22 @@ function createMenu() {
         ])
       ]
     },
-    {
-      label: 'Update',
-      submenu: [
-        {
-          label: 'Nach Updates suchen',
-          click: () => {
-            log.info('Manual update check triggered from menu')
-            autoUpdater.checkForUpdates().catch(err => {
-              log.error('Manual update check failed:', err)
-            })
-          }
-        },
-        { type: 'separator' },
-        {
-          label: 'App-Version anzeigen',
-          click: () => {
-            const version = app.getVersion()
-            dialog.showMessageBox({
-              type: 'info',
-              title: 'App-Version',
-              message: `RawaLite Version ${version}`,
-              detail: `Electron: ${process.versions.electron}\nNode.js: ${process.versions.node}\nChrome: ${process.versions.chrome}`,
-              buttons: ['OK']
-            })
-          }
-        }
-      ]
-    },
+
     {
       label: 'Hilfe',
       submenu: [
         {
           label: 'Über RawaLite',
           click: () => {
-            // In-App Über-Dialog statt externe URL
+            // Einfacher Über-Dialog ohne Versionswirrwarr
             const allWindows = BrowserWindow.getAllWindows();
             const mainWindow = allWindows[0];
             if (mainWindow) {
               dialog.showMessageBox(mainWindow, {
                 type: 'info',
                 title: 'Über RawaLite',
-                message: `RawaLite v${app.getVersion()}`,
-                detail: 'Professional Business Management Solution\n\nCopyright © 2025 MonaFP. All rights reserved.',
-                buttons: ['OK']
-              });
-            }
-          }
-        },
-        {
-          label: 'App-Version anzeigen',
-          click: () => {
-            // Version Info statt Dokumentation
-            const allWindows = BrowserWindow.getAllWindows();
-            const mainWindow = allWindows[0];
-            if (mainWindow) {
-              dialog.showMessageBox(mainWindow, {
-                type: 'info',
-                title: 'Version Information',
-                message: `RawaLite v${app.getVersion()}`,
-                detail: `Electron: ${process.versions.electron}\nNode.js: ${process.versions.node}\nChrome: ${process.versions.chrome}`,
+                message: 'RawaLite Professional',
+                detail: 'Business Management Solution\n\nCopyright © 2025 MonaFP. All rights reserved.',
                 buttons: ['OK']
               });
             }
@@ -463,13 +422,29 @@ function createWindow() {
     },
   })
 
-  if (isDev) {
-    // Vite-Dev-Server
+  // 🔧 CRITICAL FIX: Better dev mode detection
+  const isDevServer = isDev && process.argv.includes('--dev');
+  
+  if (isDevServer) {
+    // Vite-Dev-Server (nur wenn explizit --dev Flag gesetzt)
     win.loadURL('http://localhost:5173')
     // win.webContents.openDevTools({ mode: 'detach' })
   } else {
-    // Statisches HTML aus dist-Ordner
-    win.loadFile(path.join(rootPath, 'dist', 'index.html'))
+    // Static files (sowohl für Production als auch für lokale Tests)
+    // 🔧 ESBUILD FIX: __dirname ist undefined nach esbuild, nutze app.getAppPath()
+    const appPath = app.getAppPath()
+    const htmlPath = app.isPackaged 
+      ? path.join(appPath, 'dist', 'index.html')
+      : path.join(__dirname || process.cwd(), '..', 'dist', 'index.html')
+    
+    console.log('Loading static HTML from:', htmlPath)
+    console.log('__dirname:', __dirname || 'undefined')
+    console.log('app.getAppPath():', appPath)
+    console.log('app.isPackaged:', app.isPackaged)
+    console.log('isDev:', isDev)
+    console.log('isDevServer:', isDevServer)
+    
+    win.loadFile(htmlPath)
   }
 
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -487,6 +462,10 @@ ipcMain.handle('app:restart', async () => {
 
 ipcMain.handle('app:getVersion', async () => {
   return app.getVersion()
+})
+
+ipcMain.handle('app:isPackaged', async () => {
+  return app.isPackaged
 })
 
 // IPC Handler für Datenbank-Operationen

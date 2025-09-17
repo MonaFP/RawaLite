@@ -22,7 +22,7 @@ const NotFoundPage: React.FC = () => {
 
   return (
     <div>
-      <Header title="Seite nicht gefunden" />
+      <Header />
       <div className="card">
         <h2>🔍 Seite nicht gefunden</h2>
         <p>Der angeforderte Pfad existiert nicht.</p>

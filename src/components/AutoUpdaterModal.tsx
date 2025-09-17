@@ -89,10 +89,10 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
       case 'update-downloaded':
         // 🔧 CRITICAL FIX: Update is downloaded but not yet installed
         console.log('Update downloaded successfully - ready for installation');
-        setUpdateState('downloaded'); // This should show "Ready to install" UI
+        setUpdateState('downloaded'); // This should show "Ready to install" UI, NOT success
         setProgress(null);
         setInstallInitiated(false); // Reset installation tracking
-        // Do NOT show "Update successful" until after app restart
+        // 🔧 CRITICAL: "Update successful" only shown AFTER app restart with new version
         break;
         
       case 'update-error':

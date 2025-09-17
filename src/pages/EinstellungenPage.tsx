@@ -6,7 +6,7 @@ import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import { CustomColorPicker } from "../components/CustomColorPicker";
-import { MigrationManager } from "../components/MigrationManager";
+// MigrationManager entfernt - nicht mehr benötigt
 import type { CompanyData, NumberingCircle } from "../lib/settings";
 import type { Activity } from "../persistence/adapter";
 import { defaultSettings } from "../lib/settings";
@@ -2543,7 +2543,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
             Verwalten Sie Datenbank-Migrationen und App-Updates sicher mit automatischen Backups.
           </p>
           
-          <MigrationManager />
+          {/* MigrationManager entfernt - Update-System konsolidiert */}
         </div>
       )}
 

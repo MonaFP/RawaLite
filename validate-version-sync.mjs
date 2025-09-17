@@ -20,29 +20,19 @@ try {
   const versionServicePath = join('src', 'services', 'VersionService.ts');
   const versionServiceContent = readFileSync(versionServicePath, 'utf8');
   
-  // Version aus VersionService extrahieren (suche nach VERSION = 'x.y.z')
-  const versionMatch = versionServiceContent.match(/VERSION\s*=\s*['"`]([^'"`]+)['"`]/);
+  // Version aus VersionService extrahieren (suche nach BASE_VERSION = packageJson.version)
+  const versionMatch = versionServiceContent.match(/BASE_VERSION\s*=\s*packageJson\.version/);
   if (!versionMatch) {
-    console.error('❌ Could not find VERSION constant in VersionService.ts');
+    console.error('❌ Could not find BASE_VERSION = packageJson.version pattern in VersionService.ts');
     process.exit(1);
   }
   
-  const serviceVersion = versionMatch[1];
-  
+  // Since VersionService uses packageJson.version directly, they are always synchronized
   console.log(`📦 package.json version: ${packageVersion}`);
-  console.log(`🔧 VersionService version: ${serviceVersion}`);
+  console.log(`🔧 VersionService version: ${packageVersion} (via packageJson.version)`);
   
-  if (packageVersion === serviceVersion) {
-    console.log('✅ Versions are synchronized!');
-    process.exit(0);
-  } else {
-    console.error('❌ Version mismatch detected!');
-    console.error(`   package.json: ${packageVersion}`);
-    console.error(`   VersionService: ${serviceVersion}`);
-    console.error('');
-    console.error('💡 Fix: Update VersionService.ts VERSION constant to match package.json');
-    process.exit(1);
-  }
+  console.log('✅ Versions are synchronized (VersionService uses packageJson.version directly)!');
+  process.exit(0);
   
 } catch (error) {
   console.error('❌ Error validating version sync:', error.message);

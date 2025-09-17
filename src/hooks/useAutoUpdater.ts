@@ -99,16 +99,14 @@ export function useAutoUpdater(options: {
         // Do NOT show success during download - only progress
         break;
         
-      case 'update-downloaded':
-        // 🔧 CRITICAL FIX: Only set to 'downloaded', not 'success' yet
-        console.log('[useAutoUpdater] Update downloaded - ready for installation');
-        setState('downloaded'); 
-        setProgress(null);
-        setInstallInitiated(false); // Reset install tracking
-        // UI should show "Ready to install" button, not "Update successful"
-        break;
-        
-      case 'update-error':
+        case 'update-downloaded':
+          // 🔧 CRITICAL FIX: Only set to 'downloaded', not 'success' yet
+          console.log('[useAutoUpdater] Update downloaded - ready for installation');
+          setState('downloaded'); // Show "Ready to install" button
+          setProgress(null);
+          setInstallInitiated(false); // Reset install tracking
+          // 🔧 CRITICAL: "Update successful" only after app restart with new version
+          break;      case 'update-error':
         setState('error');
         setError(data.data?.message || 'Unbekannter Fehler beim Update');
         setInstallInitiated(false); // Reset install tracking on error
