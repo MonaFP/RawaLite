@@ -7,10 +7,18 @@ directories:
   buildResources: assets
 
 files:
-  - "dist/**/*"
-  - "dist-electron/**/*"
+  - "dist/assets/**/*"
+  - "dist/index.html"
+  - "dist/sql-wasm.wasm"
+  - "dist/rawalite-logo.png"
+  - "dist/README-sql-wasm.txt"
+  - "dist-electron/main.cjs"
+  - "dist-electron/preload.js"
   - "templates/**/*"
   - "package.json"
+  - "!node_modules/**/*"
+  - "!**/.git/**/*"
+  - "!**/.*"
 
 extraResources:
   - from: "templates"
