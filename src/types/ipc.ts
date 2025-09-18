@@ -75,6 +75,7 @@ export interface UpdateCheckResult {
   success: boolean;
   updateInfo?: UpdateInfo;
   error?: string;
+  devMode?: boolean; // Development mode flag for better UX
 }
 
 export interface UpdateDownloadResult {

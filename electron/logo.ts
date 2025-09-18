@@ -316,11 +316,13 @@ class LogoService {
       return {
         success: true,
         filePath,
-        fileName,
-        format,
-        width,
-        height,
-        fileSize: stats.size
+        metadata: {
+          fileName,
+          format,
+          width,
+          height,
+          fileSize: stats.size
+        }
       };
       
     } catch (error) {
@@ -443,29 +445,83 @@ const logoService = new LogoService();
  * IPC-Handler für Logo-Operationen
  */
 export function initializeLogoSystem(): void {
-  console.log('🖼️ Initializing logo system...');
-  
-  // Logo upload
-  ipcMain.handle('logo:upload', async (_, options: LogoUploadOptions) => {
-    return await logoService.uploadLogo(options);
-  });
-  
-  // Logo metadata
-  ipcMain.handle('logo:get', async () => {
-    return await logoService.getLogoMetadata();
-  });
-  
-  // Logo delete
-  ipcMain.handle('logo:delete', async () => {
-    return await logoService.deleteLogo();
-  });
-  
-  // Logo URL mit Cache-Busting
-  ipcMain.handle('logo:getUrl', async () => {
-    return await logoService.getLogoUrl();
-  });
-  
-  console.log('✅ Logo system initialized with IPC handlers');
+  try {
+    console.log('🖼️ Initializing logo system...');
+    
+    // Logo upload with error handling
+    ipcMain.handle('logo:upload', async (_, options: LogoUploadOptions) => {
+      try {
+        const result = await logoService.uploadLogo(options);
+        console.log('🖼️ Logo upload result:', result.success ? 'SUCCESS' : result.error);
+        return result;
+      } catch (error) {
+        console.error('❌ Logo upload error:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Logo upload failed'
+        };
+      }
+    });
+    
+    // Logo metadata with error handling
+    ipcMain.handle('logo:get', async () => {
+      try {
+        const metadata = await logoService.getLogoMetadata();
+        console.log('📋 Logo metadata:', metadata ? 'FOUND' : 'NOT_FOUND');
+        return metadata;
+      } catch (error) {
+        console.error('❌ Logo metadata error:', error);
+        return null;
+      }
+    });
+    
+    // Logo delete with error handling
+    ipcMain.handle('logo:delete', async () => {
+      try {
+        const result = await logoService.deleteLogo();
+        console.log('🗑️ Logo delete result:', result.success ? 'SUCCESS' : result.error);
+        return result;
+      } catch (error) {
+        console.error('❌ Logo delete error:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Logo deletion failed'
+        };
+      }
+    });
+    
+    // Logo URL with error handling and cache-busting
+    ipcMain.handle('logo:getUrl', async () => {
+      try {
+        const urlData = await logoService.getLogoUrl();
+        console.log('🔗 Logo URL:', urlData ? 'GENERATED' : 'NOT_AVAILABLE');
+        return urlData;
+      } catch (error) {
+        console.error('❌ Logo URL error:', error);
+        return null;
+      }
+    });
+    
+    console.log('✅ Logo system initialized successfully with enhanced error handling');
+    
+  } catch (initError) {
+    console.error('❌ Critical logo system initialization error:', initError);
+    
+    // Register fallback IPC handlers to prevent IPC errors
+    const logoFallback = async () => null;
+    const logoFallbackDelete = async () => ({
+      success: false,
+      error: 'Logo-System konnte nicht initialisiert werden. Bitte App neu starten.'
+    });
+    
+    ipcMain.handle('logo:upload', logoFallbackDelete);
+    ipcMain.handle('logo:get', logoFallback);
+    ipcMain.handle('logo:delete', logoFallbackDelete);
+    ipcMain.handle('logo:getUrl', logoFallback);
+    
+    console.log('⚠️ Fallback logo handlers registered due to initialization failure');
+    throw initError; // Re-throw so caller knows initialization failed
+  }
 }
 
 export { logoService };

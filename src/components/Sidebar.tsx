@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import SidebarWidgets from "./SidebarWidgets";
+import logoImg from "../../assets/rawalite-logo.png";
 
 export default function Sidebar(){
   const { settings, loading } = useSettings();
@@ -27,7 +28,7 @@ export default function Sidebar(){
           marginBottom: "16px"
         }}>
           <img 
-            src="/rawalite-logo.png" 
+            src={logoImg} 
             alt="RawaLite" 
             style={{ 
               width: "100%", 
@@ -37,8 +38,8 @@ export default function Sidebar(){
               filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" // Schöner Schatten für bessere Sichtbarkeit
             }}
             onError={(e) => {
-              console.error('RawaLite Logo konnte nicht geladen werden, versuche alternativen Pfad');
-              e.currentTarget.src = './rawalite-logo.png';
+              console.warn('RawaLite Logo konnte nicht über ES6 import geladen werden, versuche fallback');
+              e.currentTarget.src = '/rawalite-logo.png'; // Fallback to public folder
             }}
           />
         </div>

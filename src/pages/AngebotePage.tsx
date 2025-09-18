@@ -1,9 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { Table } from '../components/Table';
+import { Table, type SortConfig } from '../components/Table';
+import { SearchInput } from '../components/SearchInput';
+import { FilterChips, MultiSelect, type FilterChip, type MultiSelectOption } from '../components/FilterComponents';
 import { OfferForm } from '../components/OfferForm';
 import { useOffers } from '../hooks/useOffers';
 import { useCustomers } from '../hooks/useCustomers';
 import { usePackages } from '../hooks/usePackages';
+import { useListPreferences } from '../hooks/useListPreferences';
 import { useSettings } from '../contexts/SettingsContext';
 import { useDesignSettings } from '../hooks/useDesignSettings';
 import { useNotifications } from '../contexts/NotificationContext';
@@ -20,12 +23,21 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const { offers, loading, error, createOffer, updateOffer, deleteOffer } = useOffers();
   const { customers } = useCustomers();
   const { packages } = usePackages();
+  const { preferences, updatePreference } = useListPreferences('offers');
   const { settings } = useSettings();
   const { currentTheme, currentCustomColors } = useDesignSettings();
   const { showSuccess, showError } = useNotifications();
   const { getLogoForPdf } = useLogoSettings();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Offer | null>(null);
+
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState(preferences.lastSearch || '');
+  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
+  const [sortConfig, setSortConfig] = useState<SortConfig | null>(
+    preferences.sortBy ? { key: preferences.sortBy, direction: preferences.sortDir || 'asc' } : null
+  );
+  const [currentPage, setCurrentPage] = useState(1);
 
   const columns = useMemo(() => ([
     { key: "offerNumber", header: "Nummer" },

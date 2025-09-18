@@ -427,6 +427,11 @@ export class MigrationService {
       const result = await backupService.createManualBackup(description);
       
       if (!result.success || !result.backupId) {
+        // 🔧 CRITICAL FIX: Graceful degradation for browser environment
+        if (result.error?.includes('browser environment')) {
+          this.log('warn', 'Backup not available in browser environment - continuing without backup');
+          return 'no-backup-browser-env'; // Return synthetic backup ID
+        }
         throw new Error(result.error || 'Backup creation failed');
       }
 

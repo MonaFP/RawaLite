@@ -15,6 +15,7 @@ interface NotificationContextType {
   showNotification: (type: NotificationType, message: string, duration?: number) => void;
   showError: (error: AppError | string) => void;
   showSuccess: (message: string) => void;
+  showInfo: (message: string) => void;
   removeNotification: (id: string) => void;
 }
 
@@ -51,6 +52,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     showNotification('success', message);
   }, [showNotification]);
 
+  const showInfo = useCallback((message: string) => {
+    showNotification('info', message);
+  }, [showNotification]);
+
   return (
     <NotificationContext.Provider
       value={{
@@ -58,6 +63,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         showNotification,
         showError,
         showSuccess,
+        showInfo,
         removeNotification,
       }}
     >

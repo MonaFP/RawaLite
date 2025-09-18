@@ -47,9 +47,21 @@ export class BackupManager {
       // Ensure backups directory exists
       await fs.mkdir(this.backupsDir, { recursive: true });
       console.log('✅ Backup directory initialized:', this.backupsDir);
+      
+      // Test write permissions
+      const testFile = path.join(this.backupsDir, '.write-test');
+      try {
+        await fs.writeFile(testFile, 'test');
+        await fs.unlink(testFile);
+        console.log('✅ Backup directory is writable');
+      } catch (writeError) {
+        console.warn('⚠️ Backup directory may not be writable:', writeError);
+        // Don't throw - system can still function
+      }
     } catch (error) {
       console.error('❌ Failed to initialize backup directory:', error);
-      throw error;
+      // Don't throw - allow system to continue without backups
+      console.log('⚠️ Continuing without backup system...');
     }
   }
 
@@ -325,34 +337,103 @@ export class BackupManager {
 let backupManager: BackupManager | null = null;
 
 export function initializeBackupSystem(): void {
-  backupManager = new BackupManager();
-  
-  // Initialize backup directory
-  backupManager.initialize().catch(error => {
-    console.error('❌ Failed to initialize backup system:', error);
-  });
+  try {
+    console.log('🔄 Initializing backup system...');
+    
+    // Create backup manager instance
+    backupManager = new BackupManager();
+    
+    // Initialize backup directory with better error handling
+    backupManager.initialize().catch(error => {
+      console.error('❌ Failed to initialize backup directory:', error);
+      // Don't crash - system can still function without backups
+    });
 
-  // Register IPC handlers
-  ipcMain.handle('backup:create', async (_, options: BackupCreateOptions) => {
-    if (!backupManager) {
-      return { success: false, error: 'Backup system not initialized' };
-    }
-    return backupManager.createBackup(options);
-  });
+    // Register IPC handlers with enhanced error handling
+    ipcMain.handle('backup:create', async (_, options: BackupCreateOptions) => {
+      try {
+        if (!backupManager) {
+          console.error('❌ Backup manager not available during create operation');
+          return { 
+            success: false, 
+            error: 'Backup-System ist nicht verfügbar. Bitte App neu starten.' 
+          };
+        }
+        
+        console.log('📦 Creating backup with options:', options);
+        const result = await backupManager.createBackup(options);
+        console.log('📦 Backup creation result:', result.success ? 'SUCCESS' : result.error);
+        return result;
+      } catch (error) {
+        console.error('❌ Backup creation error:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unbekannter Backup-Fehler'
+        };
+      }
+    });
 
-  ipcMain.handle('backup:list', async () => {
-    if (!backupManager) {
-      return { success: false, error: 'Backup system not initialized' };
-    }
-    return backupManager.listBackups();
-  });
+    ipcMain.handle('backup:list', async () => {
+      try {
+        if (!backupManager) {
+          console.error('❌ Backup manager not available during list operation');
+          return { 
+            success: false, 
+            error: 'Backup-System ist nicht verfügbar. Bitte App neu starten.' 
+          };
+        }
+        
+        const result = await backupManager.listBackups();
+        console.log('📋 Backup list result:', result.success ? `${result.backups?.length || 0} backups` : result.error);
+        return result;
+      } catch (error) {
+        console.error('❌ Backup list error:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Fehler beim Laden der Backup-Liste'
+        };
+      }
+    });
 
-  ipcMain.handle('backup:prune', async (_, options: BackupPruneOptions) => {
-    if (!backupManager) {
-      return { success: false, error: 'Backup system not initialized' };
-    }
-    return backupManager.pruneBackups(options);
-  });
+    ipcMain.handle('backup:prune', async (_, options: BackupPruneOptions) => {
+      try {
+        if (!backupManager) {
+          console.error('❌ Backup manager not available during prune operation');
+          return { 
+            success: false, 
+            error: 'Backup-System ist nicht verfügbar. Bitte App neu starten.' 
+          };
+        }
+        
+        console.log('🧹 Pruning backups with options:', options);
+        const result = await backupManager.pruneBackups(options);
+        console.log('🧹 Backup prune result:', result.success ? `${result.removedCount} removed` : result.error);
+        return result;
+      } catch (error) {
+        console.error('❌ Backup prune error:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Fehler beim Bereinigen der Backups'
+        };
+      }
+    });
 
-  console.log('✅ Backup IPC handlers registered');
+    console.log('✅ Backup IPC handlers registered successfully');
+    
+  } catch (initError) {
+    console.error('❌ Critical backup system initialization error:', initError);
+    
+    // Register fallback IPC handlers to prevent IPC errors
+    const fallbackHandler = async () => ({
+      success: false,
+      error: 'Backup-System konnte nicht initialisiert werden. Bitte App neu starten.'
+    });
+    
+    ipcMain.handle('backup:create', fallbackHandler);
+    ipcMain.handle('backup:list', fallbackHandler);  
+    ipcMain.handle('backup:prune', fallbackHandler);
+    
+    console.log('⚠️ Fallback backup handlers registered due to initialization failure');
+    throw initError; // Re-throw so caller knows initialization failed
+  }
 }

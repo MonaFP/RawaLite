@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createHashRouter, RouterProvider } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import PersistenceProvider from "./PersistenceProvider";
@@ -10,71 +10,14 @@ import { SettingsProvider } from "./contexts/SettingsContext";
 import { MigrationInitializer } from "./components/MigrationInitializer";
 import { applyThemeToDocument, applyNavigationMode } from "./lib/themes";
 
-// Import pages
-import DashboardPage from "./pages/DashboardPage";
-import KundenPage from "./pages/KundenPage";
-import AngebotePage from "./pages/AngebotePage";
-import AngebotDetailPage from "./pages/AngebotDetailPage";
-import PaketePage from "./pages/PaketePage";
-import RechnungenPage from "./pages/RechnungenPage";
-import TimesheetsPage from "./pages/TimesheetsPage";
-import EinstellungenPage from "./pages/EinstellungenPage";
-import NotFoundPage from "./pages/NotFoundPage";
+// Pages werden jetzt direkt in App.tsx importiert
 
 // ✨ Sofort Standard-Theme anwenden beim App-Start (verhindert weißen Bildschirm)
 // Wird später von persistierten Settings aus SQLite überschrieben
 applyThemeToDocument('salbeigrün');
 applyNavigationMode('sidebar');
 
-const router = createHashRouter([
-  {
-    path: "/",
-    element: <App />,
-    errorElement: <div>Routing Error - Lade Dashboard...</div>,
-    children: [
-      {
-        index: true,
-        element: <DashboardPage />,
-      },
-      {
-        path: "dashboard",
-        element: <DashboardPage />,
-      },
-      {
-        path: "kunden",
-        element: <KundenPage />,
-      },
-      {
-        path: "angebote",
-        element: <AngebotePage />,
-      },
-      {
-        path: "angebote/:id",
-        element: <AngebotDetailPage />,
-      },
-      {
-        path: "pakete",
-        element: <PaketePage />,
-      },
-      {
-        path: "rechnungen",
-        element: <RechnungenPage />,
-      },
-      {
-        path: "leistungsnachweise",
-        element: <TimesheetsPage />,
-      },
-      {
-        path: "einstellungen",
-        element: <EinstellungenPage />,
-      },
-      {
-        path: "*",
-        element: <NotFoundPage />,
-      },
-    ],
-  },
-]);
+// Router v6 uses component-based routing
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -83,7 +26,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <PersistenceProvider mode="sqlite">
           <SettingsProvider>
             <MigrationInitializer>
-              <RouterProvider router={router} />
+              <HashRouter>
+                <App />
+              </HashRouter>
               <LoadingOverlay />
               <NotificationContainer />
             </MigrationInitializer>

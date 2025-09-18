@@ -1,25 +1,45 @@
-import { Outlet, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import { useDesignSettings } from "./hooks/useDesignSettings";
 
-export default function App(){
+// Import pages
+import DashboardPage from "./pages/DashboardPage";
+import KundenPage from "./pages/KundenPage";
+import AngebotePage from "./pages/AngebotePage";
+import AngebotDetailPage from "./pages/AngebotDetailPage";
+import PaketePage from "./pages/PaketePage";
+import RechnungenPage from "./pages/RechnungenPage";
+import TimesheetsPage from "./pages/TimesheetsPage";
+import EinstellungenPage from "./pages/EinstellungenPage";
+import NotFoundPage from "./pages/NotFoundPage";
+
+// Layout component that includes Header inside Router context
+function Layout() {
   const { currentNavigationMode } = useDesignSettings();
-  const location = useLocation();
-  
-  // Redirect zu Dashboard wenn wir auf einer unbekannten Route sind
-  if (location.pathname === '/' || location.pathname === '') {
-    // Wir sind bereits auf der Root-Route, das ist okay
-  }
   
   return (
     <div className="app" data-nav-mode={currentNavigationMode}>
-      {/* Sidebar ist immer da, aber passt sich dem Navigation-Modus an */}
       <Sidebar />
       <Header />
       <main className="main">
-        <Outlet />
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/kunden" element={<KundenPage />} />
+          <Route path="/angebote" element={<AngebotePage />} />
+          <Route path="/angebote/:id" element={<AngebotDetailPage />} />
+          <Route path="/pakete" element={<PaketePage />} />
+          <Route path="/rechnungen" element={<RechnungenPage />} />
+          <Route path="/leistungsnachweise" element={<TimesheetsPage />} />
+          <Route path="/einstellungen" element={<EinstellungenPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
       </main>
     </div>
   );
+}
+
+export default function App(){
+  return <Layout />;
 }

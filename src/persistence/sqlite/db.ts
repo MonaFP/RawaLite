@@ -324,6 +324,44 @@ function createSchemaIfNeeded() {
   } catch (error) {
     console.warn('Migration warning:', error);
   }
+
+  // Migration: Add listPreferences column to settings (NEW in v1.8.3)
+  try {
+    // Check if we have DB connection first
+    if (!db) {
+      console.error('❌ No database connection for listPreferences migration');
+      return;
+    }
+
+    const settingsColumns = all<any>("PRAGMA table_info(settings)");
+    const hasListPreferencesColumn = settingsColumns.some(col => col.name === 'listPreferences');
+    
+    if (!hasListPreferencesColumn) {
+      console.log('🔄 Adding listPreferences column to settings table...');
+      run("ALTER TABLE settings ADD COLUMN listPreferences TEXT DEFAULT '{}'");
+      
+      // Initialize with default empty preferences
+      run("UPDATE settings SET listPreferences = '{}' WHERE id = 1 AND (listPreferences IS NULL OR listPreferences = '')");
+      
+      console.log('✅ Added listPreferences column to settings table with defaults');
+    } else {
+      console.log('✅ listPreferences column already exists');
+    }
+  } catch (error) {
+    console.warn('⚠️ Migration warning (listPreferences):', error);
+    console.warn('⚠️ App will continue but list preferences may not persist');
+    
+    // Try alternative approach - direct SQL without helpers
+    try {
+      if (db) {
+        db.exec("ALTER TABLE settings ADD COLUMN listPreferences TEXT DEFAULT '{}'");
+        console.log('✅ Alternative migration successful');
+      }
+    } catch (altError) {
+      console.warn('⚠️ Alternative migration also failed:', altError);
+      // Continue - app can function without persistent list preferences
+    }
+  }
 }
 export async function getDB(): Promise<Database> {
   if (db) return db;
