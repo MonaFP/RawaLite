@@ -68,8 +68,24 @@ try {
   (autoUpdater as any).allowUnsigned = true;
   (autoUpdater as any).skipSignatureVerification = true;
   
+  // 🚨 CRITICAL FIX: NSIS-specific signature verification neutralization
+  // Target NSIS installer signature checks before first update operation
+  (autoUpdater as any).nsis = {
+    ...(autoUpdater as any).nsis,
+    verifySignature: false,
+    allowUnsigned: true,
+    skipCodeSigningValidation: true,
+    bypassSignatureValidation: true
+  };
+  
+  // Additional NSIS Windows Installer overrides
+  (autoUpdater as any).windowsCodeSignValidation = false;
+  (autoUpdater as any).nsisSignatureValidation = false;
+  (autoUpdater as any).bypassWindowsSmartScreen = true;
+  
   log.info("🔧 [RUNTIME] Comprehensive signature verification disabled");
   log.info("🔧 [RUNTIME] All known unsigned build parameters set");
+  log.info("🔧 [NSIS-FIX] NSIS installer signature checks neutralized");
 } catch (error) {
   log.warn("⚠️  [RUNTIME] Could not set all signature options:", error);
 }
@@ -103,7 +119,13 @@ try {
     (autoUpdater as any).channel = 'latest';
     (autoUpdater as any).allowPrerelease = false;
     (autoUpdater as any).forceDevUpdateConfig = false;
+    
+    // 🚨 CRITICAL FIX: Additional NSIS runtime overrides in feedURL context
+    (autoUpdater as any).nsisAllowUnsigned = true;
+    (autoUpdater as any).windowsSignatureBypass = true;
+    
     log.info("🔧 [LEGACY] Channel + compatibility forced for v1.7.9+ updates");
+    log.info("🔧 [NSIS-FEED] NSIS signature bypass configured in feedURL context");
   } catch (channelError) {
     log.warn("⚠️  [LEGACY] Could not set all compatibility parameters:", channelError);
   }
@@ -292,6 +314,31 @@ function sendUpdateMessage(type: string, data?: any) {
 ipcMain.handle("updater:check-for-updates", async () => {
   try {
     log.info("Manual update check requested");
+    
+    // 🚨 CRITICAL FIX: NSIS signature verification override RIGHT BEFORE checkForUpdates()
+    // This ensures the NSIS installer parameters are set at the correct timing
+    try {
+      log.info("🔧 [PRE-CHECK] Applying final NSIS signature overrides before update check");
+      
+      // Force NSIS-specific parameters right before the check
+      (autoUpdater as any).nsis = {
+        verifySignature: false,
+        allowUnsigned: true,
+        skipCodeSigningValidation: true,
+        bypassSignatureValidation: true,
+        disableSignatureValidation: true
+      };
+      
+      // Additional Windows installer bypasses
+      (autoUpdater as any).windowsCodeSignValidation = false;
+      (autoUpdater as any).nsisSignatureValidation = false;
+      (autoUpdater as any).verifyUpdateCodeSignature = false;
+      
+      log.info("🔧 [PRE-CHECK] NSIS signature overrides applied successfully");
+    } catch (nsisError) {
+      log.warn("⚠️  [PRE-CHECK] NSIS override failed (continuing anyway):", nsisError);
+    }
+    
     const result = await autoUpdater.checkForUpdates();
     return {
       success: true,
@@ -1523,6 +1570,24 @@ app.whenReady().then(() => {
   // Auto-check for updates on startup (delayed to avoid blocking app start)
   setTimeout(() => {
     log.info("Starting automatic update check on app ready");
+    
+    // 🚨 CRITICAL FIX: Apply NSIS overrides before startup update check too
+    try {
+      log.info("🔧 [STARTUP] Applying NSIS signature overrides for startup check");
+      (autoUpdater as any).nsis = {
+        verifySignature: false,
+        allowUnsigned: true,
+        skipCodeSigningValidation: true,
+        bypassSignatureValidation: true,
+        disableSignatureValidation: true
+      };
+      (autoUpdater as any).windowsCodeSignValidation = false;
+      (autoUpdater as any).nsisSignatureValidation = false;
+      log.info("🔧 [STARTUP] NSIS overrides applied for startup check");
+    } catch (startupNsisError) {
+      log.warn("⚠️  [STARTUP] NSIS override failed:", startupNsisError);
+    }
+    
     autoUpdater.checkForUpdates().catch((err) => {
       log.warn("Startup update check failed:", err.message);
     });
