@@ -2,6 +2,8 @@ import { NavLink } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import SidebarWidgets from "./SidebarWidgets";
+// 🚨 CRITICAL v1.8.10: Robust logo loading for production builds
+// Import logo with fallback strategy
 import logoImg from "../../assets/rawalite-logo.png";
 
 export default function Sidebar(){
@@ -38,8 +40,35 @@ export default function Sidebar(){
               filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" // Schöner Schatten für bessere Sichtbarkeit
             }}
             onError={(e) => {
-              console.warn('RawaLite Logo konnte nicht über ES6 import geladen werden, versuche fallback');
-              e.currentTarget.src = '/rawalite-logo.png'; // Fallback to public folder
+              console.warn('🚨 RawaLite Logo ES6 import failed, trying production fallbacks...');
+              
+              // 🚨 CRITICAL: Multi-level fallback with GitHub CDN for v1.8.4 compatibility
+              const fallbacks = [
+                '/rawalite-logo.png',                    // Public folder
+                './assets/rawalite-logo.png',            // Relative assets  
+                './rawalite-logo.png',                   // Current directory
+                'https://raw.githubusercontent.com/MonaFP/RawaLite/main/rawalite-logo.png', // GitHub CDN - v1.8.4 emergency fix
+                'https://github.com/MonaFP/RawaLite/raw/main/rawalite-logo.png',           // GitHub CDN alternative
+                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjx0ZXh0IHg9IjEwIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjZmZmIj5SYXdhTGl0ZTwvdGV4dD48L3N2Zz4='  // SVG fallback
+              ];
+              
+              const currentTarget = e.currentTarget;
+              let attemptedFallback = currentTarget.dataset.fallbackIndex || '0';
+              const nextFallbackIndex = parseInt(attemptedFallback) + 1;
+              
+              if (nextFallbackIndex < fallbacks.length) {
+                console.warn(`🔄 Trying fallback ${nextFallbackIndex}: ${fallbacks[nextFallbackIndex]}`);
+                currentTarget.dataset.fallbackIndex = nextFallbackIndex.toString();
+                currentTarget.src = fallbacks[nextFallbackIndex];
+              } else {
+                console.error('❌ All logo fallbacks exhausted - using text fallback');
+                // Hide image, show text fallback
+                currentTarget.style.display = 'none';
+                const textFallback = document.createElement('div');
+                textFallback.textContent = 'RawaLite';
+                textFallback.style.cssText = 'font-size: 24px; font-weight: bold; color: white; text-align: center; padding: 10px;';
+                currentTarget.parentNode?.appendChild(textFallback);
+              }
             }}
           />
         </div>
