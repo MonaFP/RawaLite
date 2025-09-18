@@ -49,6 +49,20 @@ autoUpdater.allowPrerelease = false; // Stable releases only
 autoUpdater.disableWebInstaller = true; // Disable web installer fallback
 autoUpdater.forceDevUpdateConfig = false; // Production behavior always
 
+// 🌐 NETWORK OPTIMIZATION: Fix HTTP/2 protocol errors
+autoUpdater.requestHeaders = {
+  "User-Agent": "RawaLite-Updater/1.0",
+  "Cache-Control": "no-cache"
+};
+
+// 🔧 DOWNLOAD OPTIMIZATION: Configure request options
+Object.defineProperty(autoUpdater, 'httpExecutor', {
+  get() {
+    const { HttpExecutor } = require("builder-util-runtime");
+    return new HttpExecutor();
+  }
+});
+
 // 🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info("=== AUTO-UPDATER ENVIRONMENT DEBUG ===");
 log.info("App Version:", app.getVersion());
@@ -143,6 +157,20 @@ autoUpdater.on("error", (err) => {
   log.error("💥 [UPDATE-ERROR] Error stack:", err.stack);
   log.error("💥 [UPDATE-ERROR] Current app version:", app.getVersion());
   log.error("💥 [UPDATE-ERROR] App is packaged:", app.isPackaged);
+  
+  // 🔧 SPECIFIC FIX: Handle HTTP/2 protocol errors
+  if (err.message.includes("ERR_HTTP2_PROTOCOL_ERROR") || 
+      err.message.includes("net::ERR_HTTP2_PROTOCOL_ERROR")) {
+    log.error("🌐 [HTTP2-ERROR] Detected HTTP/2 protocol error - suggesting manual download");
+    sendUpdateMessage("update-error", {
+      message: "Netzwerkfehler beim Download. Bitte laden Sie das Update manuell von GitHub herunter.",
+      type: "network_error",
+      code: "HTTP2_PROTOCOL_ERROR",
+      manualDownloadRequired: true
+    });
+    return;
+  }
+  
   sendUpdateMessage("update-error", {
     message: err.message,
     stack: err.stack,
