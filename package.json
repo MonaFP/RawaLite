@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.8.23",
+  "version": "1.8.24",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
@@ -77,11 +77,6 @@
     }
   },
   "updater": {
-    "verifySignature": false,
-    "signVerify": false,
-    "allowUnsigned": true,
-    "disableKeychain": true,
-    "allowInsecureConnection": true,
     "allowDowngrade": true,
     "allowPrerelease": false,
     "provider": "github",

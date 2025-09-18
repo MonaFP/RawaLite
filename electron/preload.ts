@@ -22,6 +22,8 @@ const updater = {
     ipcRenderer.invoke("updater:start-download"),
   installAndRestart: (): Promise<InstallResult> =>
     ipcRenderer.invoke("updater:quit-and-install"),
+  installManual: (installerPath?: string): Promise<InstallResult> =>
+    ipcRenderer.invoke("updater:quit-and-install", installerPath),
   getVersion: (): Promise<{ current: string; appName: string }> =>
     ipcRenderer.invoke("updater:get-version"),
 
