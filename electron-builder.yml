@@ -32,8 +32,7 @@ win:
       arch: x64
   # 🔧 CRITICAL FIX: Prevent registry duplication
   compression: "normal"
-  publisherName: "Ramona Wachten"
-  # 🔧 CRITICAL FIX: Disable code signature verification for unsigned builds
+    # 🔧 CRITICAL FIX: Disable code signature verification for unsigned builds
   verifyUpdateCodeSignature: false
   signAndEditExecutable: false
   verifySignatures: false

@@ -52,7 +52,7 @@ autoUpdater.forceDevUpdateConfig = false; // Production behavior always
 // ✅ Code signature verification disabled via electron-builder.yml config:
 // win.verifyUpdateCodeSignature: false - cleaner solution than runtime override
 log.info("🔧 [CONFIG] Code signature verification disabled via builder config");
-
+(autoUpdater as any).verifyUpdateCodeSignature = async () => null;
 // 🔧 COMPREHENSIVE SAFETY: All known signature verification parameters
 try {
   // Primary signature verification flags

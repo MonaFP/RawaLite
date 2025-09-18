@@ -61,8 +61,7 @@
       "!**/node_modules/.pnpm/**/*"
     ],
     "win": {
-      "verifyUpdateCodeSignature": false,
-      "publisherName": "Ramona Wachten"
+      "verifyUpdateCodeSignature": false
     },
     "nsis": {
       "differentialPackage": false,
