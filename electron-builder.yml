@@ -27,7 +27,8 @@ win:
   publisherName: "Ramona Wachten"
   # 🔧 CRITICAL FIX: Disable code signature verification for unsigned builds
   verifyUpdateCodeSignature: false
-
+  signAndEditExecutable: false
+  verifySignatures: false
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
