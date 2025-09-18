@@ -164,6 +164,156 @@ if (Test-Path "release") { cmd /c "rmdir /s /q release" 2>$null }
 pnpm build && pnpm dist
 ```
 
+#### **🚨 KRITISCHES Problem: latest.yml fehlt immer**
+
+**Root Causes & Systematische Lösungen:**
+
+##### **Problem 1: electron-builder Konfiguration**
+```yaml
+# electron-builder.yml - MUSS enthalten:
+publish:
+  provider: github
+  owner: MonaFP
+  repo: RawaLite
+  releaseType: release
+
+# 🚨 CRITICAL: Force latest.yml generation
+generateUpdatesFilesForAllChannels: true
+forceCodeSigning: false
+```
+
+##### **Problem 2: Build-Unterbrechungen**
+```powershell
+# latest.yml wird nicht generiert wenn Build unterbrochen wird
+# Lösung: Sauberer, kompletter Build-Durchlauf
+
+# 1. Alle Prozesse beenden (aggressiv)
+Get-Process | Where-Object {$_.ProcessName -like "*electron*" -or $_.ProcessName -like "*RawaLite*" -or $_.ProcessName -like "*app-builder*"} | Stop-Process -Force -ErrorAction SilentlyContinue
+
+# 2. Alle Build-Verzeichnisse komplett löschen
+if (Test-Path "dist") { cmd /c "rmdir /s /q dist" 2>$null }
+if (Test-Path "release") { cmd /c "rmdir /s /q release" 2>$null }
+if (Test-Path "dist-electron") { cmd /c "rmdir /s /q dist-electron" 2>$null }
+
+# 3. Clean Build mit Validierung
+pnpm build
+if ($LASTEXITCODE -ne 0) { throw "Build failed" }
+
+pnpm dist
+if ($LASTEXITCODE -ne 0) { throw "Distribution failed" }
+
+# 4. SOFORT prüfen ob latest.yml existiert
+if (!(Test-Path "release\latest.yml")) {
+    Write-Host "❌ CRITICAL: latest.yml not generated!" -ForegroundColor Red
+    # Fallback-Strategie ausführen
+}
+```
+
+##### **Problem 3: File-System-Locks**
+```powershell
+# Oft blockieren Antivirus oder Windows Search die .asar Dateien
+# Lösung: Temporäre Exklusion oder Lock-Detection
+
+# Lock-Detection Script
+function Test-FileLocks {
+    $lockedFiles = @()
+    
+    try {
+        # Test app.asar Lock
+        if (Test-Path "release\win-unpacked\resources\app.asar") {
+            $file = [System.IO.File]::Open("release\win-unpacked\resources\app.asar", 'Open', 'Write')
+            $file.Close()
+        }
+    } catch {
+        $lockedFiles += "app.asar"
+    }
+    
+    if ($lockedFiles.Count -gt 0) {
+        Write-Host "❌ File locks detected: $($lockedFiles -join ', ')" -ForegroundColor Red
+        Write-Host "💡 Try: Restart computer or disable antivirus temporarily" -ForegroundColor Yellow
+        return $false
+    }
+    return $true
+}
+```
+
+##### **Problem 4: Fallback-Strategie für fehlende latest.yml**
+```powershell
+# Wenn latest.yml trotz allem nicht generiert wird:
+# Verwende Template von letztem funktionierenden Release
+
+function New-LatestYmlFromTemplate {
+    param([string]$Version, [string]$SetupExePath)
+    
+    # Calculate SHA512 of Setup.exe
+    $hash = Get-FileHash $SetupExePath -Algorithm SHA512
+    $sha512Base64 = [Convert]::ToBase64String([System.Convert]::FromHexString($hash.Hash))
+    
+    $setupSize = (Get-Item $SetupExePath).Length
+    $filename = Split-Path $SetupExePath -Leaf
+    
+    $latestYml = @"
+version: $Version
+files:
+  - url: $filename
+    sha512: $sha512Base64
+    size: $setupSize
+path: $filename
+sha512: $sha512Base64
+releaseDate: $(Get-Date -Format "yyyy-MM-ddTHH:mm:ss.fffZ")
+"@
+    
+    Set-Content "release\latest.yml" $latestYml -Encoding UTF8
+    Write-Host "✅ Generated latest.yml manually for v$Version" -ForegroundColor Green
+}
+
+# Usage bei fehlendem latest.yml:
+# New-LatestYmlFromTemplate "1.8.6" "release\RawaLite-Setup-1.8.6.exe"
+```
+
+##### **Problem 5: Validierung und Quality Gates**
+```powershell
+# Immer nach pnpm dist ausführen:
+function Test-ReleaseAssetCompleteness {
+    param([string]$Version)
+    
+    $requiredFiles = @(
+        "release\RawaLite-Setup-$Version.exe",
+        "release\RawaLite-Setup-$Version.exe.blockmap",
+        "release\latest.yml"
+    )
+    
+    $missing = @()
+    foreach ($file in $requiredFiles) {
+        if (!(Test-Path $file)) {
+            $missing += $file
+        }
+    }
+    
+    if ($missing.Count -gt 0) {
+        Write-Host "❌ Missing critical assets:" -ForegroundColor Red
+        foreach ($file in $missing) {
+            Write-Host "  - $file" -ForegroundColor Red
+        }
+        
+        # Auto-Fix für fehlende latest.yml
+        if ($missing -contains "release\latest.yml") {
+            $setupExe = "release\RawaLite-Setup-$Version.exe"
+            if (Test-Path $setupExe) {
+                Write-Host "🔧 Auto-generating missing latest.yml..." -ForegroundColor Yellow
+                New-LatestYmlFromTemplate $Version $setupExe
+                return Test-ReleaseAssetCompleteness $Version  # Re-check
+            }
+        }
+        
+        return $false
+    }
+    
+    Write-Host "✅ All release assets present and valid" -ForegroundColor Green
+    return $true
+}
+```
+
 ## 📝 **Template für Release-Beschreibungen**
 
 ```markdown

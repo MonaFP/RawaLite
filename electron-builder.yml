@@ -44,6 +44,11 @@ publish:
   repo: RawaLite
   releaseType: release
 
+# 🚨 CRITICAL: Force latest.yml generation
+generateUpdatesFilesForAllChannels: true
+# Ensure update info is always generated
+forceCodeSigning: false
+
 # File associations
 fileAssociations:
   - ext: rawalite
