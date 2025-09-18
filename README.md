@@ -1,6 +1,6 @@
 # RawaLite - Professionelle Geschäftsverwaltung
 
-![RawaLite Logo](assets/rawalite-logo.png)
+![RawaLite Logo](./assets/rawalite-logo.png)
 
 > **Version 1.7.5** - Desktop-Anwendung für Geschäftsverwaltung mit einheitlichem Update-System
 
