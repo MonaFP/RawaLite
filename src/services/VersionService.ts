@@ -370,7 +370,7 @@ export class VersionService {
   private async getPackageJsonFallback(): Promise<string | null> {
     try {
       // This would read from the bundled package.json in development
-      return "1.8.24";       // Current package.json version as absolute fallback
+      return "1.8.25";        // Current package.json version as absolute fallback
     } catch (error) {
       console.error("[VersionService] Package.json fallback failed:", error);
       return null;

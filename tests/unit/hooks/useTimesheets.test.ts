@@ -202,18 +202,39 @@ describe('useTimesheets Hook', () => {
         })
       ).rejects.toThrow('Enddatum muss nach dem Startdatum liegen');
 
-      // Test empty activities
-      await expect(
-        result.current.createTimesheet({
-          customerId: 1,
-          title: 'Test Timesheet',
-          status: 'draft',
-          startDate: '2025-09-01',
-          endDate: '2025-09-07',
-          activities: [],
-          vatRate: 19
-        })
-      ).rejects.toThrow('Mindestens eine Aktivität ist erforderlich');
+      // Test empty activities - this should now succeed since activities can be added later
+      const emptyTimesheet: Timesheet = {
+        id: 2,
+        timesheetNumber: 'LN-2025-0002',
+        customerId: 1,
+        title: 'Test Timesheet',
+        status: 'draft',
+        startDate: '2025-09-01',
+        endDate: '2025-09-07',
+        activities: [],
+        subtotal: 0,
+        vatRate: 19,
+        vatAmount: 0,
+        total: 0,
+        notes: undefined,
+        createdAt: '2025-09-12T10:00:00.000Z',
+        updatedAt: '2025-09-12T10:00:00.000Z'
+      };
+      
+      // Mock different response for empty activities
+      mockAdapter.createTimesheet.mockResolvedValueOnce(emptyTimesheet);
+      
+      const timesheetWithoutActivities = await result.current.createTimesheet({
+        customerId: 1,
+        title: 'Test Timesheet',
+        status: 'draft',
+        startDate: '2025-09-01',
+        endDate: '2025-09-07',
+        activities: [],
+        vatRate: 19
+      });
+      expect(timesheetWithoutActivities).toBeDefined();
+      expect(timesheetWithoutActivities.activities).toEqual([]);
     });
 
     it('should validate activity fields', async () => {
