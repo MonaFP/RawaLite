@@ -89,14 +89,56 @@ export function useAutoUpdater(
 
         case "update-available":
           setState("available");
-          // 🚨 CRITICAL FIX v1.8.8: Robust data extraction to prevent React crash
-          const updateData = data.data || {};
-          setUpdateInfo({
-            version: updateData.version || updateData.ver || "Unbekannt",
-            releaseNotes: updateData.releaseNotes || updateData.notes || updateData.note || "",
-            releaseDate: updateData.releaseDate || updateData.date || new Date().toISOString(),
-          });
-          setInstallInitiated(false); // Reset install tracking
+          
+          try {
+            // 🚨 ULTRA-CRITICAL v1.8.9: Maximum defensive programming for v1.8.4 compatibility
+            console.log('🔍 Raw update data received:', data);
+            
+            let updateData = {};
+            let version = "Unbekannt";
+            let releaseNotes = "";
+            let releaseDate = new Date().toISOString();
+            
+            // STEP 1: Safely extract data object
+            if (data && typeof data === 'object') {
+              updateData = data.data || data || {};
+            }
+            
+            // STEP 2: Ultra-safe version extraction with explicit any casting
+            if (updateData && typeof updateData === 'object') {
+              const dataAny = updateData as any; // TypeScript escape hatch for unknown structures
+              
+              const vRaw = dataAny?.version || dataAny?.ver;
+              if (typeof vRaw === 'string' || typeof vRaw === 'number') {
+                version = String(vRaw);
+              }
+              
+              const nRaw = dataAny?.releaseNotes || dataAny?.notes || dataAny?.note;
+              if (typeof nRaw === 'string') {
+                releaseNotes = nRaw;
+              }
+              
+              const dRaw = dataAny?.releaseDate || dataAny?.date;
+              if (typeof dRaw === 'string') {
+                releaseDate = dRaw;
+              }
+            }
+            
+            console.log('🔒 SANITIZED update info:', { version, releaseNotes: releaseNotes.substring(0, 50), releaseDate });
+            
+            setUpdateInfo({ version, releaseNotes, releaseDate });
+            setInstallInitiated(false);
+            
+          } catch (error) {
+            console.error('🚨 CRITICAL: Update data processing failed:', error);
+            // Emergency fallback
+            setUpdateInfo({
+              version: "Neue Version verfügbar",
+              releaseNotes: "Bitte laden Sie die neueste Version von GitHub herunter.",
+              releaseDate: new Date().toISOString()
+            });
+            setInstallInitiated(false);
+          }
           break;
 
         case "update-not-available":

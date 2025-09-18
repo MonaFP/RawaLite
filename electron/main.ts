@@ -111,10 +111,12 @@ autoUpdater.on("update-available", (info) => {
   // Store state for download phase
   isUpdateAvailable = true;
   currentUpdateInfo = info;
+  // 🚨 CRITICAL FIX v1.8.9: Send MINIMAL data to prevent v1.8.4 crashes
   sendUpdateMessage("update-available", {
-    version: info.version,
-    releaseNotes: info.releaseNotes,
-    releaseDate: info.releaseDate,
+    version: String(info.version || 'Unknown'),
+    // Send as individual strings, not as complex objects
+    releaseNotes: String(info.releaseNotes || ''),
+    releaseDate: String(info.releaseDate || new Date().toISOString()),
   });
 });
 
