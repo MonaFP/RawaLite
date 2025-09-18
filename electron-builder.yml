@@ -25,6 +25,8 @@ win:
   # 🔧 CRITICAL FIX: Prevent registry duplication
   compression: "normal"
   publisherName: "Ramona Wachten"
+  # 🔧 CRITICAL FIX: Disable code signature verification for unsigned builds
+  verifyUpdateCodeSignature: false
 
 nsis:
   oneClick: false

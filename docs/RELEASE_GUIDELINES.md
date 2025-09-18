@@ -164,6 +164,37 @@ if (Test-Path "release") { cmd /c "rmdir /s /q release" 2>$null }
 pnpm build && pnpm dist
 ```
 
+#### **🚨 KRITISCHES Problem: Code-Signing für Auto-Updates**
+
+**Problem**: `electron-updater` erwartet standardmäßig digital signierte Builds, aber Development-Releases sind unsigned.
+
+**Symptom**: 
+```
+Error: New version X.X.X is not signed by the application owner
+Status: 2 - "Die Datei ist nicht digital signiert"
+ERR_UPDATER_INVALID_SIGNATURE
+```
+
+**✅ BESTE Lösung in electron-builder.yml**:
+```yaml
+win:
+  icon: assets/icon.ico
+  target:
+    - target: nsis
+      arch: x64
+  publisherName: "Your Publisher Name"
+  # � CRITICAL FIX: Disable code signature verification for unsigned builds
+  verifyUpdateCodeSignature: false
+```
+
+**Alternative Lösung in electron/main.ts** (weniger sauber):
+```typescript
+// Fallback falls builder-config nicht funktioniert
+(autoUpdater as any).verifySignature = false;
+```
+
+**Langfristige Lösung**: Code-Signing-Zertifikat für Production-Releases erwerben.
+
 #### **🚨 KRITISCHES Problem: latest.yml fehlt immer**
 
 **Root Causes & Systematische Lösungen:**

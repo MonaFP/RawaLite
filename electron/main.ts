@@ -49,6 +49,10 @@ autoUpdater.allowPrerelease = false; // Stable releases only
 autoUpdater.disableWebInstaller = true; // Disable web installer fallback
 autoUpdater.forceDevUpdateConfig = false; // Production behavior always
 
+// ✅ Code signature verification disabled via electron-builder.yml config:
+// win.verifyUpdateCodeSignature: false - cleaner solution than runtime override
+log.info("🔧 [CONFIG] Code signature verification disabled via builder config");
+
 // 🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info("=== AUTO-UPDATER ENVIRONMENT DEBUG ===");
 log.info("App Version:", app.getVersion());
