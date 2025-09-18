@@ -1,0 +1,33 @@
+{
+  "name": "RawaLite Development Container",
+  "image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:20",
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/pnpm:2": {
+      "version": "latest"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-playwright.playwright",
+        "vitest.explorer"
+      ],
+      "settings": {
+        "typescript.preferences.includePackageJsonAutoImports": "on",
+        "typescript.suggest.autoImports": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        }
+      }
+    }
+  },
+  "forwardPorts": [5173, 3000],
+  "postCreateCommand": "pnpm install",
+  "remoteUser": "node"
+}

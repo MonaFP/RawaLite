@@ -1,0 +1,14 @@
+# Ordner/Dateien, die NICHT ins Repo sollen
+node_modules/
+dist/
+*.log
+.vscode/
+.DS_Store
+# Build-/Release-Artefakte
+dist/
+dist-electron/
+build/
+release/
+*.log
+*.zip
+*.exe

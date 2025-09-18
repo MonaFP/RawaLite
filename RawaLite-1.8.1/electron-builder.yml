@@ -1,0 +1,54 @@
+appId: com.rawalite.app
+productName: RawaLite
+artifactName: "${productName} Setup ${version}.${ext}"
+
+directories:
+  output: dist
+  buildResources: assets
+
+files:
+  - "dist/**/*"
+  - "dist-electron/**/*"
+  - "templates/**/*"
+  - "package.json"
+
+extraResources:
+  - from: "templates"
+    to: "app/templates"
+    filter: ["**/*"]
+
+win:
+  icon: assets/icon.ico
+  target:
+    - target: nsis
+      arch: x64
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  allowElevation: true
+  runAfterFinish: true
+  createDesktopShortcut: true
+
+publish:
+  provider: github
+  owner: MonaFP
+  repo: RawaLite
+  releaseType: release
+
+# File associations
+fileAssociations:
+  - ext: rawalite
+    name: RawaLite Document
+    description: RawaLite Document File
+
+# Build optimization
+nodeGypRebuild: false
+buildDependenciesFromSource: false
+
+# Metadata for proper update detection
+extraMetadata:
+  main: dist-electron/main.cjs
+  homepage: https://github.com/MonaFP/RawaLite
+  repository: https://github.com/MonaFP/RawaLite
