@@ -37,8 +37,8 @@ export default function Sidebar(){
               filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" // Schöner Schatten für bessere Sichtbarkeit
             }}
             onError={(e) => {
-              console.error('RawaLite Logo konnte nicht geladen werden, versuche alternativen Pfad');
-              e.currentTarget.src = './rawalite-logo.png';
+              console.warn('RawaLite Logo konnte nicht unter /rawalite-logo.png geladen werden, versuche assets-pfad');
+              e.currentTarget.src = './assets/rawalite-logo.png';
             }}
           />
         </div>

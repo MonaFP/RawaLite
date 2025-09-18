@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNotifications } from '../contexts/NotificationContext';
+import type { UpdateCheckResult } from '../types/ipc';
 
 interface UpdateInfo {
   version: string;
@@ -15,7 +16,7 @@ interface UpdateProgress {
   bytesPerSecond: number;
 }
 
-type UpdateStatus = 'idle' | 'checking' | 'available' | 'downloading' | 'downloaded' | 'installing' | 'error';
+type UpdateStatus = 'idle' | 'checking' | 'available' | 'downloading' | 'downloaded' | 'installing' | 'error' | 'dev-mode';
 
 export function UpdateManagement() {
   const { showSuccess, showError, showInfo } = useNotifications();
@@ -99,6 +100,12 @@ export function UpdateManagement() {
           setUpdateProgress(null);
           showError(`Update-Fehler: ${data.data?.message || 'Unbekannter Fehler'}`);
           break;
+        case 'dev-mode':
+          setUpdateStatus('dev-mode');
+          setErrorMessage('');
+          setUpdateProgress(null);
+          showInfo('Development-Modus: Update-System ist deaktiviert');
+          break;
       }
     };
 
@@ -121,9 +128,16 @@ export function UpdateManagement() {
         throw new Error('Update-System nicht verfügbar');
       }
 
-      const result = await window.electronAPI.updater.checkForUpdates();
+      const result = await window.electronAPI.updater.checkForUpdates() as UpdateCheckResult;
       
       if (!result.success) {
+        // Check if this is development mode (special case)
+        if (result.devMode) {
+          setUpdateStatus('dev-mode');
+          setErrorMessage('');
+          showInfo('Development-Modus: Update-System ist deaktiviert');
+          return;
+        }
         throw new Error(result.error || 'Update-Prüfung fehlgeschlagen');
       }
 
@@ -459,6 +473,26 @@ export function UpdateManagement() {
           
           <p style={{ margin: 0, color: '#374151', fontSize: '14px' }}>
             {errorMessage}
+          </p>
+        </div>
+      )}
+
+      {/* Development Mode Status */}
+      {updateStatus === 'dev-mode' && (
+        <div style={{
+          backgroundColor: '#dbeafe',
+          border: '1px solid #3b82f6',
+          borderRadius: '8px',
+          padding: '16px',
+          marginBottom: '24px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <span style={{ fontSize: '20px' }}>🔧</span>
+            <h4 style={{ margin: 0, color: '#2563eb' }}>Development-Modus</h4>
+          </div>
+          
+          <p style={{ margin: 0, color: '#374151', fontSize: '14px' }}>
+            Update-System ist im Development-Modus deaktiviert. Automatische Updates sind nur in der produktiven Version verfügbar.
           </p>
         </div>
       )}

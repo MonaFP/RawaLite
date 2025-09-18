@@ -43,9 +43,13 @@ export class BackupService {
     try {
       this.log('info', 'Creating backup via filesystem IPC', options);
 
-      // Ensure we have Electron IPC available
+      // 🔧 CRITICAL FIX: Graceful degradation for non-Electron environments
       if (typeof window === 'undefined' || !window.rawalite?.backup) {
-        throw new Error('Backup IPC not available - must run in Electron environment');
+        this.log('warn', 'Backup IPC not available - skipping backup in non-Electron environment');
+        return {
+          success: false,
+          error: 'Backup functionality not available in browser environment'
+        };
       }
 
       // Call main process to create backup

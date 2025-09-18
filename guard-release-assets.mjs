@@ -20,18 +20,18 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const distDir = path.join(__dirname, 'dist');
+const distDir = path.join(__dirname, 'release');
 
 console.log('🛡️ Release Asset Guard - Validating electron-updater assets...\n');
 
 // Check if dist directory exists
 if (!fs.existsSync(distDir)) {
-  console.error('❌ dist/ directory not found. Run `pnpm build && pnpm dist` first.');
+  console.error('❌ release/ directory not found. Run `pnpm build && pnpm dist` first.');
   process.exit(1);
 }
 
 const files = fs.readdirSync(distDir);
-console.log('📁 Found files in dist/:', files.length > 0 ? files.join(', ') : 'none');
+console.log('📁 Found files in release/:', files.length > 0 ? files.join(', ') : 'none');
 
 // Critical asset checks
 const checks = [

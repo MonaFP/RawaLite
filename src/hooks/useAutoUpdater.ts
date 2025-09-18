@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { UpdateCheckResult } from '../types/ipc';
 
 export interface UpdateInfo {
   version: string;
@@ -29,7 +30,8 @@ export type UpdateState =
   | 'not-available'
   | 'downloading'
   | 'downloaded'
-  | 'error';
+  | 'error'
+  | 'dev-mode';
 
 export interface UpdateHookState {
   state: UpdateState;
@@ -108,7 +110,17 @@ export function useAutoUpdater(options: {
           // 🔧 CRITICAL: "Update successful" only after app restart with new version
           break;      case 'update-error':
         setState('error');
-        setError(data.data?.message || 'Unbekannter Fehler beim Update');
+        
+        // 🔧 CRITICAL FIX: Enhanced error handling for NO_CHANNEL errors
+        const errorCode = data.data?.code;
+        const errorMessage = data.data?.message;
+        
+        if (errorCode === 'NO_CHANNEL') {
+          setError('Kein Update-Kanal verfügbar. Das Release ist möglicherweise unvollständig (latest.yml fehlt).');
+        } else {
+          setError(errorMessage || 'Unbekannter Fehler beim Update');
+        }
+        
         setInstallInitiated(false); // Reset install tracking on error
         break;
     }
@@ -181,10 +193,16 @@ export function useAutoUpdater(options: {
       setError(null);
       setInstallInitiated(false); // Reset install tracking
       
-      const result = await window.rawalite!.updater.checkForUpdates();
+      const result = await window.rawalite!.updater.checkForUpdates() as UpdateCheckResult;
       if (!result.success) {
-        setError(result.error || 'Update-Prüfung fehlgeschlagen');
-        setState('error');
+        // 🔧 DEVELOPMENT MODE: Set dev-mode state instead of error
+        if (result.devMode) {
+          setError(null); // Clear error - this is not an error condition
+          setState('dev-mode');
+        } else {
+          setError(result.error || 'Update-Prüfung fehlgeschlagen');
+          setState('error');
+        }
       }
       // State wird durch Event-Handler gesetzt
     } catch (err) {

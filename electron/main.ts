@@ -9,6 +9,19 @@ import { PDFPostProcessor, PDFAConversionOptions } from '../src/services/PDFPost
 import { initializeBackupSystem } from './backup'
 import { initializeLogoSystem } from './logo'
 
+// Get actual app version from package.json instead of Electron version
+function getAppVersion(): string {
+  try {
+    const packageJsonPath = path.join(__dirname, '../package.json')
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+    return packageJson.version || app.getVersion()
+  } catch (error) {
+    log.warn('Could not read package.json version, using Electron version:', error)
+    return app.getVersion()
+  }
+}
+
+
 // === SINGLE INSTANCE LOCK ===
 const gotTheLock = app.requestSingleInstanceLock()
 
@@ -49,7 +62,7 @@ autoUpdater.fullChangelog = true             // Include full changelog
 
 // 🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info('=== AUTO-UPDATER ENVIRONMENT DEBUG ===')
-log.info('App Version:', app.getVersion())
+log.info('App Version:', getAppVersion())
 log.info('App Name:', app.getName())
 log.info('Product Name:', app.getName())
 log.info('App ID:', 'com.rawalite.app')
@@ -73,7 +86,7 @@ let currentUpdateInfo: any = null
 // Auto-updater events for IPC communication
 autoUpdater.on('checking-for-update', () => {
   log.info('🔍 [UPDATE-PHASE] Starting update check...')
-  log.info('🔍 [UPDATE-PHASE] Current app version:', app.getVersion())
+  log.info('🔍 [UPDATE-PHASE] Current app version:', getAppVersion())
   log.info('🔍 [UPDATE-PHASE] Checking against GitHub releases API')
   // Reset state when starting new check
   isUpdateAvailable = false
@@ -93,14 +106,38 @@ autoUpdater.on('update-available', (info) => {
     log.info('📦 [UPDATE-AVAILABLE] Download URL:', info.files[0].url)
     log.info('📦 [UPDATE-AVAILABLE] SHA512:', info.files[0].sha512)
   }
-  // Store state for download phase
-  isUpdateAvailable = true
-  currentUpdateInfo = info
-  sendUpdateMessage('update-available', {
-    version: info.version,
-    releaseNotes: info.releaseNotes,
-    releaseDate: info.releaseDate
-  })
+  
+  // 🔧 CRITICAL FIX: Semver validation before sending to renderer
+  const currentVersion = getAppVersion()
+  const availableVersion = info.version
+  
+  // Use built-in version comparison for simplicity
+  
+  log.info('🔍 [VERSION-CHECK] Comparing versions:', { current: currentVersion, available: availableVersion })
+  
+  // Simple version comparison (assumes semantic versioning)
+  const isNewerVersion = availableVersion !== currentVersion && availableVersion > currentVersion
+  
+  if (isNewerVersion) {
+    log.info('✅ [VERSION-CHECK] Update is newer - showing as available')
+    // Store state for download phase
+    isUpdateAvailable = true
+    currentUpdateInfo = info
+    sendUpdateMessage('update-available', {
+      version: info.version,
+      releaseNotes: info.releaseNotes,
+      releaseDate: info.releaseDate
+    })
+  } else {
+        log.warn('⚠️ [VERSION-CHECK] Available version not newer than current - skipping update notification')
+    // Reset state and send not-available instead
+    isUpdateAvailable = false
+    currentUpdateInfo = null
+    sendUpdateMessage('update-not-available', {
+      version: availableVersion,
+      reason: 'Version is not newer than current'
+    })
+  }
 })
 
 autoUpdater.on('update-not-available', (info) => {
@@ -122,11 +159,33 @@ autoUpdater.on('error', (err) => {
   log.error('💥 [UPDATE-ERROR] Error stack:', err.stack)
   log.error('💥 [UPDATE-ERROR] Current app version:', app.getVersion())
   log.error('💥 [UPDATE-ERROR] App is packaged:', app.isPackaged)
-  sendUpdateMessage('update-error', {
-    message: err.message,
-    stack: err.stack,
-    code: (err as any).code
-  })
+  
+  // 🔧 CRITICAL FIX: Enhanced error classification
+  const errorMessage = String(err?.message || err)
+  const errorCode = (err as any)?.code || 'UNKNOWN'
+  
+  // Detect channel/latest.yml related errors
+  const isChannelError = errorMessage.includes('latest.yml') || 
+                        errorMessage.includes('ERR_UPDATER_CHANNEL_FILE_NOT_FOUND') ||
+                        errorCode === 'ERR_UPDATER_CHANNEL_FILE_NOT_FOUND' ||
+                        errorMessage.includes('404')
+  
+  if (isChannelError) {
+    log.error('🔍 [ERROR-CLASSIFICATION] Detected channel/latest.yml error')
+    sendUpdateMessage('update-error', {
+      message: 'Kein Update-Kanal verfügbar. Das Release ist möglicherweise unvollständig (latest.yml fehlt).',
+      code: 'NO_CHANNEL',
+      originalMessage: errorMessage,
+      originalCode: errorCode
+    })
+  } else {
+    log.error('🔍 [ERROR-CLASSIFICATION] Generic update error')
+    sendUpdateMessage('update-error', {
+      message: errorMessage,
+      stack: err.stack,
+      code: errorCode
+    })
+  }
 })
 
 autoUpdater.on('download-progress', (progressObj) => {
@@ -178,6 +237,17 @@ function sendUpdateMessage(type: string, data?: any) {
 ipcMain.handle('updater:check-for-updates', async () => {
   try {
     log.info('Manual update check requested')
+    
+    // 🔧 DEVELOPMENT MODE HANDLING: Provide clear feedback instead of silent skip
+    if (!app.isPackaged) {
+      log.info('Development mode detected - simulating update check for UI testing')
+      return {
+        success: false,
+        error: 'Update-Prüfung nur in der installierten Version verfügbar. Entwicklungsmodus erkannt.',
+        devMode: true
+      }
+    }
+    
     const result = await autoUpdater.checkForUpdates()
     return {
       success: true,
@@ -422,29 +492,69 @@ function createWindow() {
     },
   })
 
-  // 🔧 CRITICAL FIX: Better dev mode detection
-  const isDevServer = isDev && process.argv.includes('--dev');
+  // 🔧 CRITICAL FIX: Enhanced dev/prod detection with multiple fallbacks
+  const isDevServer = isDev && (process.argv.includes('--dev') || process.env.VITE_DEV_SERVER_URL);
   
-  if (isDevServer) {
-    // Vite-Dev-Server (nur wenn explizit --dev Flag gesetzt)
-    win.loadURL('http://localhost:5173')
-    // win.webContents.openDevTools({ mode: 'detach' })
+  if (isDevServer && process.env.VITE_DEV_SERVER_URL) {
+    // Vite-Dev-Server (with environment variable)
+    log.info('Loading Vite dev server:', process.env.VITE_DEV_SERVER_URL)
+    win.loadURL(process.env.VITE_DEV_SERVER_URL)
   } else {
-    // Static files (sowohl für Production als auch für lokale Tests)
-    // 🔧 ESBUILD FIX: __dirname ist undefined nach esbuild, nutze app.getAppPath()
-    const appPath = app.getAppPath()
-    const htmlPath = app.isPackaged 
-      ? path.join(appPath, 'dist', 'index.html')
-      : path.join(__dirname || process.cwd(), '..', 'dist', 'index.html')
+    // Static files with robust path resolution
+    let htmlPath: string;
     
-    console.log('Loading static HTML from:', htmlPath)
-    console.log('__dirname:', __dirname || 'undefined')
-    console.log('app.getAppPath():', appPath)
-    console.log('app.isPackaged:', app.isPackaged)
-    console.log('isDev:', isDev)
-    console.log('isDevServer:', isDevServer)
+    if (app.isPackaged) {
+      // Production: Resources path with multiple fallbacks
+      const possiblePaths = [
+        path.join(process.resourcesPath, 'app', 'dist', 'index.html'),
+        path.join(process.resourcesPath, 'dist', 'index.html'),
+        path.join(app.getAppPath(), 'dist', 'index.html')
+      ];
+      
+      // Find first existing path
+      htmlPath = possiblePaths.find(p => {
+        const exists = fs.existsSync(p);
+        log.info(`Checking production path: ${p} - exists: ${exists}`);
+        return exists;
+      }) || possiblePaths[0]; // Fallback to first if none found
+      
+    } else {
+      // Development: Relative to current directory
+      const possiblePaths = [
+        path.join(process.cwd(), 'dist', 'index.html'),
+        path.join(__dirname || process.cwd(), '..', 'dist', 'index.html'),
+        path.join(app.getAppPath(), 'dist', 'index.html')
+      ];
+      
+      // Find first existing path
+      htmlPath = possiblePaths.find(p => {
+        const exists = fs.existsSync(p);
+        log.info(`Checking dev path: ${p} - exists: ${exists}`);
+        return exists;
+      }) || possiblePaths[0]; // Fallback to first if none found
+    }
     
-    win.loadFile(htmlPath)
+    log.info('Final HTML path selected:', htmlPath);
+    log.info('Path exists:', fs.existsSync(htmlPath));
+    log.info('App packaged:', app.isPackaged);
+    log.info('isDev:', isDev);
+    
+    win.loadFile(htmlPath).catch(err => {
+      log.error('Failed to load HTML file:', err);
+      // Ultimate fallback: try to load a basic HTML
+      const fallbackHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head><title>RawaLite - Loading Error</title></head>
+          <body>
+            <h1>RawaLite</h1>
+            <p>Failed to load application. Please restart.</p>
+            <p>Path attempted: ${htmlPath}</p>
+          </body>
+        </html>
+      `;
+      win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(fallbackHtml)}`);
+    });
   }
 
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -461,7 +571,7 @@ ipcMain.handle('app:restart', async () => {
 })
 
 ipcMain.handle('app:getVersion', async () => {
-  return app.getVersion()
+  return getAppVersion()
 })
 
 ipcMain.handle('app:isPackaged', async () => {

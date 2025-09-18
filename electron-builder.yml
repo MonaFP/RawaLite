@@ -1,6 +1,6 @@
 appId: com.rawalite.app
 productName: RawaLite
-artifactName: "${productName} Setup ${version}.${ext}"
+artifactName: "${productName}-Setup-${version}.${ext}"
 
 directories:
   output: release
@@ -24,6 +24,7 @@ win:
       arch: x64
   # 🔧 CRITICAL FIX: Prevent registry duplication
   compression: "normal"
+  publisherName: "Ramona Wachten"
 
 nsis:
   oneClick: false

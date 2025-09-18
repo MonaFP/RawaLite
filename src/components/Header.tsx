@@ -1,15 +1,9 @@
-import { useLocation } from 'react-router-dom';
 import packageJson from '../../package.json';
 
 export default function Header() {
-  const location = useLocation();
-  
+  // 🔧 FIX: Remove useLocation to prevent Router hook errors outside Routes context
   const getPageTitle = () => {
-    switch (location.pathname) {
-      case '/': return 'Dashboard';
-      case '/updates': return 'Updates';
-      default: return 'RawaLite';
-    }
+    return 'RawaLite'; // Simplified - always show app name
   };
 
   return (
