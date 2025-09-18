@@ -202,9 +202,24 @@ autoUpdater.on("update-downloaded", (info) => {
 
 // Helper function to send update messages to renderer
 function sendUpdateMessage(type: string, data?: any) {
+  // 🚨 CRITICAL FIX v1.8.8: Sanitize data to prevent React crashes in older versions
+  const sanitizedData = data ? {
+    ...data,
+    // Ensure strings are actually strings, not objects
+    version: typeof data.version === 'string' ? data.version : String(data.version || 'Unbekannt'),
+    releaseNotes: typeof data.releaseNotes === 'string' ? data.releaseNotes : String(data.releaseNotes || data.note || ''),
+    releaseDate: typeof data.releaseDate === 'string' ? data.releaseDate : String(data.releaseDate || data.date || new Date().toISOString()),
+  } : null;
+
+  const message = { type, data: sanitizedData };
+  
   const allWindows = BrowserWindow.getAllWindows();
   allWindows.forEach((window) => {
-    window.webContents.send("update-message", { type, data });
+    try {
+      window.webContents.send("update-message", message);
+    } catch (error) {
+      log.error("[sendUpdateMessage] Failed to send message:", error);
+    }
   });
 }
 

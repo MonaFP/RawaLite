@@ -58,6 +58,12 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
     (event: any, data: { type: string; data?: any }) => {
       console.log("Update message received:", data);
 
+      // 🚨 CRITICAL FIX v1.8.8: Validate data structure to prevent React crash
+      if (!data || typeof data !== 'object' || typeof data.type !== 'string') {
+        console.warn('[AutoUpdaterModal] Invalid update message format, ignoring:', data);
+        return;
+      }
+
       switch (data.type) {
         case "checking-for-update":
           setUpdateState("checking");
@@ -67,10 +73,12 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
 
         case "update-available":
           setUpdateState("available");
+          // 🚨 CRITICAL FIX v1.8.8: Robust data extraction to prevent React crash
+          const updateData = data.data || {};
           setUpdateInfo({
-            version: data.data?.version || "Unbekannt",
-            releaseNotes: data.data?.releaseNotes,
-            releaseDate: data.data?.releaseDate,
+            version: updateData.version || updateData.ver || "Unbekannt",
+            releaseNotes: updateData.releaseNotes || updateData.notes || updateData.note || "",
+            releaseDate: updateData.releaseDate || updateData.date || new Date().toISOString(),
           });
           setInstallInitiated(false); // Reset installation tracking
           break;
