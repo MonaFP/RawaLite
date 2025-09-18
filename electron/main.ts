@@ -92,27 +92,14 @@ try {
 
 // � CRITICAL: Explicit Feed URL for unsigned releases
 try {
-  const feedUrl = {
-    provider: 'github',
-    owner: 'MonaFP',
-    repo: 'RawaLite',
-    // Critical for unsigned builds
-    private: false,
-    verifySignature: false,
-    allowUnsigned: true,
-    // LEGACY COMPATIBILITY: electron-updater v4.x/v5.x parameters
-    releaseType: 'release',
-    channel: 'latest',
-    updaterCacheDirName: 'rawalite-updater',
-    // Additional legacy parameters for older versions
-    publishAutoUpdate: true,
-    requestHeaders: {
-      'User-Agent': 'RawaLite-UpdateClient'
-    }
+  // Configure stable download headers to prevent HTTP2 issues
+  autoUpdater.requestHeaders = {
+    'User-Agent': 'RawaLite-Auto-Updater/1.8.20',
+    'Accept': 'application/octet-stream',
+    'Connection': 'close',  // Force HTTP/1.1
+    'Cache-Control': 'no-cache'
   };
-  
-  autoUpdater.setFeedURL(feedUrl as any);
-  log.info("🔧 [FEED-URL] Explicit feed URL configured with FULL legacy compatibility (v1.7.9+)");
+  log.info("🔧 [UNIFIED] Using electron-builder.yml config with stable headers");
   
   // CRITICAL: Force channel and compatibility settings for ALL older versions
   try {
@@ -411,21 +398,34 @@ ipcMain.handle("updater:quit-and-install", async () => {
       }
     });
 
-    // 🔧 CRITICAL FIX: Proper timing and parameters for NSIS installer
+    // 🔧 MANUAL NSIS INSTALL: Bypass signature verification for unsigned packages
     log.info(
-      "🚀 [INSTALL-AND-RESTART] Executing quitAndInstall with proper NSIS parameters"
+      "🚀 [MANUAL-INSTALL] Using manual installer execution for unsigned NSIS package"
     );
 
     // Wait for graceful window closure
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // For Windows NSIS: isSilent=false (show progress), isForceRunAfter=true (restart after install)
-    setImmediate(() => {
-      log.info(
-        "🚀 [INSTALL-AND-RESTART] Calling quitAndInstall(false, true) for NSIS"
-      );
+    // Get downloaded installer path
+    const { downloadedFile } = (autoUpdater as any).updateInfoAndProvider?.downloadedFile || {};
+    if (downloadedFile?.path) {
+      const installerPath = downloadedFile.path;
+      log.info(`🚀 [MANUAL-INSTALL] Launching installer: ${installerPath}`);
+      
+      // Use cmd /c start to launch installer and exit app
+      const { spawn } = require('child_process');
+      spawn('cmd', ['/c', 'start', '', installerPath], {
+        detached: true,
+        stdio: 'ignore'
+      }).unref();
+      
+      // Exit the current app after starting installer
+      setTimeout(() => app.quit(), 500);
+    } else {
+      // Fallback: use quitAndInstall if path unavailable
+      log.warn("🚀 [FALLBACK] No installer path found, using quitAndInstall");
       autoUpdater.quitAndInstall(false, true);
-    });
+    }
 
     return { success: true };
   } catch (error) {
