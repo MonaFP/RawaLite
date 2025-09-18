@@ -3,7 +3,49 @@
 ## ⚠️ **KRITISCHE WARNUNG: Asset-Anforderungen**
 
 ### **🚨 NIEMALS Release ohne Assets erstellen!**
-- ❌ **Problem**: Release v1.8.5 wurde ohne `latest.yml` erstellt  
+- ❌ **Problem**: Release v1.8.5 **✅ UMFASSENDE Lösung - electron-builder.yml**:
+```yaml
+win:
+  icon: assets/icon.ico
+  target:
+    - target: nsis
+      arch: x64
+  publisherName: "Your Publisher Name"
+  # 🔧 CRITICAL FIX: Disable code signature verification for unsigned builds
+  verifyUpdateCodeSignature: false
+
+# Additional builder-level options
+forceCodeSigning: false
+electronUpdaterCompatibility: ">=2.16"
+
+nsis:
+  # NSIS signature handling
+  differentialPackage: false
+  warningsAsErrors: false
+```
+
+**✅ RUNTIME-Absicherung in electron/main.ts** (empfohlen als Fallback):
+```typescript
+// 🔧 COMPREHENSIVE SAFETY: All known signature verification parameters
+try {
+  // Primary signature verification flags
+  (autoUpdater as any).verifySignature = false;
+  (autoUpdater as any).signVerify = false;
+  
+  // Windows-specific signature options
+  (autoUpdater as any).verifyUpdateCodeSignature = false;
+  (autoUpdater as any).allowInsecureConnection = true;
+  (autoUpdater as any).disableKeychain = true;
+  
+  // Force accept unsigned updates
+  (autoUpdater as any).allowUnsigned = true;
+  (autoUpdater as any).skipSignatureVerification = true;
+  
+  log.info("🔧 [RUNTIME] Comprehensive signature verification disabled");
+} catch (error) {
+  log.warn("⚠️  [RUNTIME] Could not set all signature options:", error);
+}
+```t.yml` erstellt  
 - ❌ **Folge**: Auto-Update-System funktioniert nicht
 - ❌ **Fehler**: `Cannot find latest.yml in the latest release artifacts`
 

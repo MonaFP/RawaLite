@@ -74,7 +74,45 @@ try {
   log.warn("⚠️  [RUNTIME] Could not set all signature options:", error);
 }
 
-// 🔍 ENHANCED DEBUG: Comprehensive environment logging
+// � CRITICAL: Explicit Feed URL for unsigned releases
+try {
+  const feedUrl = {
+    provider: 'github',
+    owner: 'MonaFP',
+    repo: 'RawaLite',
+    // Critical for unsigned builds
+    private: false,
+    verifySignature: false,
+    allowUnsigned: true,
+    // LEGACY COMPATIBILITY: electron-updater v4.x/v5.x parameters
+    releaseType: 'release',
+    channel: 'latest',
+    updaterCacheDirName: 'rawalite-updater',
+    // Additional legacy parameters for older versions
+    publishAutoUpdate: true,
+    requestHeaders: {
+      'User-Agent': 'RawaLite-UpdateClient'
+    }
+  };
+  
+  autoUpdater.setFeedURL(feedUrl as any);
+  log.info("🔧 [FEED-URL] Explicit feed URL configured with FULL legacy compatibility (v1.7.9+)");
+  
+  // CRITICAL: Force channel and compatibility settings for ALL older versions
+  try {
+    (autoUpdater as any).channel = 'latest';
+    (autoUpdater as any).allowPrerelease = false;
+    (autoUpdater as any).forceDevUpdateConfig = false;
+    log.info("🔧 [LEGACY] Channel + compatibility forced for v1.7.9+ updates");
+  } catch (channelError) {
+    log.warn("⚠️  [LEGACY] Could not set all compatibility parameters:", channelError);
+  }
+  
+} catch (error) {
+  log.warn("⚠️  [FEED-URL] Could not set explicit feed URL:", error);
+}
+
+// �🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info("=== AUTO-UPDATER ENVIRONMENT DEBUG ===");
 log.info("App Version:", app.getVersion());
 log.info("App Name:", app.getName());

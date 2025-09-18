@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.8.14",
+  "version": "1.8.15",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
@@ -40,6 +40,41 @@
     "version:bump:minor": "pnpm version:bump minor",
     "version:bump:major": "pnpm version:bump major",
     "postinstall": "node -e \"require('fs').mkdirSync('public',{recursive:true});require('fs').cpSync(require.resolve('sql.js/dist/sql-wasm.wasm'),'public/sql-wasm.wasm',{force:true})\""
+  },
+  "build": {
+    "electronUpdaterCompatibility": ">=2.16",
+    "forceCodeSigning": false,
+    "win": {
+      "verifyUpdateCodeSignature": false,
+      "publisherName": "Ramona Wachten"
+    },
+    "nsis": {
+      "differentialPackage": false,
+      "warningsAsErrors": false
+    },
+    "publish": null
+  },
+  "updater": {
+    "verifySignature": false,
+    "signVerify": false,
+    "allowUnsigned": true,
+    "disableKeychain": true,
+    "allowInsecureConnection": true,
+    "allowDowngrade": true,
+    "allowPrerelease": false,
+    "provider": "github",
+    "owner": "MonaFP",
+    "repo": "RawaLite",
+    "private": false,
+    "channel": "latest",
+    "releaseType": "release",
+    "updaterCacheDirName": "rawalite-updater",
+    "publishAutoUpdate": true,
+    "requestHeaders": {
+      "User-Agent": "RawaLite-UpdateClient"
+    },
+    "vPrefixedTagName": true,
+    "forceDevUpdateConfig": false
   },
   "dependencies": {
     "@fontsource/roboto": "^5.2.7",

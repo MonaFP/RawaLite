@@ -49,6 +49,10 @@ publish:
   owner: MonaFP
   repo: RawaLite
   releaseType: release
+  # 🔧 CRITICAL: Additional signature handling for GitHub provider
+  publishAutoUpdate: true
+  # Legacy compatibility (v1.7.9+)
+  vPrefixedTagName: true
 
 # 🚨 CRITICAL: Force latest.yml generation
 generateUpdatesFilesForAllChannels: true
