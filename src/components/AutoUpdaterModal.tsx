@@ -100,7 +100,12 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
 
         case "update-error":
           setUpdateState("error");
-          setError(data.data?.message || "Unbekannter Fehler beim Update");
+          // 🌐 SPECIAL HANDLING: Network errors with manual download option
+          if (data.data?.type === "network_error" || data.data?.manualDownloadRequired) {
+            setError(`${data.data?.message || "Netzwerkfehler beim Update"}\n\nKlicken Sie auf 'GitHub öffnen' um das Update manuell herunterzuladen.`);
+          } else {
+            setError(data.data?.message || "Unbekannter Fehler beim Update");
+          }
           setInstallInitiated(false); // Reset on error
           break;
       }
@@ -455,6 +460,19 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
                 >
                   Erneut versuchen
                 </button>
+                {/* 🌐 NETWORK ERROR: Show manual download option for network errors */}
+                {(error?.includes("Netzwerkfehler") || error?.includes("manuell")) && (
+                  <button
+                    className="auto-updater-button"
+                    onClick={() => {
+                      if (window.rawalite?.shell?.openExternal) {
+                        window.rawalite.shell.openExternal("https://github.com/MonaFP/RawaLite/releases/latest");
+                      }
+                    }}
+                  >
+                    🌐 GitHub öffnen
+                  </button>
+                )}
                 <button className="auto-updater-button" onClick={onClose}>
                   Schließen
                 </button>
