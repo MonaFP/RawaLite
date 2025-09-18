@@ -55,8 +55,14 @@ publish:
   # Legacy compatibility (v1.7.9+)
   vPrefixedTagName: true
 
-# 🚨 CRITICAL: Force latest.yml generation
+# 🚨 CRITICAL: Force latest.yml generation for auto-updater
 generateUpdatesFilesForAllChannels: true
+# Force update metadata generation
+forceCodeSigning: false
+# Ensure latest.yml is created
+nsis:
+  # Enable auto-update metadata
+  createUpdatesInfoFile: true
 # Ensure update info is always generated
 forceCodeSigning: false
 
