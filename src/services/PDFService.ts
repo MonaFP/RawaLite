@@ -74,7 +74,7 @@ export class PDFService {
       };
 
       console.log('🔄 Calling PDF generation via IPC (with logo:', !!logoData, ')...', templateData);
-      const result = await window.electronAPI?.pdf?.generate(templateData);
+      const result = await window.rawalite?.pdf?.generate(templateData);
       console.log('📋 PDF generation result:', result);
       
       if (result?.success) {
@@ -147,7 +147,7 @@ export class PDFService {
       };
 
       console.log('🔄 Calling PDF generation via IPC...', templateData);
-      const result = await window.electronAPI?.pdf?.generate(templateData);
+      const result = await window.rawalite?.pdf?.generate(templateData);
       console.log('📋 PDF generation result:', result);
       
       if (result?.success) {
@@ -218,7 +218,7 @@ export class PDFService {
       };
 
       console.log('🔄 Calling PDF generation via IPC...', templateData);
-      const result = await window.electronAPI?.pdf?.generate(templateData);
+      const result = await window.rawalite?.pdf?.generate(templateData);
       console.log('📋 PDF generation result:', result);
       
       if (result?.success) {
@@ -255,7 +255,7 @@ export class PDFService {
     pdfa2bSupported: boolean;
   }> {
     try {
-      const status = await window.electronAPI?.pdf?.getStatus();
+      const status = await window.rawalite?.pdf?.getStatus();
       return status || {
         electronAvailable: false,
         ghostscriptAvailable: false,

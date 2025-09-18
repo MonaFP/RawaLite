@@ -33,8 +33,8 @@ export function UpdateManagement() {
   useEffect(() => {
     const getCurrentVersion = async () => {
       try {
-        if (window.electronAPI?.updater) {
-          const versionData = await window.electronAPI.updater.getVersion();
+        if (window.rawalite?.updater) {
+          const versionData = await window.rawalite.updater.getVersion();
           setCurrentVersion(versionData.current);
         }
       } catch (error) {
@@ -45,78 +45,47 @@ export function UpdateManagement() {
     getCurrentVersion();
   }, []);
 
-  // Listen to update events
+    // Listen to update events
   useEffect(() => {
-    if (!window.electronAPI?.on) return;
+    if (!window.rawalite?.updater) return;
 
     const handleUpdateMessage = (event: any, data: { type: string; data?: any }) => {
-      console.log('Update message received:', data);
-
+      console.log('📬 UpdateManagement received update message:', data);
+      
       switch (data.type) {
         case 'checking-for-update':
           setUpdateStatus('checking');
-          setErrorMessage('');
-          setUpdateProgress(null);
           break;
-
         case 'update-available':
           setUpdateStatus('available');
-          setUpdateInfo({
-            version: data.data?.version || 'Unbekannt',
-            releaseNotes: data.data?.releaseNotes || '',
-            releaseDate: data.data?.releaseDate || ''
-          });
-          showInfo(`Update verfügbar: Version ${data.data?.version}`);
+          setUpdateInfo(data.data);
           break;
-
         case 'update-not-available':
           setUpdateStatus('idle');
-          setUpdateInfo(null);
-          setLastCheckTime(new Date());
-          if (updateStatus === 'checking') {
-            showSuccess('Ihre App ist bereits auf dem neuesten Stand');
-          }
           break;
-
         case 'download-progress':
+          setUpdateProgress(data.data);
           setUpdateStatus('downloading');
-          setUpdateProgress({
-            percent: data.data?.percent || 0,
-            transferred: data.data?.transferred || 0,
-            total: data.data?.total || 0,
-            bytesPerSecond: data.data?.bytesPerSecond || 0
-          });
           break;
-
         case 'update-downloaded':
           setUpdateStatus('downloaded');
-          setUpdateProgress(null);
-          showSuccess(`Update heruntergeladen: Version ${data.data?.version}. Bereit zur Installation.`);
           break;
-
-        case 'update-error':
+        case 'error':
           setUpdateStatus('error');
-          setErrorMessage(data.data?.message || 'Unbekannter Update-Fehler');
-          setUpdateProgress(null);
-          showError(`Update-Fehler: ${data.data?.message || 'Unbekannter Fehler'}`);
-          break;
-        case 'dev-mode':
-          setUpdateStatus('dev-mode');
-          setErrorMessage('');
-          setUpdateProgress(null);
-          showInfo('Development-Modus: Update-System ist deaktiviert');
+          setErrorMessage(data.data?.message || 'Unknown error');
           break;
       }
     };
 
-    window.electronAPI.on('update-message', handleUpdateMessage);
+    // 🔧 CRITICAL FIX: Use updater event handlers
+    window.rawalite.updater.onUpdateMessage(handleUpdateMessage);
 
     return () => {
-      if (window.electronAPI?.removeListener) {
-        window.electronAPI.removeListener('update-message', handleUpdateMessage);
+      if (window.rawalite?.updater?.removeUpdateMessageListener) {
+        window.rawalite.updater.removeUpdateMessageListener(handleUpdateMessage);
       }
     };
-  }, [showSuccess, showError, showInfo, updateStatus]);
+  }, []);
 
   // Check for updates
   const handleCheckForUpdates = async () => {
@@ -124,11 +93,11 @@ export function UpdateManagement() {
       setUpdateStatus('checking');
       setErrorMessage('');
       
-      if (!window.electronAPI?.updater) {
+      if (!window.rawalite?.updater) {
         throw new Error('Update-System nicht verfügbar');
       }
 
-      const result = await window.electronAPI.updater.checkForUpdates() as UpdateCheckResult;
+      const result = await window.rawalite.updater.checkForUpdates() as UpdateCheckResult;
       
       if (!result.success) {
         // Check if this is development mode (special case)
@@ -153,14 +122,14 @@ export function UpdateManagement() {
   // Download update
   const handleDownloadUpdate = async () => {
     try {
-      if (!window.electronAPI?.updater) {
+      if (!window.rawalite?.updater) {
         throw new Error('Update-System nicht verfügbar');
       }
 
       setUpdateStatus('downloading');
       setErrorMessage('');
 
-      const result = await window.electronAPI.updater.startDownload();
+      const result = await window.rawalite.updater.startDownload();
       
       if (!result.success) {
         throw new Error(result.error || 'Download fehlgeschlagen');
@@ -178,7 +147,7 @@ export function UpdateManagement() {
   // Install update
   const handleInstallUpdate = async () => {
     try {
-      if (!window.electronAPI?.updater) {
+      if (!window.rawalite?.updater) {
         throw new Error('Update-System nicht verfügbar');
       }
 
@@ -199,7 +168,7 @@ export function UpdateManagement() {
 
       showInfo('Update wird installiert... Die App wird automatisch neu gestartet.');
 
-      const result = await window.electronAPI.updater.installAndRestart();
+      const result = await window.rawalite.updater.installAndRestart();
       
       if (!result.success) {
         throw new Error(result.error || 'Installation fehlgeschlagen');

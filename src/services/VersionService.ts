@@ -4,7 +4,6 @@
  * Verwaltet App-Versionierung und automatische Updates der Versionsnummer
  */
 
-import { UpdateService } from "./UpdateService";
 import { LoggingService } from "./LoggingService";
 
 export interface VersionInfo {
@@ -26,11 +25,9 @@ export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
   private readonly BUILD_DATE = "2025-09-18";
 
-  private updateService: UpdateService;
   private currentVersionInfo: VersionInfo | null = null;
 
   constructor() {
-    this.updateService = new UpdateService();
 
     // 🔧 CRITICAL FIX: No more localStorage manipulation in constructor
     // This was overriding legitimate version updates after successful installs
@@ -120,16 +117,8 @@ export class VersionService {
         `[VersionService] Checking for updates, current version: ${currentVersion.version}`
       );
 
-      // Prüfe Migration-Status zuerst (lokale Operation)
+      // Migration-Status-Check entfernt - wird durch electron-updater gehandhabt
       let migrationRequired = false;
-      try {
-        const migrationStatus = await this.updateService.getMigrationStatus();
-        migrationRequired = migrationStatus.needsMigration;
-      } catch (migrationError) {
-        LoggingService.log(
-          `[VersionService] Migration check failed: ${migrationError}`
-        );
-      }
 
       // Verwende electron-updater falls verfügbar, sonst GitHub API Fallback
       let hasElectronUpdate = false;
@@ -260,7 +249,7 @@ export class VersionService {
   }
 
   /**
-   * Führt ein Update durch
+   * Führt ein Update durch (via electron-updater)
    */
   async performUpdate(
     progressCallback?: (progress: number, message: string) => void
@@ -270,20 +259,16 @@ export class VersionService {
 
       progressCallback?.(10, "Update wird vorbereitet...");
 
-      // Setze Update-Service Callback
-      this.updateService.setProgressCallback((updateProgress) => {
-        // Update-Progress an UI weiterleiten (10-90%)
-        const scaledProgress = 10 + updateProgress.progress * 0.8;
-        progressCallback?.(scaledProgress, updateProgress.message);
-      });
-
-      // Führe Update durch
-      await this.updateService.performUpdate();
-
-      progressCallback?.(95, "Version wird aktualisiert...");
-
-      // Version in lokalem Storage aktualisieren
-      await this.updateStoredVersion();
+      // Verwende electron-updater direkt
+      if (typeof window !== "undefined" && window.rawalite?.updater) {
+        progressCallback?.(50, "Update wird heruntergeladen...");
+        await window.rawalite.updater.startDownload();
+        
+        progressCallback?.(90, "Installation wird vorbereitet...");
+        await window.rawalite.updater.installAndRestart();
+      } else {
+        throw new Error("electron-updater nicht verfügbar");
+      }
 
       progressCallback?.(100, "Update erfolgreich abgeschlossen");
 
@@ -314,7 +299,7 @@ export class VersionService {
     };
   }> {
     const version = await this.getCurrentVersion();
-    const updateInfo = await this.updateService.checkForUpdates();
+    const updateInfo = await this.checkForUpdates(); // Use own method instead
 
     return {
       version,
@@ -385,7 +370,7 @@ export class VersionService {
   private async getPackageJsonFallback(): Promise<string | null> {
     try {
       // This would read from the bundled package.json in development
-      return "1.8.5"; // Current package.json version as absolute fallback
+      return "1.8.6";  // Current package.json version as absolute fallback
     } catch (error) {
       console.error("[VersionService] Package.json fallback failed:", error);
       return null;

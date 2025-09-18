@@ -98,9 +98,7 @@ declare interface Window {
       getUrl: (filePath: string) => Promise<string>;
       delete: (filePath: string) => Promise<boolean>;
     };
-  };
-  electronAPI?: {
-    pdf?: {
+    pdf: {
       generate: (options: any) => Promise<{
         success: boolean;
         filePath?: string;

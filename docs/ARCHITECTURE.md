@@ -1,6 +1,28 @@
 # 🏗️ RawaLite - Architektur-Dokumentation
 
-> **Technische Architektur und Design-Patterns** - Version 1.5.5 (Current: Dezember 2024)
+> **Technische Architektur und Design-Patterns** - Version 1.8.5+ (Current: September 2025)
+
+## 🚨 **KRITISCHE ARCHITEKTUR-UPDATES (v1.8.5+)**
+
+### **Namespace-Konsolidierung (September 2025)**
+- **Problem**: Drei verschiedene IPC-Namespaces (`window.api`, `window.rawalite`, `window.elektronAPI`)
+- **Lösung**: **Einheitlicher `window.rawalite` Namespace** für alle IPC-Kommunikation
+- **Auswirkung**: Vereinfachte Entwicklung, konsistente API, bessere TypeScript-Unterstützung
+
+### **IPC-Mapping Vereinheitlichung**
+```typescript
+// ✅ NACH Konsolidierung (v1.8.5+)
+window.rawalite.updater.checkForUpdates()    // Auto-Update
+window.rawalite.pdf.generate(options)        // PDF-Service  
+window.rawalite.app.getVersion()             // App-Info
+window.rawalite.db.save(data)                // Database
+window.rawalite.backup.create(options)       // Backup-Service
+
+// ❌ VORHER (v1.8.4 und älter)
+window.api.updater.checkForUpdates()         // Nicht verwendet
+window.elektronAPI.pdf.generate(options)     // Inkonsistent
+window.rawalite.updater.checkForUpdates()    // Gemischt
+```
 
 ## 📊 **Überblick**
 
@@ -64,26 +86,66 @@ graph TD
     O --> B
 ```
 
-### **Backend Architecture (Electron)**
+### **Backend Architecture (Electron) - Unified IPC**
 
 ```mermaid
 sequenceDiagram
     participant R as Renderer Process
+    participant P as Preload.ts
     participant M as Main Process
     participant FS as File System
     participant DB as SQLite Database
     
-    R->>M: IPC: db:save(data)
+    R->>P: window.rawalite.db.save(data)
+    P->>M: IPC: db:save(data)
     M->>FS: Write to %APPDATA%
     FS-->>M: Success/Error
-    M-->>R: IPC Response
+    M-->>P: IPC Response
+    P-->>R: Promise Result
     
-    R->>M: IPC: db:load
-    M->>FS: Read from %APPDATA%
-    FS->>DB: Load SQLite File
-    DB-->>FS: Return Data
-    FS-->>M: Database Content
-    M-->>R: IPC Response
+    Note over R,P: ✅ Unified namespace: window.rawalite.*
+    Note over P,M: All IPC handlers mapped through preload.ts
+    Note over M,FS: Type-safe IPC with proper error handling
+```
+
+### **IPC-Handler Mapping (v1.8.5+)**
+```typescript
+// electron/preload.ts - Unified API Surface
+contextBridge.exposeInMainWorld("rawalite", {
+  // Database Operations
+  db: {
+    load: () => ipcRenderer.invoke("db:load"),
+    save: (data) => ipcRenderer.invoke("db:save", data)
+  },
+  
+  // Auto-Update System  
+  updater: {
+    checkForUpdates: () => ipcRenderer.invoke("updater:check-for-updates"),
+    startDownload: () => ipcRenderer.invoke("updater:start-download"),
+    installAndRestart: () => ipcRenderer.invoke("updater:quit-and-install"),
+    getVersion: () => ipcRenderer.invoke("updater:get-version")
+  },
+  
+  // PDF Generation
+  pdf: {
+    generate: (options) => ipcRenderer.invoke("pdf:generate", options),
+    getStatus: () => ipcRenderer.invoke("pdf:getStatus")
+  },
+  
+  // App Management
+  app: {
+    getVersion: () => ipcRenderer.invoke("app:getVersion"),
+    restart: () => ipcRenderer.invoke("app:restart"),
+    exportLogs: () => ipcRenderer.invoke("app:exportLogs")
+  },
+  
+  // Backup System
+  backup: {
+    create: (options) => ipcRenderer.invoke("backup:create", options),
+    list: () => ipcRenderer.invoke("backup:list"),
+    prune: (options) => ipcRenderer.invoke("backup:prune", options)
+  }
+});
 ```
 
 ## 📁 **Projekt-Struktur**

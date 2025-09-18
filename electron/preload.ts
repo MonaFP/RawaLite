@@ -38,17 +38,47 @@ const updater = {
   },
 };
 
-const system = {
-  getVersion: (): Promise<string> => ipcRenderer.invoke("system:getVersion"),
+const app = {
+  getVersion: (): Promise<string> => ipcRenderer.invoke("app:getVersion"),
+  restart: (): Promise<void> => ipcRenderer.invoke("app:restart"),
+  exportLogs: (): Promise<{
+    success: boolean;
+    filePath?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("app:exportLogs"),
 };
 
-contextBridge.exposeInMainWorld("api", { updater, system });
+// 🔧 CRITICAL FIX: PDF Service IPC handlers
+const pdf = {
+  generate: (options: any): Promise<{
+    success: boolean;
+    filePath?: string;
+    previewUrl?: string;
+    fileSize?: number;
+    error?: string;
+  }> => ipcRenderer.invoke("pdf:generate", options),
+  getStatus: (): Promise<{
+    electronAvailable: boolean;
+    ghostscriptAvailable: boolean;
+    veraPDFAvailable: boolean;
+    pdfa2bSupported: boolean;
+  }> => ipcRenderer.invoke("pdf:getStatus"),
+};
+
+// 🔧 UNIFIED: All APIs under window.rawalite namespace  
+contextBridge.exposeInMainWorld("rawalite", { 
+  // Keep existing rawalite APIs (defined in main.ts)
+  updater, 
+  app,
+  pdf  // Add PDF service to unified namespace
+});
 
 declare global {
   interface Window {
-    api: {
+    rawalite: {
       updater: typeof updater;
-      system: typeof system;
+      app: typeof app;
+      pdf: typeof pdf;
     };
   }
 }
