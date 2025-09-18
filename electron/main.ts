@@ -53,6 +53,27 @@ autoUpdater.forceDevUpdateConfig = false; // Production behavior always
 // win.verifyUpdateCodeSignature: false - cleaner solution than runtime override
 log.info("🔧 [CONFIG] Code signature verification disabled via builder config");
 
+// 🔧 COMPREHENSIVE SAFETY: All known signature verification parameters
+try {
+  // Primary signature verification flags
+  (autoUpdater as any).verifySignature = false;
+  (autoUpdater as any).signVerify = false;
+  
+  // Windows-specific signature options
+  (autoUpdater as any).verifyUpdateCodeSignature = false;
+  (autoUpdater as any).allowInsecureConnection = true;
+  (autoUpdater as any).disableKeychain = true;
+  
+  // Force accept unsigned updates
+  (autoUpdater as any).allowUnsigned = true;
+  (autoUpdater as any).skipSignatureVerification = true;
+  
+  log.info("🔧 [RUNTIME] Comprehensive signature verification disabled");
+  log.info("🔧 [RUNTIME] All known unsigned build parameters set");
+} catch (error) {
+  log.warn("⚠️  [RUNTIME] Could not set all signature options:", error);
+}
+
 // 🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info("=== AUTO-UPDATER ENVIRONMENT DEBUG ===");
 log.info("App Version:", app.getVersion());

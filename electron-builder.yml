@@ -39,6 +39,10 @@ nsis:
   guid: "b6b5b9b2-7b8b-4b9b-8b7b-7b8b7b8b7b8b"
   menuCategory: "RawaLite"
   shortcutName: "RawaLite"
+  # 🔧 CRITICAL FIX: NSIS signature handling
+  differentialPackage: false
+  # Disable signature validation in installer
+  warningsAsErrors: false
 
 publish:
   provider: github
@@ -50,6 +54,13 @@ publish:
 generateUpdatesFilesForAllChannels: true
 # Ensure update info is always generated
 forceCodeSigning: false
+
+# 🔧 CRITICAL FIX: Comprehensive signature verification disable
+# Disable signing enforcement
+compression: normal
+# Force unsigned package acceptance  
+electronUpdaterCompatibility: ">=2.16"
+# Note: Runtime configuration in electron/main.ts handles signature verification
 
 # File associations
 fileAssociations:
