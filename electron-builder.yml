@@ -1,6 +1,6 @@
 appId: com.rawalite.app
 productName: RawaLite
-artifactName: "${productName} Setup ${version}.${ext}"
+artifactName: "${productName}-Setup-${version}.${ext}"
 
 directories:
   output: dist
@@ -30,6 +30,10 @@ nsis:
   allowElevation: true
   runAfterFinish: true
   createDesktopShortcut: true
+  installerIcon: assets/icon.ico
+  uninstallerIcon: assets/icon.ico
+  menuCategory: false
+  shortcutName: RawaLite
 
 publish:
   provider: github
