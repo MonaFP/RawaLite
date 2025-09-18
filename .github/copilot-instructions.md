@@ -486,20 +486,50 @@ pnpm build && pnpm dist
 git add -A && git commit -m "vX.Y.Z: Feature description"
 git tag vX.Y.Z && git push origin main --tags
 
-# 4. GitHub Release erstellen (BEWÄHRTER WEG - nur Source Code)
+# 4. GitHub Release erstellen - Asset-Strategie nach Release-Typ
 & "C:\Program Files\GitHub CLI\gh.exe" release create vX.Y.Z \
   --title "RawaLite vX.Y.Z - Title" \
   --notes "Release notes..."
 
-# NICHT: Setup.exe anhängen (außer bei Major Releases mit neuen Binaries)
-# GitHub erstellt automatisch Source Code ZIP/TAR für Updates
+# 5. Optional: EXE-Assets hochladen (siehe Asset-Strategie)
+pnpm build && pnpm dist
+gh release upload vX.Y.Z release/RawaLite-Setup-X.Y.Z.exe --clobber
+```
+
+### **📦 Release Asset-Strategie**
+
+#### **🚀 Immer verfügbar (Automatisch)**
+- **Source Code**: GitHub erstellt automatisch ZIP/TAR für jeden Release
+- **Update Mechanism**: RawaLite Update-System nutzt Source Code für Updates
+
+#### **💾 EXE-Assets nach Release-Typ**
+- **🟢 MAJOR Releases (X.0.0)**: Setup.exe + portable.zip PFLICHT (neue Features, Breaking Changes)
+- **🟡 MINOR Releases (X.Y.0)**: Setup.exe EMPFOHLEN (neue Features, keine Breaking Changes)  
+- **🔵 PATCH Releases (X.Y.Z)**: Setup.exe OPTIONAL (Bug Fixes, Test Improvements)
+
+#### **📋 Entscheidungshilfe**
+```typescript
+// PFLICHT: Setup.exe + portable.zip
+- Neue UI-Features, neue Business-Entitäten
+- Datenbankschema-Änderungen, neue Dependencies
+- Breaking Changes in der Architektur
+
+// EMPFOHLEN: Setup.exe
+- Neue Funktionen ohne Breaking Changes
+- Performance-Verbesserungen, UX-Enhancements
+- Neue APIs oder Services
+
+// OPTIONAL: Nur Source Code
+- Bug Fixes, Test Improvements
+- Code-Refactoring ohne User-Impact
+- Dokumentation-Updates, Build-Optimierungen
 ```
 
 ### **Distribution Files**
-- **Setup**: `RawaLite Setup X.Y.Z.exe` (nur bei Major Releases mit neuen Binaries)
+- **Setup**: `RawaLite Setup X.Y.Z.exe` (nach Asset-Strategie)
 - **Portable**: `RawaLite-X.Y.Z-portable.zip` (nur bei Major Releases)
-- **Standard Updates**: Nur Source Code via GitHub Release (schnell & effizient)
-- **Location**: `dist/` nach `pnpm dist`
+- **Source**: Automatisch von GitHub (ZIP/TAR) für alle Releases
+- **Location**: `release/` nach `pnpm dist`
 
 ## 🔄 Update System Architecture
 
@@ -623,7 +653,7 @@ Nur Theme-IDs und Namen dürfen angepasst werden, niemals die Hex-Farbcodes!
 ### **Konsistenz-Regeln**
 1. **GitHub CLI**: Immer vollständigen Pfad verwenden: `& "C:\Program Files\GitHub CLI\gh.exe"`
 2. **Versioning**: package.json UND VersionService.ts synchron halten
-3. **Release Assets**: Setup.exe UND portable.zip für jedes Release
+3. **Release Assets**: Siehe detaillierte Asset-Strategie unten
 4. **Update System**: NIE Simulation - immer echte GitHub API verwenden
 5. **Build Date**: VersionService.ts BUILD_DATE bei Releases aktualisieren
 
@@ -681,6 +711,31 @@ vitest@2.1.8
 - **Commit Messages**: Deutsche Sprache mit Feature-Beschreibung
 - **Tagging**: Immer `vX.Y.Z` Format
 - **Pushing**: Tags mit `--tags` Flag pushen
+
+### **📝 Praktische Anwendung der Asset-Strategie**
+
+#### **Beispiele für Release-Kategorien:**
+
+**🟢 MAJOR (v2.0.0) - PFLICHT Setup.exe + portable.zip**
+- Neue Desktop-Themes, Navigation überarbeitet
+- Neue Business-Entitäten (z.B. Leistungsnachweise)
+- SQLite Schema-Updates, neue Dependencies
+
+**🟡 MINOR (v1.9.0) - EMPFOHLEN Setup.exe**
+- PDF-Export Verbesserungen
+- Auto-Updater Enhancements
+- Neue UI-Komponenten ohne Breaking Changes
+
+**🔵 PATCH (v1.8.25) - OPTIONAL nur Source**
+- Test-Suite Fixes (wie aktuell)
+- Bug Fixes ohne User-Impact
+- Build-System Verbesserungen
+
+#### **Entscheidung für v1.8.25:**
+- ✅ **Typ**: PATCH Release (Test-Suite Fixes)
+- ✅ **Assets**: Nur Source Code (GitHub automatisch)  
+- ✅ **Reason**: Test-Improvements ohne User-Impact
+- ⚠️ **EXE optional**: Kann nachträglich bei Bedarf hinzugefügt werden
 
 ---
 
