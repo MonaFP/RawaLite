@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.8.18",
+  "version": "1.8.19",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
@@ -44,6 +44,7 @@
   "build": {
     "electronUpdaterCompatibility": ">=2.16",
     "forceCodeSigning": false,
+    "generateUpdatesFilesForAllChannels": true,
     "win": {
       "verifyUpdateCodeSignature": false,
       "publisherName": "Ramona Wachten"
@@ -52,7 +53,14 @@
       "differentialPackage": false,
       "warningsAsErrors": false
     },
-    "publish": null
+    "publish": {
+      "provider": "github",
+      "owner": "MonaFP",
+      "repo": "RawaLite",
+      "releaseType": "release",
+      "publishAutoUpdate": true,
+      "vPrefixedTagName": true
+    }
   },
   "updater": {
     "verifySignature": false,

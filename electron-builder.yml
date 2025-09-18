@@ -44,6 +44,8 @@ nsis:
   differentialPackage: false
   # Disable signature validation in installer
   warningsAsErrors: false
+  # Enable auto-update metadata
+  createUpdatesInfoFile: true
 
 publish:
   provider: github
@@ -57,12 +59,6 @@ publish:
 
 # 🚨 CRITICAL: Force latest.yml generation for auto-updater
 generateUpdatesFilesForAllChannels: true
-# Force update metadata generation
-forceCodeSigning: false
-# Ensure latest.yml is created
-nsis:
-  # Enable auto-update metadata
-  createUpdatesInfoFile: true
 # Ensure update info is always generated
 forceCodeSigning: false
 
