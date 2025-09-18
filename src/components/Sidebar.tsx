@@ -37,7 +37,8 @@ export default function Sidebar(){
               maxWidth: "180px",
               height: "auto", 
               objectFit: "contain",
-              filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" // Schöner Schatten für bessere Sichtbarkeit
+              backgroundColor: "transparent", // Explizit transparent
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))" // Dezenterer Schatten für Transparenz
             }}
             onError={(e) => {
               console.warn('🚨 RawaLite Logo ES6 import failed, trying production fallbacks...');
