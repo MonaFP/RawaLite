@@ -1,93 +1,21 @@
 appId: com.rawalite.app
 productName: RawaLite
-artifactName: "${productName}-Setup-${version}.${ext}"
-
-directories:
-  output: release
-  buildResources: assets
 
 files:
-  - "dist/assets/**/*"
-  - "dist/index.html"
-  - "dist/sql-wasm.wasm"
-  - "dist/rawalite-logo.png"
-  - "dist/README-sql-wasm.txt"
-  - "dist-electron/main.cjs"
-  - "dist-electron/preload.js"
-  - "templates/**/*"
-  - "package.json"
-  - "!node_modules/**/*"
-  - "!**/.git/**/*"
-  - "!**/.*"
+  - dist/**
+  - dist-electron/**
+  - package.json
 
 extraResources:
-  - from: "templates"
-    to: "app/templates"
-    filter: ["**/*"]
+  - from: templates
+    to: app/templates
 
 win:
-  icon: assets/icon.ico
-  target:
-    - target: nsis
-      arch: x64
-  # 🔧 CRITICAL FIX: Prevent registry duplication
-  compression: "normal"
-    # 🔧 CRITICAL FIX: Disable code signature verification for unsigned builds
-  verifyUpdateCodeSignature: false
-  signAndEditExecutable: false
-  verifySignatures: false
-nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
-  perMachine: false
-  allowElevation: true
-  runAfterFinish: true
-  createDesktopShortcut: true
-  # 🔧 CRITICAL FIX: Feste GUID verhindert mehrfache App-Registrierung
-  guid: "b6b5b9b2-7b8b-4b9b-8b7b-7b8b7b8b7b8b"
-  menuCategory: "RawaLite"
-  shortcutName: "RawaLite"
-  # 🔧 CRITICAL FIX: NSIS signature handling
-  differentialPackage: false
-  # Disable signature validation in installer
-  warningsAsErrors: false
-  # Enable auto-update metadata
-  createUpdatesInfoFile: true
+  target: nsis
+  # publisherName:  # ← ENTFERNT / NICHT setzen!
 
 publish:
-  provider: github
-  owner: MonaFP
-  repo: RawaLite
-  releaseType: release
-  # 🔧 CRITICAL: Additional signature handling for GitHub provider
-  publishAutoUpdate: true
-  # Legacy compatibility (v1.7.9+)
-  vPrefixedTagName: true
-
-# 🚨 CRITICAL: Force latest.yml generation for auto-updater
-generateUpdatesFilesForAllChannels: true
-# Ensure update info is always generated
-forceCodeSigning: false
-
-# 🔧 CRITICAL FIX: Comprehensive signature verification disable
-# Disable signing enforcement
-compression: normal
-# Force unsigned package acceptance  
-electronUpdaterCompatibility: ">=2.16"
-# Note: Runtime configuration in electron/main.ts handles signature verification
-
-# File associations
-fileAssociations:
-  - ext: rawalite
-    name: RawaLite Document
-    description: RawaLite Document File
-
-# Build optimization
-nodeGypRebuild: false
-buildDependenciesFromSource: false
-
-# Metadata for proper update detection
-extraMetadata:
-  main: dist-electron/main.cjs
-  homepage: https://github.com/MonaFP/RawaLite
-  repository: https://github.com/MonaFP/RawaLite
+  - provider: github
+    owner: MonaFP
+    repo: RawaLite
+    releaseType: release
