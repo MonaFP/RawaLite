@@ -24,7 +24,7 @@ export interface UpdateCheckResult {
 
 export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
-  private readonly BUILD_DATE = "2025-09-15";
+  private readonly BUILD_DATE = "2025-09-18";
 
   private updateService: UpdateService;
   private currentVersionInfo: VersionInfo | null = null;
@@ -385,7 +385,7 @@ export class VersionService {
   private async getPackageJsonFallback(): Promise<string | null> {
     try {
       // This would read from the bundled package.json in development
-      return "1.8.1"; // Current package.json version as absolute fallback
+      return "1.8.5"; // Current package.json version as absolute fallback
     } catch (error) {
       console.error("[VersionService] Package.json fallback failed:", error);
       return null;
