@@ -764,7 +764,6 @@ function cleanupTempFile(filePath: string): void {
 }
 
 // === APP LIFECYCLE ===
-function createMenu() { /* oben definiert */ } // TS hint
 
 app.whenReady().then(() => {
   createMenu();
