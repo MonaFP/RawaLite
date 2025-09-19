@@ -67,14 +67,14 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return '#22c55e';
-      case 'accepted': return '#22c55e';
-      case 'sent': return '#f59e0b';
-      case 'draft': return '#6b7280';
-      case 'rejected': return '#ef4444';
-      case 'overdue': return '#ef4444';
-      case 'cancelled': return '#6b7280';
-      default: return '#6b7280';
+      case 'paid': return '#7dd3a0';        // Sanftes Pastellgrün
+      case 'accepted': return '#7dd3a0';    // Sanftes Pastellgrün
+      case 'sent': return '#f4c2a1';       // Sanftes Pastellorange
+      case 'draft': return '#9fb8d3';      // Sanftes Pastellblau
+      case 'rejected': return '#e6a8b8';   // Sanftes Pastellrosa
+      case 'overdue': return '#e6a8b8';    // Sanftes Pastellrosa
+      case 'cancelled': return '#b8b8c8';  // Sanftes Pastellgrau
+      default: return '#b8b8c8';
     }
   };
 
@@ -182,49 +182,49 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
       
       {/* Haupt-Statistiken - IMMER anzeigen */}
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:16, marginBottom:24}}>
-        <div className="card" style={{background:"linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)"}}>
+        <div className="card" style={{background:"linear-gradient(135deg, #9fb8d3 0%, #b5c9df 100%)"}}>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
             <div>
-              <div style={{fontSize:"24px", fontWeight:"600", color:"white"}}>{stats.totalCustomers}</div>
-              <div style={{opacity:0.9, color:"white"}}>Kunden</div>
+              <div style={{fontSize:"24px", fontWeight:"600", color:"#2d3748"}}>{stats.totalCustomers}</div>
+              <div style={{opacity:0.8, color:"#4a5568"}}>Kunden</div>
             </div>
-            <div style={{fontSize:"32px", opacity:0.7}}>👥</div>
+            <div style={{fontSize:"32px", opacity:0.6, color:"#2d3748"}}>👥</div>
           </div>
         </div>
         
-        <div className="card" style={{background:"linear-gradient(135deg, #059669 0%, #10b981 100%)"}}>
+        <div className="card" style={{background:"linear-gradient(135deg, #a8d5ba 0%, #b8e0c7 100%)"}}>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
             <div>
-              <div style={{fontSize:"24px", fontWeight:"600", color:"white"}}>{stats.totalOffers}</div>
-              <div style={{opacity:0.9, color:"white"}}>Angebote</div>
+              <div style={{fontSize:"24px", fontWeight:"600", color:"#2d3748"}}>{stats.totalOffers}</div>
+              <div style={{opacity:0.8, color:"#4a5568"}}>Angebote</div>
             </div>
-            <div style={{fontSize:"32px", opacity:0.7}}>📋</div>
+            <div style={{fontSize:"32px", opacity:0.6, color:"#2d3748"}}>📋</div>
           </div>
-          <div style={{marginTop:8, fontSize:"12px", opacity:0.8, color:"white"}}>
+          <div style={{marginTop:8, fontSize:"12px", opacity:0.7, color:"#4a5568"}}>
             {stats.pendingOffers} Entwürfe, {stats.acceptedOffers} Angenommen
           </div>
         </div>
         
-        <div className="card" style={{background:"linear-gradient(135deg, #dc2626 0%, #ef4444 100%)"}}>
+        <div className="card" style={{background:"linear-gradient(135deg, #f4c2a1 0%, #f7d4b8 100%)"}}>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
             <div>
-              <div style={{fontSize:"24px", fontWeight:"600", color:"white"}}>{stats.totalInvoices}</div>
-              <div style={{opacity:0.9, color:"white"}}>Rechnungen</div>
+              <div style={{fontSize:"24px", fontWeight:"600", color:"#2d3748"}}>{stats.totalInvoices}</div>
+              <div style={{opacity:0.8, color:"#4a5568"}}>Rechnungen</div>
             </div>
-            <div style={{fontSize:"32px", opacity:0.7}}>🧾</div>
+            <div style={{fontSize:"32px", opacity:0.6, color:"#2d3748"}}>🧾</div>
           </div>
-          <div style={{marginTop:8, fontSize:"12px", opacity:0.8, color:"white"}}>
+          <div style={{marginTop:8, fontSize:"12px", opacity:0.7, color:"#4a5568"}}>
             {stats.paidInvoices} Bezahlt, {stats.unpaidInvoices} Offen
           </div>
         </div>
         
-        <div className="card" style={{background:"linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)"}}>
+        <div className="card" style={{background:"linear-gradient(135deg, #d4b3e8 0%, #e0c4f0 100%)"}}>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
             <div>
-              <div style={{fontSize:"24px", fontWeight:"600", color:"white"}}>{stats.totalPackages}</div>
-              <div style={{opacity:0.9, color:"white"}}>Pakete</div>
+              <div style={{fontSize:"24px", fontWeight:"600", color:"#2d3748"}}>{stats.totalPackages}</div>
+              <div style={{opacity:0.8, color:"#4a5568"}}>Pakete</div>
             </div>
-            <div style={{fontSize:"32px", opacity:0.7}}>📦</div>
+            <div style={{fontSize:"32px", opacity:0.6, color:"#2d3748"}}>📦</div>
           </div>
         </div>
       </div>
@@ -242,11 +242,11 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
               <span>Rechnungswert gesamt:</span>
               <span style={{fontWeight:"600"}}>{stats.totalInvoiceValue.toFixed(2)} €</span>
             </div>
-            <div style={{display:"flex", justifyContent:"space-between", color:"#22c55e"}}>
+            <div style={{display:"flex", justifyContent:"space-between", color:"#7dd3a0"}}>
               <span>Bezahlt:</span>
               <span style={{fontWeight:"600"}}>{stats.paidAmount.toFixed(2)} €</span>
             </div>
-            <div style={{display:"flex", justifyContent:"space-between", color:"#f59e0b"}}>
+            <div style={{display:"flex", justifyContent:"space-between", color:"#f4c2a1"}}>
               <span>Offen:</span>
               <span style={{fontWeight:"600"}}>{stats.unpaidAmount.toFixed(2)} €</span>
             </div>
@@ -331,6 +331,35 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
             <p style={{opacity:0.7, fontStyle:"italic"}}>Noch keine Rechnungen vorhanden.</p>
           )}
         </div>
+      </div>
+
+      {/* Action Button mit Pastellfarben */}
+      <div style={{ marginTop: 24, textAlign: 'center' }}>
+        <button
+          onClick={() => console.log('Dashboard Action Button clicked')}
+          style={{
+            background: 'linear-gradient(135deg, #a8d5ba 0%, #b8e0c7 100%)',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            color: '#2d3748',
+            fontWeight: '600',
+            fontSize: '14px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(168, 213, 186, 0.3)',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(168, 213, 186, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0px)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(168, 213, 186, 0.3)';
+          }}
+        >
+          ✨ Dashboard-Aktion ausführen
+        </button>
       </div>
     </div>
   );
