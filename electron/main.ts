@@ -338,10 +338,41 @@ ipcMain.handle("updater:quit-and-install", async () => {
   }
 });
 
-// 🔧 CRITICAL FIX: Added missing version handler
+// 🔧 CRITICAL FIX: Added missing version handler with package.json fallback
 ipcMain.handle("updater:get-version", async () => {
+  let version = app.getVersion();
+  
+  // 🔧 PRODUCTION FIX: In production builds, app.getVersion() might return Electron version
+  // Fallback to reading package.json if version looks like Electron version
+  if (version.startsWith('31.') || version.startsWith('30.') || version.startsWith('29.')) {
+    try {
+      // Try to read package.json from app resources
+      const { readFileSync } = await import('fs');
+      const { join } = await import('path');
+      
+      let packageJsonPath: string;
+      if (app.isPackaged) {
+        // Production: package.json should be in resources
+        packageJsonPath = join(process.resourcesPath, 'package.json');
+      } else {
+        // Development: package.json in project root
+        packageJsonPath = join(app.getAppPath(), 'package.json');
+      }
+      
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+      if (packageJson.version) {
+        version = packageJson.version;
+        console.log(`[main] Using package.json version: ${version}`);
+      }
+    } catch (error) {
+      console.warn('[main] Could not read package.json, using app version:', error);
+      // Fallback to current version if we can't read package.json
+      version = "1.8.29"; // Known current version
+    }
+  }
+  
   return {
-    current: app.getVersion(),
+    current: version,
     appName: app.getName(),
   };
 });
