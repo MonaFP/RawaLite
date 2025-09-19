@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.8.30",
+  "version": "1.8.31",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
@@ -26,7 +26,7 @@
     "test": "vitest",
     "e2e": "playwright test",
     "prebuild": "rimraf dist dist-electron node_modules/.vite",
-    "predist": "pnpm prebuild",
+    "_predist_disabled": "pnpm prebuild",
     "prerelease:dry": "pnpm prebuild",
     "prerelease:publish": "pnpm prebuild",
     "dist": "electron-builder --win --x64 --publish never",
@@ -52,13 +52,14 @@
     "@types/react-dom": "^18.3.1",
     "dexie": "^4.2.0",
     "electron-log": "^5.4.3",
-    "electron-updater": "^6.6.2",
+    "electron-updater": "^5.3.0",
     "jszip": "^3.10.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.9.1",
     "sql.js": "^1.13.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "update-electron-app": "^3.1.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.46.0",
