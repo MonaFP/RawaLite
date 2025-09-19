@@ -58,12 +58,6 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
     (event: any, data: { type: string; data?: any }) => {
       console.log("Update message received:", data);
 
-      // 🚨 CRITICAL FIX v1.8.8: Validate data structure to prevent React crash
-      if (!data || typeof data !== 'object' || typeof data.type !== 'string') {
-        console.warn('[AutoUpdaterModal] Invalid update message format, ignoring:', data);
-        return;
-      }
-
       switch (data.type) {
         case "checking-for-update":
           setUpdateState("checking");
@@ -73,56 +67,12 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
 
         case "update-available":
           setUpdateState("available");
-          
-          try {
-            // 🚨 ULTRA-CRITICAL v1.8.9: Maximum defensive programming for v1.8.4 compatibility
-            console.log('🔍 [Modal] Raw update data received:', data);
-            
-            let updateData: any = {};
-            let version = "Unbekannt";
-            let releaseNotes = "";
-            let releaseDate = new Date().toISOString();
-            
-            // STEP 1: Safely extract data object
-            if (data && typeof data === 'object') {
-              updateData = data.data || data || {};
-            }
-            
-            // STEP 2: Ultra-safe property extraction
-            if (updateData && typeof updateData === 'object') {
-              const dataAny = updateData as any;
-              
-              const vRaw = dataAny?.version || dataAny?.ver;
-              if (typeof vRaw === 'string' || typeof vRaw === 'number') {
-                version = String(vRaw);
-              }
-              
-              const nRaw = dataAny?.releaseNotes || dataAny?.notes || dataAny?.note;
-              if (typeof nRaw === 'string') {
-                releaseNotes = nRaw;
-              }
-              
-              const dRaw = dataAny?.releaseDate || dataAny?.date;
-              if (typeof dRaw === 'string') {
-                releaseDate = dRaw;
-              }
-            }
-            
-            console.log('🔒 [Modal] SANITIZED update info:', { version, releaseNotes: releaseNotes.substring(0, 50), releaseDate });
-            
-            setUpdateInfo({ version, releaseNotes, releaseDate });
-            setInstallInitiated(false);
-            
-          } catch (error) {
-            console.error('🚨 [Modal] CRITICAL: Update data processing failed:', error);
-            // Emergency fallback
-            setUpdateInfo({
-              version: "Neue Version verfügbar",
-              releaseNotes: "Bitte laden Sie die neueste Version von GitHub herunter.",
-              releaseDate: new Date().toISOString()
-            });
-            setInstallInitiated(false);
-          }
+          setUpdateInfo({
+            version: data.data?.version || "Unbekannt",
+            releaseNotes: data.data?.releaseNotes,
+            releaseDate: data.data?.releaseDate,
+          });
+          setInstallInitiated(false); // Reset installation tracking
           break;
 
         case "update-not-available":
@@ -150,7 +100,12 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
 
         case "update-error":
           setUpdateState("error");
-          setError(data.data?.message || "Unbekannter Fehler beim Update");
+          // 🌐 SPECIAL HANDLING: Network errors with manual download option
+          if (data.data?.type === "network_error" || data.data?.manualDownloadRequired) {
+            setError(`${data.data?.message || "Netzwerkfehler beim Update"}\n\nKlicken Sie auf 'GitHub öffnen' um das Update manuell herunterzuladen.`);
+          } else {
+            setError(data.data?.message || "Unbekannter Fehler beim Update");
+          }
           setInstallInitiated(false); // Reset on error
           break;
       }
@@ -505,6 +460,19 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({
                 >
                   Erneut versuchen
                 </button>
+                {/* 🌐 NETWORK ERROR: Show manual download option for network errors */}
+                {(error?.includes("Netzwerkfehler") || error?.includes("manuell")) && (
+                  <button
+                    className="auto-updater-button"
+                    onClick={() => {
+                      if (window.rawalite?.shell?.openExternal) {
+                        window.rawalite.shell.openExternal("https://github.com/MonaFP/RawaLite/releases/latest");
+                      }
+                    }}
+                  >
+                    🌐 GitHub öffnen
+                  </button>
+                )}
                 <button className="auto-updater-button" onClick={onClose}>
                   Schließen
                 </button>

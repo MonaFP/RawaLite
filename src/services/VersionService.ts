@@ -4,6 +4,7 @@
  * Verwaltet App-Versionierung und automatische Updates der Versionsnummer
  */
 
+import { UpdateService } from "./UpdateService";
 import { LoggingService } from "./LoggingService";
 
 export interface VersionInfo {
@@ -25,9 +26,11 @@ export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
   private readonly BUILD_DATE = "2025-09-18";
 
+  private updateService: UpdateService;
   private currentVersionInfo: VersionInfo | null = null;
 
   constructor() {
+    this.updateService = new UpdateService();
 
     // 🔧 CRITICAL FIX: No more localStorage manipulation in constructor
     // This was overriding legitimate version updates after successful installs
@@ -117,8 +120,16 @@ export class VersionService {
         `[VersionService] Checking for updates, current version: ${currentVersion.version}`
       );
 
-      // Migration-Status-Check entfernt - wird durch electron-updater gehandhabt
+      // Prüfe Migration-Status zuerst (lokale Operation)
       let migrationRequired = false;
+      try {
+        const migrationStatus = await this.updateService.getMigrationStatus();
+        migrationRequired = migrationStatus.needsMigration;
+      } catch (migrationError) {
+        LoggingService.log(
+          `[VersionService] Migration check failed: ${migrationError}`
+        );
+      }
 
       // Verwende electron-updater falls verfügbar, sonst GitHub API Fallback
       let hasElectronUpdate = false;
@@ -249,7 +260,7 @@ export class VersionService {
   }
 
   /**
-   * Führt ein Update durch (via electron-updater)
+   * Führt ein Update durch
    */
   async performUpdate(
     progressCallback?: (progress: number, message: string) => void
@@ -259,16 +270,20 @@ export class VersionService {
 
       progressCallback?.(10, "Update wird vorbereitet...");
 
-      // Verwende electron-updater direkt
-      if (typeof window !== "undefined" && window.rawalite?.updater) {
-        progressCallback?.(50, "Update wird heruntergeladen...");
-        await window.rawalite.updater.startDownload();
-        
-        progressCallback?.(90, "Installation wird vorbereitet...");
-        await window.rawalite.updater.installAndRestart();
-      } else {
-        throw new Error("electron-updater nicht verfügbar");
-      }
+      // Setze Update-Service Callback
+      this.updateService.setProgressCallback((updateProgress) => {
+        // Update-Progress an UI weiterleiten (10-90%)
+        const scaledProgress = 10 + updateProgress.progress * 0.8;
+        progressCallback?.(scaledProgress, updateProgress.message);
+      });
+
+      // Führe Update durch
+      await this.updateService.performUpdate();
+
+      progressCallback?.(95, "Version wird aktualisiert...");
+
+      // Version in lokalem Storage aktualisieren
+      await this.updateStoredVersion();
 
       progressCallback?.(100, "Update erfolgreich abgeschlossen");
 
@@ -299,7 +314,7 @@ export class VersionService {
     };
   }> {
     const version = await this.getCurrentVersion();
-    const updateInfo = await this.checkForUpdates(); // Use own method instead
+    const updateInfo = await this.updateService.checkForUpdates();
 
     return {
       version,
@@ -370,7 +385,7 @@ export class VersionService {
   private async getPackageJsonFallback(): Promise<string | null> {
     try {
       // This would read from the bundled package.json in development
-      return "1.8.25";        // Current package.json version as absolute fallback
+      return "1.8.29"; // Current package.json version as absolute fallback
     } catch (error) {
       console.error("[VersionService] Package.json fallback failed:", error);
       return null;
@@ -420,7 +435,7 @@ export class VersionService {
       }
 
       const release = await response.json();
-      const version = release.tag_name?.replace(/^v/, "") || "1.8.1"; // Use current as fallback
+      const version = release.tag_name?.replace(/^v/, "") || "1.8.29"; // Use current as fallback
 
       LoggingService.log(
         `[VersionService] FALLBACK: Fetched latest version from GitHub: ${version}`

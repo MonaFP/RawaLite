@@ -20,18 +20,27 @@ try {
   const versionServicePath = join('src', 'services', 'VersionService.ts');
   const versionServiceContent = readFileSync(versionServicePath, 'utf8');
   
-  // Version aus VersionService extrahieren (suche nach BASE_VERSION = packageJson.version)
-  const versionMatch = versionServiceContent.match(/BASE_VERSION\s*=\s*packageJson\.version/);
-  if (!versionMatch) {
-    console.error('❌ Could not find BASE_VERSION = packageJson.version pattern in VersionService.ts');
+  // Version aus VersionService extrahieren (suche nach getPackageJsonFallback mit package.json version)
+  const fallbackMatch = versionServiceContent.match(/return\s*["']([0-9]+\.[0-9]+\.[0-9]+)["'];.*\/\/.*fallback/);
+  if (!fallbackMatch) {
+    console.error('❌ Could not find getPackageJsonFallback version pattern in VersionService.ts');
     process.exit(1);
   }
   
-  // Since VersionService uses packageJson.version directly, they are always synchronized
-  console.log(`📦 package.json version: ${packageVersion}`);
-  console.log(`🔧 VersionService version: ${packageVersion} (via packageJson.version)`);
+  const versionServiceVersion = fallbackMatch[1];
   
-  console.log('✅ Versions are synchronized (VersionService uses packageJson.version directly)!');
+  // Vergleiche Versionen
+  if (packageVersion !== versionServiceVersion) {
+    console.error(`❌ Version mismatch!`);
+    console.error(`📦 package.json: ${packageVersion}`);
+    console.error(`🔧 VersionService fallback: ${versionServiceVersion}`);
+    process.exit(1);
+  }
+  
+  console.log(`📦 package.json version: ${packageVersion}`);
+  console.log(`🔧 VersionService fallback: ${versionServiceVersion}`);
+  
+  console.log('✅ Versions are synchronized!');
   process.exit(0);
   
 } catch (error) {
