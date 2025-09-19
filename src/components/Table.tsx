@@ -167,7 +167,7 @@ export function Table<T extends { id: number }>({
             <button
               onClick={() => setShowColumnMenu(!showColumnMenu)}
               style={{
-                background: 'var(--primary)',
+                background: 'var(--sidebar-green)',
                 color: 'white',
                 border: 'none',
                 padding: '6px 12px',
@@ -176,7 +176,7 @@ export function Table<T extends { id: number }>({
                 fontSize: '14px'
               }}
             >
-              Spalten ⚙️
+              Filter ⚙️
             </button>
             
             {showColumnMenu && (
@@ -184,28 +184,41 @@ export function Table<T extends { id: number }>({
                 position: 'absolute',
                 top: '100%',
                 left: 0,
-                background: 'var(--background)',
-                border: '1px solid var(--border)',
-                borderRadius: '4px',
-                padding: '8px',
+                background: 'white',
+                border: '1px solid #ddd',
+                borderRadius: '6px',
+                padding: '12px',
                 zIndex: 1000,
-                minWidth: '200px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                minWidth: '220px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                maxHeight: '300px',
+                overflowY: 'auto'
               }}>
                 {columns.map(col => (
                   <label key={String(col.key)} style={{
-                    display: 'block',
-                    padding: '4px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '6px 0',
                     cursor: 'pointer',
-                    fontSize: '14px'
-                  }}>
+                    fontSize: '14px',
+                    color: '#374151',
+                    borderRadius: '4px',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                     <input
                       type="checkbox"
                       checked={visibleColumnKeys.includes(String(col.key))}
                       onChange={() => handleColumnToggle(String(col.key))}
-                      style={{ marginRight: '8px' }}
+                      style={{ 
+                        marginRight: '8px',
+                        accentColor: 'var(--primary)'
+                      }}
                     />
-                    {col.header}
+                    <span style={{ color: '#374151', fontWeight: '500' }}>
+                      {col.header}
+                    </span>
                   </label>
                 ))}
               </div>

@@ -407,8 +407,20 @@ export function run(sql: string, params: any[] = []): void {
     stmt.free();
   }
 }
+// Transaction state tracking to prevent nested transactions
+let inTransaction = false;
+
 export async function withTx<T>(fn: () => T | Promise<T>): Promise<T> {
   const d = await getDB();
+  
+  // If we're already in a transaction, just execute the function
+  if (inTransaction) {
+    console.warn('⚠️ Skipping nested transaction - executing directly within current transaction');
+    return await fn();
+  }
+  
+  // Start new transaction
+  inTransaction = true;
   d.exec("BEGIN");
   try {
     const res = await fn();
@@ -417,5 +429,7 @@ export async function withTx<T>(fn: () => T | Promise<T>): Promise<T> {
   } catch (e) {
     d.exec("ROLLBACK");
     throw e;
+  } finally {
+    inTransaction = false;
   }
 }

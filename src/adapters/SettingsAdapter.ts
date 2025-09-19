@@ -41,21 +41,21 @@ export class SettingsAdapter {
   // Convert CompanyData to SQLite format
   private mapCompanyDataToSQLite(data: CompanyData & { designSettings?: string }) {
     return {
-      companyName: data.name,
-      street: data.street,
-      zip: data.postalCode, // postalCode -> zip mapping
-      city: data.city,
-      phone: data.phone,
-      email: data.email,
-      website: data.website,
-      taxId: data.taxNumber, // taxNumber -> taxId mapping
-      vatId: data.vatId,
+      companyName: data.name ?? '',
+      street: data.street ?? '',
+      zip: data.postalCode ?? '', // postalCode -> zip mapping
+      city: data.city ?? '',
+      phone: data.phone ?? '',
+      email: data.email ?? '',
+      website: data.website ?? '',
+      taxId: data.taxNumber ?? '', // taxNumber -> taxId mapping
+      vatId: data.vatId ?? '',
       kleinunternehmer: data.kleinunternehmer ? 1 : 0, // boolean -> INTEGER
-      bankName: data.bankName,
-      bankAccount: data.bankAccount,
-      bankBic: data.bankBic,
-      logo: data.logo,
-      designSettings: data.designSettings // Store design settings as JSON string
+      bankName: data.bankName ?? '',
+      bankAccount: data.bankAccount ?? '',
+      bankBic: data.bankBic ?? '',
+      logo: data.logo ?? '',
+      designSettings: data.designSettings ?? '{}' // Store design settings as JSON string
     };
   }
 
@@ -140,6 +140,26 @@ export class SettingsAdapter {
       const sqliteData = this.mapCompanyDataToSQLite(companyData);
       const timestamp = new Date().toISOString();
 
+      // 🔧 CRITICAL FIX: Sanitize all values to prevent SQLite binding errors
+      const sanitizedValues = [
+        sqliteData.companyName ?? '',
+        sqliteData.street ?? '',
+        sqliteData.zip ?? '',
+        sqliteData.city ?? '',
+        sqliteData.phone ?? '',
+        sqliteData.email ?? '',
+        sqliteData.website ?? '',
+        sqliteData.taxId ?? '',
+        sqliteData.vatId ?? '',
+        sqliteData.kleinunternehmer ?? 0,
+        sqliteData.bankName ?? '',
+        sqliteData.bankAccount ?? '',
+        sqliteData.bankBic ?? '',
+        sqliteData.logo ?? '',
+        sqliteData.designSettings ?? '{}',
+        timestamp
+      ];
+
       // Update or insert company data (including design settings)
       run(`
         INSERT OR REPLACE INTO settings (
@@ -149,24 +169,7 @@ export class SettingsAdapter {
         ) VALUES (
           1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
-      `, [
-        sqliteData.companyName,
-        sqliteData.street,
-        sqliteData.zip,
-        sqliteData.city,
-        sqliteData.phone,
-        sqliteData.email,
-        sqliteData.website,
-        sqliteData.taxId,
-        sqliteData.vatId,
-        sqliteData.kleinunternehmer,
-        sqliteData.bankName,
-        sqliteData.bankAccount,
-        sqliteData.bankBic,
-        sqliteData.logo,
-        sqliteData.designSettings,
-        timestamp
-      ]);
+      `, sanitizedValues);
     });
   }
 
