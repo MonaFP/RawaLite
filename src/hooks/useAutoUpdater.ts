@@ -250,8 +250,45 @@ export function useAutoUpdater(
 
       const result = await window.rawalite!.updater.checkForUpdates();
       if (!result.success) {
-        setError(result.error || "Update-Prüfung fehlgeschlagen");
-        setState("error");
+        console.log("[useAutoUpdater] electron-updater failed, trying GitHub API fallback");
+        
+        // 🔧 CRITICAL FIX: Direct GitHub API fallback when electron-updater fails
+        try {
+          const response = await fetch("https://api.github.com/repos/MonaFP/RawaLite/releases/latest", {
+            headers: {
+              'Accept': 'application/vnd.github.v3+json',
+              'User-Agent': 'RawaLite-App'
+            }
+          });
+          
+          if (response.ok) {
+            const release = await response.json();
+            const latestVersion = release.tag_name.replace(/^v/, '');
+            
+            // Get current version dynamically from app
+            const currentVersionData = await window.rawalite!.updater.getVersion();
+            const currentVersion = currentVersionData.current;
+            
+            if (latestVersion !== currentVersion) {
+              console.log(`[useAutoUpdater] GitHub API found update: ${latestVersion}`);
+              setState("available");
+              setUpdateInfo({
+                version: latestVersion,
+                releaseNotes: release.body || `Update auf Version ${latestVersion} verfügbar`,
+                releaseDate: release.published_at
+              });
+            } else {
+              console.log("[useAutoUpdater] GitHub API: No update available");
+              setState("not-available");
+            }
+          } else {
+            throw new Error(`GitHub API returned ${response.status}`);
+          }
+        } catch (githubError) {
+          console.error("[useAutoUpdater] GitHub API fallback also failed:", githubError);
+          setError(result.error || "Update-Prüfung fehlgeschlagen");
+          setState("error");
+        }
       }
       // State wird durch Event-Handler gesetzt
     } catch (err) {

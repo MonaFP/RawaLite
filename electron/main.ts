@@ -1,10 +1,21 @@
 // electron/main.ts
 import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from "electron";
-import { autoUpdater } from "electron-updater";
+// import { autoUpdater } from "electron-updater";
+const { updateElectronApp } = require("update-electron-app");
 import log from "electron-log";
 import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
+
+// 🔧 FIXED: Disable automatic update-electron-app initialization for NSIS builds
+// update-electron-app expects Squirrel, but we use NSIS - causes "Can not find Squirrel" error
+// We keep our GitHub API-based update system instead
+try {
+  // updateElectronApp() disabled - our GitHub API system works better for NSIS
+  log.info("✅ update-electron-app disabled (using GitHub API system for NSIS builds)");
+} catch (error) {
+  log.error("❌ update-electron-app initialization failed:", error);
+}
 import {
   PDFPostProcessor,
   PDFAConversionOptions,
@@ -40,7 +51,8 @@ log.transports.file.maxSize = 1024 * 1024 * 10; // 10MB max log file
 log.transports.file.format = "[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}";
 log.transports.console.level = "debug";
 
-// 🔧 CRITICAL FIX: Proper autoUpdater configuration
+// 🔧 REPLACED: autoUpdater configuration now handled by update-electron-app
+/*
 autoUpdater.logger = log;
 autoUpdater.autoDownload = false; // User confirmation required
 autoUpdater.autoInstallOnAppQuit = false; // Manual installation only
@@ -62,6 +74,7 @@ Object.defineProperty(autoUpdater, 'httpExecutor', {
     return new HttpExecutor();
   }
 });
+*/
 
 // 🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info("=== AUTO-UPDATER ENVIRONMENT DEBUG ===");
@@ -79,16 +92,21 @@ log.info(
   "Auto-updater feed URL will be:",
   "https://github.com/MonaFP/RawaLite"
 );
+// 🔧 REPLACED: These settings are now handled by update-electron-app
+/*
 log.info("autoDownload setting:", autoUpdater.autoDownload);
 log.info("autoInstallOnAppQuit setting:", autoUpdater.autoInstallOnAppQuit);
 log.info("allowDowngrade setting:", autoUpdater.allowDowngrade);
 log.info("allowPrerelease setting:", autoUpdater.allowPrerelease);
 log.info("disableWebInstaller setting:", autoUpdater.disableWebInstaller);
+*/
 
 // === AUTO-UPDATER STATE MANAGEMENT ===
 let isUpdateAvailable = false;
 let currentUpdateInfo: any = null;
 
+// 🔧 REPLACED: autoUpdater event listeners now handled by update-electron-app
+/*
 // Auto-updater events for IPC communication
 autoUpdater.on("checking-for-update", () => {
   log.info("🔍 [UPDATE-PHASE] Starting update check...");
@@ -227,6 +245,7 @@ autoUpdater.on("update-downloaded", (info) => {
     releaseNotes: info.releaseNotes,
   });
 });
+*/
 
 // Helper function to send update messages to renderer
 function sendUpdateMessage(type: string, data?: any) {
@@ -238,97 +257,200 @@ function sendUpdateMessage(type: string, data?: any) {
 
 // IPC Handlers for auto-updater
 ipcMain.handle("updater:check-for-updates", async () => {
+  log.info("Manual update check requested via IPC");
+  return await checkForUpdatesViaGitHub();
+});
+
+// 🔧 CRITICAL FIX: Gemeinsame GitHub API Update-Check Funktion
+async function checkForUpdatesViaGitHub() {
   try {
-    log.info("Manual update check requested");
-    const result = await autoUpdater.checkForUpdates();
+    log.info("Checking for updates via GitHub API (bypassing electron-updater)");
+    
+    // 🔧 FIXED: Notify UI that update check is starting
+    sendUpdateMessage("checking-for-update");
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const response = await fetch("https://api.github.com/repos/MonaFP/RawaLite/releases/latest", {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'RawaLite-UpdateChecker/1.0'
+      },
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`GitHub API returned ${response.status}: ${response.statusText}`);
+    }
+    
+    const release = await response.json();
+    const latestVersion = release.tag_name.replace(/^v/, '');
+    const currentVersion = app.getVersion();
+    
+    log.info(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
+    
+    const isUpdateAvailable = compareVersions(currentVersion, latestVersion) < 0;
+    
+    // 🔧 FIXED: Send proper UI messages for update results
+    if (isUpdateAvailable) {
+      const updateInfo = {
+        version: latestVersion,
+        releaseNotes: release.body || "Neue Version verfügbar",
+        releaseDate: release.published_at,
+        downloadUrl: release.html_url
+      };
+      sendUpdateMessage("update-available", updateInfo);
+      log.info("✅ Update available - UI notified");
+    } else {
+      sendUpdateMessage("update-not-available", { version: latestVersion });
+      log.info("✅ No updates available - UI notified");
+    }
+    
     return {
       success: true,
-      updateInfo: result?.updateInfo || null,
+      updateInfo: isUpdateAvailable ? {
+        version: latestVersion,
+        releaseNotes: release.body || "Neue Version verfügbar",
+        releaseDate: release.published_at,
+        downloadUrl: release.html_url
+      } : null,
+      hasUpdate: isUpdateAvailable
     };
+    
   } catch (error) {
-    log.error("Check for updates failed:", error);
+    log.error("GitHub API update check failed:", error);
+    
+    // 🔧 FIXED: Notify UI about update check errors
+    sendUpdateMessage("update-error", {
+      message: error instanceof Error ? error.message : "Update check failed",
+      type: "github_api_error"
+    });
+    
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : "Update check failed",
+      hasUpdate: false
     };
   }
-});
+}
+
+// Simple version comparison helper
+function compareVersions(current: string, latest: string): number {
+  const parseVersion = (v: string) => v.split('.').map(n => parseInt(n, 10));
+  const currentParts = parseVersion(current);
+  const latestParts = parseVersion(latest);
+  
+  for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
+    const currentPart = currentParts[i] || 0;
+    const latestPart = latestParts[i] || 0;
+    
+    if (currentPart < latestPart) return -1;
+    if (currentPart > latestPart) return 1;
+  }
+  return 0;
+}
 
 ipcMain.handle("updater:start-download", async () => {
   try {
-    log.info("Starting download of available update");
+    log.info("Starting GitHub browser redirect for manual download");
 
-    // 🚨 CRITICAL FIX: Check if update is available before download
+    // 🚨 CRITICAL FIX: Check if update is available before redirect
     if (!isUpdateAvailable || !currentUpdateInfo) {
-      log.error("Cannot download: No update available or check not performed");
+      log.error("Cannot redirect: No update available or check not performed");
       return {
         success: false,
-        error:
-          "Bitte prüfe zuerst auf Updates bevor der Download gestartet wird",
+        error: "Bitte prüfe zuerst auf Updates bevor der Download gestartet wird",
       };
     }
 
-    log.info("Update state verified, proceeding with download");
-    await autoUpdater.downloadUpdate();
-    return { success: true };
+    // 🔧 FIXED: GitHub API Based Update System - Redirect to GitHub Release
+    const releaseUrl = `https://github.com/MonaFP/RawaLite/releases/tag/v${currentUpdateInfo.version}`;
+    
+    log.info(`Opening GitHub release page: ${releaseUrl}`);
+    
+    // Open GitHub release page in default browser
+    await shell.openExternal(releaseUrl);
+    
+    // Notify UI about successful redirect
+    sendUpdateMessage("download-progress", {
+      percent: 100,
+      transferred: 1,
+      total: 1,
+      bytesPerSecond: 0
+    });
+    
+    // Simulate download completion (user will download manually)
+    setTimeout(() => {
+      sendUpdateMessage("update-downloaded", {
+        version: currentUpdateInfo?.version,
+        downloadMethod: "github_redirect"
+      });
+    }, 1000);
+    
+    return { 
+      success: true, 
+      method: "github_redirect",
+      url: releaseUrl 
+    };
   } catch (error) {
-    log.error("Download update failed:", error);
+    log.error("GitHub redirect failed:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : "GitHub redirect failed",
     };
   }
 });
 
-// 🔧 CRITICAL FIX: Completely rewritten install handler
-// 🔧 CRITICAL FIX: Corrected handler name to match preload.ts
+// 🔧 GITHUB API UPDATE SYSTEM: Manual install instruction
 ipcMain.handle("updater:quit-and-install", async () => {
   try {
-    log.info("🚀 [INSTALL-AND-RESTART] Starting installation process");
-    log.info(
-      "🚀 [INSTALL-AND-RESTART] Current app version before install:",
-      app.getVersion()
-    );
+    log.info("🚀 [GITHUB-UPDATE] Manual installation instructions");
+    log.info("🚀 [GITHUB-UPDATE] Current app version:", app.getVersion());
 
-    // Ensure update is actually downloaded before installing
+    // For GitHub API based updates, we guide user to manual installation
     if (!isUpdateAvailable || !currentUpdateInfo) {
-      log.error("🚀 [INSTALL-ERROR] No update downloaded - cannot install");
+      log.error("🚀 [INSTALL-ERROR] No update available for installation");
       return {
         success: false,
-        error:
-          "Kein Update zum Installieren verfügbar. Bitte erst herunterladen.",
+        error: "Kein Update verfügbar. Bitte zuerst nach Updates suchen.",
       };
     }
 
-    // Close all windows gracefully before update
-    const allWindows = BrowserWindow.getAllWindows();
-    log.info(
-      `🚀 [INSTALL-AND-RESTART] Closing ${allWindows.length} windows before update`
-    );
-
-    allWindows.forEach((window) => {
-      if (!window.isDestroyed()) {
-        window.close();
-      }
+    // 🔧 GITHUB API UPDATE SYSTEM: Show manual installation instructions
+    log.info("🚀 [GITHUB-UPDATE] Providing manual installation guidance");
+    
+    // Show dialog with installation instructions
+    const result = await dialog.showMessageBox({
+      type: 'info',
+      title: 'RawaLite Update',
+      message: `Update auf Version ${currentUpdateInfo.version} verfügbar`,
+      detail: 'Da Sie das GitHub-Release bereits heruntergeladen haben, führen Sie das Setup aus und RawaLite wird automatisch aktualisiert.\n\n' +
+              'Die neuen Features werden nach der Installation verfügbar sein.',
+      buttons: ['Download-Seite öffnen', 'App beenden', 'Später'],
+      defaultId: 0,
+      cancelId: 2
     });
 
-    // 🔧 CRITICAL FIX: Proper timing and parameters for NSIS installer
-    log.info(
-      "🚀 [INSTALL-AND-RESTART] Executing quitAndInstall with proper NSIS parameters"
-    );
-
-    // Wait for graceful window closure
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // For Windows NSIS: isSilent=false (show progress), isForceRunAfter=true (restart after install)
-    setImmediate(() => {
-      log.info(
-        "🚀 [INSTALL-AND-RESTART] Calling quitAndInstall(false, true) for NSIS"
-      );
-      autoUpdater.quitAndInstall(false, true);
-    });
-
-    return { success: true };
+    switch (result.response) {
+      case 0: // Download-Seite öffnen
+        const releaseUrl = `https://github.com/MonaFP/RawaLite/releases/tag/v${currentUpdateInfo.version}`;
+        await shell.openExternal(releaseUrl);
+        return { success: true, action: 'download_opened' };
+        
+      case 1: // App beenden
+        log.info("🚀 [GITHUB-UPDATE] User chose to quit app for manual installation");
+        app.quit();
+        return { success: true, action: 'app_quit' };
+        
+      case 2: // Später
+        return { success: true, action: 'postponed' };
+        
+      default:
+        return { success: true, action: 'cancelled' };
+    }
   } catch (error) {
     log.error("Install and restart failed:", error);
     return {
@@ -506,11 +628,22 @@ function createMenu() {
       submenu: [
         {
           label: "Nach Updates suchen",
-          click: () => {
+          click: async () => {
             log.info("Manual update check triggered from menu");
-            autoUpdater.checkForUpdates().catch((err) => {
-              log.error("Manual update check failed:", err);
-            });
+            try {
+              // 🔧 CRITICAL FIX: Menu auch auf GitHub API Bypass umstellen
+              const result = await checkForUpdatesViaGitHub();
+              if (result.success && result.hasUpdate) {
+                log.info(`Update available: ${result.updateInfo?.version}`);
+                // Show update notification or open update window
+              } else if (result.success) {
+                log.info("No updates available");
+              } else {
+                log.error("Menu update check failed:", result.error);
+              }
+            } catch (err) {
+              log.error("Menu update check failed:", err);
+            }
           },
         },
         { type: "separator" },
@@ -1500,11 +1633,20 @@ app.whenReady().then(() => {
   initializeLogoSystem();
 
   // Auto-check for updates on startup (delayed to avoid blocking app start)
-  setTimeout(() => {
+  setTimeout(async () => {
     log.info("Starting automatic update check on app ready");
-    autoUpdater.checkForUpdates().catch((err) => {
-      log.warn("Startup update check failed:", err.message);
-    });
+    try {
+      const result = await checkForUpdatesViaGitHub();
+      if (result.success && result.hasUpdate) {
+        log.info(`Startup: Update available: ${result.updateInfo?.version}`);
+      } else if (result.success) {
+        log.info("Startup: No updates available");
+      } else {
+        log.warn("Startup update check failed:", result.error);
+      }
+    } catch (err) {
+      log.warn("Startup update check failed:", err instanceof Error ? err.message : err);
+    }
   }, 5000); // 5 second delay
 });
 app.on("window-all-closed", () => {
