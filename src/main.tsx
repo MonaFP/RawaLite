@@ -26,7 +26,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <PersistenceProvider mode="sqlite">
           <SettingsProvider>
             <MigrationInitializer>
-              <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <HashRouter>
                 <App />
               </HashRouter>
               <LoadingOverlay />
