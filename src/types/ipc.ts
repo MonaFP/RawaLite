@@ -69,6 +69,7 @@ export interface UpdateInfo {
   version: string;
   releaseNotes: string;
   releaseDate: string;
+  size?: number; // ✅ Add size field for GitHub API asset size (in bytes)
 }
 
 export interface UpdateCheckResult {

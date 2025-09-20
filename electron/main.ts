@@ -364,11 +364,22 @@ async function checkForUpdatesViaGitHub() {
     
     // 🔧 CRITICAL FIX: Set global variables for download handler
     if (updateAvailable) {
+      // 🔍 FIXED: Extract Setup.exe size from GitHub release assets
+      let setupSize = 0;
+      const setupAsset = release.assets?.find((asset: any) => 
+        asset.name.includes('Setup') && asset.name.endsWith('.exe')
+      );
+      if (setupAsset) {
+        setupSize = setupAsset.size; // GitHub API provides size in bytes
+        log.info(`📦 [SIZE] Found Setup.exe asset: ${setupAsset.name} (${Math.round(setupSize/1024/1024)} MB)`);
+      }
+      
       const updateInfo = {
         version: latestVersion,
         releaseNotes: release.body || "Neue Version verfügbar",
         releaseDate: release.published_at,
-        downloadUrl: release.html_url
+        downloadUrl: release.html_url,
+        size: setupSize // ✅ Add size info to updateInfo
       };
       
       // 🚨 CRITICAL: Set global state for download handler
@@ -392,7 +403,10 @@ async function checkForUpdatesViaGitHub() {
         version: latestVersion,
         releaseNotes: release.body || "Neue Version verfügbar",
         releaseDate: release.published_at,
-        downloadUrl: release.html_url
+        downloadUrl: release.html_url,
+        size: (release.assets?.find((asset: any) => 
+          asset.name.includes('Setup') && asset.name.endsWith('.exe')
+        ))?.size || 0
       } : null,
       hasUpdate: isUpdateAvailable
     };

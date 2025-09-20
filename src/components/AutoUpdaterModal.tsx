@@ -79,9 +79,9 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
         setState('available');
         const manifest: UpdateManifest = {
           version: result.updateInfo.version || 'Unknown',
-          releaseDate: result.updateInfo.releasedAt || undefined,
+          releaseDate: result.updateInfo.releaseDate || undefined, // ✅ Fix field name
           downloadUrl: result.updateInfo.downloadUrl || '',
-          fileSize: result.updateInfo.fileSize || 0,
+          fileSize: result.updateInfo.size || 0, // ✅ Use size from GitHub API
           releaseNotes: result.updateInfo.releaseNotes || undefined
         };
         setUpdateManifest(manifest);
