@@ -291,15 +291,30 @@ ipcMain.handle("updater:check-for-updates", async () => {
     
     const updateCheckResult = await autoUpdater.checkForUpdates();
     
-    if (updateCheckResult) {
+    if (updateCheckResult && updateCheckResult.updateInfo) {
       log.info("✅ [NATIVE-UPDATE] electron-updater check completed successfully");
+      
+      // 🔧 CRITICAL FIX: Set global variables for download handler
+      isUpdateAvailable = true;
+      currentUpdateInfo = updateCheckResult.updateInfo;
+      
+      log.info(`🔍 [NATIVE-UPDATE] Update available: ${currentUpdateInfo.version}`);
+      
       return { 
         success: true,
         updateInfo: updateCheckResult.updateInfo
       };
     } else {
       log.info("❌ [NATIVE-UPDATE] No update available via electron-updater");
-      return { success: true };
+      
+      // 🔧 CRITICAL FIX: Clear global variables when no update
+      isUpdateAvailable = false;
+      currentUpdateInfo = null;
+      
+      return { 
+        success: true,
+        noUpdate: true 
+      };
     }
     
   } catch (error) {
