@@ -337,15 +337,15 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
       <div style={{ 
         marginTop: '20px', 
         padding: '12px', 
-        backgroundColor: '#e8f4fd', 
+        backgroundColor: '#e8f5e8', 
         borderRadius: '6px', 
-        border: '1px solid #93c5fd',
+        border: '1px solid #a8d5ba',
         textAlign: 'center',
         fontSize: '14px',
         fontWeight: '500',
-        color: '#1e40af'
+        color: '#2d5a3d'
       }}>
-        � Version 1.8.45 - GitHub Asset Größe Fix (Update zeigt jetzt korrekte MB-Werte)
+        🚀 Version 1.8.44 - Update-Test Version (mit Dashboard-Info)
       </div>
 
     </div>
