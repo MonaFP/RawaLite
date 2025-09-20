@@ -531,23 +531,32 @@ gh release upload vX.Y.Z release/RawaLite-Setup-X.Y.Z.exe --clobber
 - **Source**: Automatisch von GitHub (ZIP/TAR) für alle Releases
 - **Location**: `release/` nach `pnpm dist`
 
-## 🔄 Update System Architecture
+## � Native Update System Architecture (v1.8.38+)
 
-### **Update Service Pattern**
+### **Native Update Pattern (95% in-app)**
 ```typescript
-// Real GitHub API Integration (NOT simulation)
-UpdateService.ts -> GitHub Releases API
-VersionService.ts -> Version management & user notifications
+// electron-updater Primary System (NEW)
+electron/main.ts -> autoUpdater Events + IPC Handlers
+AutoUpdaterModal.tsx -> Native UI für Check/Download/Install
+VersionService.ts -> Version management (unchanged)
+
+// GitHub API Fallback (LEGACY)
+checkForUpdatesViaGitHub() -> Fallback bei electron-updater Fehlern
 ```
 
 ### **Key Components**
-- **VersionService.ts**: Version management, update checks, user notifications
-- **UpdateService.ts**: Real GitHub API integration, download workflow
-- **Electron IPC**: Shell API für externe URLs (`shell:openExternal`)
-- **GitHub API**: `https://api.github.com/repos/MonaFP/RawaLite/releases/latest`
+- **electron/main.ts**: Native autoUpdater Events (reaktiviert), IPC-Handler für electron-updater
+- **AutoUpdaterModal.tsx**: Vollständige native Update-UI mit Progress, Release Notes
+- **VersionService.ts**: Version management, unchanged
+- **GitHub API**: Fallback-System bei electron-updater Fehlern
+- **EinstellungenPage.tsx**: Update-Manager Button öffnet AutoUpdaterModal
 
-### **Update Workflow (Real System)**
-1. **Auto Check**: App prüft GitHub API auf neue Releases
+### **Native Update Workflow (NEW - v1.8.38+)**
+1. **Auto Check**: electron-updater.checkForUpdates() beim App-Start
+2. **Update Available**: Native Event → AutoUpdaterModal öffnet sich
+3. **In-App Download**: electron-updater.downloadUpdate() mit Live-Progress
+4. **Native Install**: autoUpdater.quitAndInstall() → automatischer Neustart
+5. **Fallback**: Bei Fehlern → GitHub API → Browser-Redirect (legacy)
 2. **Version Compare**: Semantic versioning comparison (nicht simulation!)
 3. **User Notification**: Modal mit Download-Anweisungen
 4. **Browser Redirect**: Electron shell öffnet GitHub Releases
