@@ -28,6 +28,7 @@ declare interface Window {
       openExternal: (url: string) => Promise<void>;
     };
     updater: {
+      // ✅ NEW UNIFIED CONTRACT (v1.8.44+)
       checkForUpdates: () => Promise<{
         success: boolean;
         updateInfo?: any;
@@ -35,19 +36,31 @@ declare interface Window {
       }>;
       startDownload: () => Promise<{ success: boolean; error?: string }>;
       installAndRestart: () => Promise<{ success: boolean; error?: string }>;
-      getVersion: () => Promise<{ current: string; appName: string }>;
-      onUpdateMessage: (
-        callback: (event: any, data: { type: string; data?: any }) => void
-      ) => void;
-      removeUpdateMessageListener: (
-        callback: (event: any, data: { type: string; data?: any }) => void
-      ) => void;
+      
       // 🧪 DEVELOPMENT TEST: Force-simulate update for testing
-      forceTestUpdate?: () => Promise<{ 
+      forceTestUpdate: () => Promise<{ 
         success: boolean; 
         testUpdate?: any; 
         message?: string; 
       }>;
+      
+      // 🚨 DEPRECATED: Legacy methods for backward compatibility only
+      getVersion: () => Promise<{ current: string; target?: string }>;
+      check: () => Promise<{
+        hasUpdate: boolean;
+        current: string;
+        target?: any;
+      }>;
+      download: (url: string) => Promise<string>;
+      install: (exePath: string) => Promise<void>;
+      
+      // 📡 Event listener for update messages
+      onUpdateMessage: (
+        callback: (message: {
+          type: 'update-available' | 'update-not-available' | 'update-downloaded' | 'download-progress' | 'error';
+          data?: any;
+        }) => void
+      ) => (() => void);
     };
     backup: {
       create: (options: {
@@ -117,6 +130,14 @@ declare interface Window {
         ghostscriptAvailable: boolean;
         veraPDFAvailable: boolean;
         pdfa2bSupported: boolean;
+      }>;
+    };
+    // 🆕 UNIFIED VERSION API - Single source of truth for version information
+    version: {
+      get: () => Promise<{
+        app: string;      // Application version from package.json
+        electron: string; // Electron framework version
+        chrome: string;   // Chrome/Chromium version
       }>;
     };
   };

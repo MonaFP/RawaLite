@@ -24,7 +24,7 @@ export interface UpdateCheckResult {
 
 export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
-  private readonly BUILD_DATE = "2025-09-20T12:35:00";
+  private readonly BUILD_DATE = "2025-09-20T13:50:00";
 
   private currentVersionInfo: VersionInfo | null = null;
 

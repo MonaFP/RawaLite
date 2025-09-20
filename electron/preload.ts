@@ -15,32 +15,73 @@ type UpdaterEvents = {
 };
 
 const updater = {
-  // 🔧 FIXED: Match main.ts IPC handler names exactly
-  checkForUpdates: (): Promise<CheckResult> =>
+  // ✅ UNIFIED VERSION SYSTEM (v1.8.44+): New API contract matching AutoUpdaterModal expectations
+  
+  checkForUpdates: (): Promise<{ success: boolean; updateInfo?: any; error?: string }> =>
     ipcRenderer.invoke("updater:check-for-updates"),
-  startDownload: (): Promise<DownloadResult> =>
+    
+  startDownload: (): Promise<{ success: boolean; error?: string }> =>
     ipcRenderer.invoke("updater:start-download"),
-  installAndRestart: (): Promise<InstallResult> =>
+    
+  installAndRestart: (): Promise<{ success: boolean; error?: string }> =>
     ipcRenderer.invoke("updater:quit-and-install"),
-  installManual: (installerPath?: string): Promise<InstallResult> =>
-    ipcRenderer.invoke("updater:quit-and-install", installerPath),
-  getVersion: (): Promise<{ current: string; appName: string }> =>
-    ipcRenderer.invoke("updater:get-version"),
-
-  // 🧪 DEVELOPMENT TEST: Force-simulate update for testing
-  forceTestUpdate: (): Promise<{ success: boolean; testUpdate?: any; message?: string }> =>
+  
+  // 🧪 Development testing utility
+  forceTestUpdate: (): Promise<{ success: boolean; testUpdate?: any }> =>
     ipcRenderer.invoke("updater:force-test-update"),
-
-  // 🔧 CRITICAL FIX: Event bridging for electron-updater events
-  onUpdateMessage: (
-    callback: (event: any, data: { type: string; data?: any }) => void
-  ): void => {
-    ipcRenderer.on("update-message", callback);
+  
+  // 📡 Event listener for update messages
+  onUpdateMessage: (callback: (message: {
+    type: 'update-available' | 'update-not-available' | 'update-downloaded' | 'download-progress' | 'error';
+    data?: any;
+  }) => void): (() => void) => {
+    const handler = (_: any, message: any) => callback(message);
+    ipcRenderer.on("updater:message", handler);
+    return () => ipcRenderer.removeListener("updater:message", handler);
   },
-  removeUpdateMessageListener: (
-    callback: (event: any, data: { type: string; data?: any }) => void
-  ): void => {
-    ipcRenderer.removeListener("update-message", callback);
+  
+  // 🚨 DEPRECATED: Legacy methods for backward compatibility
+  getVersion: (): Promise<{ current: string; target?: string }> => {
+    console.warn("⚠️ DEPRECATED: updater.getVersion() - use version.get() + updater.checkForUpdates() instead");
+    // Backward compatibility wrapper combining both new APIs
+    return Promise.all([
+      ipcRenderer.invoke("version:get"), 
+      ipcRenderer.invoke("updater:check-for-updates")
+    ]).then(([versionData, updateData]) => ({
+      current: versionData.app,
+      target: updateData.updateInfo?.version || versionData.app
+    }));
+  },
+  
+  check: (): Promise<{
+    hasUpdate: boolean;
+    current: string;
+    target?: any;
+  }> => {
+    console.warn("⚠️ DEPRECATED: updater.check() - use updater.checkForUpdates() instead");
+    return ipcRenderer.invoke("updater:check");
+  },
+  
+  download: (url: string): Promise<string> => {
+    console.warn("⚠️ DEPRECATED: updater.download() - use updater.startDownload() instead");
+    return ipcRenderer.invoke("updater:download", url);
+  },
+    
+  install: (exePath: string): Promise<void> => {
+    console.warn("⚠️ DEPRECATED: updater.install() - use updater.installAndRestart() instead");
+    return ipcRenderer.invoke("updater:install", exePath);
+  },
+    
+  onProgress: (callback: (progress: {
+    percent: number;
+    transferred: number;
+    total: number;
+    speed?: number;
+    etaSec?: number;
+  }) => void): (() => void) => {
+    const handler = (_: any, progress: any) => callback(progress);
+    ipcRenderer.on("updater:progress", handler);
+    return () => ipcRenderer.removeListener("updater:progress", handler);
   },
 };
 
@@ -52,6 +93,15 @@ const app = {
     filePath?: string;
     error?: string;
   }> => ipcRenderer.invoke("app:exportLogs"),
+};
+
+// 🆕 UNIFIED VERSION API - Single source of truth for all version queries
+const version = {
+  get: (): Promise<{
+    app: string;
+    electron: string;
+    chrome: string;
+  }> => ipcRenderer.invoke("version:get"),
 };
 
 // 🔧 CRITICAL FIX: PDF Service IPC handlers
@@ -71,13 +121,17 @@ const pdf = {
   }> => ipcRenderer.invoke("pdf:getStatus"),
 };
 
-// 🔧 UNIFIED: All APIs under window.rawalite namespace  
+// 🔧 UNIFIED: All APIs under window.rawalite namespace + direct updater access + version API
 contextBridge.exposeInMainWorld("rawalite", { 
   // Keep existing rawalite APIs (defined in main.ts)
   updater, 
   app,
-  pdf  // Add PDF service to unified namespace
+  pdf,  // Add PDF service to unified namespace
+  version  // 🆕 Add unified version API
 });
+
+// Direct updater access for the new Modal
+contextBridge.exposeInMainWorld("updater", updater);
 
 declare global {
   interface Window {
@@ -85,6 +139,8 @@ declare global {
       updater: typeof updater;
       app: typeof app;
       pdf: typeof pdf;
+      version: typeof version;
     };
+    updater: typeof updater;
   }
 }

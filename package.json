@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.8.40",
+  "version": "1.8.41",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
@@ -34,6 +34,8 @@
     "release:dry": "electron-builder --win --x64 --publish never",
     "release:publish": "electron-builder --win --x64 --publish always",
     "release:clean": "pnpm dist:clean && node scripts/create-release.mjs",
+    "release:manifest": "tsx scripts/make-update-json.ts",
+    "release:verify": "tsx scripts/verify-update.ts",
     "version:check": "node validate-version-sync.mjs",
     "version:sync": "node sync-versions.mjs",
     "ipc:validate": "node validate-ipc-types.mjs",
@@ -52,14 +54,13 @@
     "@types/react-dom": "^18.3.1",
     "dexie": "^4.2.0",
     "electron-log": "^5.4.3",
-    "electron-updater": "^5.3.0",
     "jszip": "^3.10.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.9.1",
     "sql.js": "^1.13.0",
-    "typescript": "^5.9.2",
-    "update-electron-app": "^3.1.1"
+    "typescript": "^5.9.2"
+
   },
   "devDependencies": {
     "@playwright/test": "^1.46.0",

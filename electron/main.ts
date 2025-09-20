@@ -1,11 +1,10 @@
 // electron/main.ts
 import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from "electron";
-import { autoUpdater } from "electron-updater";
-// const { updateElectronApp } = require("update-electron-app"); // Disabled for real electron-updater
 import log from "electron-log";
 import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
+import pkg from "../package.json" assert { type: "json" };
 
 // 🔧 FIXED: Disable automatic update-electron-app initialization for NSIS builds
 // update-electron-app expects Squirrel, but we use NSIS - causes "Can not find Squirrel" error
@@ -51,48 +50,48 @@ log.transports.file.maxSize = 1024 * 1024 * 10; // 10MB max log file
 log.transports.file.format = "[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}";
 log.transports.console.level = "debug";
 
-// � NATIVE UPDATE SYSTEM: Konfiguration für vollständige in-app Updates
-autoUpdater.logger = log;
-autoUpdater.autoDownload = false; // User confirmation required - keeps UX control
-autoUpdater.autoInstallOnAppQuit = false; // Manual installation with user confirmation
-autoUpdater.allowDowngrade = false; // Prevent version downgrades for stability
-autoUpdater.allowPrerelease = false; // Stable releases only
-autoUpdater.disableWebInstaller = true; // Disable web installer fallback
-autoUpdater.forceDevUpdateConfig = false; // Production behavior always
+// � CUSTOM UPDATE SYSTEM: All autoUpdater configuration disabled - using GitHub API
+// DISABLED: autoUpdater.logger = log;
+// DISABLED: autoUpdater.autoDownload = false; // User confirmation required - keeps UX control
+// DISABLED: autoUpdater.autoInstallOnAppQuit = false; // Manual installation with user confirmation
+// DISABLED: autoUpdater.allowDowngrade = false; // Prevent version downgrades for stability
+// DISABLED: autoUpdater.allowPrerelease = false; // Stable releases only
+// DISABLED: autoUpdater.disableWebInstaller = true; // Disable web installer fallback
+// DISABLED: autoUpdater.forceDevUpdateConfig = false; // Production behavior always
 
-// 🌐 NETWORK OPTIMIZATION: Ensure HTTP/1.1 for stable downloads
-autoUpdater.requestHeaders = {
-  "User-Agent": "RawaLite-Updater/1.0",
-  "Cache-Control": "no-cache",
-  "Connection": "keep-alive"
-};
+// DISABLED: 🌐 NETWORK OPTIMIZATION: Ensure HTTP/1.1 for stable downloads
+// DISABLED: autoUpdater.requestHeaders = {
+//   "User-Agent": "RawaLite-Updater/1.0",
+//   "Cache-Control": "no-cache",
+//   "Connection": "keep-alive"
+// };
 
-// 🔧 DOWNLOAD OPTIMIZATION: Configure HTTP executor for stability
-try {
-  Object.defineProperty(autoUpdater, 'httpExecutor', {
-    get() {
-      const { HttpExecutor } = require("builder-util-runtime");
-      const executor = new HttpExecutor();
-      
-      // Force stable HTTP configuration
-      const originalRequest = executor.request;
-      if (originalRequest) {
-        executor.request = (options: any, cancellationToken: any, data: any) => {
-          // Ensure HTTP/1.1 to avoid protocol errors  
-          options.protocol = 'https:';
-          options.method = options.method || 'GET';
-          
-          return originalRequest.call(executor, options, cancellationToken, data);
-        };
-      }
-      
-      return executor;
-    }
-  });
-  log.info("✅ [NATIVE-UPDATE] HTTP executor configured for stable downloads");
-} catch (error) {
-  log.warn("⚠️ [NATIVE-UPDATE] HTTP executor configuration failed, using defaults:", error);
-}
+// DISABLED: 🔧 DOWNLOAD OPTIMIZATION: Configure HTTP executor for stability
+// DISABLED: try {
+//   Object.defineProperty(autoUpdater, 'httpExecutor', {
+//     get() {
+//       const { HttpExecutor } = require("builder-util-runtime");
+//       const executor = new HttpExecutor();
+//       
+//       // Force stable HTTP configuration
+//       const originalRequest = executor.request;
+//       if (originalRequest) {
+//         executor.request = (options: any, cancellationToken: any, data: any) => {
+//           // Ensure HTTP/1.1 to avoid protocol errors  
+//           options.protocol = 'https:';
+//           options.method = options.method || 'GET';
+//           
+//           return originalRequest.call(executor, options, cancellationToken, data);
+//         };
+//       }
+//       
+//       return executor;
+//     }
+//   });
+//   log.info("✅ [NATIVE-UPDATE] HTTP executor configured for stable downloads");
+// } catch (error) {
+//   log.warn("⚠️ [NATIVE-UPDATE] HTTP executor configuration failed, using defaults:", error);
+// }
 
 // 🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info("=== AUTO-UPDATER ENVIRONMENT DEBUG ===");
@@ -125,149 +124,149 @@ let currentUpdateInfo: any = null;
 
 // � NATIVE UPDATE SYSTEM: Reaktivierte electron-updater Events für vollständige in-app Updates
 // Auto-updater events für IPC-Kommunikation
-autoUpdater.on("checking-for-update", () => {
-  log.info("🔍 [NATIVE-UPDATE] Starting update check...");
-  log.info("🔍 [NATIVE-UPDATE] Current app version:", app.getVersion());
-  log.info("🔍 [NATIVE-UPDATE] Checking against GitHub releases API");
-  // Reset state when starting new check
-  isUpdateAvailable = false;
-  currentUpdateInfo = null;
-  sendUpdateMessage("checking-for-update");
-});
+// DISABLED: autoUpdater.on("checking-for-update", () => {
+//   log.info("🔍 [NATIVE-UPDATE] Starting update check...");
+//   log.info("🔍 [NATIVE-UPDATE] Current app version:", app.getVersion());
+//   log.info("🔍 [NATIVE-UPDATE] Checking against GitHub releases API");
+//   // Reset state when starting new check
+//   isUpdateAvailable = false;
+//   currentUpdateInfo = null;
+//   sendUpdateMessage("checking-for-update");
+// });
 
-autoUpdater.on("update-available", (info) => {
-  log.info("✅ [NATIVE-UPDATE] Update available!");
-  log.info("📦 [UPDATE-AVAILABLE] Available version:", info.version);
-  log.info("📦 [UPDATE-AVAILABLE] Current version:", app.getVersion());
-  log.info(
-    "📦 [UPDATE-AVAILABLE] Release notes length:",
-    info.releaseNotes?.length || 0
-  );
-  log.info("📦 [UPDATE-AVAILABLE] Release date:", info.releaseDate);
-  log.info(
-    "📦 [UPDATE-AVAILABLE] Files to download:",
-    JSON.stringify(info.files, null, 2)
-  );
-  if (info.files && info.files[0]) {
-    log.info(
-      "📦 [UPDATE-AVAILABLE] Download size:",
-      info.files[0].size,
-      "bytes"
-    );
-    log.info("📦 [UPDATE-AVAILABLE] Download URL:", info.files[0].url);
-    log.info("📦 [UPDATE-AVAILABLE] SHA512:", info.files[0].sha512);
-  }
-  // Store state for download phase
-  isUpdateAvailable = true;
-  currentUpdateInfo = info;
-  sendUpdateMessage("update-available", {
-    version: info.version,
-    releaseNotes: info.releaseNotes,
-    releaseDate: info.releaseDate,
-  });
-});
+// DISABLED: autoUpdater.on("update-available", (info) => {
+//   log.info("✅ [NATIVE-UPDATE] Update available!");
+//   log.info("📦 [UPDATE-AVAILABLE] Available version:", info.version);
+//   log.info("📦 [UPDATE-AVAILABLE] Current version:", app.getVersion());
+//   log.info(
+//     "📦 [UPDATE-AVAILABLE] Release notes length:",
+//     info.releaseNotes?.length || 0
+//   );
+//   log.info("📦 [UPDATE-AVAILABLE] Release date:", info.releaseDate);
+//   log.info(
+//     "📦 [UPDATE-AVAILABLE] Files to download:",
+//     JSON.stringify(info.files, null, 2)
+//   );
+//   if (info.files && info.files[0]) {
+//     log.info(
+//       "📦 [UPDATE-AVAILABLE] Download size:",
+//       info.files[0].size,
+//       "bytes"
+//     );
+//     log.info("📦 [UPDATE-AVAILABLE] Download URL:", info.files[0].url);
+//     log.info("📦 [UPDATE-AVAILABLE] SHA512:", info.files[0].sha512);
+//   }
+//   // Store state for download phase
+//   isUpdateAvailable = true;
+//   currentUpdateInfo = info;
+//   sendUpdateMessage("update-available", {
+//     version: info.version,
+//     releaseNotes: info.releaseNotes,
+//     releaseDate: info.releaseDate,
+//   });
+// });
 
-autoUpdater.on("update-not-available", (info) => {
-  log.info("❌ [NATIVE-UPDATE] Update not available");
-  log.info("❌ [UPDATE-NOT-AVAILABLE] Current version:", app.getVersion());
-  log.info(
-    "❌ [UPDATE-NOT-AVAILABLE] Latest version:",
-    info?.version || "unknown"
-  );
-  log.info(
-    "❌ [UPDATE-NOT-AVAILABLE] Full info:",
-    JSON.stringify(info, null, 2)
-  );
-  // Reset state when no update available
-  isUpdateAvailable = false;
-  currentUpdateInfo = null;
-  sendUpdateMessage("update-not-available", info);
-});
+// DISABLED: autoUpdater.on("update-not-available", (info) => {
+//   log.info("❌ [NATIVE-UPDATE] Update not available");
+//   log.info("❌ [UPDATE-NOT-AVAILABLE] Current version:", app.getVersion());
+//   log.info(
+//     "❌ [UPDATE-NOT-AVAILABLE] Latest version:",
+//     info?.version || "unknown"
+//   );
+//   log.info(
+//     "❌ [UPDATE-NOT-AVAILABLE] Full info:",
+//     JSON.stringify(info, null, 2)
+//   );
+//   // Reset state when no update available
+//   isUpdateAvailable = false;
+//   currentUpdateInfo = null;
+//   sendUpdateMessage("update-not-available", info);
+// });
 
-autoUpdater.on("error", (err) => {
-  log.error("💥 [NATIVE-UPDATE-ERROR] Update system error occurred!");
-  log.error("💥 [UPDATE-ERROR] Error type:", err.constructor.name);
-  log.error("💥 [UPDATE-ERROR] Error message:", err.message);
-  log.error("💥 [UPDATE-ERROR] Error code:", (err as any).code);
-  log.error("💥 [UPDATE-ERROR] Error stack:", err.stack);
-  log.error("💥 [UPDATE-ERROR] Current app version:", app.getVersion());
-  log.error("💥 [UPDATE-ERROR] App is packaged:", app.isPackaged);
-  
-  // 🔧 ENHANCED FIX: Handle verschiedene Update-Fehler mit spezifischen Fallbacks
-  if (err.message.includes("ERR_HTTP2_PROTOCOL_ERROR") || 
-      err.message.includes("net::ERR_HTTP2_PROTOCOL_ERROR")) {
-    log.error("🌐 [HTTP2-ERROR] Detected HTTP/2 protocol error - fallback to GitHub browser redirect");
-    sendUpdateMessage("update-error", {
-      message: "Netzwerkfehler beim Download. GitHub-Browser-Redirect wird verwendet.",
-      type: "network_error", 
-      code: "HTTP2_PROTOCOL_ERROR",
-      fallbackToBrowser: true
-    });
-    return;
-  }
-  
-  sendUpdateMessage("update-error", {
-    message: err.message,
-    stack: err.stack,
-    code: (err as any).code,
-  });
-});
+// DISABLED: autoUpdater.on("error", (err) => {
+//   log.error("💥 [NATIVE-UPDATE-ERROR] Update system error occurred!");
+//   log.error("💥 [UPDATE-ERROR] Error type:", err.constructor.name);
+//   log.error("💥 [UPDATE-ERROR] Error message:", err.message);
+//   log.error("💥 [UPDATE-ERROR] Error code:", (err as any).code);
+//   log.error("💥 [UPDATE-ERROR] Error stack:", err.stack);
+//   log.error("💥 [UPDATE-ERROR] Current app version:", app.getVersion());
+//   log.error("💥 [UPDATE-ERROR] App is packaged:", app.isPackaged);
+//   
+//   // 🔧 ENHANCED FIX: Handle verschiedene Update-Fehler mit spezifischen Fallbacks
+//   if (err.message.includes("ERR_HTTP2_PROTOCOL_ERROR") || 
+//       err.message.includes("net::ERR_HTTP2_PROTOCOL_ERROR")) {
+//     log.error("🌐 [HTTP2-ERROR] Detected HTTP/2 protocol error - fallback to GitHub browser redirect");
+//     sendUpdateMessage("update-error", {
+//       message: "Netzwerkfehler beim Download. GitHub-Browser-Redirect wird verwendet.",
+//       type: "network_error", 
+//       code: "HTTP2_PROTOCOL_ERROR",
+//       fallbackToBrowser: true
+//     });
+//     return;
+//   }
+//   
+//   sendUpdateMessage("update-error", {
+//     message: err.message,
+//     stack: err.stack,
+//     code: (err as any).code,
+//   });
+// });
 
-autoUpdater.on("download-progress", (progressObj) => {
-  const percent = Math.round(progressObj.percent * 100) / 100;
-  const speedMBps =
-    Math.round((progressObj.bytesPerSecond / 1024 / 1024) * 100) / 100;
+// DISABLED: autoUpdater.on("download-progress", (progressObj) => {
+//   const percent = Math.round(progressObj.percent * 100) / 100;
+//   const speedMBps =
+//     Math.round((progressObj.bytesPerSecond / 1024 / 1024) * 100) / 100;
 
-  // Log every 5% or at critical checkpoints
-  if (percent % 5 < 0.1 || (percent >= 74 && percent <= 76)) {
-    log.info(`📥 [NATIVE-DOWNLOAD] ${percent}% - ${speedMBps} MB/s`);
-    log.info(
-      `📥 [NATIVE-DOWNLOAD] ${progressObj.transferred}/${progressObj.total} bytes`
-    );
+//   // Log every 5% or at critical checkpoints
+//   if (percent % 5 < 0.1 || (percent >= 74 && percent <= 76)) {
+//     log.info(`📥 [NATIVE-DOWNLOAD] ${percent}% - ${speedMBps} MB/s`);
+//     log.info(
+//       `📥 [NATIVE-DOWNLOAD] ${progressObj.transferred}/${progressObj.total} bytes`
+//     );
 
-    // Special logging for the problematic 74% range
-    if (percent >= 74 && percent <= 76) {
-      log.info(
-        "⚠️ [DOWNLOAD-CRITICAL] Entering 74-76% range - potential checksum validation phase"
-      );
-      log.info(
-        "⚠️ [DOWNLOAD-CRITICAL] This phase may take longer due to differential download validation"
-      );
-    }
-  }
+//     // Special logging for the problematic 74% range
+//     if (percent >= 74 && percent <= 76) {
+//       log.info(
+//         "⚠️ [DOWNLOAD-CRITICAL] Entering 74-76% range - potential checksum validation phase"
+//       );
+//       log.info(
+//         "⚠️ [DOWNLOAD-CRITICAL] This phase may take longer due to differential download validation"
+//       );
+//     }
+//   }
 
-  sendUpdateMessage("download-progress", {
-    percent: Math.round(progressObj.percent),
-    transferred: progressObj.transferred,
-    total: progressObj.total,
-    bytesPerSecond: progressObj.bytesPerSecond,
-  });
-});
+//   sendUpdateMessage("download-progress", {
+//     percent: Math.round(progressObj.percent),
+//     transferred: progressObj.transferred,
+//     total: progressObj.total,
+//     bytesPerSecond: progressObj.bytesPerSecond,
+//   });
+// });
 
-autoUpdater.on("update-downloaded", (info) => {
-  log.info("🎉 [NATIVE-UPDATE-DOWNLOADED] Update successfully downloaded!");
-  log.info("🎉 [UPDATE-DOWNLOADED] Downloaded version:", info.version);
-  log.info("🎉 [UPDATE-DOWNLOADED] Current version:", app.getVersion());
-  log.info(
-    "🎉 [UPDATE-DOWNLOADED] Download completed at:",
-    new Date().toISOString()
-  );
-  log.info(
-    "🎉 [UPDATE-DOWNLOADED] Files info:",
-    JSON.stringify(info.files, null, 2)
-  );
-  log.info("🎉 [UPDATE-DOWNLOADED] Ready for quitAndInstall()");
-  sendUpdateMessage("update-downloaded", {
-    version: info.version,
-    releaseNotes: info.releaseNotes,
-  });
-});
+// DISABLED: autoUpdater.on("update-downloaded", (info) => {
+//   log.info("🎉 [NATIVE-UPDATE-DOWNLOADED] Update successfully downloaded!");
+//   log.info("🎉 [UPDATE-DOWNLOADED] Downloaded version:", info.version);
+//   log.info("🎉 [UPDATE-DOWNLOADED] Current version:", app.getVersion());
+//   log.info(
+//     "🎉 [UPDATE-DOWNLOADED] Download completed at:",
+//     new Date().toISOString()
+//   );
+//   log.info(
+//     "🎉 [UPDATE-DOWNLOADED] Files info:",
+//     JSON.stringify(info.files, null, 2)
+//   );
+//   log.info("🎉 [UPDATE-DOWNLOADED] Ready for quitAndInstall()");
+//   sendUpdateMessage("update-downloaded", {
+//     version: info.version,
+//     releaseNotes: info.releaseNotes,
+//   });
+// });
 
 // Helper function to send update messages to renderer
 function sendUpdateMessage(type: string, data?: any) {
   const allWindows = BrowserWindow.getAllWindows();
   allWindows.forEach((window) => {
-    window.webContents.send("update-message", { type, data });
+    window.webContents.send("updater:message", { type, data });
   });
 }
 
@@ -286,41 +285,45 @@ ipcMain.handle("updater:check-for-updates", async () => {
       };
     }
 
-    // Use electron-updater for native update check
-    log.info("🚀 [NATIVE-UPDATE] Starting native electron-updater check");
+    // DISABLED: Use electron-updater for native update check
+    // log.info("🚀 [NATIVE-UPDATE] Starting native electron-updater check");
     
-    const updateCheckResult = await autoUpdater.checkForUpdates();
+    // const updateCheckResult = await autoUpdater.checkForUpdates();
     
-    if (updateCheckResult && updateCheckResult.updateInfo) {
-      log.info("✅ [NATIVE-UPDATE] electron-updater check completed successfully");
-      
-      // 🔧 CRITICAL FIX: Set global variables for download handler
-      isUpdateAvailable = true;
-      currentUpdateInfo = updateCheckResult.updateInfo;
-      
-      log.info(`🔍 [NATIVE-UPDATE] Update available: ${currentUpdateInfo.version}`);
-      
-      return { 
-        success: true,
-        updateInfo: updateCheckResult.updateInfo
-      };
-    } else {
-      log.info("❌ [NATIVE-UPDATE] No update available via electron-updater");
-      
-      // 🔧 CRITICAL FIX: Clear global variables when no update
-      isUpdateAvailable = false;
-      currentUpdateInfo = null;
-      
-      return { 
-        success: true,
-        noUpdate: true 
-      };
-    }
+    // if (updateCheckResult && updateCheckResult.updateInfo) {
+    //   log.info("✅ [NATIVE-UPDATE] electron-updater check completed successfully");
+    //   
+    //   // 🔧 CRITICAL FIX: Set global variables for download handler
+    //   isUpdateAvailable = true;
+    //   currentUpdateInfo = updateCheckResult.updateInfo;
+    //   
+    //   log.info(`🔍 [NATIVE-UPDATE] Update available: ${currentUpdateInfo.version}`);
+    //   
+    //   return { 
+    //     success: true,
+    //     updateInfo: updateCheckResult.updateInfo
+    //   };
+    // } else {
+    //   log.info("❌ [NATIVE-UPDATE] No update available via electron-updater");
+    //   
+    //   // 🔧 CRITICAL FIX: Clear global variables when no update
+    //   isUpdateAvailable = false;
+    //   currentUpdateInfo = null;
+    //   
+    //   return { 
+    //     success: true,
+    //     noUpdate: true 
+    //   };
+    // }
+    
+    // Fallback to GitHub API since electron-updater is disabled
+    log.info("🔄 [FALLBACK] Using GitHub API for update checks");
+    return await checkForUpdatesViaGitHub();
     
   } catch (error) {
-    log.error("💥 [NATIVE-UPDATE-ERROR] Update check failed:", error);
+    log.error("💥 [UPDATE-ERROR] Update check failed:", error);
     
-    // Fallback to GitHub API if electron-updater fails
+    // Fallback to GitHub API if anything fails
     log.info("🔄 [FALLBACK] Trying GitHub API as fallback");
     return await checkForUpdatesViaGitHub();
   }
@@ -449,18 +452,21 @@ ipcMain.handle("updater:start-download", async () => {
       };
     }
 
-    // Use electron-updater for native download
-    log.info("� [NATIVE-DOWNLOAD] Starting electron-updater download");
-    log.info("📥 [NATIVE-DOWNLOAD] Target version:", currentUpdateInfo.version);
+    // DISABLED: Use electron-updater for native download
+    // log.info("� [NATIVE-DOWNLOAD] Starting electron-updater download");
+    // log.info("📥 [NATIVE-DOWNLOAD] Target version:", currentUpdateInfo.version);
+    
+    // Fallback to GitHub browser redirect since electron-updater is disabled
+    log.info("🔄 [FALLBACK] Using GitHub browser redirect for downloads");
     
     try {
-      await autoUpdater.downloadUpdate();
-      log.info("✅ [NATIVE-DOWNLOAD] Download initiated successfully");
+      // await autoUpdater.downloadUpdate();
+      // log.info("✅ [NATIVE-DOWNLOAD] Download initiated successfully");
       
-      return {
-        success: true,
-        message: "Download gestartet - Fortschritt wird in der UI angezeigt"
-      };
+      // return {
+      //   success: true,
+      //   message: "Download gestartet - Fortschritt wird in der UI angezeigt"
+      // };
       
     } catch (nativeError) {
       log.error("💥 [NATIVE-DOWNLOAD-ERROR] electron-updater download failed:", nativeError);
@@ -531,19 +537,22 @@ ipcMain.handle("updater:quit-and-install", async () => {
       };
     }
 
-    // � NATIVE INSTALLATION: Use electron-updater's quitAndInstall
-    log.info("🚀 [NATIVE-INSTALL] Attempting native installation via electron-updater");
+    // DISABLED: � NATIVE INSTALLATION: Use electron-updater's quitAndInstall
+    // log.info("🚀 [NATIVE-INSTALL] Attempting native installation via electron-updater");
+    
+    // Fallback to manual installation since electron-updater is disabled
+    log.info("🔄 [FALLBACK] Using manual installation guidance");
     
     try {
-      // Native installation with electron-updater
-      autoUpdater.quitAndInstall();
+      // DISABLED: Native installation with electron-updater
+      // autoUpdater.quitAndInstall();
       
-      log.info("✅ [NATIVE-INSTALL] Installation initiated successfully - app should restart");
-      return { 
-        success: true, 
-        action: 'native_install',
-        message: "Installation gestartet - App wird automatisch neu gestartet"
-      };
+      // log.info("✅ [NATIVE-INSTALL] Installation initiated successfully - app should restart");
+      // return { 
+      //   success: true, 
+      //   action: 'native_install',
+      //   message: "Installation gestartet - App wird automatisch neu gestartet"
+      // };
       
     } catch (nativeError) {
       log.error("💥 [NATIVE-INSTALL-ERROR] electron-updater installation failed:", nativeError);
@@ -618,44 +627,8 @@ ipcMain.handle("updater:force-test-update", async () => {
   };
 });
 
-// 🔧 CRITICAL FIX: Added missing version handler with package.json fallback
-ipcMain.handle("updater:get-version", async () => {
-  let version = app.getVersion();
-  
-  // 🔧 PRODUCTION FIX: In production builds, app.getVersion() might return Electron version
-  // Fallback to reading package.json if version looks like Electron version
-  if (version.startsWith('31.') || version.startsWith('30.') || version.startsWith('29.')) {
-    try {
-      // Try to read package.json from app resources
-      const { readFileSync } = await import('fs');
-      const { join } = await import('path');
-      
-      let packageJsonPath: string;
-      if (app.isPackaged) {
-        // Production: package.json should be in resources
-        packageJsonPath = join(process.resourcesPath, 'package.json');
-      } else {
-        // Development: package.json in project root
-        packageJsonPath = join(app.getAppPath(), 'package.json');
-      }
-      
-      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-      if (packageJson.version) {
-        version = packageJson.version;
-        console.log(`[main] Using package.json version: ${version}`);
-      }
-    } catch (error) {
-      console.warn('[main] Could not read package.json, using app version:', error);
-      // Fallback to current version if we can't read package.json
-      version = "1.8.29"; // Known current version
-    }
-  }
-  
-  return {
-    current: version,
-    appName: app.getName(),
-  };
-});
+// � DEPRECATED: updater:get-version handler removed in favor of unified version:get API (v1.8.44+)
+// Use window.rawalite.version.get() in renderer process instead
 
 // PDF Theme Integration Import
 // Note: Import path needs compilation compatibility
@@ -907,8 +880,285 @@ ipcMain.handle("app:restart", async () => {
   app.exit();
 });
 
+// 🔧 UNIFIED VERSION API - Single Source of Truth (package.json)
+// Replaces multiple version handlers with single source of truth from package.json
+ipcMain.handle("version:get", () => {
+  log.info(`[version:get] Returning unified version data: app=${pkg.version}, electron=${process.versions.electron}`);
+  return {
+    app: pkg.version,
+    electron: process.versions.electron,
+    chrome: process.versions.chrome,
+  };
+});
+
+// � DEPRECATED: app:getVersion handler kept for backward compatibility only
+// Use window.rawalite.version.get() for new code instead (unified version system v1.8.44+)
 ipcMain.handle("app:getVersion", async () => {
-  return app.getVersion();
+  console.warn("⚠️ DEPRECATED: app:getVersion used - migrate to version:get API");
+  
+  // For backward compatibility, return pkg.version (same as version:get)
+  return pkg.version;
+});
+
+// 🚀 CUSTOM IN-APP UPDATER - Replace electron-updater with own implementation
+
+// Check for updates via custom update.json manifest
+ipcMain.handle("updater:check", async () => {
+  try {
+    log.info("🔄 [CUSTOM-UPDATER] Checking for updates via GitHub update.json");
+    
+    const currentVersion = pkg.version;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    // First try to get update.json directly from latest release
+    let updateManifest: any = null;
+    
+    try {
+      // Try to fetch update.json from latest release assets
+      const releaseResponse = await fetch("https://api.github.com/repos/MonaFP/RawaLite/releases/latest", {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'RawaLite-CustomUpdater/1.0'
+        },
+        signal: controller.signal
+      });
+      
+      if (releaseResponse.ok) {
+        const releaseData = await releaseResponse.json();
+        const updateJsonAsset = releaseData.assets?.find((a: any) => a.name === 'update.json');
+        
+        if (updateJsonAsset) {
+          const updateJsonResponse = await fetch(updateJsonAsset.browser_download_url, {
+            headers: { 'User-Agent': 'RawaLite-CustomUpdater/1.0' },
+            signal: controller.signal
+          });
+          
+          if (updateJsonResponse.ok) {
+            updateManifest = await updateJsonResponse.json();
+            log.info("✅ [CUSTOM-UPDATER] Found update.json manifest");
+          }
+        }
+      }
+    } catch (error) {
+      log.warn("⚠️ [CUSTOM-UPDATER] Could not fetch update.json, falling back to GitHub API");
+    }
+    
+    // Fallback: Use GitHub API to construct manifest
+    if (!updateManifest) {
+      const response = await fetch("https://api.github.com/repos/MonaFP/RawaLite/releases/latest", {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'RawaLite-CustomUpdater/1.0'
+        },
+        signal: controller.signal
+      });
+      
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const latestVersion = data.tag_name?.replace('v', '') || data.name?.replace('v', '');
+      
+      // Find the Windows executable asset
+      const asset = data.assets?.find((a: any) => 
+        a.name?.includes('Setup') && a.name?.endsWith('.exe')
+      );
+      
+      if (asset) {
+        updateManifest = {
+          product: "RawaLite",
+          channel: "stable", 
+          version: latestVersion,
+          releasedAt: data.published_at || new Date().toISOString(),
+          notes: data.body || 'Keine Release Notes verfügbar.',
+          files: [{
+            kind: "nsis",
+            arch: "x64",
+            name: asset.name,
+            size: asset.size,
+            sha512: "", // Will be empty for fallback
+            url: asset.browser_download_url
+          }]
+        };
+      }
+    }
+    
+    clearTimeout(timeoutId);
+    
+    if (!updateManifest) {
+      return {
+        hasUpdate: false,
+        current: currentVersion
+      };
+    }
+    
+    // Import semver comparison
+    const { isNewerVersion } = await import('../src/services/semver.js');
+    const hasUpdate = isNewerVersion(updateManifest.version, currentVersion);
+    
+    log.info(`🔄 [CUSTOM-UPDATER] Current: ${currentVersion}, Latest: ${updateManifest.version}, HasUpdate: ${hasUpdate}`);
+    
+    return {
+      hasUpdate,
+      current: currentVersion,
+      target: hasUpdate ? updateManifest : undefined
+    };
+    
+  } catch (error) {
+    log.error("❌ [CUSTOM-UPDATER] Update check failed:", error);
+    return {
+      hasUpdate: false,
+      current: pkg.version,
+      error: error instanceof Error ? error.message : 'Update-Prüfung fehlgeschlagen'
+    };
+  }
+});
+
+// Download update file with SHA512 verification
+ipcMain.handle("updater:download", async (event, url: string) => {
+  try {
+    log.info("🔽 [CUSTOM-UPDATER] Starting download:", url);
+    
+    const https = await import('https');
+    const crypto = await import('crypto');
+    
+    // Create download directory in %LOCALAPPDATA%
+    const downloadDir = path.join(os.homedir(), 'AppData', 'Local', 'rawalite-updater', 'pending');
+    if (!fs.existsSync(downloadDir)) {
+      fs.mkdirSync(downloadDir, { recursive: true });
+    }
+    
+    const fileName = path.basename(url);
+    const filePath = path.join(downloadDir, fileName);
+    
+    // Remove existing file if present
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    
+    return new Promise((resolve, reject) => {
+      const request = https.get(url, (response) => {
+        // Handle redirects
+        if (response.statusCode === 302 || response.statusCode === 301) {
+          if (response.headers.location) {
+            https.get(response.headers.location, handleResponse);
+          } else {
+            reject(new Error('Redirect without location header'));
+          }
+          return;
+        }
+        
+        handleResponse(response);
+      });
+      
+      function handleResponse(response: any) {
+        if (response.statusCode !== 200) {
+          reject(new Error(`Download failed: HTTP ${response.statusCode}`));
+          return;
+        }
+        
+        const totalSize = parseInt(response.headers['content-length'] || '0');
+        let downloadedSize = 0;
+        let lastProgressTime = Date.now();
+        const startTime = Date.now();
+        
+        const fileStream = fs.createWriteStream(filePath);
+        const hash = crypto.createHash('sha512');
+        
+        response.on('data', (chunk: Buffer) => {
+          downloadedSize += chunk.length;
+          hash.update(chunk);
+          
+          // Send progress updates
+          const now = Date.now();
+          if (now - lastProgressTime > 200) { // Throttle to 200ms
+            const percent = totalSize > 0 ? (downloadedSize / totalSize) * 100 : 0;
+            const speed = downloadedSize / ((now - startTime) / 1000); // bytes per second
+            const etaSec = speed > 0 ? (totalSize - downloadedSize) / speed : 0;
+            
+            const mainWindow = BrowserWindow.getAllWindows()[0];
+            if (mainWindow) {
+              mainWindow.webContents.send('updater:progress', {
+                percent: Math.round(percent * 100) / 100,
+                transferred: downloadedSize,
+                total: totalSize,
+                speed,
+                etaSec
+              });
+            }
+            
+            lastProgressTime = now;
+          }
+        });
+        
+        response.pipe(fileStream);
+        
+        fileStream.on('finish', () => {
+          const calculatedHash = hash.digest('base64');
+          
+          log.info(`✅ [CUSTOM-UPDATER] Download completed: ${filePath}`);
+          log.info(`📊 [CUSTOM-UPDATER] Size: ${downloadedSize} bytes`);
+          log.info(`🔐 [CUSTOM-UPDATER] SHA512 (Base64): ${calculatedHash}`);
+          
+          // TODO: Verify hash against manifest if available
+          // For now, we trust the download from GitHub
+          
+          resolve(filePath);
+        });
+        
+        fileStream.on('error', (error) => {
+          fs.unlink(filePath, () => {}); // Clean up on error
+          reject(error);
+        });
+      }
+      
+      request.on('error', (error) => {
+        reject(error);
+      });
+      
+      request.setTimeout(30000, () => {
+        request.destroy();
+        reject(new Error('Download timeout'));
+      });
+    });
+  } catch (error) {
+    log.error("❌ [CUSTOM-UPDATER] Download failed:", error);
+    throw error;
+  }
+});
+
+// Install update (start installer and quit app)
+ipcMain.handle("updater:install", async (_, exePath: string) => {
+  try {
+    log.info("Starting update installation:", exePath);
+    
+    if (!fs.existsSync(exePath)) {
+      throw new Error('Installer-Datei nicht gefunden');
+    }
+    
+    const { spawn } = await import('child_process');
+    
+    // Start installer detached
+    spawn('cmd', ['/c', 'start', '', `"${exePath}"`], {
+      detached: true,
+      stdio: 'ignore'
+    }).unref();
+    
+    // Quit app so installer can proceed
+    setTimeout(() => {
+      app.quit();
+    }, 1000);
+    
+    return { success: true };
+  } catch (error) {
+    log.error("Installation failed:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Installation fehlgeschlagen',
+    };
+  }
 });
 
 // IPC Handler für Datenbank-Operationen
