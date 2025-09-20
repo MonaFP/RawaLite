@@ -95,7 +95,7 @@ log.transports.console.level = "debug";
 
 // 🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info("=== AUTO-UPDATER ENVIRONMENT DEBUG ===");
-log.info("App Version:", app.getVersion());
+log.info("App Version:", pkg.version); // 🔧 FIXED: Use pkg.version instead of app.getVersion() for correct app version
 log.info("App Name:", app.getName());
 log.info("Product Name:", app.getName());
 log.info("App ID:", "com.rawalite.app");
@@ -356,7 +356,7 @@ async function checkForUpdatesViaGitHub() {
     
     const release = await response.json();
     const latestVersion = release.tag_name.replace(/^v/, '');
-    const currentVersion = app.getVersion();
+    const currentVersion = pkg.version; // 🔧 FIX: Use unified version system (package.json)
     
     log.info(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
     
@@ -781,7 +781,7 @@ function createMenu() {
         {
           label: "App-Version anzeigen",
           click: () => {
-            const version = app.getVersion();
+            const version = pkg.version; // 🔧 FIX: Use unified version system (package.json)
             dialog.showMessageBox({
               type: "info",
               title: "App-Version",
@@ -806,7 +806,7 @@ function createMenu() {
               dialog.showMessageBox(mainWindow, {
                 type: "info",
                 title: "Über RawaLite",
-                message: `RawaLite v${app.getVersion()}`,
+                message: `RawaLite v${pkg.version}`, // 🔧 FIX: Use unified version system (package.json)
                 detail:
                   "Professional Business Management Solution\n\nCopyright © 2025 MonaFP. All rights reserved.",
                 buttons: ["OK"],
@@ -824,7 +824,7 @@ function createMenu() {
               dialog.showMessageBox(mainWindow, {
                 type: "info",
                 title: "Version Information",
-                message: `RawaLite v${app.getVersion()}`,
+                message: `RawaLite v${pkg.version}`, // 🔧 FIX: Use unified version system (package.json)
                 detail: `Electron: ${process.versions.electron}\nNode.js: ${process.versions.node}\nChrome: ${process.versions.chrome}`,
                 buttons: ["OK"],
               });

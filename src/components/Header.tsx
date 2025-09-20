@@ -1,6 +1,7 @@
 import { useLocation, NavLink } from "react-router-dom";
 import { useAutoUpdater } from "../hooks/useAutoUpdater";
 import { useDesignSettings } from "../hooks/useDesignSettings";
+import { useAppVersion } from "../hooks/useVersion";
 import HeaderWidgets from "./HeaderWidgets";
 
 const titles: Record<string, string> = {
@@ -20,7 +21,7 @@ interface HeaderProps {
 
 export default function Header({ title: propTitle, right }: HeaderProps = {}) {
   const { pathname } = useLocation();
-  // 🔧 CRITICAL FIX: Migrate to electron-updater based useAutoUpdater
+  // 🔧 CRITICAL FIX: Migrate to electron-updater based useAutoUpdater  
   const [updateHookState, updateActions] = useAutoUpdater({
     autoCheckOnStart: false,
   });
@@ -28,14 +29,16 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}) {
 
   const title = propTitle ?? titles[pathname] ?? "RaWaLite";
 
-  // 🔧 CRITICAL FIX: Adapter functions for electron-updater integration
+  // 🔧 UNIFIED VERSION SYSTEM: Use new useAppVersion hook instead of updateHookState.currentVersion
+  const appVersion = useAppVersion(); // Single source of truth from package.json via version:get IPC
+  
   const isCheckingUpdates = updateHookState.state === "checking";
   const isUpdating =
     updateHookState.state === "downloading" || updateHookState.installInitiated;
   const updateAvailable =
     updateHookState.state === "available" ||
     updateHookState.state === "downloaded";
-  const displayVersion = `v${updateHookState.currentVersion}` || "v1.0.0";
+  const displayVersion = appVersion ? `v${appVersion}` : "v1.0.0";
 
   const handleVersionClick = async () => {
     if (isUpdating || isCheckingUpdates) return; // Verhindere Mehrfach-Klicks

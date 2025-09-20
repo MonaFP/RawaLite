@@ -71,14 +71,16 @@ export function useAutoUpdater(
 
   // 🔧 CRITICAL FIX: Proper event handler for electron-updater messages
   const handleUpdateMessage = useCallback(
-    (event: any, data: { type: string; data?: any }) => {
-      console.log("[useAutoUpdater] Update message received:", data);
+    (message: { type: string; data?: any }) => {
+      console.log("[useAutoUpdater] Update message received:", message);
 
       // 🚨 CRITICAL FIX v1.8.8: Validate data structure to prevent React crash
-      if (!data || typeof data !== 'object' || typeof data.type !== 'string') {
-        console.warn('[useAutoUpdater] Invalid update message format, ignoring:', data);
+      if (!message || typeof message !== 'object' || typeof message.type !== 'string') {
+        console.warn('[useAutoUpdater] Invalid update message format, ignoring:', message);
         return;
       }
+      
+      const data = message; // Für Kompatibilität mit bestehendem Code
 
       switch (data.type) {
         case "checking-for-update":
@@ -183,27 +185,13 @@ export function useAutoUpdater(
       return;
     }
 
-    // Add event listener
-    window.rawalite!.updater.onUpdateMessage(handleUpdateMessage);
+    // Add event listener - onUpdateMessage returns cleanup function
+    const cleanup = window.rawalite!.updater.onUpdateMessage(handleUpdateMessage);
 
-    // Get current version
-    window
-      .rawalite!.updater.getVersion()
-      .then((versionInfo: any) => {
-        setCurrentVersion(versionInfo.current);
-        console.log("[useAutoUpdater] Current version:", versionInfo.current);
-      })
-      .catch((err: any) => {
-        console.warn("[useAutoUpdater] Could not get version:", err);
-      });
+    // 🔧 UNIFIED VERSION: Version is now managed by useVersion hook
+    console.log("[useAutoUpdater] Current version managed by useVersion hook:", currentVersion);
 
-    return () => {
-      if (window.rawalite?.updater) {
-        window.rawalite.updater.removeUpdateMessageListener(
-          handleUpdateMessage
-        );
-      }
-    };
+    return cleanup; // Return the cleanup function directly
   }, [handleUpdateMessage, isElectron]);
 
   // Auto-check on start

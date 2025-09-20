@@ -1,0 +1,960 @@
+/**
+ * 🔄 Custom Auto-Updater Modal Component
+ * 
+ * Vollständig eigener In-App Updater ohne electron-updater:
+ * - Direkter GitHub Release API Zugriff
+ * - Stream-Download mit Progress
+ * - SHA512 Hash Verification  
+ * - NSIS Installation mit runAfterFinish
+ */
+
+import React, { useState, useEffect } from 'react';
+import { isNewerVersion } from '../services/semver';
+
+// Update manifest structure (update.json)
+interface UpdateManifest {
+  product: string;
+  channel: string;
+  version: string;
+  releasedAt: string;
+  notes: string;
+  files: Array<{
+    kind: 'nsis';
+    arch: 'x64';
+    name: string;
+    size: number;
+    sha512: string;
+    url: string;
+  }>;
+}
+
+// Update progress information
+interface UpdateProgress {
+  percent: number;
+  transferred: number;
+  total: number;
+  speed?: number;
+  etaSec?: number;
+}
+
+// Update check result
+interface UpdateCheckResult {
+  hasUpdate: boolean;
+  current: string;
+  target?: UpdateManifest;
+}
+
+// Update states
+type UpdateState = 
+  | 'idle'
+  | 'checking' 
+  | 'available'
+  | 'downloading'
+  | 'verifying'
+  | 'readyToInstall'
+  | 'upToDate'
+  | 'error';
+
+interface AutoUpdaterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function AutoUpdaterModal({ isOpen, onClose }: AutoUpdaterModalProps) {
+  const [state, setState] = useState<UpdateState>('idle');
+  const [currentVersion, setCurrentVersion] = useState<string>('');
+  const [updateInfo, setUpdateInfo] = useState<UpdateManifest | null>(null);
+  const [progress, setProgress] = useState<UpdateProgress | null>(null);
+  const [error, setError] = useState<string>('');
+  const [downloadedFilePath, setDownloadedFilePath] = useState<string>('');
+
+  // Get current version on mount
+  useEffect(() => {
+    if (isOpen) {
+      window.updater.getVersion().then(setCurrentVersion);
+    }
+  }, [isOpen]);
+
+  // Listen to progress updates
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const unsubscribe = window.updater.onProgress((progressInfo) => {
+      setProgress(progressInfo);
+    });
+
+    return unsubscribe;
+  }, [isOpen]);
+
+  // Check for updates
+  const handleCheckForUpdates = async () => {
+    setState('checking');
+    setError('');
+    
+    try {
+      const result = await window.updater.check();
+      
+      if (result.hasUpdate && result.target) {
+        setUpdateInfo(result.target);
+        setState('available');
+      } else {
+        setState('upToDate');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Fehler beim Prüfen auf Updates');
+      setState('error');
+    }
+  };
+
+  // Download update
+  const handleDownloadUpdate = async () => {
+    if (!updateInfo || !updateInfo.files[0]) return;
+    
+    setState('downloading');
+    setProgress({ percent: 0, transferred: 0, total: 0 });
+    
+    try {
+      const filePath = await window.updater.download(updateInfo.files[0].url);
+      setDownloadedFilePath(filePath);
+      setState('verifying');
+      
+      // Small delay to show verifying state
+      setTimeout(() => {
+        setState('readyToInstall');
+      }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Fehler beim Herunterladen des Updates');
+      setState('error');
+    }
+  };
+
+  // Install update
+  const handleInstallUpdate = async () => {
+    if (!downloadedFilePath) return;
+    
+    try {
+      await window.updater.install(downloadedFilePath);
+      // App will quit and installer will start
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Fehler beim Starten der Installation');
+      setState('error');
+    }
+  };
+
+  // Reset to check again
+  const handleRetry = () => {
+    setState('idle');
+    setError('');
+    setProgress(null);
+    setUpdateInfo(null);
+    setDownloadedFilePath('');
+  };
+
+  // Format file size
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  // Format speed
+  const formatSpeed = (bytesPerSecond: number): string => {
+    return formatBytes(bytesPerSecond) + '/s';
+  };
+
+  // Format ETA
+  const formatETA = (seconds: number): string => {
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}m ${Math.round(secs)}s`;
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>🔄 Update-Manager</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <div className="modal-body">
+          {state === 'idle' && (
+            <div className="update-idle">
+              <p>Aktuelle Version: <strong>{currentVersion}</strong></p>
+              <button onClick={handleCheckForUpdates} className="btn-primary">
+                Nach Updates suchen
+              </button>
+            </div>
+          )}
+
+          {state === 'checking' && (
+            <div className="update-checking">
+              <div className="spinner"></div>
+              <p>Prüfe auf Updates...</p>
+            </div>
+          )}
+
+          {state === 'upToDate' && (
+            <div className="update-up-to-date">
+              <div className="success-icon">✅</div>
+              <h3>Auf dem neuesten Stand</h3>
+              <p>Du nutzt bereits die neueste Version ({currentVersion}).</p>
+              <button onClick={onClose} className="btn-secondary">
+                Schließen
+              </button>
+            </div>
+          )}
+
+          {state === 'available' && updateInfo && (
+            <div className="update-available">
+              <div className="update-icon">🚀</div>
+              <h3>Update verfügbar</h3>
+              <p>
+                <strong>Version {updateInfo.version}</strong> ist verfügbar
+                {updateInfo.files[0] && (
+                  <span className="file-size">
+                    ({formatBytes(updateInfo.files[0].size)})
+                  </span>
+                )}
+              </p>
+              
+              {updateInfo.notes && (
+                <div className="release-notes">
+                  <h4>Was ist neu:</h4>
+                  <div 
+                    className="notes-content"
+                    dangerouslySetInnerHTML={{ __html: updateInfo.notes }}
+                  />
+                </div>
+              )}
+
+              <button onClick={handleDownloadUpdate} className="btn-primary">
+                Update herunterladen
+              </button>
+              <button onClick={onClose} className="btn-secondary">
+                Später
+              </button>
+            </div>
+          )}
+
+          {state === 'downloading' && progress && (
+            <div className="update-downloading">
+              <h3>Update wird heruntergeladen...</h3>
+              
+              <div className="progress-container">
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill" 
+                    style={{ width: `${progress.percent}%` }}
+                  />
+                </div>
+                <div className="progress-text">
+                  {Math.round(progress.percent)}%
+                </div>
+              </div>
+
+              <div className="progress-details">
+                <div>
+                  {formatBytes(progress.transferred)} / {formatBytes(progress.total)}
+                </div>
+                {progress.speed && (
+                  <div>
+                    {formatSpeed(progress.speed)}
+                  </div>
+                )}
+                {progress.etaSec && (
+                  <div>
+                    Verbleibend: {formatETA(progress.etaSec)}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {state === 'verifying' && (
+            <div className="update-verifying">
+              <div className="spinner"></div>
+              <h3>Prüfe Datei-Integrität...</h3>
+              <p>Das heruntergeladene Update wird verifiziert.</p>
+            </div>
+          )}
+
+          {state === 'readyToInstall' && (
+            <div className="update-ready">
+              <div className="ready-icon">🎯</div>
+              <h3>Bereit zur Installation</h3>
+              <p>Das Update wurde erfolgreich heruntergeladen und verifiziert.</p>
+              <div className="install-warning">
+                <p><strong>Hinweis:</strong> Die App wird geschlossen und der Installer startet.</p>
+                <p>Nach der Installation wird RawaLite automatisch neu gestartet.</p>
+              </div>
+              <button onClick={handleInstallUpdate} className="btn-primary">
+                Installation starten
+              </button>
+              <button onClick={onClose} className="btn-secondary">
+                Später installieren
+              </button>
+            </div>
+          )}
+
+          {state === 'error' && (
+            <div className="update-error">
+              <div className="error-icon">❌</div>
+              <h3>Fehler</h3>
+              <p className="error-message">{error}</p>
+              <button onClick={handleRetry} className="btn-primary">
+                Erneut versuchen
+              </button>
+              <button onClick={onClose} className="btn-secondary">
+                Schließen
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style jsx>{`
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .modal-content {
+          background: white;
+          border-radius: 12px;
+          width: 90%;
+          max-width: 500px;
+          max-height: 80vh;
+          overflow: hidden;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px;
+          border-bottom: 1px solid #eee;
+          background: #f8f9fa;
+        }
+
+        .modal-header h2 {
+          margin: 0;
+          color: #333;
+        }
+
+        .modal-close {
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          color: #666;
+          padding: 0;
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .modal-close:hover {
+          color: #000;
+          background: #e9ecef;
+          border-radius: 50%;
+        }
+
+        .modal-body {
+          padding: 20px;
+        }
+
+        .update-idle,
+        .update-up-to-date,
+        .update-available,
+        .update-ready,
+        .update-error {
+          text-align: center;
+        }
+
+        .update-checking,
+        .update-downloading,
+        .update-verifying {
+          text-align: center;
+        }
+
+        .spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #007bff;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .success-icon,
+        .update-icon,
+        .ready-icon,
+        .error-icon {
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+
+        .file-size {
+          color: #666;
+          font-weight: normal;
+        }
+
+        .release-notes {
+          margin: 16px 0;
+          padding: 16px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          text-align: left;
+        }
+
+        .release-notes h4 {
+          margin: 0 0 12px 0;
+          color: #333;
+        }
+
+        .notes-content {
+          color: #666;
+          line-height: 1.4;
+        }
+
+        .progress-container {
+          margin: 20px 0;
+        }
+
+        .progress-bar {
+          width: 100%;
+          height: 8px;
+          background: #e9ecef;
+          border-radius: 4px;
+          overflow: hidden;
+          margin-bottom: 8px;
+        }
+
+        .progress-fill {
+          height: 100%;
+          background: #007bff;
+          border-radius: 4px;
+          transition: width 0.3s ease;
+        }
+
+        .progress-text {
+          font-weight: bold;
+          color: #007bff;
+        }
+
+        .progress-details {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          color: #666;
+          margin-top: 12px;
+        }
+
+        .install-warning {
+          background: #fff3cd;
+          border: 1px solid #ffeaa7;
+          border-radius: 6px;
+          padding: 12px;
+          margin: 16px 0;
+        }
+
+        .install-warning p {
+          margin: 4px 0;
+          font-size: 14px;
+        }
+
+        .error-message {
+          background: #f8d7da;
+          border: 1px solid #f5c6cb;
+          border-radius: 6px;
+          padding: 12px;
+          margin: 16px 0;
+          color: #721c24;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+          padding: 12px 24px;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          margin: 8px;
+          border: none;
+          transition: all 0.2s;
+        }
+
+        .btn-primary {
+          background: #007bff;
+          color: white;
+        }
+
+        .btn-primary:hover {
+          background: #0056b3;
+        }
+
+        .btn-secondary {
+          background: #6c757d;
+          color: white;
+        }
+
+        .btn-secondary:hover {
+          background: #545b62;
+        }
+      `}</style>
+    </div>
+  );
+    (event: any, data: { type: string; data?: any }) => {
+      console.log("Update message received:", data);
+
+      switch (data.type) {
+        case "checking-for-update":
+          setUpdateState("checking");
+          setError(null);
+          setInstallInitiated(false); // Reset installation tracking
+          break;
+
+        case "update-available":
+          setUpdateState("available");
+          setUpdateInfo({
+            version: data.data?.version || "Unbekannt",
+            releaseNotes: data.data?.releaseNotes,
+            releaseDate: data.data?.releaseDate,
+          });
+          setInstallInitiated(false); // Reset installation tracking
+          break;
+
+        case "update-not-available":
+          setUpdateState("not-available");
+          setUpdateInfo(null);
+          setInstallInitiated(false); // Reset installation tracking
+          break;
+
+        case "download-progress":
+          setUpdateState("downloading");
+          setProgress(data.data);
+          // Do NOT set installInitiated during download
+          break;
+
+        case "update-downloaded":
+          // 🔧 CRITICAL FIX: Update is downloaded but not yet installed
+          console.log(
+            "Update downloaded successfully - ready for installation"
+          );
+          setUpdateState("downloaded"); // This should show "Ready to install" UI
+          setProgress(null);
+          setInstallInitiated(false); // Reset installation tracking
+          // Do NOT show "Update successful" until after app restart
+          break;
+
+        case "update-error":
+          setUpdateState("error");
+          // 🌐 SPECIAL HANDLING: Network errors with manual download option
+          if (data.data?.type === "network_error" || data.data?.manualDownloadRequired) {
+            setError(`${data.data?.message || "Netzwerkfehler beim Update"}\n\nKlicken Sie auf 'GitHub öffnen' um das Update manuell herunterzuladen.`);
+          } else {
+            setError(data.data?.message || "Unbekannter Fehler beim Update");
+          }
+          setInstallInitiated(false); // Reset on error
+          break;
+      }
+    },
+    []
+  );
+
+  // 🔧 CRITICAL FIX: Check if running in Electron environment
+  const isElectron = typeof window !== "undefined" && window.rawalite?.updater;
+
+  // Setup update message listener and get current version
+  useEffect(() => {
+    if (!isElectron) {
+      console.warn(
+        "[AutoUpdaterModal] Not running in Electron, auto-updater disabled"
+      );
+      return;
+    }
+
+    // Add event listener
+    window.rawalite!.updater.onUpdateMessage(handleUpdateMessage);
+
+    // Get current version
+    window
+      .rawalite!.updater.getVersion()
+      .then((versionInfo: any) => {
+        setCurrentVersion(versionInfo.current);
+        console.log("[AutoUpdaterModal] Current version:", versionInfo.current);
+      })
+      .catch((err: any) => {
+        console.warn("[AutoUpdaterModal] Could not get version:", err);
+      });
+
+    return () => {
+      if (window.rawalite?.updater) {
+        window.rawalite.updater.removeUpdateMessageListener(
+          handleUpdateMessage
+        );
+      }
+    };
+  }, [handleUpdateMessage, isElectron]);
+
+  // Auto-check on open
+  useEffect(() => {
+    if (isOpen && autoCheck && updateState === "idle") {
+      handleCheckForUpdates();
+    }
+  }, [isOpen, autoCheck, updateState]);
+
+  const handleCheckForUpdates = async () => {
+    if (!window.rawalite?.updater) {
+      setError("Update-Funktionalität nicht verfügbar");
+      return;
+    }
+
+    try {
+      setUpdateState("checking");
+      setError(null);
+      setInstallInitiated(false); // Reset installation tracking
+
+      const result = await window.rawalite.updater.checkForUpdates();
+      if (!result.success) {
+        setError(result.error || "Update-Prüfung fehlgeschlagen");
+        setUpdateState("error");
+      }
+      // State wird durch Event-Handler gesetzt
+    } catch (err) {
+      console.error("Update check failed:", err);
+      setError("Update-Prüfung fehlgeschlagen");
+      setUpdateState("error");
+    }
+  };
+
+  const handleStartDownload = async () => {
+    if (!window.rawalite?.updater) {
+      setError("Update-Funktionalität nicht verfügbar");
+      return;
+    }
+
+    try {
+      setError(null);
+      setInstallInitiated(false); // Reset installation tracking
+      const result = await window.rawalite.updater.startDownload();
+      if (!result.success) {
+        setError(result.error || "Download fehlgeschlagen");
+        setUpdateState("error");
+      }
+      // State wird durch Event-Handler gesetzt
+    } catch (err) {
+      console.error("Update download failed:", err);
+      setError("Download fehlgeschlagen");
+      setUpdateState("error");
+    }
+  };
+
+  const handleInstallAndRestart = async () => {
+    if (!window.rawalite?.updater) {
+      setError("Update-Funktionalität nicht verfügbar");
+      return;
+    }
+
+    try {
+      setError(null);
+
+      // 🔧 CRITICAL FIX: Mark installation as initiated
+      setInstallInitiated(true);
+      console.log("Installation initiated - app should quit and restart");
+
+      const result = await window.rawalite.updater.installAndRestart();
+      if (!result.success) {
+        setError(result.error || "Installation fehlgeschlagen");
+        setUpdateState("error");
+        setInstallInitiated(false); // Reset on error
+      } else {
+        console.log("Install command successful - waiting for app restart");
+        // installInitiated bleibt true bis App neu startet
+      }
+    } catch (err) {
+      console.error("Update install failed:", err);
+      setError("Installation fehlgeschlagen");
+      setUpdateState("error");
+      setInstallInitiated(false); // Reset on error
+    }
+  };
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const formatSpeed = (bytesPerSecond: number): string => {
+    return formatBytes(bytesPerSecond) + "/s";
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="auto-updater-overlay">
+      <div className="auto-updater-modal">
+        <div className="auto-updater-header">
+          <h2>🔄 App-Updates</h2>
+          <button
+            className="auto-updater-close"
+            onClick={onClose}
+            aria-label="Schließen"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="auto-updater-content">
+          {/* Current Version Display */}
+          <div className="auto-updater-version">
+            <strong>Aktuelle Version:</strong>{" "}
+            {currentVersion || "Wird geladen..."}
+          </div>
+
+          {/* Update State Content */}
+          {updateState === "idle" && (
+            <div className="auto-updater-idle">
+              <p>
+                Klicken Sie auf "Nach Updates suchen", um zu prüfen, ob eine
+                neue Version verfügbar ist.
+              </p>
+              <button
+                className="auto-updater-button primary"
+                onClick={handleCheckForUpdates}
+              >
+                Nach Updates suchen
+              </button>
+            </div>
+          )}
+
+          {updateState === "checking" && (
+            <div className="auto-updater-checking">
+              <div className="auto-updater-spinner"></div>
+              <p>Prüfe auf verfügbare Updates...</p>
+            </div>
+          )}
+
+          {updateState === "not-available" && (
+            <div className="auto-updater-not-available">
+              <div className="auto-updater-success-icon">✓</div>
+              <h3>Keine Updates verfügbar</h3>
+              <p>Sie verwenden bereits die neueste Version von RawaLite.</p>
+              <button
+                className="auto-updater-button"
+                onClick={handleCheckForUpdates}
+              >
+                Erneut prüfen
+              </button>
+            </div>
+          )}
+
+          {updateState === "available" && updateInfo && (
+            <div className="auto-updater-available">
+              <div className="auto-updater-update-icon">📦</div>
+              <h3>Update verfügbar</h3>
+              <div className="auto-updater-version-info">
+                <p>
+                  <strong>Neue Version:</strong> {updateInfo.version}
+                </p>
+                {updateInfo.releaseDate && (
+                  <p>
+                    <strong>Veröffentlicht:</strong>{" "}
+                    {new Date(updateInfo.releaseDate).toLocaleDateString(
+                      "de-DE"
+                    )}
+                  </p>
+                )}
+              </div>
+
+              {updateInfo.releaseNotes && (
+                <div className="auto-updater-release-notes">
+                  <h4>Änderungen:</h4>
+                  <div className="auto-updater-notes-content">
+                    {updateInfo.releaseNotes}
+                  </div>
+                </div>
+              )}
+
+              <div className="auto-updater-actions">
+                <button
+                  className="auto-updater-button primary"
+                  onClick={handleStartDownload}
+                >
+                  Update herunterladen
+                </button>
+                <button className="auto-updater-button" onClick={onClose}>
+                  Später
+                </button>
+              </div>
+            </div>
+          )}
+
+          {updateState === "downloading" && progress && (
+            <div className="auto-updater-downloading">
+              <div className="auto-updater-download-icon">⬇️</div>
+              <h3>Update wird heruntergeladen</h3>
+
+              <div className="auto-updater-progress">
+                <div className="auto-updater-progress-bar">
+                  <div
+                    className="auto-updater-progress-fill"
+                    style={{ width: `${progress.percent}%` }}
+                  />
+                </div>
+                <div className="auto-updater-progress-info">
+                  <span>{progress.percent.toFixed(1)}%</span>
+                  <span>
+                    {formatBytes(progress.transferred)} /{" "}
+                    {formatBytes(progress.total)}
+                  </span>
+                  <span>{formatSpeed(progress.bytesPerSecond)}</span>
+                </div>
+              </div>
+
+              {/* Detaillierte Status-Texte basierend auf Fortschritt */}
+              <div className="auto-updater-status-details">
+                {progress.percent < 10 && (
+                  <p>🔄 Verbindung zu GitHub wird hergestellt...</p>
+                )}
+                {progress.percent >= 10 && progress.percent < 30 && (
+                  <p>📥 Download wird initialisiert...</p>
+                )}
+                {progress.percent >= 30 && progress.percent < 50 && (
+                  <p>⚙️ Grundkomponenten werden heruntergeladen...</p>
+                )}
+                {progress.percent >= 50 && progress.percent < 74 && (
+                  <p>📦 Hauptanwendung wird übertragen...</p>
+                )}
+                {progress.percent >= 74 && progress.percent < 90 && (
+                  <p>
+                    🔐 Checksummen werden validiert... (Bitte warten, dies kann
+                    etwas dauern)
+                  </p>
+                )}
+                {progress.percent >= 90 && progress.percent < 100 && (
+                  <p>✅ Download wird abgeschlossen...</p>
+                )}
+                {progress.percent >= 100 && (
+                  <p>
+                    🎉 Download erfolgreich! Installation wird vorbereitet...
+                  </p>
+                )}
+              </div>
+
+              <p className="auto-updater-note">
+                <strong>Hinweis:</strong> Bei ~74% kann es zu einer längeren
+                Pause kommen (Checksum-Validierung).
+              </p>
+            </div>
+          )}
+
+          {updateState === "downloaded" && (
+            <div className="auto-updater-downloaded">
+              {!installInitiated ? (
+                // 🔧 CRITICAL FIX: Show "Ready to install" BEFORE install button click
+                <>
+                  <div className="auto-updater-download-icon">📦</div>
+                  <h3>Update bereit zur Installation</h3>
+                  <p>
+                    Das Update wurde erfolgreich heruntergeladen und ist bereit
+                    zur Installation.
+                  </p>
+                  <p>
+                    <strong>Hinweis:</strong> Die Anwendung wird für die
+                    Installation neu gestartet.
+                  </p>
+
+                  <div className="auto-updater-actions">
+                    <button
+                      className="auto-updater-button primary"
+                      onClick={handleInstallAndRestart}
+                    >
+                      Jetzt installieren und neu starten
+                    </button>
+                    <button className="auto-updater-button" onClick={onClose}>
+                      Später installieren
+                    </button>
+                  </div>
+                </>
+              ) : (
+                // 🔧 CRITICAL FIX: Show different UI AFTER install button clicked
+                <>
+                  <div className="auto-updater-spinner"></div>
+                  <h3>Update wird installiert...</h3>
+                  <p>Die Anwendung wird neu gestartet. Bitte warten...</p>
+                  <div className="auto-updater-install-progress">
+                    <p>🚀 Installer wird gestartet...</p>
+                    <p>⏳ App wird automatisch neu gestartet</p>
+                    <p>✨ Nach dem Neustart ist die neue Version verfügbar</p>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {updateState === "error" && (
+            <div className="auto-updater-error">
+              <div className="auto-updater-error-icon">⚠️</div>
+              <h3>Fehler beim Update</h3>
+              <p>{error || "Ein unbekannter Fehler ist aufgetreten."}</p>
+
+              <div className="auto-updater-actions">
+                <button
+                  className="auto-updater-button primary"
+                  onClick={handleCheckForUpdates}
+                >
+                  Erneut versuchen
+                </button>
+                {/* 🌐 NETWORK ERROR: Show manual download option for network errors */}
+                {(error?.includes("Netzwerkfehler") || error?.includes("manuell")) && (
+                  <button
+                    className="auto-updater-button"
+                    onClick={() => {
+                      if (window.rawalite?.shell?.openExternal) {
+                        window.rawalite.shell.openExternal("https://github.com/MonaFP/RawaLite/releases/latest");
+                      }
+                    }}
+                  >
+                    🌐 GitHub öffnen
+                  </button>
+                )}
+                <button className="auto-updater-button" onClick={onClose}>
+                  Schließen
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AutoUpdaterModal;
