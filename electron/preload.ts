@@ -13,7 +13,7 @@ const updater = {
   check: (): Promise<UpdateCheckResponse> =>
     ipcRenderer.invoke("update:check"),
     
-  download: (url: string): Promise<string> =>
+  download: (url: string): Promise<{ ok: boolean; filePath?: string; error?: string }> =>
     ipcRenderer.invoke("update:download", url),
     
   install: (exePath: string): Promise<UpdateInstallResponse> =>

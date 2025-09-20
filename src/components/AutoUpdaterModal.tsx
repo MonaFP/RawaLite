@@ -102,17 +102,17 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
       }
       
       // ✅ NEW CUSTOM UPDATER API: Download with URL
-      const filePath = await window.rawalite?.updater?.download?.(nsisFile.url);
+      const downloadResult = await window.rawalite?.updater?.download?.(nsisFile.url);
       
-      if (filePath) {
-        setDownloadedFile(filePath);
+      if (downloadResult?.ok && downloadResult?.filePath) {
+        setDownloadedFile(downloadResult.filePath);
         setState('verifying');
         
         setTimeout(() => {
           setState('readyToInstall');
         }, 1500);
       } else {
-        throw new Error('Download fehlgeschlagen');
+        throw new Error(downloadResult?.error || 'Download fehlgeschlagen');
       }
       
     } catch (error) {
