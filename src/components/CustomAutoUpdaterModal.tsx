@@ -2,34 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatVersion } from '../services/semver';
 import { useVersion } from '../hooks/useVersion'; // 🔧 NEW: Unified version system
+import type { UpdateCheckResponse, UpdateManifest, UpdateProgress, UpdateDownloadResponse, UpdateInstallResponse } from '../types/updater';
 
-interface UpdateFile {
-  kind: string;
-  arch: string;
-  name: string;
-  size: number;
-  sha512: string;
-  url: string;
-}
-
-interface UpdateInfo {
-  available: boolean;
-  latest: {
-    version: string;
-    notes?: string;
-    sha512?: string;
-    size?: number;
-    url?: string;
-  } | null;
-}
-
-interface DownloadProgress {
-  percent: number;
-  transferred: number;
-  total: number;
-  speed?: number;
-  etaSec?: number;
-}
+// Using UpdateProgress from updater types instead of local DownloadProgress
 
 type UpdateState = 
   | 'idle'
@@ -49,20 +24,20 @@ interface CustomAutoUpdaterModalProps {
 
 export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUpdaterModalProps) {
   const [state, setState] = useState<UpdateState>('idle');
-  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
-  const [progress, setProgress] = useState<DownloadProgress | null>(null);
+  const [updateResponse, setUpdateResponse] = useState<UpdateCheckResponse | null>(null);
+  const [progress, setProgress] = useState<UpdateProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [downloadedPath, setDownloadedPath] = useState<string | null>(null);
   // 🔧 UNIFIED VERSION: Use new version hook instead of local state
   const { appVersion } = useVersion();
   
-  const progressListenerRef = useRef<((progress: DownloadProgress) => void) | null>(null);
+  const progressListenerRef = useRef<((progress: UpdateProgress) => void) | null>(null);
 
   useEffect(() => {
     // Version is now managed by useVersion hook - no manual fetching needed
 
     // Setup progress listener
-    const handleProgress = (progress: DownloadProgress) => {
+    const handleProgress = (progress: UpdateProgress) => {
       setProgress(progress);
     };
     
@@ -74,8 +49,8 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
 
     // Cleanup
     return () => {
-      if (window.rawalite?.updater?.removeProgressListener) {
-        window.rawalite.updater.removeProgressListener();
+      if (window.rawalite?.updater?.offProgress) {
+        window.rawalite.updater.offProgress();
       }
     };
   }, []);
@@ -87,8 +62,8 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
     try {
       const result = await window.rawalite!.updater.check();
       
-      if (result.hasUpdate) {
-        setUpdateInfo(result);
+      if (result.ok && result.hasUpdate) {
+        setUpdateResponse(result);
         setState('available');
       } else {
         setState('upToDate');
@@ -100,19 +75,15 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
   };
 
   const downloadUpdate = async () => {
-    if (!updateInfo) return;
+    if (!updateResponse?.target?.files?.[0]) return;
 
     setState('downloading');
     setProgress(null);
     setError(null);
 
     try {
-      const downloadPath = await window.rawalite!.updater.download(
-        updateInfo.file.url,
-        updateInfo.file.name,
-        updateInfo.file.sha512,
-        updateInfo.file.size
-      );
+      const updateFile = updateResponse.target.files[0];
+      const downloadPath = await window.rawalite!.updater.download(updateFile.url);
 
       setDownloadedPath(downloadPath);
       setState('readyToInstall');
@@ -183,7 +154,7 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
         <div className="auto-updater-content">
           {/* Current Version */}
           <div className="auto-updater-version">
-            <strong>Aktuelle Version:</strong> {formatVersion(currentVersion)}
+            <strong>Aktuelle Version:</strong> {formatVersion(appVersion || '0.0.0')}
           </div>
 
           {/* State-based content */}
@@ -211,7 +182,7 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
               <div className="auto-updater-success-icon">✓</div>
               <h3>Keine Updates verfügbar</h3>
               <p>
-                Du nutzt bereits die neueste Version ({formatVersion(currentVersion)})
+                Du nutzt bereits die neueste Version ({formatVersion(appVersion || '0.0.0')})
               </p>
               <button
                 onClick={onClose}
@@ -222,18 +193,18 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
             </div>
           )}
 
-          {state === 'available' && updateInfo && (
+          {state === 'available' && updateResponse?.target && (
             <div className="auto-updater-available">
               <div className="auto-updater-update-icon">📦</div>
-              <h3>Update verfügbar: v{formatVersion(updateInfo.target)}</h3>
+              <h3>Update verfügbar: v{formatVersion(updateResponse.target.version)}</h3>
               <p>
-                Größe: {formatBytes(updateInfo.file.size)}
+                Größe: {formatBytes(updateResponse.target.files[0]?.size || 0)}
               </p>
-              {updateInfo.notes && (
+              {updateResponse.target.notes && (
                 <div className="auto-updater-release-notes">
                   <h4>Neuerungen:</h4>
                   <div className="auto-updater-notes-content">
-                    {updateInfo.notes}
+                    {updateResponse.target.notes}
                   </div>
                 </div>
               )}

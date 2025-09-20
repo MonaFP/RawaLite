@@ -28,39 +28,30 @@ declare interface Window {
       openExternal: (url: string) => Promise<void>;
     };
     updater: {
-      // ✅ NEW UNIFIED CONTRACT (v1.8.44+)
-      checkForUpdates: () => Promise<{
-        success: boolean;
-        updateInfo?: any;
+      // ✅ NEW CUSTOM UPDATER API (v1.8.45+): Pure IPC without electron-updater
+      check: () => Promise<{
+        ok: boolean;
+        hasUpdate?: boolean;
+        current?: string;
+        target?: any;  // UpdateManifest
         error?: string;
       }>;
-      startDownload: () => Promise<{ success: boolean; error?: string }>;
-      installAndRestart: () => Promise<{ success: boolean; error?: string }>;
-      
-      // 🧪 DEVELOPMENT TEST: Force-simulate update for testing
-      forceTestUpdate: () => Promise<{ 
-        success: boolean; 
-        testUpdate?: any; 
-        message?: string; 
+      download: (url: string) => Promise<string>;  // Returns file path
+      install: (exePath: string) => Promise<{
+        ok: boolean;
+        error?: string;
       }>;
       
-      // 🚨 DEPRECATED: Legacy methods for backward compatibility only
-      getVersion: () => Promise<{ current: string; target?: string }>;
-      check: () => Promise<{
-        hasUpdate: boolean;
-        current: string;
-        target?: any;
-      }>;
-      download: (url: string) => Promise<string>;
-      install: (exePath: string) => Promise<void>;
+      // 📡 Progress event listener
+      onProgress: (callback: (progress: {
+        percent: number;
+        transferred: number;
+        total: number;
+        speed?: number;
+        etaSec?: number;
+      }) => void) => (() => void);
       
-      // 📡 Event listener for update messages
-      onUpdateMessage: (
-        callback: (message: {
-          type: 'update-available' | 'update-not-available' | 'update-downloaded' | 'download-progress' | 'error';
-          data?: any;
-        }) => void
-      ) => (() => void);
+      offProgress: () => void;
     };
     backup: {
       create: (options: {
@@ -135,9 +126,10 @@ declare interface Window {
     // 🆕 UNIFIED VERSION API - Single source of truth for version information
     version: {
       get: () => Promise<{
-        app: string;      // Application version from package.json
-        electron: string; // Electron framework version
-        chrome: string;   // Chrome/Chromium version
+        ok: boolean;
+        app?: string;      // Application version from package.json
+        electron?: string; // Electron framework version
+        chrome?: string;   // Chrome/Chromium version
       }>;
     };
   };

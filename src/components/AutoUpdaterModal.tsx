@@ -1,20 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
-interface UpdateProgress {
-  percent: number;
-  transferred: number;
-  total: number;
-}
-
-interface UpdateManifest {
-  version: string;
-  releaseDate?: string;
-  downloadUrl: string;
-  checksumSha256?: string;
-  fileSize: number;
-  releaseNotes?: string;
-  minimumVersion?: string;
-}
+import type { UpdateManifest, UpdateProgress } from '../types/updater';
 
 type UpdateState = 
   | 'idle'
@@ -48,7 +33,11 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
         // ✅ UNIFIED VERSION SYSTEM (v1.8.44+): Single Source of Truth via package.json
         if (window.rawalite?.version?.get) {
           const versionData = await window.rawalite.version.get();
-          setCurrentVersion(versionData.app); // Use app version from package.json (Single Source)
+          if (versionData.ok && versionData.app) {
+            setCurrentVersion(versionData.app); // Use app version from package.json (Single Source)
+          } else {
+            setCurrentVersion(''); // Fallback if version not available
+          }
         } else {
           console.warn('⚠️ Version API nicht verfügbar - Fallback wird verwendet');
           setCurrentVersion(''); // Graceful degradation
@@ -72,19 +61,12 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
     setErrorMessage('');
     
     try {
-      // ✅ NEW UNIFIED CONTRACT (v1.8.44+): Separate updater.check() returns only remote update info
-      const result = await window.rawalite?.updater?.checkForUpdates?.();
+      // ✅ NEW CUSTOM UPDATER API: Use new check method
+      const result = await window.rawalite?.updater?.check?.();
       
-      if (result?.success && result.updateInfo) {
+      if (result?.hasUpdate && result.target) {
         setState('available');
-        const manifest: UpdateManifest = {
-          version: result.updateInfo.version || 'Unknown',
-          releaseDate: result.updateInfo.releaseDate || undefined, // ✅ Fix field name
-          downloadUrl: result.updateInfo.downloadUrl || '',
-          fileSize: result.updateInfo.size || 0, // ✅ Use size from GitHub API
-          releaseNotes: result.updateInfo.releaseNotes || undefined
-        };
-        setUpdateManifest(manifest);
+        setUpdateManifest(result.target);
       } else {
         setState('upToDate');
         setTimeout(() => {
@@ -104,26 +86,42 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
     setState('downloading');
     setProgress({ percent: 0, transferred: 0, total: 0 });
     
+    // Set up progress listener
+    const removeProgressListener = window.rawalite?.updater?.onProgress?.((progress: UpdateProgress) => {
+      setProgress(progress);
+    });
+    
     try {
-      // ✅ NEW UNIFIED CONTRACT (v1.8.44+): Use startDownload method
-      const result = await window.rawalite?.updater?.startDownload?.();
+      // Find the NSIS x64 file to download
+      const nsisFile = updateManifest.files?.find(
+        file => file.kind === 'nsis' && file.arch === 'x64'
+      );
       
-      if (result?.success) {
-        // ✅ electron-updater handles file management internally, no explicit filePath needed
-        setDownloadedFile('update-downloaded');
+      if (!nsisFile) {
+        throw new Error('Keine kompatible Installer-Datei gefunden');
+      }
+      
+      // ✅ NEW CUSTOM UPDATER API: Download with URL
+      const filePath = await window.rawalite?.updater?.download?.(nsisFile.url);
+      
+      if (filePath) {
+        setDownloadedFile(filePath);
         setState('verifying');
         
         setTimeout(() => {
           setState('readyToInstall');
         }, 1500);
       } else {
-        throw new Error(result?.error || 'Download fehlgeschlagen');
+        throw new Error('Download fehlgeschlagen');
       }
       
     } catch (error) {
       console.error('❌ Download fehlgeschlagen:', error);
       setErrorMessage(`Fehler beim Download: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
       setState('error');
+    } finally {
+      // Clean up progress listener
+      removeProgressListener?.();
     }
   };
 
@@ -133,14 +131,14 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
     setState('installing');
     
     try {
-      // ✅ NEW UNIFIED CONTRACT (v1.8.44+): Use installAndRestart method 
-      const result = await window.rawalite?.updater?.installAndRestart?.();
+      // ✅ NEW CUSTOM UPDATER API: Use install method with file path
+      const result = await window.rawalite?.updater?.install?.(downloadedFile);
       
-      if (!result?.success) {
+      if (!result?.ok) {
         throw new Error(result?.error || 'Installation fehlgeschlagen');
       }
       
-      // App should restart automatically, this code may not execute
+      // Installation successful - app will restart automatically
       console.log('✅ Installation erfolgreich - App startet neu');
       
     } catch (error) {
@@ -277,9 +275,9 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
                 marginBottom: '16px',
               }}>
                 <p><strong>Neue Version:</strong> {updateManifest.version}</p>
-                <p><strong>Größe:</strong> {formatFileSize(updateManifest.fileSize)}</p>
-                {updateManifest.releaseNotes && (
-                  <p><strong>Hinweise:</strong> {updateManifest.releaseNotes}</p>
+                <p><strong>Größe:</strong> {formatFileSize(updateManifest.files?.[0]?.size || 0)}</p>
+                {updateManifest.notes && (
+                  <p><strong>Hinweise:</strong> {updateManifest.notes}</p>
                 )}
               </div>
 

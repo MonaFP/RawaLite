@@ -14,6 +14,17 @@ win:
   target: nsis
   # publisherName:  # ← ENTFERNT / NICHT setzen!
 
+nsis:
+  oneClick: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  perMachine: false  # ✅ User-level installation (required for Custom Updater)
+  runAfterFinish: true  # ✅ CRITICAL: Start app after silent installation
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  installerIcon: assets/icon.ico
+  uninstallerIcon: assets/icon.ico
+
 publish:
   - provider: github
     owner: MonaFP

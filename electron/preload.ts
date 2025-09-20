@@ -1,91 +1,47 @@
 // ============================================================
-// FILE: electron/preload.ts
+// FILE: electron/preload.ts - 🚀 Custom In-App Updater (NO electron-updater)
 // ============================================================
 import { contextBridge, ipcRenderer } from "electron";
 
-// 🔧 CRITICAL FIX: Unified IPC API for electron-updater integration
-// Match main.ts IPC handlers and global.d.ts expectations
+// Import custom updater types
+import type { UpdateCheckResponse, UpdateDownloadResponse, UpdateInstallResponse, UpdateProgress } from "../src/types/updater";
 
-type CheckResult = { success: boolean; updateInfo?: any; error?: string };
-type DownloadResult = { success: boolean; error?: string };
-type InstallResult = { success: boolean; error?: string };
-
-type UpdaterEvents = {
-  "update-message": (payload: { type: string; data?: any }) => void;
-};
-
+// � CUSTOM UPDATER API - Strikt typisiert ohne electron-updater
 const updater = {
-  // ✅ UNIFIED VERSION SYSTEM (v1.8.44+): New API contract matching AutoUpdaterModal expectations
+  // ✅ NEW CUSTOM UPDATER API (v1.8.45+): Pure IPC without electron-updater
   
-  checkForUpdates: (): Promise<{ success: boolean; updateInfo?: any; error?: string }> =>
-    ipcRenderer.invoke("updater:check-for-updates"),
+  check: (): Promise<UpdateCheckResponse> =>
+    ipcRenderer.invoke("update:check"),
     
-  startDownload: (): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke("updater:start-download"),
+  download: (url: string): Promise<string> =>
+    ipcRenderer.invoke("update:download", url),
     
-  installAndRestart: (): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke("updater:quit-and-install"),
+  install: (exePath: string): Promise<UpdateInstallResponse> =>
+    ipcRenderer.invoke("update:install", exePath),
   
-  // 🧪 Development testing utility
-  forceTestUpdate: (): Promise<{ success: boolean; testUpdate?: any }> =>
-    ipcRenderer.invoke("updater:force-test-update"),
-  
-  // 📡 Event listener for update messages
-  onUpdateMessage: (callback: (message: {
-    type: 'update-available' | 'update-not-available' | 'update-downloaded' | 'download-progress' | 'error';
-    data?: any;
-  }) => void): (() => void) => {
-    const handler = (_: any, message: any) => callback(message);
-    ipcRenderer.on("updater:message", handler);
-    return () => ipcRenderer.removeListener("updater:message", handler);
+  // 📡 Progress event listener
+  onProgress: (callback: (progress: UpdateProgress) => void): (() => void) => {
+    const handler = (_: any, progress: UpdateProgress) => callback(progress);
+    ipcRenderer.on("update:progress", handler);
+    return () => ipcRenderer.removeListener("update:progress", handler);
   },
   
-  // 🚨 DEPRECATED: Legacy methods for backward compatibility
-  getVersion: (): Promise<{ current: string; target?: string }> => {
-    console.warn("⚠️ DEPRECATED: updater.getVersion() - use version.get() + updater.checkForUpdates() instead");
-    // Backward compatibility wrapper combining both new APIs
-    return Promise.all([
-      ipcRenderer.invoke("version:get"), 
-      ipcRenderer.invoke("updater:check-for-updates")
-    ]).then(([versionData, updateData]) => ({
-      current: versionData.app,
-      target: updateData.updateInfo?.version || versionData.app
-    }));
-  },
-  
-  check: (): Promise<{
-    hasUpdate: boolean;
-    current: string;
-    target?: any;
-  }> => {
-    console.warn("⚠️ DEPRECATED: updater.check() - use updater.checkForUpdates() instead");
-    return ipcRenderer.invoke("updater:check");
-  },
-  
-  download: (url: string): Promise<string> => {
-    console.warn("⚠️ DEPRECATED: updater.download() - use updater.startDownload() instead");
-    return ipcRenderer.invoke("updater:download", url);
-  },
-    
-  install: (exePath: string): Promise<void> => {
-    console.warn("⚠️ DEPRECATED: updater.install() - use updater.installAndRestart() instead");
-    return ipcRenderer.invoke("updater:install", exePath);
-  },
-    
-  onProgress: (callback: (progress: {
-    percent: number;
-    transferred: number;
-    total: number;
-    speed?: number;
-    etaSec?: number;
-  }) => void): (() => void) => {
-    const handler = (_: any, progress: any) => callback(progress);
-    ipcRenderer.on("updater:progress", handler);
-    return () => ipcRenderer.removeListener("updater:progress", handler);
-  },
+  offProgress: () => {
+    ipcRenderer.removeAllListeners("update:progress");
+  }
 };
 
-const app = {
+// 🆕 UNIFIED VERSION API - Single source of truth for all version queries
+const version = {
+  get: (): Promise<{
+    ok: boolean;
+    app?: string;
+    electron?: string;
+    chrome?: string;
+  }> => ipcRenderer.invoke("version:get"),
+};
+
+const appApi = {
   getVersion: (): Promise<string> => ipcRenderer.invoke("app:getVersion"),
   restart: (): Promise<void> => ipcRenderer.invoke("app:restart"),
   exportLogs: (): Promise<{
@@ -95,16 +51,12 @@ const app = {
   }> => ipcRenderer.invoke("app:exportLogs"),
 };
 
-// 🆕 UNIFIED VERSION API - Single source of truth for all version queries
-const version = {
-  get: (): Promise<{
-    app: string;
-    electron: string;
-    chrome: string;
-  }> => ipcRenderer.invoke("version:get"),
+// 🔧 DATABASE & PDF APIs (existing)
+const db = {
+  load: (): Promise<Uint8Array | null> => ipcRenderer.invoke("db:load"),
+  save: (data: Uint8Array): Promise<boolean> => ipcRenderer.invoke("db:save", data),
 };
 
-// 🔧 CRITICAL FIX: PDF Service IPC handlers
 const pdf = {
   generate: (options: any): Promise<{
     success: boolean;
@@ -121,26 +73,29 @@ const pdf = {
   }> => ipcRenderer.invoke("pdf:getStatus"),
 };
 
-// 🔧 UNIFIED: All APIs under window.rawalite namespace + direct updater access + version API
+// Backup and logo APIs (existing)
+const backup = {
+  create: (options: any) => ipcRenderer.invoke("backup:create", options),
+  list: () => ipcRenderer.invoke("backup:list"),
+  prune: (options: any) => ipcRenderer.invoke("backup:prune", options),
+};
+
+const logo = {
+  upload: (options: any) => ipcRenderer.invoke("logo:upload", options),
+  get: (filePath: string) => ipcRenderer.invoke("logo:get", filePath),
+  getUrl: (filePath: string) => ipcRenderer.invoke("logo:getUrl", filePath),
+  delete: (filePath: string) => ipcRenderer.invoke("logo:delete", filePath),
+};
+
+// 🔧 UNIFIED: All APIs under window.rawalite namespace
 contextBridge.exposeInMainWorld("rawalite", { 
-  // Keep existing rawalite APIs (defined in main.ts)
   updater, 
-  app,
-  pdf,  // Add PDF service to unified namespace
-  version  // 🆕 Add unified version API
+  app: appApi,
+  db,
+  pdf,
+  backup,
+  logo,
+  version
 });
 
-// Direct updater access for the new Modal
-contextBridge.exposeInMainWorld("updater", updater);
-
-declare global {
-  interface Window {
-    rawalite: {
-      updater: typeof updater;
-      app: typeof app;
-      pdf: typeof pdf;
-      version: typeof version;
-    };
-    updater: typeof updater;
-  }
-}
+// No global types needed - they are in global.d.ts

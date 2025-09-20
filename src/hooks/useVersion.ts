@@ -63,7 +63,16 @@ export function useVersion(): UseVersionState {
       // Get version data from unified source
       const versionData = await window.rawalite.version.get();
       
-      setVersion(versionData);
+      // Ensure all required properties are present
+      if (versionData.ok && versionData.app && versionData.electron && versionData.chrome) {
+        setVersion({
+          app: versionData.app,
+          electron: versionData.electron,
+          chrome: versionData.chrome
+        });
+      } else {
+        throw new Error('Incomplete version data received from API');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch version information';
       console.error('[useVersion] Version fetch failed:', err);

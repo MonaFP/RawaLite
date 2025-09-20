@@ -1,24 +1,33 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 /**
- * verify-update.ts
+ * 🔍 RawaLite Custom Update Verifier
  * 
- * Verifies update assets and GitHub release compatibility
- * For RawaLite Custom Update System
+ * Verifies update assets, SHA512 checksums, and GitHub release compatibility
+ * For RawaLite Custom In-App Update System
  */
 
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
+import { readFileSync, existsSync, statSync } from 'fs';
+import { join, basename } from 'path';
+import { createHash } from 'crypto';
 import https from 'https';
 
-interface UpdateMetadata {
+// === TYPE DEFINITIONS ===
+interface UpdateFile {
+  kind: 'nsis';
+  arch: 'x64';
+  name: string;
+  size: number;
+  sha512: string;  // Base64-encoded SHA512 hash
+  url: string;
+}
+
+interface UpdateManifest {
+  product: string;
+  channel: string;
   version: string;
-  releaseDate: string;
-  downloadUrl: string;
-  checksumSha256: string;
-  fileSize: number;
-  releaseNotes?: string;
-  minimumVersion?: string;
+  releasedAt: string;
+  notes?: string;
+  files: UpdateFile[];
 }
 
 interface PackageJson {
@@ -37,71 +46,131 @@ interface GitHubRelease {
   }>;
 }
 
+interface PackageJson {
+  version: string;
+  name: string;
+}
+
+interface GitHubRelease {
+  tag_name: string;
+  name: string;
+  published_at: string;
+  assets: Array<{
+    name: string;
+    size: number;
+    browser_download_url: string;
+  }>;
+}
+
+// === CONFIGURATION ===
+const CONFIG = {
+  githubRepo: 'MonaFP/RawaLite',
+  releaseDir: join(process.cwd(), 'release'),
+  distDir: join(process.cwd(), 'dist')
+};
+
+// === UTILITIES ===
+function calculateSHA512(filePath: string): string {
+  const fileBuffer = readFileSync(filePath);
+  const hash = createHash('sha512');
+  hash.update(fileBuffer);
+  return hash.digest('base64');
+}
+
 /**
  * Load package.json
  */
 function loadPackageJson(): PackageJson {
-  const packagePath = path.join(process.cwd(), 'package.json');
-  const packageContent = fs.readFileSync(packagePath, 'utf-8');
+  const packagePath = join(process.cwd(), 'package.json');
+  const packageContent = readFileSync(packagePath, 'utf-8');
   return JSON.parse(packageContent);
 }
 
 /**
- * Load update.json metadata
+ * Load update.json manifest
  */
-function loadUpdateMetadata(): UpdateMetadata {
-  const updateJsonPath = path.join(process.cwd(), 'release', 'update.json');
+function loadUpdateManifest(): UpdateManifest {
+  const manifestPaths = [
+    join(CONFIG.releaseDir, 'update.json'),
+    join(CONFIG.distDir, 'update.json'),
+    join(process.cwd(), 'update.json')
+  ];
   
-  if (!fs.existsSync(updateJsonPath)) {
-    throw new Error(`update.json not found at ${updateJsonPath}. Run 'node scripts/make-update-json.ts' first.`);
+  for (const manifestPath of manifestPaths) {
+    if (existsSync(manifestPath)) {
+      const manifestContent = readFileSync(manifestPath, 'utf-8');
+      return JSON.parse(manifestContent);
+    }
   }
   
-  const updateContent = fs.readFileSync(updateJsonPath, 'utf-8');
-  return JSON.parse(updateContent);
+  throw new Error(`update.json not found. Searched: ${manifestPaths.join(', ')}\nRun 'npm run make:update-json' first.`);
+}
+
+/**
+ * Find NSIS installer file based on manifest
+ */
+function findNSISFile(manifest: UpdateManifest): string {
+  const nsisFile = manifest.files.find(file => file.kind === 'nsis');
+  if (!nsisFile) {
+    throw new Error('No NSIS file found in manifest');
+  }
+  
+  // Look for the file in release and dist directories
+  const searchPaths = [
+    join(CONFIG.releaseDir, nsisFile.name),
+    join(CONFIG.distDir, nsisFile.name)
+  ];
+  
+  for (const filePath of searchPaths) {
+    if (existsSync(filePath)) {
+      return filePath;
+    }
+  }
+  
+  throw new Error(`NSIS installer not found: ${nsisFile.name}. Searched: ${searchPaths.join(', ')}`);
 }
 
 /**
  * Verify local setup file exists and matches metadata
  */
-function verifyLocalAssets(metadata: UpdateMetadata): boolean {
+function verifyLocalAssets(manifest: UpdateManifest): boolean {
   console.log('📋 Verifying local release assets...');
   
-  const releaseDir = path.join(process.cwd(), 'release');
-  const setupExePath = path.join(releaseDir, `RawaLite-Setup-${metadata.version}.exe`);
-  
-  // Check if setup file exists
-  if (!fs.existsSync(setupExePath)) {
-    console.error(`❌ Setup file not found: ${setupExePath}`);
+  try {
+    // Find the NSIS installer file
+    const nsisFilePath = findNSISFile(manifest);
+    const nsisFile = manifest.files[0]; // Should be the NSIS file
+    
+    console.log(`🎯 Verifying: ${basename(nsisFilePath)}`);
+    
+    // Verify file size
+    const actualSize = statSync(nsisFilePath).size;
+    if (actualSize !== nsisFile.size) {
+      console.error(`❌ File size mismatch:`);
+      console.error(`   Expected: ${nsisFile.size} bytes`);
+      console.error(`   Actual: ${actualSize} bytes`);
+      return false;
+    }
+    
+    // Verify SHA512 checksum
+    const actualSha512 = calculateSHA512(nsisFilePath);
+    if (actualSha512 !== nsisFile.sha512) {
+      console.error(`❌ SHA512 checksum mismatch:`);
+      console.error(`   Expected: ${nsisFile.sha512.substring(0, 32)}...`);
+      console.error(`   Actual: ${actualSha512.substring(0, 32)}...`);
+      return false;
+    }
+    
+    console.log(`✅ Setup file verified: ${basename(nsisFilePath)}`);
+    console.log(`   📊 Size: ${Math.round(actualSize / 1024 / 1024 * 100) / 100} MB`);
+    console.log(`   🔐 SHA512: ${actualSha512.substring(0, 32)}...`);
+    
+    return true;
+    
+  } catch (error) {
+    console.error(`❌ Local asset verification failed: ${error}`);
     return false;
   }
-  
-  // Verify file size
-  const actualSize = fs.statSync(setupExePath).size;
-  if (actualSize !== metadata.fileSize) {
-    console.error(`❌ File size mismatch:`);
-    console.error(`   Expected: ${metadata.fileSize} bytes`);
-    console.error(`   Actual: ${actualSize} bytes`);
-    return false;
-  }
-  
-  // Verify checksum
-  const fileBuffer = fs.readFileSync(setupExePath);
-  const hashSum = crypto.createHash('sha256');
-  hashSum.update(fileBuffer);
-  const actualChecksum = hashSum.digest('hex');
-  
-  if (actualChecksum !== metadata.checksumSha256) {
-    console.error(`❌ Checksum mismatch:`);
-    console.error(`   Expected: ${metadata.checksumSha256}`);
-    console.error(`   Actual: ${actualChecksum}`);
-    return false;
-  }
-  
-  console.log(`✅ Setup file verified: ${path.basename(setupExePath)}`);
-  console.log(`   📊 Size: ${Math.round(actualSize / 1024 / 1024 * 100) / 100} MB`);
-  console.log(`   🔐 SHA256: ${actualChecksum}`);
-  
-  return true;
 }
 
 /**
@@ -160,14 +229,14 @@ function fetchGitHubRelease(version: string): Promise<GitHubRelease | null> {
 /**
  * Verify GitHub release assets match local metadata
  */
-async function verifyGitHubAssets(metadata: UpdateMetadata): Promise<boolean> {
+async function verifyGitHubAssets(manifest: UpdateManifest): Promise<boolean> {
   console.log('🌐 Verifying GitHub release assets...');
   
   try {
-    const release = await fetchGitHubRelease(metadata.version);
+    const release = await fetchGitHubRelease(manifest.version);
     
     if (!release) {
-      console.log(`ℹ️ GitHub release v${metadata.version} not yet published - local verification only`);
+      console.log(`ℹ️ GitHub release v${manifest.version} not yet published - local verification only`);
       return true; // Not an error - release may not be published yet
     }
     
@@ -175,20 +244,20 @@ async function verifyGitHubAssets(metadata: UpdateMetadata): Promise<boolean> {
     console.log(`   📅 Published: ${release.published_at}`);
     console.log(`   📦 Assets: ${release.assets.length}`);
     
-    // Look for setup file asset
-    const setupFileName = `RawaLite-Setup-${metadata.version}.exe`;
-    const setupAsset = release.assets.find(asset => asset.name === setupFileName);
+    // Look for NSIS setup file asset
+    const nsisFile = manifest.files[0]; // Should be the NSIS file
+    const setupAsset = release.assets.find(asset => asset.name === nsisFile.name);
     
     if (!setupAsset) {
-      console.error(`❌ Setup file not found in GitHub release assets: ${setupFileName}`);
+      console.error(`❌ Setup file not found in GitHub release assets: ${nsisFile.name}`);
       console.log(`   Available assets: ${release.assets.map(a => a.name).join(', ')}`);
       return false;
     }
     
     // Verify asset size
-    if (setupAsset.size !== metadata.fileSize) {
+    if (setupAsset.size !== nsisFile.size) {
       console.error(`❌ GitHub asset size mismatch:`);
-      console.error(`   Expected: ${metadata.fileSize} bytes`);
+      console.error(`   Expected: ${nsisFile.size} bytes`);
       console.error(`   GitHub asset: ${setupAsset.size} bytes`);
       return false;
     }
@@ -208,13 +277,13 @@ async function verifyGitHubAssets(metadata: UpdateMetadata): Promise<boolean> {
 /**
  * Verify version consistency
  */
-function verifyVersionConsistency(packageJson: PackageJson, metadata: UpdateMetadata): boolean {
+function verifyVersionConsistency(packageJson: PackageJson, manifest: UpdateManifest): boolean {
   console.log('🏷️ Verifying version consistency...');
   
-  if (packageJson.version !== metadata.version) {
+  if (packageJson.version !== manifest.version) {
     console.error(`❌ Version mismatch:`);
     console.error(`   package.json: ${packageJson.version}`);
-    console.error(`   update.json: ${metadata.version}`);
+    console.error(`   update.json: ${manifest.version}`);
     return false;
   }
   
@@ -231,7 +300,7 @@ async function main() {
     
     // Load configuration
     const packageJson = loadPackageJson();
-    const metadata = loadUpdateMetadata();
+    const manifest = loadUpdateManifest();
     
     console.log(`📋 Project: ${packageJson.name}`);
     console.log(`🏷️ Version: ${packageJson.version}`);
@@ -241,19 +310,19 @@ async function main() {
     let allVerified = true;
     
     // 1. Version consistency
-    if (!verifyVersionConsistency(packageJson, metadata)) {
+    if (!verifyVersionConsistency(packageJson, manifest)) {
       allVerified = false;
     }
     console.log('');
     
     // 2. Local assets
-    if (!verifyLocalAssets(metadata)) {
+    if (!verifyLocalAssets(manifest)) {
       allVerified = false;
     }
     console.log('');
     
     // 3. GitHub assets (optional)
-    if (!await verifyGitHubAssets(metadata)) {
+    if (!await verifyGitHubAssets(manifest)) {
       // GitHub verification failure is not critical if release isn't published yet
       console.log('⚠️ GitHub verification failed - continue if release not yet published');
     }
@@ -263,9 +332,9 @@ async function main() {
     if (allVerified) {
       console.log('🎉 All verifications passed! Update assets are ready.');
       console.log('📤 Next steps:');
-      console.log('   1. git tag v' + metadata.version);
+      console.log('   1. git tag v' + manifest.version);
       console.log('   2. git push origin main --tags');
-      console.log('   3. gh release create v' + metadata.version + ' release/*.exe release/update.json');
+      console.log('   3. gh release create v' + manifest.version + ' release/*.exe release/update.json');
     } else {
       console.log('❌ Verification failed. Please fix issues before releasing.');
       process.exit(1);

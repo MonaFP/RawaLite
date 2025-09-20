@@ -1,5 +1,5 @@
 import { useLocation, NavLink } from "react-router-dom";
-import { useAutoUpdater } from "../hooks/useAutoUpdater";
+import { useSimpleAutoUpdater } from "../hooks/useSimpleAutoUpdater";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import { useAppVersion } from "../hooks/useVersion";
 import HeaderWidgets from "./HeaderWidgets";
@@ -21,8 +21,8 @@ interface HeaderProps {
 
 export default function Header({ title: propTitle, right }: HeaderProps = {}) {
   const { pathname } = useLocation();
-  // 🔧 CRITICAL FIX: Migrate to electron-updater based useAutoUpdater  
-  const [updateHookState, updateActions] = useAutoUpdater({
+  // 🔧 CUSTOM UPDATER: Use new simplified hook for Custom Update System
+  const [updateHookState, updateActions] = useSimpleAutoUpdater({
     autoCheckOnStart: false,
   });
   const { currentNavigationMode } = useDesignSettings();
