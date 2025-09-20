@@ -371,12 +371,14 @@ export default function KundenPage({ title = "Kunden" }: KundenPageProps){
             onClick={() => setHasEmailFilter(hasEmailFilter === true ? null : true)}
             style={{
               padding: "8px 12px",
-              border: "1px solid var(--border)",
+              border: "1px solid #d1d5db",
               borderRadius: "4px",
-              background: hasEmailFilter === true ? "var(--primary)" : "var(--background)",
-              color: hasEmailFilter === true ? "white" : "var(--foreground)",
+              background: hasEmailFilter === true ? "#3b82f6" : "#f9fafb",
+              color: hasEmailFilter === true ? "white" : "#374151",
               cursor: "pointer",
-              fontSize: "14px"
+              fontSize: "14px",
+              fontWeight: hasEmailFilter === true ? "600" : "400",
+              transition: "all 0.2s ease"
             }}
           >
             Mit E-Mail
@@ -385,12 +387,14 @@ export default function KundenPage({ title = "Kunden" }: KundenPageProps){
             onClick={() => setHasEmailFilter(hasEmailFilter === false ? null : false)}
             style={{
               padding: "8px 12px",
-              border: "1px solid var(--border)",
+              border: "1px solid #d1d5db",
               borderRadius: "4px",
-              background: hasEmailFilter === false ? "var(--primary)" : "var(--background)",
-              color: hasEmailFilter === false ? "white" : "var(--foreground)",
+              background: hasEmailFilter === false ? "#3b82f6" : "#f9fafb",
+              color: hasEmailFilter === false ? "white" : "#374151",
               cursor: "pointer",
-              fontSize: "14px"
+              fontSize: "14px",
+              fontWeight: hasEmailFilter === false ? "600" : "400",
+              transition: "all 0.2s ease"
             }}
           >
             Ohne E-Mail

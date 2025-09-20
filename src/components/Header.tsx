@@ -69,13 +69,47 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}) {
     } else {
       // Kein Update verfügbar - prüfe nach Updates
       try {
+        console.log("[Header] Starting update check...");
         await updateActions.checkForUpdates();
-        // Kurz warten, damit der State aktualisiert wird
-        setTimeout(() => {
-          if (updateHookState.state === "not-available") {
-            alert("Sie verwenden bereits die neueste Version.");
-          }
-        }, 100);
+        
+        // 🔧 CRITICAL FIX: Robuster Timeout-Mechanismus für Update-Check
+        const waitForUpdateResult = () => {
+          return new Promise<void>((resolve) => {
+            let attempts = 0;
+            const maxAttempts = 50; // 5 Sekunden bei 100ms Intervallen
+            
+            const checkState = () => {
+              attempts++;
+              console.log(`[Header] Update check attempt ${attempts}, current state: ${updateHookState.state}`);
+              
+              if (updateHookState.state === "not-available") {
+                console.log("[Header] Update check completed - no update available");
+                alert("Sie verwenden bereits die neueste Version.");
+                resolve();
+              } else if (updateHookState.state === "error") {
+                console.log("[Header] Update check failed with error state");
+                alert("Update-Prüfung fehlgeschlagen: " + (updateHookState.error || "Unbekannter Fehler"));
+                resolve();
+              } else if (attempts >= maxAttempts) {
+                console.warn("[Header] Update check timeout - no state change detected");
+                alert("Update-Prüfung dauert ungewöhnlich lange. Bitte versuchen Sie es später erneut.");
+                resolve();
+              } else if (updateHookState.state === "checking") {
+                // Weiter warten
+                setTimeout(checkState, 100);
+              } else {
+                // Unerwarteter State-Wechsel - Update verfügbar
+                console.log("[Header] Update check detected different state:", updateHookState.state);
+                resolve();
+              }
+            };
+            
+            checkState();
+          });
+        };
+        
+        await waitForUpdateResult();
+        
       } catch (error) {
         console.error("Update check failed:", error);
         alert(
@@ -173,14 +207,30 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}) {
             gap: "4px",
             padding: "4px 8px",
             borderRadius: "4px",
-            backgroundColor: updateAvailable
-              ? "rgba(34, 197, 94, 0.1)"
-              : "rgba(59, 130, 246, 0.1)",
-            border: `1px solid ${
-              updateAvailable
-                ? "rgba(34, 197, 94, 0.3)"
-                : "rgba(59, 130, 246, 0.3)"
-            }`,
+            backgroundColor: (() => {
+              if (updateHookState.state === "available" || updateHookState.state === "downloaded") {
+                return "rgba(239, 68, 68, 0.15)"; // Rot für Update verfügbar
+              }
+              if (updateHookState.state === "checking" || updateHookState.state === "downloading" || updateHookState.installInitiated) {
+                return "rgba(245, 158, 11, 0.15)"; // Gelb/Amber für Aktivität
+              }
+              if (updateHookState.error) {
+                return "rgba(239, 68, 68, 0.15)"; // Rot für Fehler
+              }
+              return "rgba(134, 239, 172, 0.2)"; // Pastellgrün für aktuelle Version
+            })(),
+            border: `1px solid ${(() => {
+              if (updateHookState.state === "available" || updateHookState.state === "downloaded") {
+                return "rgba(239, 68, 68, 0.4)"; // Rot
+              }
+              if (updateHookState.state === "checking" || updateHookState.state === "downloading" || updateHookState.installInitiated) {
+                return "rgba(245, 158, 11, 0.4)"; // Gelb/Amber
+              }
+              if (updateHookState.error) {
+                return "rgba(239, 68, 68, 0.4)"; // Rot
+              }
+              return "rgba(134, 239, 172, 0.6)"; // Pastellgrün für aktuelle Version
+            })()}`,
             userSelect: "none",
           }}
           onClick={handleVersionClick}

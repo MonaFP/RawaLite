@@ -27,6 +27,10 @@ const updater = {
   getVersion: (): Promise<{ current: string; appName: string }> =>
     ipcRenderer.invoke("updater:get-version"),
 
+  // 🧪 DEVELOPMENT TEST: Force-simulate update for testing
+  forceTestUpdate: (): Promise<{ success: boolean; testUpdate?: any; message?: string }> =>
+    ipcRenderer.invoke("updater:force-test-update"),
+
   // 🔧 CRITICAL FIX: Event bridging for electron-updater events
   onUpdateMessage: (
     callback: (event: any, data: { type: string; data?: any }) => void

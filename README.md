@@ -73,19 +73,36 @@ node validate-ipc-types.mjs       # IPC Security Check
 node guard-release-assets.mjs     # electron-updater Assets
 ```
 
-## � **Dokumentation**
+## 📚 **Dokumentation**
 
-### 📖 **Hauptdokumentation**
-- **[📊 System Status (v1.7.2)](docs/SYSTEM_STATUS_V1_7_2.md)** - Vollständiger aktueller Status
-- **[📋 Projekt-Übersicht](docs/PROJECT_OVERVIEW.md)** - Architektur & Features
-- **[🛠️ Developer Guide](docs/DEV_GUIDE.md)** - Setup & Development
-- **[📚 Dokumentations-Übersicht](docs/README.md)** - Alle verfügbaren Docs
+> **📁 Strukturierte Dokumentation:** Alle Docs sind jetzt thematisch in `/docs/` organisiert
 
-### 🔧 **Spezial-Dokumentation**
-- **[🎨 Themes & Navigation](docs/THEMES_NAVIGATION.md)** - UI/UX System
-- **[📄 PDF System](docs/PDF_SYSTEM.md)** - Template Engine & Generation
-- **[🔄 Auto-Updater](docs/AUTO_UPDATER_IMPLEMENTATION.md)** - Update-System
-- **[🚀 Release Process](docs/RELEASE_PROCESS.md)** - Build & Deployment
+### 🏗️ **Architektur & System**
+- **[📋 Projekt-Übersicht](docs/architecture/PROJECT_OVERVIEW.md)** - Vollständiger Tech-Stack & Status
+- **[🏛️ System-Architektur](docs/architecture/ARCHITECTURE.md)** - Design-Entscheidungen & Patterns
+- **[🔄 Migration-System](docs/architecture/MIGRATION_SYSTEM.md)** - Database-Migrations
+
+### 🔧 **Development & Tools**
+- **[�️ Installation & Setup](docs/development/INSTALL.md)** - Entwicklungsumgebung
+- **[🧠 Problem-Solving](docs/development/SYSTEMATIC_PROBLEM_SOLVING_LEARNINGS.md)** - Strukturierte Methodologie
+- **[🐛 Debug-Standards](docs/development/DEBUGGING_STANDARDS.md)** - Debug-Guidelines
+- **[🎨 Themes & Navigation](docs/development/THEMES_NAVIGATION.md)** - UI/UX System
+- **[📄 PDF-System](docs/development/PDF_SYSTEM.md)** - Template Engine & Generation
+
+### 🚀 **Operations & Release**
+- **[🚀 Release-Guidelines](docs/operations/RELEASE_GUIDELINES.md)** - Quality Gates & Prozess
+- **[� Release-Prozess](docs/operations/RELEASE_PROCESS.md)** - Schritt-für-Schritt Workflow
+- **[�🔄 Auto-Updater](docs/operations/AUTO_UPDATER_IMPLEMENTATION.md)** - Update-System Implementation
+- **[🏷️ Version-Management](docs/operations/VERSION_MANAGEMENT.md)** - Automatisierte Versionierung
+
+### � **Troubleshooting & Support**
+- **[🔧 Troubleshooting](docs/troubleshooting/TROUBLESHOOTING.md)** - User-Support & häufige Probleme
+- **[📊 Historische Analysen](docs/troubleshooting/)** - Problem-Analysen & Fixes
+
+### 📝 **Knowledge-Management**
+- **[📚 Dokumentations-Index](docs/README.md)** - Vollständige Übersicht aller Docs
+- **[📋 Release-Notes](docs/releases/)** - Strukturierte Release-Dokumentation
+- **[🧠 Lessons-Learned](docs/lessons-learned/)** - Systematische Erkenntnissammlung
 
 ---
 
@@ -152,12 +169,12 @@ pnpm typecheck && pnpm lint
 node validate-version-sync.mjs
 ```
 
-## 📚 **Dokumentation**
+## 📚 **Quick-Docs**
 
-- `docs/PROJECT_OVERVIEW.md` - Vollständige Architektur
-- `docs/THEMES_NAVIGATION.md` - Theme-System
-- `docs/PDF_SYSTEM.md` - PDF-Generation
-- `.github/copilot-instructions.md` - Entwicklungsrichtlinien
+- **[📋 Projekt-Übersicht](docs/architecture/PROJECT_OVERVIEW.md)** - Vollständige Architektur & Tech-Stack
+- **[📚 Dokumentations-Index](docs/README.md)** - Strukturierte Übersicht aller verfügbaren Docs
+- **[🚀 Release-Guidelines](docs/operations/RELEASE_GUIDELINES.md)** - Release-Prozess & Quality Gates
+- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Entwicklungsrichtlinien & Technologie-Stack
 
 ---
 

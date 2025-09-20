@@ -1,5 +1,6 @@
 /**
- * 🏷️ RawaLite Version Service
+ * 🏷️ RawaLite Vers  // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
+  private readonly BUILD_DATE = "2025-09-19T21:10:00";n Service
  *
  * Verwaltet App-Versionierung und automatische Updates der Versionsnummer
  */
@@ -23,7 +24,7 @@ export interface UpdateCheckResult {
 
 export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
-  private readonly BUILD_DATE = "2025-09-19";
+  private readonly BUILD_DATE = "2025-09-20T06:50:00";
 
   private currentVersionInfo: VersionInfo | null = null;
 

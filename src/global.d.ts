@@ -42,6 +42,12 @@ declare interface Window {
       removeUpdateMessageListener: (
         callback: (event: any, data: { type: string; data?: any }) => void
       ) => void;
+      // 🧪 DEVELOPMENT TEST: Force-simulate update for testing
+      forceTestUpdate?: () => Promise<{ 
+        success: boolean; 
+        testUpdate?: any; 
+        message?: string; 
+      }>;
     };
     backup: {
       create: (options: {

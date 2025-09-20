@@ -33,9 +33,8 @@ export default function Sidebar(){
             src={logoImg} 
             alt="RawaLite" 
             style={{ 
-              width: "100%", 
-              maxWidth: "180px",
-              height: "auto", 
+              width: "140px", 
+              height: "140px",
               objectFit: "contain",
               backgroundColor: "transparent", // Explizit transparent
               filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))" // Dezenterer Schatten für Transparenz

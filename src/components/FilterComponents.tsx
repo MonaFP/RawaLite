@@ -39,7 +39,7 @@ export function FilterChips({ filters, onRemove, onClearAll }: FilterChipsProps)
           style={{
             display: 'flex',
             alignItems: 'center',
-            background: 'var(--primary)',
+            background: '#3b82f6',
             color: 'white',
             padding: '4px 8px',
             borderRadius: '12px',
@@ -128,25 +128,29 @@ export function MultiSelect({
     .join(', ');
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block', minWidth: '150px' }}>
-      <button
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        disabled={disabled}
-        style={{
-          width: '100%',
-          padding: '8px 12px',
-          border: '1px solid var(--border)',
-          borderRadius: '4px',
-          background: 'var(--background)',
-          color: 'var(--foreground)',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          textAlign: 'left',
-          fontSize: '14px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}
-      >
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <span style={{ fontSize: '14px', fontWeight: '500', color: '#374151', whiteSpace: 'nowrap' }}>
+        Filter:
+      </span>
+      <div style={{ position: 'relative', display: 'inline-block', minWidth: '150px' }}>
+        <button
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            border: '1px solid var(--border)',
+            borderRadius: '4px',
+            background: 'var(--background)',
+            color: 'var(--foreground)',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            textAlign: 'left',
+            fontSize: '14px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
         <span style={{ 
           overflow: 'hidden', 
           textOverflow: 'ellipsis', 
@@ -165,13 +169,13 @@ export function MultiSelect({
           top: '100%',
           left: 0,
           right: 0,
-          background: 'var(--background)',
-          border: '1px solid var(--border)',
-          borderRadius: '4px',
+          background: 'white',
+          border: '1px solid #d1d5db',
+          borderRadius: '6px',
           zIndex: 1000,
           maxHeight: `${maxHeight}px`,
           overflowY: 'auto',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
         }}>
           {options.map(option => (
             <label
@@ -184,7 +188,7 @@ export function MultiSelect({
                 fontSize: '14px',
                 borderBottom: '1px solid var(--border)'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--muted)'}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               <input
@@ -219,20 +223,21 @@ export function MultiSelect({
         </div>
       )}
 
-      {/* Close dropdown when clicking outside */}
-      {isOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 999
-          }}
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+        {/* Close dropdown when clicking outside */}
+        {isOpen && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999
+            }}
+            onClick={() => setIsOpen(false)}
+          />
+        )}
+      </div>
     </div>
   );
 }

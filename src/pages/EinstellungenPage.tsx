@@ -6,7 +6,7 @@ import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import { CustomColorPicker } from "../components/CustomColorPicker";
-import { UpdateManagement } from "../components/UpdateManagement";
+import { AutoUpdaterModal } from "../components/AutoUpdaterModal";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
 import type { Activity } from "../persistence/adapter";
 import { defaultSettings } from "../lib/settings";
@@ -29,6 +29,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const [companyFormData, setCompanyFormData] = useState<CompanyData>(settings.companyData);
   const [numberingFormData, setNumberingFormData] = useState<NumberingCircle[]>(settings.numberingCircles);
   const [saving, setSaving] = useState(false);
+  const [showAutoUpdater, setShowAutoUpdater] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [importType, setImportType] = useState<'customers' | 'invoices' | 'offers'>('customers');
   const [selectedCSVFile, setSelectedCSVFile] = useState<File | null>(null);
@@ -2542,7 +2543,43 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
             Verwalten Sie App-Updates sicher mit automatischen Backups vor jedem Update.
           </p>
 
-          <UpdateManagement />
+          {/* Native Update System Button */}
+          <div style={{
+            display: 'flex',
+            gap: '16px',
+            marginBottom: '24px'
+          }}>
+            <button
+              onClick={() => setShowAutoUpdater(true)}
+              style={{
+                backgroundColor: 'var(--accent)',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '15px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                minWidth: '200px',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>🔄</span>
+              <span>Update-Manager öffnen</span>
+            </button>
+          </div>
+          
+          {/* Native Update Modal */}
+          <AutoUpdaterModal 
+            isOpen={showAutoUpdater}
+            onClose={() => setShowAutoUpdater(false)}
+            autoCheck={false}
+          />
         </div>
       )}
 

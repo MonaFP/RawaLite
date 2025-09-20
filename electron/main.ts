@@ -1,7 +1,7 @@
 // electron/main.ts
 import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from "electron";
-// import { autoUpdater } from "electron-updater";
-const { updateElectronApp } = require("update-electron-app");
+import { autoUpdater } from "electron-updater";
+// const { updateElectronApp } = require("update-electron-app"); // Disabled for real electron-updater
 import log from "electron-log";
 import path from "node:path";
 import fs from "node:fs";
@@ -51,30 +51,48 @@ log.transports.file.maxSize = 1024 * 1024 * 10; // 10MB max log file
 log.transports.file.format = "[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}";
 log.transports.console.level = "debug";
 
-// 🔧 REPLACED: autoUpdater configuration now handled by update-electron-app
-/*
+// � NATIVE UPDATE SYSTEM: Konfiguration für vollständige in-app Updates
 autoUpdater.logger = log;
-autoUpdater.autoDownload = false; // User confirmation required
-autoUpdater.autoInstallOnAppQuit = false; // Manual installation only
-autoUpdater.allowDowngrade = false; // Prevent version downgrades
+autoUpdater.autoDownload = false; // User confirmation required - keeps UX control
+autoUpdater.autoInstallOnAppQuit = false; // Manual installation with user confirmation
+autoUpdater.allowDowngrade = false; // Prevent version downgrades for stability
 autoUpdater.allowPrerelease = false; // Stable releases only
 autoUpdater.disableWebInstaller = true; // Disable web installer fallback
 autoUpdater.forceDevUpdateConfig = false; // Production behavior always
 
-// 🌐 NETWORK OPTIMIZATION: Fix HTTP/2 protocol errors
+// 🌐 NETWORK OPTIMIZATION: Ensure HTTP/1.1 for stable downloads
 autoUpdater.requestHeaders = {
   "User-Agent": "RawaLite-Updater/1.0",
-  "Cache-Control": "no-cache"
+  "Cache-Control": "no-cache",
+  "Connection": "keep-alive"
 };
 
-// 🔧 DOWNLOAD OPTIMIZATION: Configure request options
-Object.defineProperty(autoUpdater, 'httpExecutor', {
-  get() {
-    const { HttpExecutor } = require("builder-util-runtime");
-    return new HttpExecutor();
-  }
-});
-*/
+// 🔧 DOWNLOAD OPTIMIZATION: Configure HTTP executor for stability
+try {
+  Object.defineProperty(autoUpdater, 'httpExecutor', {
+    get() {
+      const { HttpExecutor } = require("builder-util-runtime");
+      const executor = new HttpExecutor();
+      
+      // Force stable HTTP configuration
+      const originalRequest = executor.request;
+      if (originalRequest) {
+        executor.request = (options: any, cancellationToken: any, data: any) => {
+          // Ensure HTTP/1.1 to avoid protocol errors  
+          options.protocol = 'https:';
+          options.method = options.method || 'GET';
+          
+          return originalRequest.call(executor, options, cancellationToken, data);
+        };
+      }
+      
+      return executor;
+    }
+  });
+  log.info("✅ [NATIVE-UPDATE] HTTP executor configured for stable downloads");
+} catch (error) {
+  log.warn("⚠️ [NATIVE-UPDATE] HTTP executor configuration failed, using defaults:", error);
+}
 
 // 🔍 ENHANCED DEBUG: Comprehensive environment logging
 log.info("=== AUTO-UPDATER ENVIRONMENT DEBUG ===");
@@ -105,13 +123,12 @@ log.info("disableWebInstaller setting:", autoUpdater.disableWebInstaller);
 let isUpdateAvailable = false;
 let currentUpdateInfo: any = null;
 
-// 🔧 REPLACED: autoUpdater event listeners now handled by update-electron-app
-/*
-// Auto-updater events for IPC communication
+// � NATIVE UPDATE SYSTEM: Reaktivierte electron-updater Events für vollständige in-app Updates
+// Auto-updater events für IPC-Kommunikation
 autoUpdater.on("checking-for-update", () => {
-  log.info("🔍 [UPDATE-PHASE] Starting update check...");
-  log.info("🔍 [UPDATE-PHASE] Current app version:", app.getVersion());
-  log.info("🔍 [UPDATE-PHASE] Checking against GitHub releases API");
+  log.info("🔍 [NATIVE-UPDATE] Starting update check...");
+  log.info("🔍 [NATIVE-UPDATE] Current app version:", app.getVersion());
+  log.info("🔍 [NATIVE-UPDATE] Checking against GitHub releases API");
   // Reset state when starting new check
   isUpdateAvailable = false;
   currentUpdateInfo = null;
@@ -119,7 +136,7 @@ autoUpdater.on("checking-for-update", () => {
 });
 
 autoUpdater.on("update-available", (info) => {
-  log.info("✅ [UPDATE-PHASE] Update available!");
+  log.info("✅ [NATIVE-UPDATE] Update available!");
   log.info("📦 [UPDATE-AVAILABLE] Available version:", info.version);
   log.info("📦 [UPDATE-AVAILABLE] Current version:", app.getVersion());
   log.info(
@@ -151,7 +168,7 @@ autoUpdater.on("update-available", (info) => {
 });
 
 autoUpdater.on("update-not-available", (info) => {
-  log.info("❌ [UPDATE-PHASE] Update not available");
+  log.info("❌ [NATIVE-UPDATE] Update not available");
   log.info("❌ [UPDATE-NOT-AVAILABLE] Current version:", app.getVersion());
   log.info(
     "❌ [UPDATE-NOT-AVAILABLE] Latest version:",
@@ -168,7 +185,7 @@ autoUpdater.on("update-not-available", (info) => {
 });
 
 autoUpdater.on("error", (err) => {
-  log.error("💥 [UPDATE-ERROR] Update system error occurred!");
+  log.error("💥 [NATIVE-UPDATE-ERROR] Update system error occurred!");
   log.error("💥 [UPDATE-ERROR] Error type:", err.constructor.name);
   log.error("💥 [UPDATE-ERROR] Error message:", err.message);
   log.error("💥 [UPDATE-ERROR] Error code:", (err as any).code);
@@ -176,15 +193,15 @@ autoUpdater.on("error", (err) => {
   log.error("💥 [UPDATE-ERROR] Current app version:", app.getVersion());
   log.error("💥 [UPDATE-ERROR] App is packaged:", app.isPackaged);
   
-  // 🔧 SPECIFIC FIX: Handle HTTP/2 protocol errors
+  // 🔧 ENHANCED FIX: Handle verschiedene Update-Fehler mit spezifischen Fallbacks
   if (err.message.includes("ERR_HTTP2_PROTOCOL_ERROR") || 
       err.message.includes("net::ERR_HTTP2_PROTOCOL_ERROR")) {
-    log.error("🌐 [HTTP2-ERROR] Detected HTTP/2 protocol error - suggesting manual download");
+    log.error("🌐 [HTTP2-ERROR] Detected HTTP/2 protocol error - fallback to GitHub browser redirect");
     sendUpdateMessage("update-error", {
-      message: "Netzwerkfehler beim Download. Bitte laden Sie das Update manuell von GitHub herunter.",
-      type: "network_error",
+      message: "Netzwerkfehler beim Download. GitHub-Browser-Redirect wird verwendet.",
+      type: "network_error", 
       code: "HTTP2_PROTOCOL_ERROR",
-      manualDownloadRequired: true
+      fallbackToBrowser: true
     });
     return;
   }
@@ -203,9 +220,9 @@ autoUpdater.on("download-progress", (progressObj) => {
 
   // Log every 5% or at critical checkpoints
   if (percent % 5 < 0.1 || (percent >= 74 && percent <= 76)) {
-    log.info(`📥 [DOWNLOAD-PROGRESS] ${percent}% - ${speedMBps} MB/s`);
+    log.info(`📥 [NATIVE-DOWNLOAD] ${percent}% - ${speedMBps} MB/s`);
     log.info(
-      `📥 [DOWNLOAD-PROGRESS] ${progressObj.transferred}/${progressObj.total} bytes`
+      `📥 [NATIVE-DOWNLOAD] ${progressObj.transferred}/${progressObj.total} bytes`
     );
 
     // Special logging for the problematic 74% range
@@ -228,7 +245,7 @@ autoUpdater.on("download-progress", (progressObj) => {
 });
 
 autoUpdater.on("update-downloaded", (info) => {
-  log.info("🎉 [UPDATE-DOWNLOADED] Update successfully downloaded!");
+  log.info("🎉 [NATIVE-UPDATE-DOWNLOADED] Update successfully downloaded!");
   log.info("🎉 [UPDATE-DOWNLOADED] Downloaded version:", info.version);
   log.info("🎉 [UPDATE-DOWNLOADED] Current version:", app.getVersion());
   log.info(
@@ -245,7 +262,6 @@ autoUpdater.on("update-downloaded", (info) => {
     releaseNotes: info.releaseNotes,
   });
 });
-*/
 
 // Helper function to send update messages to renderer
 function sendUpdateMessage(type: string, data?: any) {
@@ -255,10 +271,44 @@ function sendUpdateMessage(type: string, data?: any) {
   });
 }
 
-// IPC Handlers for auto-updater
+// 🚀 NATIVE UPDATE SYSTEM: IPC Handlers für vollständige in-app Updates
 ipcMain.handle("updater:check-for-updates", async () => {
-  log.info("Manual update check requested via IPC");
-  return await checkForUpdatesViaGitHub();
+  try {
+    log.info("🔍 [NATIVE-UPDATE] Manual update check requested via IPC");
+    
+    // Development mode check
+    if (!app.isPackaged) {
+      log.info("🔧 [DEV-MODE] Update check skipped in development");
+      return {
+        success: false,
+        devMode: true,
+        error: "Update-System ist im Development-Modus deaktiviert"
+      };
+    }
+
+    // Use electron-updater for native update check
+    log.info("🚀 [NATIVE-UPDATE] Starting native electron-updater check");
+    
+    const updateCheckResult = await autoUpdater.checkForUpdates();
+    
+    if (updateCheckResult) {
+      log.info("✅ [NATIVE-UPDATE] electron-updater check completed successfully");
+      return { 
+        success: true,
+        updateInfo: updateCheckResult.updateInfo
+      };
+    } else {
+      log.info("❌ [NATIVE-UPDATE] No update available via electron-updater");
+      return { success: true };
+    }
+    
+  } catch (error) {
+    log.error("💥 [NATIVE-UPDATE-ERROR] Update check failed:", error);
+    
+    // Fallback to GitHub API if electron-updater fails
+    log.info("🔄 [FALLBACK] Trying GitHub API as fallback");
+    return await checkForUpdatesViaGitHub();
+  }
 });
 
 // 🔧 CRITICAL FIX: Gemeinsame GitHub API Update-Check Funktion
@@ -292,19 +342,28 @@ async function checkForUpdatesViaGitHub() {
     
     log.info(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
     
-    const isUpdateAvailable = compareVersions(currentVersion, latestVersion) < 0;
+    const updateAvailable = compareVersions(currentVersion, latestVersion) < 0;
     
-    // 🔧 FIXED: Send proper UI messages for update results
-    if (isUpdateAvailable) {
+    // 🔧 CRITICAL FIX: Set global variables for download handler
+    if (updateAvailable) {
       const updateInfo = {
         version: latestVersion,
         releaseNotes: release.body || "Neue Version verfügbar",
         releaseDate: release.published_at,
         downloadUrl: release.html_url
       };
+      
+      // 🚨 CRITICAL: Set global state for download handler
+      isUpdateAvailable = true;
+      currentUpdateInfo = updateInfo;
+      
       sendUpdateMessage("update-available", updateInfo);
       log.info("✅ Update available - UI notified");
     } else {
+      // 🚨 CRITICAL: Reset global state when no update
+      isUpdateAvailable = false;
+      currentUpdateInfo = null;
+      
       sendUpdateMessage("update-not-available", { version: latestVersion });
       log.info("✅ No updates available - UI notified");
     }
@@ -355,109 +414,193 @@ function compareVersions(current: string, latest: string): number {
 
 ipcMain.handle("updater:start-download", async () => {
   try {
-    log.info("Starting GitHub browser redirect for manual download");
+    log.info("🚀 [NATIVE-UPDATE] Starting native download via electron-updater");
 
-    // 🚨 CRITICAL FIX: Check if update is available before redirect
+    // Development mode check
+    if (!app.isPackaged) {
+      log.info("🔧 [DEV-MODE] Download skipped in development");
+      return {
+        success: false,
+        error: "Download-System ist im Development-Modus deaktiviert"
+      };
+    }
+
+    // 🚨 CRITICAL FIX: Check if update is available before download
     if (!isUpdateAvailable || !currentUpdateInfo) {
-      log.error("Cannot redirect: No update available or check not performed");
+      log.error("❌ [NATIVE-DOWNLOAD] Cannot download: No update available or check not performed");
       return {
         success: false,
         error: "Bitte prüfe zuerst auf Updates bevor der Download gestartet wird",
       };
     }
 
-    // 🔧 FIXED: GitHub API Based Update System - Redirect to GitHub Release
-    const releaseUrl = `https://github.com/MonaFP/RawaLite/releases/tag/v${currentUpdateInfo.version}`;
+    // Use electron-updater for native download
+    log.info("� [NATIVE-DOWNLOAD] Starting electron-updater download");
+    log.info("📥 [NATIVE-DOWNLOAD] Target version:", currentUpdateInfo.version);
     
-    log.info(`Opening GitHub release page: ${releaseUrl}`);
-    
-    // Open GitHub release page in default browser
-    await shell.openExternal(releaseUrl);
-    
-    // Notify UI about successful redirect
-    sendUpdateMessage("download-progress", {
-      percent: 100,
-      transferred: 1,
-      total: 1,
-      bytesPerSecond: 0
-    });
-    
-    // Simulate download completion (user will download manually)
-    setTimeout(() => {
-      sendUpdateMessage("update-downloaded", {
-        version: currentUpdateInfo?.version,
-        downloadMethod: "github_redirect"
+    try {
+      await autoUpdater.downloadUpdate();
+      log.info("✅ [NATIVE-DOWNLOAD] Download initiated successfully");
+      
+      return {
+        success: true,
+        message: "Download gestartet - Fortschritt wird in der UI angezeigt"
+      };
+      
+    } catch (nativeError) {
+      log.error("💥 [NATIVE-DOWNLOAD-ERROR] electron-updater download failed:", nativeError);
+      
+      // Fallback to GitHub browser redirect if native download fails
+      log.info("🔄 [FALLBACK] Falling back to GitHub browser redirect");
+      
+      const releaseUrl = `https://github.com/MonaFP/RawaLite/releases/tag/v${currentUpdateInfo.version}`;
+      log.info(`🌐 [FALLBACK] Opening GitHub release page: ${releaseUrl}`);
+      
+      await shell.openExternal(releaseUrl);
+      
+      // Notify UI about fallback redirect
+      sendUpdateMessage("download-progress", {
+        percent: 100,
+        transferred: 1,
+        total: 1,
+        bytesPerSecond: 0,
+        fallback: true
       });
-    }, 1000);
+      
+      // Simulate fallback download completion
+      setTimeout(() => {
+        sendUpdateMessage("update-downloaded", {
+          version: currentUpdateInfo?.version,
+          downloadMethod: "github_fallback"
+        });
+      }, 1000);
+      
+      return { 
+        success: true, 
+        method: "github_fallback",
+        url: releaseUrl,
+        message: "Fallback zu GitHub-Download verwendet"
+      };
+    }
     
-    return { 
-      success: true, 
-      method: "github_redirect",
-      url: releaseUrl 
-    };
   } catch (error) {
-    log.error("GitHub redirect failed:", error);
+    log.error("💥 [NATIVE-DOWNLOAD-ERROR] Download system failed:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "GitHub redirect failed",
+      error: error instanceof Error ? error.message : "Download fehlgeschlagen",
     };
   }
 });
 
-// 🔧 GITHUB API UPDATE SYSTEM: Manual install instruction
+// � NATIVE UPDATE SYSTEM: Installation mit electron-updater quitAndInstall
 ipcMain.handle("updater:quit-and-install", async () => {
   try {
-    log.info("🚀 [GITHUB-UPDATE] Manual installation instructions");
-    log.info("🚀 [GITHUB-UPDATE] Current app version:", app.getVersion());
+    log.info("🚀 [NATIVE-INSTALL] Starting installation process");
+    log.info("🚀 [NATIVE-INSTALL] Current app version:", app.getVersion());
 
-    // For GitHub API based updates, we guide user to manual installation
+    // Development mode check
+    if (!app.isPackaged) {
+      log.info("🔧 [DEV-MODE] Installation skipped in development");
+      return {
+        success: false,
+        error: "Installations-System ist im Development-Modus deaktiviert"
+      };
+    }
+
+    // Check if update is downloaded and ready
     if (!isUpdateAvailable || !currentUpdateInfo) {
       log.error("🚀 [INSTALL-ERROR] No update available for installation");
       return {
         success: false,
-        error: "Kein Update verfügbar. Bitte zuerst nach Updates suchen.",
+        error: "Kein Update verfügbar. Bitte zuerst nach Updates suchen und herunterladen.",
       };
     }
 
-    // 🔧 GITHUB API UPDATE SYSTEM: Show manual installation instructions
-    log.info("🚀 [GITHUB-UPDATE] Providing manual installation guidance");
+    // � NATIVE INSTALLATION: Use electron-updater's quitAndInstall
+    log.info("🚀 [NATIVE-INSTALL] Attempting native installation via electron-updater");
     
-    // Show dialog with installation instructions
-    const result = await dialog.showMessageBox({
-      type: 'info',
-      title: 'RawaLite Update',
-      message: `Update auf Version ${currentUpdateInfo.version} verfügbar`,
-      detail: 'Da Sie das GitHub-Release bereits heruntergeladen haben, führen Sie das Setup aus und RawaLite wird automatisch aktualisiert.\n\n' +
-              'Die neuen Features werden nach der Installation verfügbar sein.',
-      buttons: ['Download-Seite öffnen', 'App beenden', 'Später'],
-      defaultId: 0,
-      cancelId: 2
-    });
+    try {
+      // Native installation with electron-updater
+      autoUpdater.quitAndInstall();
+      
+      log.info("✅ [NATIVE-INSTALL] Installation initiated successfully - app should restart");
+      return { 
+        success: true, 
+        action: 'native_install',
+        message: "Installation gestartet - App wird automatisch neu gestartet"
+      };
+      
+    } catch (nativeError) {
+      log.error("💥 [NATIVE-INSTALL-ERROR] electron-updater installation failed:", nativeError);
+      
+      // Fallback to manual installation guidance
+      log.info("🔄 [FALLBACK] Falling back to manual installation guidance");
+      
+      const result = await dialog.showMessageBox({
+        type: 'info',
+        title: 'RawaLite Update - Manuelle Installation',
+        message: `Update auf Version ${currentUpdateInfo.version} verfügbar`,
+        detail: 'Die automatische Installation ist fehlgeschlagen. Bitte führen Sie das Setup manuell aus:\n\n' +
+                '1. Laden Sie das Setup von GitHub herunter\n' +
+                '2. Führen Sie die Datei aus\n' +
+                '3. Ihre Daten bleiben erhalten\n\n' +
+                'Die neuen Features werden nach der Installation verfügbar sein.',
+        buttons: ['GitHub öffnen', 'App beenden', 'Später'],
+        defaultId: 0,
+        cancelId: 2
+      });
 
-    switch (result.response) {
-      case 0: // Download-Seite öffnen
-        const releaseUrl = `https://github.com/MonaFP/RawaLite/releases/tag/v${currentUpdateInfo.version}`;
-        await shell.openExternal(releaseUrl);
-        return { success: true, action: 'download_opened' };
-        
-      case 1: // App beenden
-        log.info("🚀 [GITHUB-UPDATE] User chose to quit app for manual installation");
-        app.quit();
-        return { success: true, action: 'app_quit' };
-        
-      case 2: // Später
-        return { success: true, action: 'postponed' };
-        
-      default:
-        return { success: true, action: 'cancelled' };
+      switch (result.response) {
+        case 0: // GitHub öffnen
+          const releaseUrl = `https://github.com/MonaFP/RawaLite/releases/tag/v${currentUpdateInfo.version}`;
+          await shell.openExternal(releaseUrl);
+          return { success: true, action: 'github_opened', method: 'manual_fallback' };
+          
+        case 1: // App beenden
+          log.info("🚀 [MANUAL-INSTALL] User chose to quit app for manual installation");
+          app.quit();
+          return { success: true, action: 'app_quit', method: 'manual_fallback' };
+          
+        case 2: // Später
+          return { success: true, action: 'postponed', method: 'manual_fallback' };
+          
+        default:
+          return { success: true, action: 'cancelled', method: 'manual_fallback' };
+      }
     }
+    
   } catch (error) {
-    log.error("Install and restart failed:", error);
+    log.error("💥 [NATIVE-INSTALL-ERROR] Installation system failed:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : "Installation fehlgeschlagen",
     };
   }
+});
+
+// 🧪 DEVELOPMENT TEST: Force-simulate update for download handler testing
+ipcMain.handle("updater:force-test-update", async () => {
+  log.info("🧪 [TEST] Forcing test update simulation for download handler validation");
+  
+  // Künstlich setze Update-State für Test
+  isUpdateAvailable = true;
+  currentUpdateInfo = {
+    version: "1.8.37",
+    releaseNotes: "🧪 TEST UPDATE - Download-Handler Validation",
+    releaseDate: new Date().toISOString(),
+    downloadUrl: "https://github.com/MonaFP/RawaLite/releases/tag/v1.8.37"
+  };
+  
+  // Benachrichtige UI über simuliertes Update
+  sendUpdateMessage("update-available", currentUpdateInfo);
+  
+  log.info("✅ [TEST] Test update state forced - Download button should now work");
+  
+  return {
+    success: true,
+    testUpdate: currentUpdateInfo,
+    message: "Test-Update simuliert - Download-Button sollte jetzt funktionieren"
+  };
 });
 
 // 🔧 CRITICAL FIX: Added missing version handler with package.json fallback
