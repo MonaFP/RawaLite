@@ -477,23 +477,33 @@ import { CustomerService } from '../services/CustomerService';
 ### **Release Workflow**
 ```bash
 # 1. Version aktualisieren
-# package.json + VersionService.ts BASE_VERSION
+# package.json + VersionService.ts BUILD_DATE
 
-# 2. Build erstellen (optional für reine Code-Releases)
+# 2. 🚨 CRITICAL: Cache bereinigen für korrekte Build-Größe
+Remove-Item -Recurse -Force .\dist, .\release, .\node_modules\.vite, .\node_modules\.cache -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "$env:APPDATA\electron-builder" -ErrorAction SilentlyContinue
+pnpm install
+
+# 3. Sauberen Build erstellen (Setup sollte ~169MB sein, nicht >500MB)
 pnpm build && pnpm dist
 
-# 3. Git commit & tag
-git add -A && git commit -m "vX.Y.Z: Feature description"
-git tag vX.Y.Z && git push origin main --tags
+# 4. Build-Größe validieren (WICHTIG!)
+Get-ItemProperty ".\dist\RawaLite Setup X.Y.Z.exe" | Select-Object @{Name='Size(MB)';Expression={[math]::Round($_.Length/1MB,2)}}
+# ✅ Erwartet: ~169MB | ❌ Problem: >300MB = Cache-Issue
 
-# 4. GitHub Release erstellen - Asset-Strategie nach Release-Typ
+# 5. Git commit & tag
+git add -A && git commit -m "vX.Y.Z: Feature description"
+git tag vX.Y.Z && git push origin work-from-v1840 --tags
+
+# 6. GitHub Release erstellen - Asset-Strategie nach Release-Typ
 & "C:\Program Files\GitHub CLI\gh.exe" release create vX.Y.Z \
   --title "RawaLite vX.Y.Z - Title" \
-  --notes "Release notes..."
+  --notes "Release notes..." --repo MonaFP/RawaLite
 
-# 5. Optional: EXE-Assets hochladen (siehe Asset-Strategie)
-pnpm build && pnpm dist
-gh release upload vX.Y.Z release/RawaLite-Setup-X.Y.Z.exe --clobber
+# 7. EXE-Assets hochladen (nach Asset-Strategie)
+& "C:\Program Files\GitHub CLI\gh.exe" release upload vX.Y.Z \
+  "dist\RawaLite Setup X.Y.Z.exe" "dist\RawaLite Setup X.Y.Z.exe.blockmap" "dist\latest.yml" \
+  --clobber --repo MonaFP/RawaLite
 ```
 
 ### **📦 Release Asset-Strategie**
@@ -644,6 +654,7 @@ Nur Theme-IDs und Namen dürfen angepasst werden, niemals die Hex-Farbcodes!
 - **Logs**: Console.log für Development, strukturiertes Logging für Production
 - **IPC**: Electron DevTools für IPC-Message Debugging
 - **Update Testing**: `node test-update-system.js` für GitHub API Tests
+- **🚨 Cache-Problem**: Setup > 300MB = Cache-Issue → Vollständige Bereinigung notwendig
 
 ## 🚨 Wichtige Workspace-Spezifika
 
@@ -665,6 +676,7 @@ Nur Theme-IDs und Namen dürfen angepasst werden, niemals die Hex-Farbcodes!
 3. **Release Assets**: Siehe detaillierte Asset-Strategie unten
 4. **Update System**: NIE Simulation - immer echte GitHub API verwenden
 5. **Build Date**: VersionService.ts BUILD_DATE bei Releases aktualisieren
+6. **🚨 Cache-Bereinigung**: IMMER vor Release-Builds ausführen (verhindert >500MB Setup-Dateien)
 
 ### **PowerShell Scripts**
 ```bash
