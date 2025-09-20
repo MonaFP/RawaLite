@@ -731,17 +731,6 @@ ipcMain.handle("app:restart", async () => {
   app.exit();
 });
 
-// 🔧 UNIFIED VERSION API - Single Source of Truth (package.json)
-// Replaces multiple version handlers with single source of truth from package.json
-ipcMain.handle("version:get", () => {
-  log.info(`[version:get] Returning unified version data: app=${pkg.version}, electron=${process.versions.electron}`);
-  return {
-    app: pkg.version,
-    electron: process.versions.electron,
-    chrome: process.versions.chrome,
-  };
-});
-
 // � DEPRECATED: app:getVersion handler kept for backward compatibility only
 // Use window.rawalite.version.get() for new code instead (unified version system v1.8.44+)
 ipcMain.handle("app:getVersion", async () => {
