@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.8.58",
+  "version": "1.8.59",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
@@ -17,6 +17,8 @@
     "electron:dev": "run-s build:preload build:main && electron dist-electron/main.cjs",
     "build": "vite build && run-s build:preload build:main",
     "build:clean": "rimraf dist dist-electron && pnpm build",
+ "clean:build": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Remove-Item -Recurse -Force .\\dist, .\\release, .\\dist-electron, .\\node_modules\\.vite, .\\node_modules\\.cache -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force $env:APPDATA\\electron-builder -ErrorAction SilentlyContinue\"",
+    "rebuild:dist": "pnpm clean:build && pnpm install && pnpm build && pnpm dist",   
     "build:preload": "esbuild electron/preload.ts --bundle --platform=node --external:electron --outfile=dist-electron/preload.js",
     "build:preload:clean": "esbuild electron/preload.ts --bundle --platform=node --external:electron --outfile=dist-electron/preload.js --no-bundle-cache",
     "build:main": "esbuild electron/main.ts --bundle --platform=node --format=cjs --external:electron --outfile=dist-electron/main.cjs",

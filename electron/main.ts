@@ -281,23 +281,34 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       return { ok: false, error: msg };
     }
 
-    log.info("🚀 [CUSTOM-UPDATER] Starting VISIBLE installer:", candidate);
-    
-    // 🔧 AUTO-RESTART FIX: Release single instance lock before installer
-    app.releaseSingleInstanceLock();
-    log.info("🔓 [CUSTOM-UPDATER] Released single instance lock for restart");
-    
-    // ⬇️ Wichtig: KEINE Silent-Args übergeben - NSIS-Dialog wird sichtbar
     const child = spawn(candidate, [], {
       detached: true,
       stdio: "ignore",
-      windowsHide: true, // keine Konsole, NSIS-Dialog bleibt sichtbar
+      windowsHide: true, // für Debug ggf. false setzen, um NSIS sichtbar zu sehen
     });
-    child.unref();
 
-    // App beenden – NSIS installiert & startet App automatisch neu (runAfterFinish)
-    // Längeres Delay für saubere Lock-Freigabe
-    setTimeout(() => app.quit(), 1000);
+    // Fehlerprotokoll zur Sichtbarkeit verbessern (auch bei detached sinnvoll)
+    try {
+      child.on?.("error", (err: any) => {
+        try { log.error("❌ [CUSTOM-UPDATER] Installer spawn error:", err?.message || err); } catch {}
+      });
+    } catch {}
+
+    child.unref();
+    log.info("[CUSTOM-UPDATER] Started installer:", candidate);
+
+    // Single-Instance-Lock nur freigeben, wenn gehalten (falls vorhanden)
+    try {
+      // Andernfalls defensiv:
+      app.releaseSingleInstanceLock?.();
+      log.info("🔓 [CUSTOM-UPDATER] Released single instance lock for restart");
+    } catch {}
+
+    // Kurzer Delay + hartes Exit verhindert Race-Conditions mit NSIS & Relaunch
+    setTimeout(() => {
+      try { log.info("� [CUSTOM-UPDATER] Exiting app for installer handover"); } catch {}
+      try { app.exit(0); } catch {}
+    }, 1500);
     return { ok: true, used: candidate };
   } catch (e: any) {
     log.error("❌ [CUSTOM-UPDATER] Install exception:", e?.message || e);
