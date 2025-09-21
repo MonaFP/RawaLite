@@ -4,7 +4,7 @@ import { AutoUpdaterModal } from '../components/AutoUpdaterModal';
 export default function UpdatesPage() {
   const [showModal, setShowModal] = useState(false);
 
-  // Custom In-App Updater System (NO electron-updater)
+  // Custom In-App Updater System
 
   return (
     <div className="updates-page">
@@ -37,7 +37,7 @@ export default function UpdatesPage() {
           <div className="card-content">
             <h3>v1.8.45 - Custom In-App Updater</h3>
             <ul>
-              <li>✅ Vollständiger Ersatz von electron-updater</li>
+              <li>✅ Native Custom Update System</li>
               <li>🔐 SHA512-Hash Verifikation für Sicherheit</li>
               <li>📦 NSIS Installer mit runAfterFinish</li>
               <li>🎯 GitHub Manifest-basierte Updates (update.json)</li>

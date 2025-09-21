@@ -1,7 +1,7 @@
 /**
  * 🚀 RawaLite Custom In-App Updater Types
  * 
- * TypeScript-Definitionen für den Custom Update System ohne electron-updater
+ * TypeScript-Definitionen für den Custom Update System
  */
 
 // === UPDATE MANIFEST SCHEMA ===

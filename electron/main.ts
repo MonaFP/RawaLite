@@ -1,4 +1,4 @@
-// electron/main.ts - 🚀 Custom In-App Updater (NO electron-updater)
+// electron/main.ts - 🚀 Custom In-App Updater
 import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from "electron";
 import log from "electron-log";
 import path from "node:path";
@@ -10,7 +10,6 @@ import crypto from "node:crypto";
 import pkg from "../package.json" assert { type: "json" };
 
 // 🚀 CUSTOM IN-APP UPDATER SYSTEM
-// NO electron-updater dependencies - pure Node.js/Electron implementation
 import {
   PDFPostProcessor,
   PDFAConversionOptions,
@@ -100,7 +99,7 @@ async function findLatestExeInPending(): Promise<string | null> {
 function afterDownloadComplete(outPath: string) {
   lastDownloadedPath = outPath;
   const win = BrowserWindow.getAllWindows()[0];
-  win?.webContents.send("update:progress", { transferred: 1, total: 1, percent: 100 });
+  win?.webContents.send("updater:progress", { transferred: 1, total: 1, percent: 100 });
   log.info("✅ [CUSTOM-UPDATER] Download completed and registered:", outPath);
 }
 
@@ -118,7 +117,7 @@ ipcMain.handle("version:get", () => {
 });
 
 // 2️⃣ UPDATE:CHECK - Check for updates via GitHub manifest
-ipcMain.handle("update:check", async () => {
+ipcMain.handle("updater:check", async () => {
   try {
     log.info("🔍 [CUSTOM-UPDATER] Checking for updates via GitHub update.json");
     
@@ -152,6 +151,19 @@ ipcMain.handle("update:check", async () => {
       // Store manifest for download phase
       currentUpdateManifest = updateManifest;
       
+      // 🔧 0MB FIX: Try to get size if not available
+      const nsisFile = updateManifest.files.find(
+        file => file.kind === 'nsis' && file.arch === 'x64'
+      );
+      
+      if (nsisFile && (!nsisFile.size || nsisFile.size === 0) && nsisFile.url) {
+        log.info(`🔍 [CUSTOM-UPDATER] Size unknown, fetching via HEAD request: ${nsisFile.url}`);
+        nsisFile.size = await getContentLengthFromUrl(nsisFile.url);
+        if (nsisFile.size > 0) {
+          log.info(`✅ [CUSTOM-UPDATER] Size determined via HEAD: ${Math.round(nsisFile.size / 1024 / 1024 * 100) / 100} MB`);
+        }
+      }
+      
       log.info(`✅ [CUSTOM-UPDATER] Update available: ${currentVersion} -> ${updateManifest.version}`);
       
       return {
@@ -184,7 +196,7 @@ ipcMain.handle("update:check", async () => {
 });
 
 // 3️⃣ UPDATE:DOWNLOAD - Download update file with progress
-ipcMain.handle("update:download", async () => {
+ipcMain.handle("updater:download", async () => {
   try {
     if (!currentUpdateManifest) {
       throw new Error('Kein Update verfügbar. Bitte zuerst nach Updates suchen.');
@@ -223,11 +235,22 @@ ipcMain.handle("update:download", async () => {
     // 🔧 HOTFIX: Register downloaded path and notify completion
     afterDownloadComplete(filePath);
     
+    // 🔧 0MB FIX: Get actual file size after download
+    let actualSize = nsisFile.size || 0;
+    try {
+      const stats = await fs.promises.stat(filePath);
+      actualSize = stats.size;
+      log.info(`📊 [CUSTOM-UPDATER] Actual file size: ${Math.round(actualSize / 1024 / 1024 * 100) / 100} MB`);
+    } catch (error) {
+      log.warn("⚠️ [CUSTOM-UPDATER] Could not get file stats:", error);
+    }
+    
     log.info(`✅ [CUSTOM-UPDATER] Download completed: ${filePath}`);
     
     return {
       ok: true,
-      file: filePath  // 🔧 HOTFIX: Return 'file' instead of 'filePath' for consistency
+      file: filePath,
+      size: actualSize
     };
     
   } catch (error) {
@@ -240,7 +263,7 @@ ipcMain.handle("update:download", async () => {
 });
 
 // 4️⃣ UPDATE:INSTALL - Install update and restart app
-ipcMain.handle("update:install", async (_evt, exePath?: string) => {
+ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
   try {
     let candidate = stripQuotes(exePath);
 
@@ -259,6 +282,11 @@ ipcMain.handle("update:install", async (_evt, exePath?: string) => {
     }
 
     log.info("🚀 [CUSTOM-UPDATER] Starting VISIBLE installer:", candidate);
+    
+    // 🔧 AUTO-RESTART FIX: Release single instance lock before installer
+    app.releaseSingleInstanceLock();
+    log.info("🔓 [CUSTOM-UPDATER] Released single instance lock for restart");
+    
     // ⬇️ Wichtig: KEINE Silent-Args übergeben - NSIS-Dialog wird sichtbar
     const child = spawn(candidate, [], {
       detached: true,
@@ -268,7 +296,8 @@ ipcMain.handle("update:install", async (_evt, exePath?: string) => {
     child.unref();
 
     // App beenden – NSIS installiert & startet App automatisch neu (runAfterFinish)
-    setTimeout(() => app.quit(), 500);
+    // Längeres Delay für saubere Lock-Freigabe
+    setTimeout(() => app.quit(), 1000);
     return { ok: true, used: candidate };
   } catch (e: any) {
     log.error("❌ [CUSTOM-UPDATER] Install exception:", e?.message || e);
@@ -277,6 +306,55 @@ ipcMain.handle("update:install", async (_evt, exePath?: string) => {
 });
 
 // === CUSTOM UPDATER HELPER FUNCTIONS ===
+
+/**
+ * Fetch file size via HEAD request (for 0MB size fix)
+ */
+async function getContentLengthFromUrl(url: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const requestUrl = new URL(url);
+    
+    const request = https.request({
+      hostname: requestUrl.hostname,
+      port: requestUrl.port || 443,
+      path: requestUrl.pathname + requestUrl.search,
+      method: 'HEAD',
+      headers: {
+        'User-Agent': 'RawaLite-CustomUpdater/1.0',
+        'Accept': '*/*'
+      }
+    }, (response) => {
+      // Handle redirects
+      if (response.statusCode === 302 || response.statusCode === 301) {
+        if (response.headers.location) {
+          getContentLengthFromUrl(response.headers.location).then(resolve).catch(reject);
+          return;
+        }
+      }
+      
+      const contentLength = response.headers['content-length'];
+      if (contentLength) {
+        resolve(parseInt(contentLength, 10));
+      } else {
+        resolve(0);
+      }
+    });
+    
+    request.on('error', (error) => {
+      log.warn(`[HEAD request failed for ${url}]:`, error.message);
+      resolve(0); // Fallback to 0, not reject
+    });
+    
+    // Timeout after 10 seconds
+    request.setTimeout(10000, () => {
+      log.warn(`[HEAD request timeout for ${url}]`);
+      request.destroy();
+      resolve(0);
+    });
+    
+    request.end();
+  });
+}
 
 /**
  * Fetch update manifest from GitHub releases
@@ -418,7 +496,7 @@ async function downloadFileWithProgress(url: string, fileName: string, expectedS
           // Send to renderer
           const allWindows = BrowserWindow.getAllWindows();
           allWindows.forEach((window) => {
-            window.webContents.send('update:progress', progress);
+            window.webContents.send('updater:progress', progress);
           });
           
           lastProgressTime = now;

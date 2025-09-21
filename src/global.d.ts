@@ -28,7 +28,7 @@ declare interface Window {
       openExternal: (url: string) => Promise<void>;
     };
     updater: {
-      // ✅ NEW CUSTOM UPDATER API (v1.8.45+): Pure IPC without electron-updater
+      // ✅ CUSTOM UPDATER API: Pure IPC Implementation
       check: () => Promise<{
         ok: boolean;
         hasUpdate?: boolean;

@@ -24,7 +24,7 @@ export interface UpdateCheckResult {
 
 export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
-  private readonly BUILD_DATE = "2025-09-21T06:34:00";
+  private readonly BUILD_DATE = "2025-09-21T08:42:00";
 
   private currentVersionInfo: VersionInfo | null = null;
 
@@ -90,7 +90,7 @@ export class VersionService {
   }
 
   /**
-   * Prüft auf verfügbare Updates via electron-updater mit GitHub API Fallback
+   * Prüft auf verfügbare Updates via Custom Updater mit GitHub API Fallback
    */
   async checkForUpdates(): Promise<UpdateCheckResult> {
     try {
@@ -100,7 +100,7 @@ export class VersionService {
         `[VersionService] Checking for updates, current version: ${currentVersion.version}`
       );
 
-      // Migration-Status-Check entfernt - wird durch electron-updater gehandhabt
+      // Migration-Status-Check entfernt - wird durch Custom Updater gehandhabt
       let migrationRequired = false;
 
       // Use custom updater system
@@ -261,10 +261,14 @@ export class VersionService {
         }
         
         progressCallback?.(40, "Update wird heruntergeladen...");
-        const filePath = await window.rawalite.updater.download(nsisFile.url);
+        const downloadResult = await window.rawalite.updater.download(nsisFile.url);
+        
+        if (!downloadResult?.ok || !downloadResult?.file) {
+          throw new Error(downloadResult?.error || 'Download fehlgeschlagen');
+        }
         
         progressCallback?.(90, "Installation wird vorbereitet...");
-        await window.rawalite.updater.install(filePath);
+        await window.rawalite.updater.install(downloadResult.file);
       } else {
         throw new Error("Custom updater nicht verfügbar");
       }
@@ -361,8 +365,7 @@ export class VersionService {
    */
   private async fetchLatestVersionFromGitHub(): Promise<string> {
     try {
-      // ⚠️ GITHUB-HTTP-CALL: Erlaubter FALLBACK wenn electron-updater fehlschlägt
-      // (Gemäß COPILOT_INSTRUCTIONS.md: "Fallback zu GitHub API wenn electron-updater fehlschlägt")
+      // ⚠️ GITHUB-HTTP-CALL: Erlaubter FALLBACK wenn Custom Updater fehlschlägt
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 Sekunden Timeout
 
@@ -420,8 +423,7 @@ export class VersionService {
    */
   private async fetchReleaseNotesFromGitHub(version: string): Promise<string> {
     try {
-      // ⚠️ GITHUB-HTTP-CALL: Erlaubter FALLBACK wenn electron-updater fehlschlägt
-      // (Gemäß COPILOT_INSTRUCTIONS.md: "Fallback zu GitHub API wenn electron-updater fehlschlägt")
+      // ⚠️ GITHUB-HTTP-CALL: Erlaubter FALLBACK wenn Custom Updater fehlschlägt
       const response = await fetch(
         "https://api.github.com/repos/MonaFP/RawaLite/releases/latest",
         {
@@ -539,3 +541,4 @@ export class VersionService {
 
 // Singleton-Instanz für globale Verwendung
 export const versionService = new VersionService();
+

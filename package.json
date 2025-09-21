@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.8.56",
+  "version": "1.8.57",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
@@ -85,3 +85,4 @@
     "vitest": "^1.6.0"
   }
 }
+

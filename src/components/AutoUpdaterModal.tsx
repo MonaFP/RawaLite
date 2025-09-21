@@ -53,8 +53,7 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
     }
   }, [isOpen]);
 
-  // ✅ UNIFIED VERSION SYSTEM (v1.8.44+): Progress handling now via electron-updater events
-  // No manual progress listener setup needed - handled by electron-updater internally
+  // ✅ Custom Update System: Progress handling via IPC events
 
   const handleCheckForUpdates = async () => {
     setState('checking');
@@ -158,6 +157,10 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
   };
 
   const formatFileSize = (bytes: number): string => {
+    // 🔧 0MB FIX: Show "wird ermittelt..." instead of "0 MB"
+    if (!bytes || bytes === 0) {
+      return "wird ermittelt...";
+    }
     const MB = bytes / (1024 * 1024);
     return `${Math.round(MB * 100) / 100} MB`;
   };

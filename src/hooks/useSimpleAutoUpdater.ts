@@ -105,9 +105,13 @@ export function useSimpleAutoUpdater(options: SimpleAutoUpdaterOptions = {}): [S
 
     try {
       const updateFile = updateInfo.files[0];
-      const filePath = await window.rawalite.updater.download(updateFile.url);
+      const downloadResult = await window.rawalite.updater.download(updateFile.url);
       
-      setDownloadedPath(filePath);
+      if (downloadResult?.ok && downloadResult?.file) {
+        setDownloadedPath(downloadResult.file);
+      } else {
+        throw new Error(downloadResult?.error || 'Download fehlgeschlagen');
+      }
       setState('downloaded');
     } catch (err) {
       console.error('Download failed:', err);

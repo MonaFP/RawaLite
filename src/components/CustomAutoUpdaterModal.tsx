@@ -83,9 +83,13 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
 
     try {
       const updateFile = updateResponse.target.files[0];
-      const downloadPath = await window.rawalite!.updater.download(updateFile.url);
+      const downloadResult = await window.rawalite!.updater.download(updateFile.url);
 
-      setDownloadedPath(downloadPath);
+      if (downloadResult?.ok && downloadResult?.file) {
+        setDownloadedPath(downloadResult.file);
+      } else {
+        throw new Error(downloadResult?.error || 'Download fehlgeschlagen');
+      }
       setState('readyToInstall');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Download fehlgeschlagen');

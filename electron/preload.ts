@@ -1,33 +1,32 @@
 // ============================================================
-// FILE: electron/preload.ts - 🚀 Custom In-App Updater (NO electron-updater)
+// FILE: electron/preload.ts - 🚀 Custom In-App Updater
 // ============================================================
 import { contextBridge, ipcRenderer } from "electron";
 
 // Import custom updater types
 import type { UpdateCheckResponse, UpdateDownloadResponse, UpdateInstallResponse, UpdateProgress } from "../src/types/updater";
 
-// � CUSTOM UPDATER API - Strikt typisiert ohne electron-updater
+// 🔄 CUSTOM UPDATER API - Pure IPC Implementation
 const updater = {
-  // ✅ NEW CUSTOM UPDATER API (v1.8.45+): Pure IPC without electron-updater
   
   check: (): Promise<UpdateCheckResponse> =>
-    ipcRenderer.invoke("update:check"),
+    ipcRenderer.invoke("updater:check"),
     
-  download: (url: string): Promise<{ ok: boolean; filePath?: string; error?: string }> =>
-    ipcRenderer.invoke("update:download", url),
+  download: (): Promise<{ ok: boolean; file?: string; error?: string; size?: number }> =>
+    ipcRenderer.invoke("updater:download"),
     
-  install: (exePath: string): Promise<UpdateInstallResponse> =>
-    ipcRenderer.invoke("update:install", exePath),
+  install: (exePath?: string): Promise<{ ok: boolean; used?: string; error?: string }> =>
+    ipcRenderer.invoke("updater:install", exePath),
   
   // 📡 Progress event listener
   onProgress: (callback: (progress: UpdateProgress) => void): (() => void) => {
     const handler = (_: any, progress: UpdateProgress) => callback(progress);
-    ipcRenderer.on("update:progress", handler);
-    return () => ipcRenderer.removeListener("update:progress", handler);
+    ipcRenderer.on("updater:progress", handler);
+    return () => ipcRenderer.removeListener("updater:progress", handler);
   },
   
   offProgress: () => {
-    ipcRenderer.removeAllListeners("update:progress");
+    ipcRenderer.removeAllListeners("updater:progress");
   }
 };
 
