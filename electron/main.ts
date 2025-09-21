@@ -305,17 +305,26 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
     // Sentinel file system entfernt - Interactive Installer braucht das nicht
 
     // Interactive Installer starten - User kann durchklicken
-    const child = spawn(candidate, [], {
-      detached: true,
-      stdio: "ignore"
-    });
     try {
-      child.on?.("error", (err: any) => {
+      const child = spawn(candidate, [], {
+        detached: false,  // Interactive Installation needs to be attached
+        stdio: "pipe",    // Allow interaction with installer
+        windowsHide: false // Show installer UI
+      });
+      
+      child.on("error", (err: any) => {
         try { log.error(`❌ ${tag("Installer spawn error:")} ${err?.message || err}`); } catch {}
       });
-    } catch {}
-    try { child.unref(); } catch {}
-    try { log.info(tag(`Started interactive installer → ${candidate}`)); } catch {}
+      
+      child.on("close", (code: number | null) => {
+        try { log.info(`🔚 ${tag(`Installer finished with code: ${code}`)}`); } catch {}
+      });
+      
+      try { log.info(tag(`Started interactive installer → ${candidate}`)); } catch {}
+    } catch (spawnError: any) {
+      try { log.error(`❌ ${tag("Spawn failed:")} ${spawnError?.message || spawnError}`); } catch {}
+      throw spawnError;
+    }
 
     // NSIS runAfterFinish=true übernimmt automatischen Neustart
     try {
