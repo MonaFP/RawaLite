@@ -26,6 +26,9 @@ nsis:
   createStartMenuShortcut: true
   installerIcon: assets/icon.ico
   uninstallerIcon: assets/icon.ico
+  # Silent Installation Support
+  warningsAsErrors: false
+  unicode: true
 
 publish:
   - provider: github

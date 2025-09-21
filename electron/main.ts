@@ -10,8 +10,7 @@ import crypto from "node:crypto";
 import pkg from "../package.json" assert { type: "json" };
 
 // --- Debug/Telemetry helpers (nur Node-Core) ---
-const DEBUG_UPDATER = process.env.RAWALITE_UPDATER_DEBUG === "1";
-function dbg(logFn: any, msg: string) { try { if (DEBUG_UPDATER) logFn(msg); } catch {} }
+// Debug-Environment-Variables entfernt - Interactive Installer ist viel einfacher
 function safeMkdirp(p: string) { try { fs.mkdirSync(p, { recursive: true }); } catch {} }
 function safeWriteFile(p: string, data: string) { try { fs.writeFileSync(p, data); } catch {} }
 function safeReadJson<T=any>(p: string): T | null { try { return JSON.parse(fs.readFileSync(p, "utf-8")); } catch { return null; } }
@@ -276,7 +275,7 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
   const tag = (m: string) => `[CUSTOM-UPDATER ${runId}] ${m}`;
   try {
     log.info(tag("Install requested"));
-    log.info(tag(`Env debug=${DEBUG_UPDATER}`));
+    log.info(tag("Interactive installer mode"));
     log.info(tag(`App=${app.getName()} v=${app.getVersion()} id=${app.getAppPath ? app.getAppPath() : "?"}`));
     log.info(tag(`execPath=${process.execPath} pid=${process.pid} ppid=${process.ppid}`));
     log.info(tag(`isPackaged=${app.isPackaged} platform=${process.platform} arch=${process.arch}`));
@@ -301,32 +300,14 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
 
     const currentExe = process.execPath; // z. B. ...\Programs\rawalite\rawalite.exe
     // ENV-Toggle für Fallback-Delay (Sekunden), Default 45
-    const fallbackDelaySec = Math.max(
-      1,
-      parseInt(process.env.RAWALITE_UPDATER_FALLBACK_DELAY_SEC || "", 10) || 45
-    );
-    try { log.info(tag(`Fallback delay = ${fallbackDelaySec}s`)); } catch {}
+    // Fallback delay entfernt - Interactive Installer braucht das nicht
 
-    // Sentinel schreiben (für Start-up-Detektion)
-    try {
-      const userData = app.getPath("userData");
-      const sentDir = path.join(userData, "rawalite-updater");
-      const sentFile = path.join(sentDir, "relaunch-sentinel.json");
-      safeMkdirp(sentDir);
-      safeWriteFile(sentFile, JSON.stringify({
-        runId, t0: Date.now(), candidate, fallbackDelaySec, currentExe,
-        appVersion: app.getVersion(), electron: process.versions.electron
-      }));
-      dbg(log.info, tag(`Sentinel written: ${sentFile}`));
-    } catch (e:any) {
-      dbg(log.warn, tag(`Sentinel write failed: ${e?.message || e}`));
-    }
+    // Sentinel file system entfernt - Interactive Installer braucht das nicht
 
-    // 1) Installer robuster starten: Direkter Aufruf ohne shell für korrekte Argument-Übergabe
-    const child = spawn(candidate, ["/S", "/ALLUSERS=0", "/CURRENTUSER"], {
+    // Interactive Installer starten - User kann durchklicken
+    const child = spawn(candidate, [], {
       detached: true,
-      stdio: "ignore",
-      windowsHide: true,
+      stdio: "ignore"
     });
     try {
       child.on?.("error", (err: any) => {
@@ -334,61 +315,25 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       });
     } catch {}
     try { child.unref(); } catch {}
-    try { log.info(tag(`Started installer (direct spawn) with silent flags: /S /ALLUSERS=0 /CURRENTUSER → ${candidate}`)); } catch {}
+    try { log.info(tag(`Started interactive installer → ${candidate}`)); } catch {}
 
-    // 2) Fallback-Relaunch einplanen: falls NSIS (runAfterFinish) nicht relauncht
-    try {
-      const ps = spawn("powershell.exe", [
-        "-NoProfile",
-        "-WindowStyle", "Hidden",
-        "-ExecutionPolicy", "Bypass",
-        "-Command", `Start-Sleep -Seconds ${Math.max(fallbackDelaySec, 10)}; Start-Process -FilePath '${currentExe}'`
-      ], {
-        detached: true,
-        stdio: "ignore",
-        windowsHide: true,
-      });
-      try { const pid = (ps as any)?.pid; } catch {}
-      try { ps.unref(); } catch {}
-      try { log.info(tag(`Scheduled PS fallback in ${fallbackDelaySec}s → ${currentExe} (pid=${(ps as any)?.pid || "n/a"})`)); } catch {}
-    } catch (e:any) {
-      try { log.warn(`⚠️ ${tag("PS fallback scheduling failed:")} ${e?.message || e}`); } catch {}
-    }
-
-    // 2b) CMD-Fallback als zusätzliche Absicherung
-    try {
-      const cmd = spawn("cmd.exe", [
-        "/c",
-        `timeout /t ${fallbackDelaySec} /nobreak >nul & start "" "${currentExe}"`
-      ], {
-        detached: true,
-        stdio: "ignore",
-        windowsHide: true,
-      });
-      try { const pid = (cmd as any)?.pid; } catch {}
-      try { cmd.unref(); } catch {}
-      try { log.info(tag(`Scheduled CMD fallback in ${fallbackDelaySec}s → ${currentExe} (pid=${(cmd as any)?.pid || "n/a"})`)); } catch {}
-    } catch (e:any) {
-      try { log.warn(`⚠️ ${tag("CMD fallback scheduling failed:")} ${e?.message || e}`); } catch {}
-    }
-
-    // 3) Single-Instance-Lock (defensiv) freigeben
+    // NSIS runAfterFinish=true übernimmt automatischen Neustart
     try {
       app.releaseSingleInstanceLock?.();
-      try { log.info(`🔓 ${tag("Released single instance lock for restart")}`); } catch {}
+      try { log.info(`🔓 ${tag("Released single instance lock - NSIS will restart app after installation")}`); } catch {}
     } catch {}
 
-    // 4) Etwas längerer Delay + hartes Exit (vermeidet Race-Conditions)
+    // App beenden - NSIS startet automatisch neu
     setTimeout(() => {
       try { log.info(`🔚 ${tag("Exiting app for installer handover")}`); } catch {}
       try { app.exit(0); } catch {}
       setTimeout(() => {
-        dbg(log.info, tag("Forcing process.exit(0) as final safeguard"));
+        // Interactive Installer läuft - App kann beendet werden
         try { process.exit(0); } catch {}
       }, 1000);
     }, 1800);
 
-    return { ok: true, used: candidate, relaunchPlanned: true, delaySec: fallbackDelaySec, runId };
+    return { ok: true, used: candidate, relaunchPlanned: true, runId };
   } catch (e: any) {
     log.error("❌ [CUSTOM-UPDATER] Install exception:", e?.message || e);
     return { ok: false, error: e?.message ?? String(e) };
@@ -1815,30 +1760,14 @@ ipcMain.handle("app:exportLogs", async () => {
 });
 
 // Lifecycle-Logging (hilft bei Race-Conditions)
-app.on("will-quit", () => dbg(log.info, "[LIFECYCLE] app will-quit"));
-app.on("quit", (_e, _c) => dbg(log.info, "[LIFECYCLE] app quit"));
-process.on("beforeExit", (code) => dbg(log.info, `[LIFECYCLE] process beforeExit code=${code}`));
-process.on("exit", (code) => dbg(log.info, `[LIFECYCLE] process exit code=${code}`));
+// Lifecycle events - Interactive Installer System
+app.on("will-quit", () => { try { log.info("[LIFECYCLE] app will-quit"); } catch {} });
+app.on("quit", (_e, _c) => { try { log.info("[LIFECYCLE] app quit"); } catch {} });
+process.on("beforeExit", (code) => { try { log.info(`[LIFECYCLE] process beforeExit code=${code}`); } catch {} });
+process.on("exit", (code) => { try { log.info(`[LIFECYCLE] process exit code=${code}`); } catch {} });
 
 app.whenReady().then(() => {
-  // Beim App-Start Sentinel prüfen (hat Relaunch stattgefunden?)
-  try {
-    const userData = app.getPath("userData");
-    const sentDir = path.join(userData, "rawalite-updater");
-    const sentFile = path.join(sentDir, "relaunch-sentinel.json");
-    const s = safeReadJson<any>(sentFile);
-    if (s) {
-      const deltaMs = Date.now() - (s?.t0 || 0);
-      log.info(`[UPDATER-SENTINEL] Detected previous install runId=${s?.runId || "?"}, dt=${Math.round(deltaMs/1000)}s`);
-      // optional: weitere Heuristik-Logs
-      safeUnlink(sentFile);
-      log.info("[UPDATER-SENTINEL] Sentinel removed (ack)");
-    } else {
-      dbg(log.info, "[UPDATER-SENTINEL] No sentinel present");
-    }
-  } catch (e:any) {
-    dbg(log.warn, `[UPDATER-SENTINEL] check failed: ${e?.message || e}`);
-  }
+  // Sentinel system entfernt - Interactive Installer System braucht das nicht
 
   createMenu();
   createWindow();

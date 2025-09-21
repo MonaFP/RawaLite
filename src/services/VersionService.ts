@@ -22,7 +22,8 @@ export interface UpdateCheckResult {
   updateNotes?: string;
 }
 
-export const BUILD_DATE = '2025-09-21T13:00:00';
+export const BASE_VERSION = "1.8.68";
+export const BUILD_DATE = "2025-01-21T08:15:00.000Z";
 
 export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
