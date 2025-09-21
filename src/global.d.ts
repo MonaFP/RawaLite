@@ -36,7 +36,7 @@ declare interface Window {
         target?: any;  // UpdateManifest
         error?: string;
       }>;
-      download: (url: string) => Promise<{ ok: boolean; filePath?: string; error?: string }>;  // Returns download result
+      download: (url: string) => Promise<{ ok: boolean; file?: string; error?: string }>;  // Returns download result
       install: (exePath: string) => Promise<{
         ok: boolean;
         error?: string;

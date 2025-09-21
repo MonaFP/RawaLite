@@ -104,8 +104,8 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
       // ✅ NEW CUSTOM UPDATER API: Download with URL
       const downloadResult = await window.rawalite?.updater?.download?.(nsisFile.url);
       
-      if (downloadResult?.ok && downloadResult?.filePath) {
-        setDownloadedFile(downloadResult.filePath);
+      if (downloadResult?.ok && downloadResult?.file) {
+        setDownloadedFile(downloadResult.file);
         setState('verifying');
         
         setTimeout(() => {
@@ -394,7 +394,7 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚙️</div>
               <h3>Installation läuft...</h3>
               <p style={{ color: '#666' }}>
-                RawaLite startet automatisch neu.
+                Der Installer wird jetzt geöffnet. Die App wird geschlossen und nach Abschluss <strong>automatisch neu gestartet</strong>.
               </p>
             </div>
           )}

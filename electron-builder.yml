@@ -1,5 +1,5 @@
 appId: com.rawalite.app
-productName: RawaLite
+productName: rawalite
 
 files:
   - dist/**
@@ -11,15 +11,17 @@ extraResources:
     to: app/templates
 
 win:
-  target: nsis
+  target:
+    - nsis         # KEIN nsisWeb
   # publisherName:  # ← ENTFERNT / NICHT setzen!
 
 nsis:
   oneClick: false
+  allowToChangeInstallationDirectory: false
   allowElevation: true
-  allowToChangeInstallationDirectory: true
-  perMachine: false  # ✅ User-level installation (required for Custom Updater)
-  runAfterFinish: true  # ✅ CRITICAL: Start app after silent installation
+  runAfterFinish: true
+  perMachine: false
+  artifactName: rawalite-Setup-${version}.exe
   createDesktopShortcut: true
   createStartMenuShortcut: true
   installerIcon: assets/icon.ico

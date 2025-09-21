@@ -67,6 +67,43 @@ log.info("Update Manifest URL:", "https://api.github.com/repos/MonaFP/RawaLite/r
 let currentUpdateManifest: UpdateManifest | null = null;
 let downloadedFilePath: string | null = null;
 
+// 🔧 HOTFIX: Persistent paths & state for robust installer finding
+const pendingDir = path.join(app.getPath("userData"), "..", "Local", "rawalite-updater", "pending");
+let lastDownloadedPath: string | null = null;
+
+function stripQuotes(p?: string) {
+  if (!p || typeof p !== "string") return p ?? "";
+  return p.replace(/^"+|"+$/g, "");
+}
+
+async function findLatestExeInPending(): Promise<string | null> {
+  try {
+    const entries = await fs.promises.readdir(pendingDir, { withFileTypes: true });
+    const exes = await Promise.all(
+      entries
+        .filter(e => e.isFile() && e.name.toLowerCase().endsWith(".exe"))
+        .map(async e => {
+          const full = path.join(pendingDir, e.name);
+          const st = await fs.promises.stat(full);
+          return { full, mtime: st.mtimeMs };
+        })
+    );
+    if (exes.length === 0) return null;
+    exes.sort((a, b) => b.mtime - a.mtime);
+    return exes[0].full;
+  } catch {
+    return null;
+  }
+}
+
+// Nach JEDER erfolgreichen Dateiübertragung aufrufen:
+function afterDownloadComplete(outPath: string) {
+  lastDownloadedPath = outPath;
+  const win = BrowserWindow.getAllWindows()[0];
+  win?.webContents.send("update:progress", { transferred: 1, total: 1, percent: 100 });
+  log.info("✅ [CUSTOM-UPDATER] Download completed and registered:", outPath);
+}
+
 // === CUSTOM UPDATER IPC HANDLERS ===
 
 // 1️⃣ VERSION:GET - Single source of truth for app version
@@ -180,14 +217,17 @@ ipcMain.handle("update:download", async () => {
       log.info("✅ [CUSTOM-UPDATER] SHA512 verification successful");
     }
     
-    // Store file path for installation
+    // Store file path for installation (legacy)
     downloadedFilePath = filePath;
+    
+    // 🔧 HOTFIX: Register downloaded path and notify completion
+    afterDownloadComplete(filePath);
     
     log.info(`✅ [CUSTOM-UPDATER] Download completed: ${filePath}`);
     
     return {
       ok: true,
-      filePath
+      file: filePath  // 🔧 HOTFIX: Return 'file' instead of 'filePath' for consistency
     };
     
   } catch (error) {
@@ -200,41 +240,39 @@ ipcMain.handle("update:download", async () => {
 });
 
 // 4️⃣ UPDATE:INSTALL - Install update and restart app
-ipcMain.handle("update:install", async (_, exePath?: string) => {
+ipcMain.handle("update:install", async (_evt, exePath?: string) => {
   try {
-    // Use provided path or stored path
-    const installerPath = exePath || downloadedFilePath;
-    
-    if (!installerPath || !fs.existsSync(installerPath)) {
-      throw new Error('Installer-Datei nicht gefunden. Bitte zuerst herunterladen.');
+    let candidate = stripQuotes(exePath);
+
+    if (!candidate) candidate = lastDownloadedPath ?? "";
+    if (!candidate || !fs.existsSync(candidate)) {
+      const fallback = await findLatestExeInPending();
+      if (fallback) candidate = fallback;
     }
-    
-    log.info("🚀 [CUSTOM-UPDATER] Starting installation:", installerPath);
-    
-    // Start NSIS installer detached with silent installation
-    spawn(installerPath, ['/S'], {
+
+    if (!candidate || !fs.existsSync(candidate)) {
+      const msg = "Installer-Datei nicht gefunden. Bitte zuerst herunterladen.";
+      log.error("❌ [CUSTOM-UPDATER] Install failed:", msg, {
+        exePathArg: exePath, lastDownloadedPath, pendingDir
+      });
+      return { ok: false, error: msg };
+    }
+
+    log.info("🚀 [CUSTOM-UPDATER] Starting VISIBLE installer:", candidate);
+    // ⬇️ Wichtig: KEINE Silent-Args übergeben - NSIS-Dialog wird sichtbar
+    const child = spawn(candidate, [], {
       detached: true,
-      stdio: 'ignore',
-      windowsHide: true
-    }).unref();
-    
-    log.info("✅ [CUSTOM-UPDATER] Installer started, quitting app...");
-    
-    // Quit app so installer can proceed
-    setTimeout(() => {
-      app.quit();
-    }, 1000);
-    
-    return {
-      ok: true
-    };
-    
-  } catch (error) {
-    log.error("❌ [CUSTOM-UPDATER] Installation failed:", error);
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : 'Installation fehlgeschlagen'
-    };
+      stdio: "ignore",
+      windowsHide: true, // keine Konsole, NSIS-Dialog bleibt sichtbar
+    });
+    child.unref();
+
+    // App beenden – NSIS installiert & startet App automatisch neu (runAfterFinish)
+    setTimeout(() => app.quit(), 500);
+    return { ok: true, used: candidate };
+  } catch (e: any) {
+    log.error("❌ [CUSTOM-UPDATER] Install exception:", e?.message || e);
+    return { ok: false, error: e?.message ?? String(e) };
   }
 });
 
