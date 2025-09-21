@@ -403,9 +403,10 @@ ipcMain.handle("updater:install-custom", async (event, { filePath, args = [], ex
     // 5. Interactive Installer starten
     try {
       const child = spawn(filePath, installerArgs, {
-        detached: false,  // Interactive Installation - bleibt attached für UI
-        stdio: "pipe",    // UI-Interaktion möglich
-        windowsHide: false // Installer-Fenster anzeigen
+        detached: true,   // Komplett unabhängiger Prozess für UI
+        stdio: "ignore",  // Keine Pipes - verhindert invisible spawn
+        windowsHide: false, // Installer-Fenster anzeigen
+        shell: true       // Windows Shell für korrekte UI-Anzeige
       });
       
       child.on("error", (err: any) => {
@@ -415,6 +416,9 @@ ipcMain.handle("updater:install-custom", async (event, { filePath, args = [], ex
       child.on("close", (code: number | null) => {
         log.info(`✅ [SPAWN_OK] Installer finished with code: ${code}`);
       });
+      
+      // Detach immediately for true independence
+      child.unref();
       
       log.info("✅ [SPAWN_OK] Interactive installer started successfully");
       log.info(tag(`Started: ${filePath} with args: ${JSON.stringify(installerArgs)}`));
