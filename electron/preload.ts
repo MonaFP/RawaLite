@@ -17,6 +17,20 @@ const updater = {
     
   install: (exePath?: string): Promise<{ ok: boolean; used?: string; error?: string }> =>
     ipcRenderer.invoke("updater:install", exePath),
+    
+  // 🚀 NEW: Custom Install API - Direct installer launch with verification
+  installCustom: (options: {
+    filePath: string;
+    args?: string[];
+    expectedSha256?: string;
+  }): Promise<{
+    ok: boolean;
+    installerStarted?: boolean;
+    filePath?: string;
+    args?: string[];
+    runId?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("updater:install-custom", options),
   
   // 📡 Progress event listener
   onProgress: (callback: (progress: UpdateProgress) => void): (() => void) => {

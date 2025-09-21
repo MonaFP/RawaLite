@@ -42,6 +42,20 @@ declare interface Window {
         error?: string;
       }>;
       
+      // 🚀 NEW: Custom Install API - Direct installer launch with verification
+      installCustom: (options: {
+        filePath: string;
+        args?: string[];
+        expectedSha256?: string;
+      }) => Promise<{
+        ok: boolean;
+        installerStarted?: boolean;
+        filePath?: string;
+        args?: string[];
+        runId?: string;
+        error?: string;
+      }>;
+      
       // 📡 Progress event listener
       onProgress: (callback: (progress: {
         percent: number;

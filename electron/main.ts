@@ -349,6 +349,107 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
   }
 });
 
+// === CUSTOM INSTALL IPC HANDLER ===
+
+ipcMain.handle("updater:install-custom", async (event, { filePath, args = [], expectedSha256 }: {
+  filePath: string;
+  args?: string[];
+  expectedSha256?: string;
+}) => {
+  const runId = Date.now().toString(36);
+  const tag = (msg: string) => `[CUSTOM-INSTALL ${runId}] ${msg}`;
+  
+  try {
+    log.info("🚀 [INSTALL_CLICKED] Custom installer requested");
+    log.info(tag(`Install requested: ${filePath}`));
+    log.info(tag(`Args: ${JSON.stringify(args)}`));
+    log.info(tag(`Expected SHA256: ${expectedSha256 ? "provided" : "none"}`));
+
+    // 1. Datei existiert?
+    if (!fs.existsSync(filePath)) {
+      const msg = `Installer-Datei nicht gefunden: ${filePath}`;
+      log.error("❌ [CUSTOM-INSTALL] " + msg);
+      return { ok: false, error: msg };
+    }
+
+    // 2. SHA256-Verifikation (optional)
+    if (expectedSha256) {
+      try {
+        const crypto = require('crypto');
+        const fileBuffer = fs.readFileSync(filePath);
+        const actualSha256 = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+        
+        if (actualSha256.toLowerCase() !== expectedSha256.toLowerCase()) {
+          const msg = `SHA256 mismatch. Expected: ${expectedSha256}, Got: ${actualSha256}`;
+          log.error("❌ [CUSTOM-INSTALL] " + msg);
+          return { ok: false, error: msg };
+        }
+        log.info("✅ [CUSTOM-INSTALL] SHA256 verification passed");
+      } catch (shaError: any) {
+        log.warn("⚠️ [CUSTOM-INSTALL] SHA256 verification failed:", shaError.message);
+      }
+    }
+
+    // 3. Installer-Argumente vorbereiten (Interactive statt Silent)
+    const installerArgs = args.length > 0 ? args : []; // Default: Interactive Installation
+    log.info(tag(`Final args: ${JSON.stringify(installerArgs)}`));
+
+    // 4. Single Instance Lock freigeben
+    try {
+      app.releaseSingleInstanceLock?.();
+      log.info("🔓 [CUSTOM-INSTALL] Released single instance lock for installer");
+    } catch {}
+
+    // 5. Interactive Installer starten
+    try {
+      const child = spawn(filePath, installerArgs, {
+        detached: false,  // Interactive Installation - bleibt attached für UI
+        stdio: "pipe",    // UI-Interaktion möglich
+        windowsHide: false // Installer-Fenster anzeigen
+      });
+      
+      child.on("error", (err: any) => {
+        log.error("❌ [SPAWN_ERROR] Installer spawn failed:", err?.message || err);
+      });
+      
+      child.on("close", (code: number | null) => {
+        log.info(`✅ [SPAWN_OK] Installer finished with code: ${code}`);
+      });
+      
+      log.info("✅ [SPAWN_OK] Interactive installer started successfully");
+      log.info(tag(`Started: ${filePath} with args: ${JSON.stringify(installerArgs)}`));
+    } catch (spawnError: any) {
+      log.error("❌ [SPAWN_ERROR] Failed to start installer:", spawnError?.message || spawnError);
+      return { ok: false, error: spawnError?.message ?? String(spawnError) };
+    }
+
+    // 6. App sauber schließen nach kurzer Verzögerung
+    setTimeout(() => {
+      try {
+        log.info("🔚 [CUSTOM-INSTALL] Exiting app for installer handover");
+        app.quit();
+      } catch {}
+      
+      // Fallback exit
+      setTimeout(() => {
+        try { process.exit(0); } catch {}
+      }, 1000);
+    }, 1500);
+
+    return { 
+      ok: true, 
+      installerStarted: true, 
+      filePath, 
+      args: installerArgs,
+      runId 
+    };
+
+  } catch (error: any) {
+    log.error("❌ [CUSTOM-INSTALL] Exception:", error?.message || error);
+    return { ok: false, error: error?.message ?? String(error) };
+  }
+});
+
 // === CUSTOM UPDATER HELPER FUNCTIONS ===
 
 /**

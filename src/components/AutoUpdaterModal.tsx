@@ -130,18 +130,30 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
     setState('installing');
     
     try {
-      // ✅ NEW CUSTOM UPDATER API: Use install method with file path
-      const result = await window.rawalite?.updater?.install?.(downloadedFile);
+      console.log('🚀 [INSTALL_CLICKED] Starting custom installer with file:', downloadedFile);
+      
+      // ✅ NEW: Use Custom Install API instead of legacy install()
+      const result = await window.rawalite?.updater?.installCustom?.({
+        filePath: downloadedFile,
+        args: [], // Interactive Installation (no /S flags)
+        // Optional: expectedSha256 could be added here for verification
+      });
       
       if (!result?.ok) {
         throw new Error(result?.error || 'Installation fehlgeschlagen');
       }
       
-      // Installation successful - app will restart automatically
-      console.log('✅ Installation erfolgreich - App startet neu');
+      console.log('✅ [SPAWN_OK] Custom installer started successfully:', {
+        filePath: result.filePath,
+        args: result.args,
+        runId: result.runId
+      });
+      
+      // Installation successful - app will quit and installer will handle restart
+      console.log('✅ Interactive installer launched - App will close for installation');
       
     } catch (error) {
-      console.error('❌ Installation fehlgeschlagen:', error);
+      console.error('❌ [SPAWN_ERROR] Installation fehlgeschlagen:', error);
       setErrorMessage(`Fehler bei der Installation: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
       setState('error');
     }
@@ -359,6 +371,8 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
               <h3 style={{ color: '#28a745' }}>Bereit zur Installation</h3>
               <p style={{ marginBottom: '20px', color: '#666' }}>
                 Das Update wurde erfolgreich heruntergeladen und verifiziert.
+                <br />
+                <strong>Interactive Installation:</strong> Der Windows-Installer wird sichtbar gestartet.
               </p>
               <button 
                 style={{
@@ -372,8 +386,9 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
                   marginRight: '12px',
                 }}
                 onClick={handleInstallUpdate}
+                disabled={!downloadedFile} // Safety: Only enable if file path is available
               >
-                🚀 Jetzt installieren
+                🚀 Interactive Installation starten
               </button>
               <button 
                 style={{
@@ -394,11 +409,25 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
 
           {state === 'installing' && (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚙️</div>
-              <h3>Installation läuft...</h3>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🖥️</div>
+              <h3>Interactive Installation gestartet</h3>
               <p style={{ color: '#666' }}>
-                Der Installer wird jetzt geöffnet. Die App wird geschlossen und nach Abschluss <strong>automatisch neu gestartet</strong>.
+                Der <strong>sichtbare Windows-Installer</strong> wurde geöffnet. 
+                <br />
+                Klicken Sie durch die Installation (Next → Install → Finish).
+                <br />
+                Die App startet nach Abschluss <strong>automatisch neu</strong>.
               </p>
+              <div style={{
+                backgroundColor: '#f8f9fa',
+                padding: '12px',
+                borderRadius: '6px',
+                marginTop: '16px',
+                fontSize: '14px',
+                color: '#666'
+              }}>
+                💡 <strong>Interactive System:</strong> Sie können die Installation überwachen und steuern.
+              </div>
             </div>
           )}
 
