@@ -322,10 +322,8 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       dbg(log.warn, tag(`Sentinel write failed: ${e?.message || e}`));
     }
 
-    // 1) Installer robuster starten: shell=true -> sauberes Quoting, eigene Prozessgruppe + Silent Flag
-    const installerCmd = `"${candidate}"`;
-    const child = spawn(installerCmd, ["/S", "/ALLUSERS=0", "/CURRENTUSER"], {
-      shell: true,
+    // 1) Installer robuster starten: Direkter Aufruf ohne shell für korrekte Argument-Übergabe
+    const child = spawn(candidate, ["/S", "/ALLUSERS=0", "/CURRENTUSER"], {
       detached: true,
       stdio: "ignore",
       windowsHide: true,
@@ -336,7 +334,7 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       });
     } catch {}
     try { child.unref(); } catch {}
-    try { log.info(tag(`Started installer with silent flags: /S /ALLUSERS=0 /CURRENTUSER → ${candidate}`)); } catch {}
+    try { log.info(tag(`Started installer (direct spawn) with silent flags: /S /ALLUSERS=0 /CURRENTUSER → ${candidate}`)); } catch {}
 
     // 2) Fallback-Relaunch einplanen: falls NSIS (runAfterFinish) nicht relauncht
     try {

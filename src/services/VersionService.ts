@@ -22,7 +22,7 @@ export interface UpdateCheckResult {
   updateNotes?: string;
 }
 
-export const BUILD_DATE = '2025-09-21T12:40:00';
+export const BUILD_DATE = '2025-09-21T12:50:00';
 
 export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
