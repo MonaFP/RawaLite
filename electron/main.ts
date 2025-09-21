@@ -9,6 +9,14 @@ import { spawn } from "node:child_process";
 import crypto from "node:crypto";
 import pkg from "../package.json" assert { type: "json" };
 
+// --- Debug/Telemetry helpers (nur Node-Core) ---
+const DEBUG_UPDATER = process.env.RAWALITE_UPDATER_DEBUG === "1";
+function dbg(logFn: any, msg: string) { try { if (DEBUG_UPDATER) logFn(msg); } catch {} }
+function safeMkdirp(p: string) { try { fs.mkdirSync(p, { recursive: true }); } catch {} }
+function safeWriteFile(p: string, data: string) { try { fs.writeFileSync(p, data); } catch {} }
+function safeReadJson<T=any>(p: string): T | null { try { return JSON.parse(fs.readFileSync(p, "utf-8")); } catch { return null; } }
+function safeUnlink(p: string) { try { fs.unlinkSync(p); } catch {} }
+
 // 🚀 CUSTOM IN-APP UPDATER SYSTEM
 import {
   PDFPostProcessor,
@@ -264,6 +272,16 @@ ipcMain.handle("updater:download", async () => {
 
 // 4️⃣ UPDATE:INSTALL - Install update and restart app
 ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
+  const runId = Date.now().toString(36);
+  const tag = (m: string) => `[CUSTOM-UPDATER ${runId}] ${m}`;
+  try {
+    log.info(tag("Install requested"));
+    log.info(tag(`Env debug=${DEBUG_UPDATER}`));
+    log.info(tag(`App=${app.getName()} v=${app.getVersion()} id=${app.getAppPath ? app.getAppPath() : "?"}`));
+    log.info(tag(`execPath=${process.execPath} pid=${process.pid} ppid=${process.ppid}`));
+    log.info(tag(`isPackaged=${app.isPackaged} platform=${process.platform} arch=${process.arch}`));
+  } catch {}
+
   try {
     let candidate = stripQuotes(exePath);
 
@@ -281,35 +299,98 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       return { ok: false, error: msg };
     }
 
-    const child = spawn(candidate, [], {
+    const currentExe = process.execPath; // z. B. ...\Programs\rawalite\rawalite.exe
+    // ENV-Toggle für Fallback-Delay (Sekunden), Default 45
+    const fallbackDelaySec = Math.max(
+      1,
+      parseInt(process.env.RAWALITE_UPDATER_FALLBACK_DELAY_SEC || "", 10) || 45
+    );
+    try { log.info(tag(`Fallback delay = ${fallbackDelaySec}s`)); } catch {}
+
+    // Sentinel schreiben (für Start-up-Detektion)
+    try {
+      const userData = app.getPath("userData");
+      const sentDir = path.join(userData, "rawalite-updater");
+      const sentFile = path.join(sentDir, "relaunch-sentinel.json");
+      safeMkdirp(sentDir);
+      safeWriteFile(sentFile, JSON.stringify({
+        runId, t0: Date.now(), candidate, fallbackDelaySec, currentExe,
+        appVersion: app.getVersion(), electron: process.versions.electron
+      }));
+      dbg(log.info, tag(`Sentinel written: ${sentFile}`));
+    } catch (e:any) {
+      dbg(log.warn, tag(`Sentinel write failed: ${e?.message || e}`));
+    }
+
+    // 1) Installer robuster starten: shell=true -> sauberes Quoting, eigene Prozessgruppe
+    const installerCmd = `"${candidate}"`;
+    const child = spawn(installerCmd, [], {
+      shell: true,
       detached: true,
       stdio: "ignore",
-      windowsHide: true, // für Debug ggf. false setzen, um NSIS sichtbar zu sehen
+      windowsHide: true,
     });
-
-    // Fehlerprotokoll zur Sichtbarkeit verbessern (auch bei detached sinnvoll)
     try {
       child.on?.("error", (err: any) => {
-        try { log.error("❌ [CUSTOM-UPDATER] Installer spawn error:", err?.message || err); } catch {}
+        try { log.error(`❌ ${tag("Installer spawn error:")} ${err?.message || err}`); } catch {}
       });
     } catch {}
+    try { child.unref(); } catch {}
+    try { log.info(tag(`Started installer (shell): ${candidate} (pid unknown in detached mode)`)); } catch {}
 
-    child.unref();
-    log.info("[CUSTOM-UPDATER] Started installer:", candidate);
-
-    // Single-Instance-Lock nur freigeben, wenn gehalten (falls vorhanden)
+    // 2) Fallback-Relaunch einplanen: falls NSIS (runAfterFinish) nicht relauncht
     try {
-      // Andernfalls defensiv:
+      const ps = spawn("powershell.exe", [
+        "-NoProfile",
+        "-WindowStyle", "Hidden",
+        "-ExecutionPolicy", "Bypass",
+        "-Command", `Start-Sleep -Seconds ${fallbackDelaySec}; Start-Process -FilePath '${currentExe}'`
+      ], {
+        detached: true,
+        stdio: "ignore",
+        windowsHide: true,
+      });
+      try { const pid = (ps as any)?.pid; } catch {}
+      try { ps.unref(); } catch {}
+      try { log.info(tag(`Scheduled PS fallback in ${fallbackDelaySec}s → ${currentExe} (pid=${(ps as any)?.pid || "n/a"})`)); } catch {}
+    } catch (e:any) {
+      try { log.warn(`⚠️ ${tag("PS fallback scheduling failed:")} ${e?.message || e}`); } catch {}
+    }
+
+    // 2b) CMD-Fallback als zusätzliche Absicherung
+    try {
+      const cmd = spawn("cmd.exe", [
+        "/c",
+        `timeout /t ${fallbackDelaySec} /nobreak >nul & start "" "${currentExe}"`
+      ], {
+        detached: true,
+        stdio: "ignore",
+        windowsHide: true,
+      });
+      try { const pid = (cmd as any)?.pid; } catch {}
+      try { cmd.unref(); } catch {}
+      try { log.info(tag(`Scheduled CMD fallback in ${fallbackDelaySec}s → ${currentExe} (pid=${(cmd as any)?.pid || "n/a"})`)); } catch {}
+    } catch (e:any) {
+      try { log.warn(`⚠️ ${tag("CMD fallback scheduling failed:")} ${e?.message || e}`); } catch {}
+    }
+
+    // 3) Single-Instance-Lock (defensiv) freigeben
+    try {
       app.releaseSingleInstanceLock?.();
-      log.info("🔓 [CUSTOM-UPDATER] Released single instance lock for restart");
+      try { log.info(`🔓 ${tag("Released single instance lock for restart")}`); } catch {}
     } catch {}
 
-    // Kurzer Delay + hartes Exit verhindert Race-Conditions mit NSIS & Relaunch
+    // 4) Etwas längerer Delay + hartes Exit (vermeidet Race-Conditions)
     setTimeout(() => {
-      try { log.info("� [CUSTOM-UPDATER] Exiting app for installer handover"); } catch {}
+      try { log.info(`🔚 ${tag("Exiting app for installer handover")}`); } catch {}
       try { app.exit(0); } catch {}
-    }, 1500);
-    return { ok: true, used: candidate };
+      setTimeout(() => {
+        dbg(log.info, tag("Forcing process.exit(0) as final safeguard"));
+        try { process.exit(0); } catch {}
+      }, 1000);
+    }, 1800);
+
+    return { ok: true, used: candidate, relaunchPlanned: true, delaySec: fallbackDelaySec, runId };
   } catch (e: any) {
     log.error("❌ [CUSTOM-UPDATER] Install exception:", e?.message || e);
     return { ok: false, error: e?.message ?? String(e) };
@@ -1735,7 +1816,32 @@ ipcMain.handle("app:exportLogs", async () => {
   }
 });
 
+// Lifecycle-Logging (hilft bei Race-Conditions)
+app.on("will-quit", () => dbg(log.info, "[LIFECYCLE] app will-quit"));
+app.on("quit", (_e, _c) => dbg(log.info, "[LIFECYCLE] app quit"));
+process.on("beforeExit", (code) => dbg(log.info, `[LIFECYCLE] process beforeExit code=${code}`));
+process.on("exit", (code) => dbg(log.info, `[LIFECYCLE] process exit code=${code}`));
+
 app.whenReady().then(() => {
+  // Beim App-Start Sentinel prüfen (hat Relaunch stattgefunden?)
+  try {
+    const userData = app.getPath("userData");
+    const sentDir = path.join(userData, "rawalite-updater");
+    const sentFile = path.join(sentDir, "relaunch-sentinel.json");
+    const s = safeReadJson<any>(sentFile);
+    if (s) {
+      const deltaMs = Date.now() - (s?.t0 || 0);
+      log.info(`[UPDATER-SENTINEL] Detected previous install runId=${s?.runId || "?"}, dt=${Math.round(deltaMs/1000)}s`);
+      // optional: weitere Heuristik-Logs
+      safeUnlink(sentFile);
+      log.info("[UPDATER-SENTINEL] Sentinel removed (ack)");
+    } else {
+      dbg(log.info, "[UPDATER-SENTINEL] No sentinel present");
+    }
+  } catch (e:any) {
+    dbg(log.warn, `[UPDATER-SENTINEL] check failed: ${e?.message || e}`);
+  }
+
   createMenu();
   createWindow();
 
