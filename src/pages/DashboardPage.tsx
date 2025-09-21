@@ -333,21 +333,6 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
         </div>
       </div>
 
-      {/* Update Test Version Info */}
-      <div style={{ 
-        marginTop: '20px', 
-        padding: '12px', 
-        backgroundColor: '#e8f5e8', 
-        borderRadius: '6px', 
-        border: '1px solid #a8d5ba',
-        textAlign: 'center',
-        fontSize: '14px',
-        fontWeight: '500',
-        color: '#2d5a3d'
-      }}>
-        🚀 Version 1.8.44 - Update-Test Version (mit Dashboard-Info)
-      </div>
-
     </div>
   );
 }
