@@ -333,6 +333,9 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
         </div>
       </div>
 
+      {/* 🚨 DASHBOARD-HINWEIS DEFINITIV ENTFERNT - v1.8.60 */}
+      {/* Kein Update-Test Banner mehr! */}
+
     </div>
   );
 }
