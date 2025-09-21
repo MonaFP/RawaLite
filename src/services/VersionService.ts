@@ -22,9 +22,10 @@ export interface UpdateCheckResult {
   updateNotes?: string;
 }
 
+export const BUILD_DATE = '2025-09-21T12:30:00';
+
 export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
-  private readonly BUILD_DATE = "2025-09-21T11:50:00";
 
   private currentVersionInfo: VersionInfo | null = null;
 
@@ -69,7 +70,7 @@ export class VersionService {
     this.currentVersionInfo = {
       version,
       buildNumber,
-      buildDate: this.BUILD_DATE,
+      buildDate: BUILD_DATE,
       isDevelopment: this.isDevelopmentMode(),
     };
 

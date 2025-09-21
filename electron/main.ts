@@ -322,9 +322,9 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       dbg(log.warn, tag(`Sentinel write failed: ${e?.message || e}`));
     }
 
-    // 1) Installer robuster starten: shell=true -> sauberes Quoting, eigene Prozessgruppe
+    // 1) Installer robuster starten: shell=true -> sauberes Quoting, eigene Prozessgruppe + Silent Flag
     const installerCmd = `"${candidate}"`;
-    const child = spawn(installerCmd, [], {
+    const child = spawn(installerCmd, ["/S", "/ALLUSERS=0", "/CURRENTUSER"], {
       shell: true,
       detached: true,
       stdio: "ignore",
@@ -336,7 +336,7 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       });
     } catch {}
     try { child.unref(); } catch {}
-    try { log.info(tag(`Started installer (shell): ${candidate} (pid unknown in detached mode)`)); } catch {}
+    try { log.info(tag(`Started installer with silent flags: /S /ALLUSERS=0 /CURRENTUSER → ${candidate}`)); } catch {}
 
     // 2) Fallback-Relaunch einplanen: falls NSIS (runAfterFinish) nicht relauncht
     try {
@@ -344,7 +344,7 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
         "-NoProfile",
         "-WindowStyle", "Hidden",
         "-ExecutionPolicy", "Bypass",
-        "-Command", `Start-Sleep -Seconds ${fallbackDelaySec}; Start-Process -FilePath '${currentExe}'`
+        "-Command", `Start-Sleep -Seconds ${Math.max(fallbackDelaySec, 10)}; Start-Process -FilePath '${currentExe}'`
       ], {
         detached: true,
         stdio: "ignore",
