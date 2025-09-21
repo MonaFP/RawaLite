@@ -16,17 +16,20 @@ const packageJsonPath = path.join(__dirname, '..', 'package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 const version = packageJson.version;
 
-// Generate update.json manifest
+// Generate update.json manifest - Format according to IPC handler expectations
 const updateManifest = {
   version: version,
   releaseDate: new Date().toISOString(),
-  platforms: {
-    win32: {
+  files: [
+    {
+      kind: "nsis",
+      arch: "x64", 
       url: `https://github.com/MonaFP/RawaLite/releases/download/v${version}/rawalite-Setup-${version}.exe`,
+      name: `rawalite-Setup-${version}.exe`,
       sha512: null, // Will be calculated by electron-builder
       size: null    // Will be filled by electron-builder
     }
-  },
+  ],
   releaseNotes: `RawaLite v${version} - Custom In-App Update`,
   mandatory: false
 };
@@ -42,4 +45,4 @@ fs.writeFileSync(updateJsonPath, JSON.stringify(updateManifest, null, 2));
 
 console.log(`✅ Generated update.json for v${version}`);
 console.log(`📄 File: ${updateJsonPath}`);
-console.log(`🔗 URL: ${updateManifest.platforms.win32.url}`);
+console.log(`🔗 URL: ${updateManifest.files[0].url}`);

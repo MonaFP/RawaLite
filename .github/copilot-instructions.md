@@ -486,9 +486,10 @@ pnpm install
 
 # 3. Sauberen Build erstellen (Setup sollte ~169MB sein, nicht >500MB)
 pnpm build && pnpm dist
+# ✅ Automatisch generiert: rawalite-Setup-X.Y.Z.exe + update.json für Custom Updater
 
 # 4. Build-Größe validieren (WICHTIG!)
-Get-ItemProperty ".\dist\RawaLite Setup X.Y.Z.exe" | Select-Object @{Name='Size(MB)';Expression={[math]::Round($_.Length/1MB,2)}}
+Get-ItemProperty ".\dist\rawalite-Setup-X.Y.Z.exe" | Select-Object @{Name='Size(MB)';Expression={[math]::Round($_.Length/1MB,2)}}
 # ✅ Erwartet: ~169MB | ❌ Problem: >300MB = Cache-Issue
 
 # 5. Git commit & tag
@@ -502,8 +503,9 @@ git tag vX.Y.Z && git push origin work-from-v1840 --tags
 
 # 7. EXE-Assets hochladen (nach Asset-Strategie)
 & "C:\Program Files\GitHub CLI\gh.exe" release upload vX.Y.Z \
-  "dist\RawaLite Setup X.Y.Z.exe" "dist\RawaLite Setup X.Y.Z.exe.blockmap" "dist\latest.yml" \
+  "dist\rawalite-Setup-X.Y.Z.exe" "dist\rawalite-Setup-X.Y.Z.exe.blockmap" "dist\latest.yml" "dist\update.json" \
   --clobber --repo MonaFP/RawaLite
+# ✅ WICHTIG: update.json für Custom In-App Updater (behebt "No update.json found")
 ```
 
 ### **📦 Release Asset-Strategie**
@@ -577,6 +579,53 @@ checkForUpdatesViaGitHub() -> Fallback bei electron-updater Fehlern
 - **Portable App Logic**: Manuelle Download-Workflow für portable Anwendungen
 - **Data Preservation**: SQLite-Datei in `%APPDATA%/RawaLite/` bleibt erhalten
 - **Version Sync**: `package.json` UND `VersionService.ts` BASE_VERSION aktualisieren
+
+## 🔄 Custom In-App Updater Architecture (v1.8.55+)
+
+### **Custom Update Pattern (100% in-app)**
+```typescript
+// Custom Updater System (CURRENT - v1.8.55+)
+electron/main.ts -> Custom IPC Handlers + GitHub API Integration
+AutoUpdaterModal.tsx -> Custom UI für Check/Download/Install
+scripts/generate-update-json.mjs -> Automatische Manifest-Generation
+```
+
+### **Key Components**
+- **electron/main.ts**: Custom IPC-Handler (update:check, update:download, update:install)
+- **AutoUpdaterModal.tsx**: Custom Update-UI mit Progress, ohne electron-updater
+- **scripts/generate-update-json.mjs**: Automatische update.json Generierung bei Build
+- **GitHub Releases**: update.json + Setup.exe Assets für vollständigen Update-Flow
+
+### **Custom Update Workflow (CURRENT - v1.8.55+)**
+1. **Update Check**: GitHub API + update.json Manifest → Version-Vergleich
+2. **Download**: Direkter GitHub Asset Download mit robuster Pfad-Verfolgung
+3. **Install**: Sichtbarer NSIS-Installer mit `runAfterFinish: true`
+4. **Restart**: NSIS übernimmt automatischen App-Neustart
+
+### **update.json Manifest System**
+```json
+{
+  "version": "1.8.55",
+  "releaseDate": "2025-09-21T06:32:25.452Z",
+  "files": [
+    {
+      "kind": "nsis",
+      "arch": "x64",
+      "url": "https://github.com/MonaFP/RawaLite/releases/download/v1.8.55/rawalite-Setup-1.8.55.exe",
+      "name": "rawalite-Setup-1.8.55.exe",
+      "sha512": null,
+      "size": null
+    }
+  ],
+  "releaseNotes": "RawaLite v1.8.55 - Custom In-App Update",
+  "mandatory": false
+}
+```
+
+### **Build Pipeline Integration**
+- **`pnpm run dist`**: Automatische update.json Generation nach electron-builder
+- **GitHub Release**: Assets include `update.json` für Custom Updater
+- **Fehlerbehandlung**: Graceful fallback von update.json auf GitHub API
 
 ## 🎨 Theme System (Current: v1.5.2+)
 
