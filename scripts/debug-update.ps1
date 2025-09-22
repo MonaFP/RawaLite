@@ -40,11 +40,11 @@ function Write-Debug($text) {
 }
 
 function Debug-ProcessTree {
-    param($pid, $indent = "")
+    param($processId, $indent = "")
     try {
-        $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
+        $proc = Get-Process -Id $processId -ErrorAction SilentlyContinue
         if ($proc) {
-            Write-Host "${indent}📊 Process: $($proc.ProcessName) (PID: $pid), Handles: $($proc.HandleCount), Window Title: '$($proc.MainWindowTitle)'" -ForegroundColor $colors.Info
+            Write-Host "${indent}📊 Process: $($proc.ProcessName) (PID: $processId), Handles: $($proc.HandleCount), Window Title: '$($proc.MainWindowTitle)'" -ForegroundColor $colors.Info
             
             # Versuche Informationen zum Pfad zu bekommen
             try { 
@@ -54,15 +54,15 @@ function Debug-ProcessTree {
             
             # Versuche Informationen zum Befehlszeilen-Argument zu bekommen (WMI)
             try {
-                $wmiQuery = "SELECT CommandLine FROM Win32_Process WHERE ProcessId = $pid"
+                $wmiQuery = "SELECT CommandLine FROM Win32_Process WHERE ProcessId = $processId"
                 $cmdLine = (Get-WmiObject -Query $wmiQuery).CommandLine
                 if ($cmdLine) { Write-Host "${indent}🔶 Command line: $cmdLine" -ForegroundColor $colors.Info }
             } catch {}
         } else {
-            Write-Host "${indent}❌ Process with PID $pid no longer exists!" -ForegroundColor $colors.Error
+            Write-Host "${indent}❌ Process with PID $processId no longer exists!" -ForegroundColor $colors.Error
         }
     } catch {
-        Write-Host "${indent}⚠️ Error examining process $pid: $_" -ForegroundColor $colors.Error
+        Write-Host ($indent + "⚠️ Error examining process " + $processId + ": " + $_.Exception.Message) -ForegroundColor $colors.Error
     }
 }
 
@@ -80,7 +80,7 @@ function Find-ProcessesByFilter {
     Write-Info "Found $($processes.Count) matching processes"
     
     foreach ($proc in $processes) {
-        Debug-ProcessTree $proc.Id "  "
+        Debug-ProcessTree -processId $proc.Id -indent "  "
     }
     
     return $processes
@@ -98,7 +98,7 @@ function Find-RecentProcesses {
     Write-Info "Found $($processes.Count) recent processes"
     
     foreach ($proc in $processes) {
-        Debug-ProcessTree $proc.Id "  "
+        Debug-ProcessTree -processId $proc.Id -indent "  "
     }
     
     return $processes
@@ -167,8 +167,8 @@ public class ShellExecute {
     $newProcessIds = $afterProcesses | Where-Object { $beforeProcesses -notcontains $_ }
     
     Write-Info "Found $($newProcessIds.Count) new processes since installer start"
-    foreach ($pid in $newProcessIds) {
-        Debug-ProcessTree $pid
+    foreach ($procId in $newProcessIds) {
+        Debug-ProcessTree -processId $procId
     }
     
     # Look specifically for NSIS and setup processes
@@ -214,7 +214,7 @@ if ($AnalyzeProcesses) {
             
             if ($ipcData.app -and $ipcData.app.pid) {
                 Write-Info "Checking app process PID: $($ipcData.app.pid)"
-                Debug-ProcessTree $ipcData.app.pid
+                Debug-ProcessTree -processId $ipcData.app.pid
             }
             
             if ($ipcData.installer -and $ipcData.installer.path) {

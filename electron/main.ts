@@ -936,12 +936,79 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
       log.warn(tag(`Failed to create IPC file: ${ipcError instanceof Error ? ipcError.message : String(ipcError)}`));
     }
     
-    // 6. 🚨 VOLLSTÄNDIG ÜBERARBEITETES Quit-Delay-System mit IPC-Watchdog
-    // KRITISCHER FIX: Viel längeres Delay und verbesserte Beendigung
-    const updatedQuitDelayMs = 30000; // 30 Sekunden statt der übergebenen 7 Sekunden (vorher: 20 Sekunden)
+    // 6. 🆕 UPDATE-LAUNCHER: Starte den separaten Update-Launcher bevor die App beendet wird
+    // Diese Methode nutzt einen separaten Node.js-Prozess, der auf das Ende des Hauptprozesses wartet
+    try {
+      // Pfad zum Update-Launcher im Ressourcen-Verzeichnis
+      const updateLauncherPath = path.join(app.getAppPath(), 'resources', 'update-launcher.js');
+      
+      // WICHTIG: Verwende process.execPath statt 'node', um den richtigen Interpreter zu garantieren
+      const execPath = process.execPath;
+      
+      // Prüfe, ob Launcher und Installer existieren
+      if (!fs.existsSync(updateLauncherPath)) {
+        throw new Error(`Update-Launcher nicht gefunden: ${updateLauncherPath}`);
+      }
+      
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`Installer nicht gefunden: ${filePath}`);
+      }
+      
+      log.info(tag(`Starting Update-Launcher: ${updateLauncherPath}`));
+      log.info(tag(`Using Electron/Node executable: ${execPath}`));
+      log.info(tag(`Installer path: ${filePath}`));
+      log.info(tag(`Main process PID: ${process.pid}`));
+      
+      // Starte den Update-Launcher als separaten Prozess
+      // WICHTIG: PID vor filePath übergeben (in update-launcher.ts geänderte Reihenfolge)
+      const launcher = spawn(execPath, [
+        updateLauncherPath,    // Pfad zum Launcher-Skript
+        process.pid.toString(),// Aktuelle PID (Hauptprozess) - WICHTIG: Zuerst!
+        filePath,              // Installer-Pfad - WICHTIG: Als zweites!
+        '--debug',             // Debug-Modus für detaillierte Logs
+        `--wait-delay=500`,    // Wartezeit zwischen Prozess-Checks
+        `--max-wait=30`        // Maximale Wartezeit in Sekunden
+      ], {
+        detached: true,        // Wichtig: Vom Elternprozess abkoppeln
+        stdio: 'ignore',
+        windowsHide: true,     // Verstecke das Konsolenfenster
+        env: {
+          ...process.env,
+          ELECTRON_RUN_AS_NODE: '1'  // Wichtig: Stelle sicher, dass Electron als Node läuft
+        }
+      });
+      
+      // Vollständig abkoppeln vom Hauptprozess
+      launcher.unref();
+      
+      log.info(tag(`✅ Update-Launcher started with arguments: [${process.pid}, ${filePath}]`));
+      
+      // Status-Update vor der Beendigung
+      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+      if (mainWindow) {
+        mainWindow.webContents.send("updater:status", {
+          status: "launcher-started",
+          message: "Update-Launcher gestartet. Die Anwendung wird in Kürze beendet..."
+        });
+      }
+      
+      // WICHTIG: Verzögerung vor dem Beenden der App, damit Launcher stabil starten kann
+      setTimeout(() => {
+        log.info(tag("🔄 Beende App nach Launcher-Start-Verzögerung (2 Sekunden)"));
+        app.quit();
+      }, 2000);
+      
+    } catch (launcherError) {
+      log.error(tag(`Failed to start Update-Launcher: ${launcherError instanceof Error ? launcherError.message : String(launcherError)}`));
+      
+      // Fallback zum alten Quit-Delay-System
+      log.info(tag(`Falling back to old quit-delay system`));
+    }
+    
+    // Altes Quit-Delay-System als Fallback beibehalten
+    const updatedQuitDelayMs = 15000; // 15 Sekunden (verkürzt von 30 da jetzt Launcher aktiv)
     log.info(tag(`Setting up EXTENDED delayed app termination in ${updatedQuitDelayMs}ms (vs. requested ${quitDelayMs}ms)`));
     
-    // Status-Update vor der Beendigung
     try {
       const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
       if (mainWindow) {

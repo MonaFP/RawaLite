@@ -1,0 +1,16 @@
+{
+  "version": "1.8.87",
+  "releaseDate": "2025-09-22T19:00:00.000Z",
+  "files": [
+    {
+      "kind": "nsis",
+      "arch": "x64",
+      "url": "https://github.com/MonaFP/RawaLite/releases/download/v1.8.87/rawalite-Setup-1.8.86.exe",
+      "name": "rawalite-Setup-1.8.86.exe",
+      "sha512": null,
+      "size": null
+    }
+  ],
+  "releaseNotes": "RawaLite v1.8.87 - Update-Funktionalität Test",
+  "mandatory": false
+}

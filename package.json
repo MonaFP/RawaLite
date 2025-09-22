@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.8.85",
+  "version": "1.8.89",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
@@ -15,10 +15,11 @@
     "dev": "run-p vite electron:dev",
     "vite": "vite",
     "electron:dev": "run-s build:preload build:main && electron dist-electron/main.cjs",
-    "build": "vite build && run-s build:preload build:main",
+    "build": "vite build && run-s build:preload build:main build:launcher",
+    "build:launcher": "node scripts/build-launcher.js",
     "build:clean": "rimraf dist dist-electron && pnpm build",
- "clean:build": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Remove-Item -Recurse -Force .\\dist, .\\release, .\\dist-electron, .\\node_modules\\.vite, .\\node_modules\\.cache -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force $env:APPDATA\\electron-builder -ErrorAction SilentlyContinue\"",
-    "rebuild:dist": "pnpm clean:build && pnpm install && pnpm build && pnpm dist",   
+    "clean:build": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Remove-Item -Recurse -Force .\\dist, .\\release, .\\dist-electron, .\\node_modules\\.vite, .\\node_modules\\.cache -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force $env:APPDATA\\electron-builder -ErrorAction SilentlyContinue\"",
+    "rebuild:dist": "pnpm clean:build && pnpm install && pnpm build && pnpm dist",
     "build:preload": "esbuild electron/preload.ts --bundle --platform=node --external:electron --outfile=dist-electron/preload.js",
     "build:preload:clean": "esbuild electron/preload.ts --bundle --platform=node --external:electron --outfile=dist-electron/preload.js --no-bundle-cache",
     "build:main": "esbuild electron/main.ts --bundle --platform=node --format=cjs --external:electron --outfile=dist-electron/main.cjs",
@@ -63,7 +64,6 @@
     "react-router-dom": "^7.9.1",
     "sql.js": "^1.13.0",
     "typescript": "^5.9.2"
-
   },
   "devDependencies": {
     "@playwright/test": "^1.46.0",
@@ -82,9 +82,9 @@
     "jsdom": "^26.1.0",
     "npm-run-all2": "^8.0.4",
     "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
     "tsx": "^4.20.5",
     "vite": "^5.4.0",
     "vitest": "^1.6.0"
   }
 }
-

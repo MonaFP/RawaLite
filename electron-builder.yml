@@ -9,6 +9,8 @@ files:
 extraResources:
   - from: templates
     to: app/templates
+  - from: resources
+    to: resources
 
 win:
   target:
