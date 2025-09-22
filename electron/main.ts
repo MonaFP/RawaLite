@@ -458,7 +458,7 @@ async function unblockFileWindows(filePath: string): Promise<void> {
       "-ExecutionPolicy", "Bypass",
       "-Command",
       `Unblock-File -Path '${psEscape(filePath)}'`
-    ], { stdio: "ignore", windowsHide: true });
+    ], { stdio: "ignore", windowsHide: false });
     
     ps.once("error", reject);
     ps.once("exit", () => resolve());
@@ -514,6 +514,7 @@ function launchWindowsInstaller(filePath: string, args: string[], elevate: boole
         detached: true,
         stdio: "ignore",        // KRITISCH: Keine offenen Pipes
         windowsHide: false,
+        cwd: path.dirname(filePath)  // WorkingDirectory für korrekten Installer-Start
       });
 
       return new Promise<ChildProcess>((res, rej) => {
