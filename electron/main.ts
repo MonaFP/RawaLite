@@ -939,8 +939,10 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
     // 6. 🆕 UPDATE-LAUNCHER: Starte den separaten Update-Launcher bevor die App beendet wird
     // Diese Methode nutzt einen separaten Node.js-Prozess, der auf das Ende des Hauptprozesses wartet
     try {
-      // Pfad zum Update-Launcher im Ressourcen-Verzeichnis
-      const updateLauncherPath = path.join(app.getAppPath(), 'resources', 'update-launcher.js');
+      // Pfad zum Update-Launcher im Ressourcen-Verzeichnis (außerhalb von app.asar!)
+      // WICHTIG: Verwende app.getPath('exe') um den Programmordner zu bekommen, nicht app.getAppPath()
+      const appDir = path.dirname(app.getPath('exe'));
+      const updateLauncherPath = path.join(appDir, 'resources', 'update-launcher.js');
       
       // WICHTIG: Verwende process.execPath statt 'node', um den richtigen Interpreter zu garantieren
       const execPath = process.execPath;

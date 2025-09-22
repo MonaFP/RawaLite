@@ -11,6 +11,8 @@ extraResources:
     to: app/templates
   - from: resources
     to: resources
+  - from: resources/update-launcher.js
+    to: resources/update-launcher.js
 
 win:
   target:
