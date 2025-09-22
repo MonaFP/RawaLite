@@ -543,36 +543,150 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
                         Log-Message "⚠️ [PS-INSTALLER] Failed to adjust priority: $_"
                     }
                     
-                    # 🚨 CRITICAL FIX: NSIS-Prozesshierarchie-Verfolgung
-                    # NSIS-Installer starten einen temporären Extraktionsprozess, der dann den eigentlichen Installer startet
-                    Log-Message "🔍 [PS-INSTALLER] Starting NSIS process hierarchy monitoring..."
+                    # � DEBUG-MODUS: Umfassende Prozessverfolgung für NSIS-Installer
+                    Log-Message "🔍 [DEBUG-MODE] Starting enhanced NSIS process tracking..."
                     
-                    # Warte kurz, damit der temporäre Prozess den eigentlichen Installer starten kann
-                    Start-Sleep -Milliseconds 1500
+                    # Debugging-Funktionen definieren
+                    function Debug-ProcessTree {
+                        param($pid, $indent = "")
+                        try {
+                            $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
+                            if ($proc) {
+                                Log-Message "${indent}📊 Process: $($proc.ProcessName) (PID: $pid), Handles: $($proc.HandleCount), Window Title: '$($proc.MainWindowTitle)'"
+                                
+                                # Versuche Informationen zum Pfad zu bekommen
+                                try { 
+                                    $procPath = $proc.Path
+                                    Log-Message "${indent}📂 Path: $procPath" 
+                                } catch { Log-Message "${indent}⚠️ Path not accessible" }
+                                
+                                # Versuche Informationen zum Befehlszeilen-Argument zu bekommen (WMI)
+                                try {
+                                    $wmiQuery = "SELECT CommandLine FROM Win32_Process WHERE ProcessId = $pid"
+                                    $cmdLine = (Get-WmiObject -Query $wmiQuery).CommandLine
+                                    if ($cmdLine) { Log-Message "${indent}🔶 Command line: $cmdLine" }
+                                } catch {}
+                            } else {
+                                Log-Message "${indent}❌ Process with PID $pid no longer exists!"
+                            }
+                        } catch {
+                            Log-Message "${indent}⚠️ Error examining process $pid: $_"
+                        }
+                    }
                     
-                    # Suche nach neu gestarteten NSIS-Prozessen, die Kinder des temporären Prozesses sind oder den Namen "Setup" enthalten
-                    try {
-                        $startTime = (Get-Date).AddSeconds(-5)
-                        $setupProcesses = Get-Process | Where-Object { 
-                            ($_.StartTime -gt $startTime) -and 
-                            (($_.ProcessName -like "*setup*") -or ($_.ProcessName -like "*install*") -or ($_.Path -like "*$($fileInfo.Name)*")) 
+                    function Find-ProcessesByTime {
+                        param($secondsAgo = 10, $filter = "*")
+                        $startTime = (Get-Date).AddSeconds(-$secondsAgo)
+                        
+                        Log-Message "🔍 [PROCESS-SEARCH] Looking for processes started in last $secondsAgo seconds matching '$filter'"
+                        
+                        $processes = Get-Process | Where-Object { 
+                            ($_.StartTime -gt $startTime) -and
+                            ($_.ProcessName -like $filter -or $_.Path -like $filter)
                         }
                         
-                        if ($setupProcesses.Count -gt 0) {
-                            foreach ($setupProc in $setupProcesses) {
-                                Log-Message "✅ [PS-INSTALLER] Found potential NSIS installer: $($setupProc.ProcessName) (PID: $($setupProc.Id))"
+                        Log-Message "🔍 [PROCESS-SEARCH] Found $($processes.Count) matching processes"
+                        
+                        foreach ($proc in $processes) {
+                            Debug-ProcessTree $proc.Id "  "
+                        }
+                        
+                        return $processes
+                    }
+                    
+                    # Aktuelle Prozesse vor dem Installer-Start erfassen (als Baseline)
+                    Log-Message "📊 [BASELINE] Capturing process baseline before installer launch..."
+                    $beforeProcesses = Get-Process | Select-Object -ExpandProperty Id
+                    
+                    # Start-Process mit -PassThru und -Wait für bessere Kontrolle
+                    # Wichtig: Benutze -ArgumentList, um Argumente sauber zu übergeben
+                    Log-Message "🚀 [INSTALLER] Starting installer with -Wait -PassThru..."
+                    
+                    try {
+                        # Wir verwenden Start-Process mit -PassThru, damit wir den Prozess verfolgen können
+                        $installerProcess = Start-Process -FilePath $installerPath -ArgumentList '/NCRC' -Wait:$false -PassThru -Verb "RunAs"
+                        
+                        if ($installerProcess) {
+                            Log-Message "✅ [INSTALLER] Process created successfully with PID: $($installerProcess.Id)"
+                            Debug-ProcessTree $installerProcess.Id
+                            
+                            # Verfolge den Installer-Prozess für 3 Sekunden
+                            Log-Message "⏱️ [TRACKING] Following installer process for 3 seconds..."
+                            
+                            $timeout = [System.Diagnostics.Stopwatch]::StartNew()
+                            $maxTracking = 3000 # 3 seconds
+                            
+                            while ($timeout.ElapsedMilliseconds -lt $maxTracking) {
                                 try {
-                                    $setupProc.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::High
-                                    Log-Message "✅ [PS-INSTALLER] Raised priority for actual installer: PID $($setupProc.Id)"
+                                    $proc = Get-Process -Id $installerProcess.Id -ErrorAction SilentlyContinue
+                                    if ($proc) {
+                                        Log-Message "✓ [TRACKING] Installer process still running at $(Get-Date -Format 'HH:mm:ss.fff')"
+                                    } else {
+                                        Log-Message "! [TRACKING] Installer process has terminated at $(Get-Date -Format 'HH:mm:ss.fff')"
+                                        break
+                                    }
                                 } catch {
-                                    Log-Message "⚠️ [PS-INSTALLER] Could not modify actual installer priority: $_"
+                                    Log-Message "! [TRACKING] Error checking installer process: $_"
+                                    break
+                                }
+                                Start-Sleep -Milliseconds 500
+                            }
+                            
+                            # Nach neuen Prozessen suchen, die seit dem Start erschienen sind
+                            Log-Message "🔍 [PROCESS-DIFF] Looking for new processes created since installer launch..."
+                            $afterProcesses = Get-Process | Select-Object -ExpandProperty Id
+                            $newProcessIds = $afterProcesses | Where-Object { $beforeProcesses -notcontains $_ }
+                            
+                            Log-Message "🔍 [PROCESS-DIFF] Found $($newProcessIds.Count) new processes"
+                            foreach ($pid in $newProcessIds) {
+                                Debug-ProcessTree $pid
+                            }
+                            
+                            # Suche nach Setup- oder Installer-ähnlichen Prozessen
+                            Log-Message "🔍 [INSTALLER-SEARCH] Looking for NSIS or installer-like processes..."
+                            $installProcesses = Find-ProcessesByTime -secondsAgo 10 -filter "*setup*"
+                            if ($installProcesses.Count -eq 0) {
+                                $installProcesses = Find-ProcessesByTime -secondsAgo 10 -filter "*install*"
+                            }
+                            if ($installProcesses.Count -eq 0) {
+                                $installProcesses = Find-ProcessesByTime -secondsAgo 10 -filter "*nsis*"
+                            }
+                            
+                            # Versuche, die Priorität der gefundenen Prozesse zu erhöhen
+                            foreach ($proc in $installProcesses) {
+                                try {
+                                    $proc.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::High
+                                    Log-Message "✅ [PRIORITY] Raised priority for process: $($proc.ProcessName) (PID: $($proc.Id))"
+                                } catch {
+                                    Log-Message "⚠️ [PRIORITY] Could not modify process priority: $_"
                                 }
                             }
                         } else {
-                            Log-Message "⚠️ [PS-INSTALLER] No NSIS installer processes found within 5 second window"
+                            Log-Message "❌ [INSTALLER] Failed to create process object"
                         }
                     } catch {
-                        Log-Message "⚠️ [PS-INSTALLER] Error while searching for NSIS child processes: $_"
+                        Log-Message "❌ [INSTALLER] Failed to start installer: $_"
+                        
+                        # Fallback-Methode: ShellExecute über .NET direkt
+                        Log-Message "🔄 [FALLBACK] Using ShellExecute via .NET..."
+                        try {
+                            Add-Type -TypeDefinition @"
+                            using System;
+                            using System.Diagnostics;
+                            using System.Runtime.InteropServices;
+                            
+                            public class ShellExecute {
+                                [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+                                public static extern IntPtr ShellExecuteW(IntPtr hwnd, string lpOperation, string lpFile, string lpParameters, string lpDirectory, int nShowCmd);
+                                
+                                public const int SW_SHOW = 5;
+                            }
+"@
+                            $result = [ShellExecute]::ShellExecuteW([IntPtr]::Zero, "runas", $installerPath, "/NCRC", [System.IO.Path]::GetDirectoryName($installerPath), [ShellExecute]::SW_SHOW)
+                            Log-Message "✅ [FALLBACK] ShellExecute returned: $result"
+                        } catch {
+                            Log-Message "❌ [FALLBACK] ShellExecute failed: $_"
+                        }
                     }
                     
                     # Erfolg signalisieren
@@ -604,13 +718,39 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
                 }
               `;
               
-              // 🚨 CRITICAL-FIX: PowerShell mit voller Sichtbarkeit ausführen
-              const ps = spawn("powershell.exe", [
+              // � DEBUG-MODE: PowerShell mit erweitertem Debug-Modus, voller Sichtbarkeit und interaktiver Konsole
+              // Wir verwenden ein spezielles Farbschema und behalten das Fenster offen
+              const debugModeParams = [
                 "-NoProfile",
                 "-ExecutionPolicy", "Bypass",
                 "-NoExit", // WICHTIG: PowerShell-Fenster bleibt offen für Debugging
-                "-Command", cmd
-              ], {
+                "-Command", `
+                  # Visual Debug Mode Setup
+                  $host.UI.RawUI.BackgroundColor = "Black"
+                  $host.UI.RawUI.ForegroundColor = "Green"
+                  $host.UI.RawUI.WindowTitle = "RawaLite Update-Debugger v1.8.84 - NICHT SCHLIESSEN"
+                  Clear-Host
+                  Write-Host "🔍 RawaLite Update-System Debug Mode" -ForegroundColor Yellow
+                  Write-Host "=================================================" -ForegroundColor Yellow
+                  Write-Host "Dieses Fenster analysiert den Update-Prozess" -ForegroundColor Cyan
+                  Write-Host "Bitte NICHT schließen während der Installation!" -ForegroundColor Red
+                  Write-Host "=================================================" -ForegroundColor Yellow
+                  Write-Host ""
+                  
+                  # Jetzt den eigentlichen Installer-Code ausführen
+                  ${cmd}
+                  
+                  # Nachdem der Installer-Code abgeschlossen ist, einen Hinweis anzeigen
+                  Write-Host ""
+                  Write-Host "=================================================" -ForegroundColor Yellow
+                  Write-Host "Debug-Analyse abgeschlossen." -ForegroundColor Green
+                  Write-Host "Dieses Fenster kann jetzt geschlossen werden." -ForegroundColor Green
+                  Write-Host "=================================================" -ForegroundColor Yellow
+                `
+              ];
+              
+              // Debug-Konsole mit vollem interaktiven Modus starten
+              const ps = spawn("powershell.exe", debugModeParams, {
                 detached: true,
                 stdio: ["ignore", "pipe", "pipe"],  // VERBESSERUNG: Erfassen der Ausgabe für Diagnose
                 windowsHide: false,   // WICHTIG: PowerShell-Fenster sichtbar machen
@@ -772,9 +912,33 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
       log.warn(tag(`Failed to notify renderer before exit: ${notifyError instanceof Error ? notifyError.message : String(notifyError)}`));
     }
     
-      // 6. 🚨 VOLLSTÄNDIG ÜBERARBEITETES Quit-Delay-System
+      // 🔍 DEBUG-MODE: IPC-Kommunikation für Installation und verzögerte App-Beendigung
+    // Einrichten einer temporären IPC-Datei zur Kommunikation mit dem Installer-Prozess
+    const ipcId = `rawalite-update-${Date.now()}`;
+    const ipcPath = path.join(os.tmpdir(), `${ipcId}.json`);
+    
+    try {
+      fs.writeFileSync(ipcPath, JSON.stringify({
+        status: "waiting",
+        app: {
+          pid: process.pid,
+          version: app.getVersion(),
+          name: app.getName()
+        },
+        installer: {
+          path: filePath,
+          timestamp: Date.now()
+        }
+      }));
+      
+      log.info(tag(`Created IPC file at ${ipcPath} for installer communication`));
+    } catch (ipcError) {
+      log.warn(tag(`Failed to create IPC file: ${ipcError instanceof Error ? ipcError.message : String(ipcError)}`));
+    }
+    
+    // 6. 🚨 VOLLSTÄNDIG ÜBERARBEITETES Quit-Delay-System mit IPC-Watchdog
     // KRITISCHER FIX: Viel längeres Delay und verbesserte Beendigung
-    const updatedQuitDelayMs = 20000; // 20 Sekunden statt der übergebenen 7 Sekunden (vorher: 12 Sekunden)
+    const updatedQuitDelayMs = 30000; // 30 Sekunden statt der übergebenen 7 Sekunden (vorher: 20 Sekunden)
     log.info(tag(`Setting up EXTENDED delayed app termination in ${updatedQuitDelayMs}ms (vs. requested ${quitDelayMs}ms)`));
     
     // Status-Update vor der Beendigung
