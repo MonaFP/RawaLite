@@ -18,14 +18,18 @@ const updater = {
   install: (exePath?: string): Promise<{ ok: boolean; used?: string; error?: string }> =>
     ipcRenderer.invoke("updater:install", exePath),
     
-  // 🚀 NEW: Custom Install API - Direct installer launch with verification
+  // 🚀 ROBUST: Custom Install API with enhanced parameters for reliable installer launch
   installCustom: (options: {
     filePath: string;
     args?: string[];
     expectedSha256?: string;
+    elevate?: boolean;       // default: true (UAC elevation)
+    unblock?: boolean;       // default: true (MOTW unblock)
+    quitDelayMs?: number;    // default: 7000 (robust quit delay)
   }): Promise<{
     ok: boolean;
     installerStarted?: boolean;
+    pid?: number | null;
     filePath?: string;
     args?: string[];
     runId?: string;

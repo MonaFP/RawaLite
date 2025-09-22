@@ -5,7 +5,7 @@ import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
 import https from "node:https";
-import { spawn } from "node:child_process";
+import { spawn, ChildProcess } from "node:child_process";
 import crypto from "node:crypto";
 import pkg from "../package.json" assert { type: "json" };
 
@@ -304,45 +304,11 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
 
     // Sentinel file system entfernt - Interactive Installer braucht das nicht
 
-    // Interactive Installer starten - User kann durchklicken
-    try {
-      const child = spawn(candidate, [], {
-        detached: false,  // Interactive Installation needs to be attached
-        stdio: "pipe",    // Allow interaction with installer
-        windowsHide: false // Show installer UI
-      });
-      
-      child.on("error", (err: any) => {
-        try { log.error(`❌ ${tag("Installer spawn error:")} ${err?.message || err}`); } catch {}
-      });
-      
-      child.on("close", (code: number | null) => {
-        try { log.info(`🔚 ${tag(`Installer finished with code: ${code}`)}`); } catch {}
-      });
-      
-      try { log.info(tag(`Started interactive installer → ${candidate}`)); } catch {}
-    } catch (spawnError: any) {
-      try { log.error(`❌ ${tag("Spawn failed:")} ${spawnError?.message || spawnError}`); } catch {}
-      throw spawnError;
-    }
-
-    // NSIS runAfterFinish=true übernimmt automatischen Neustart
-    try {
-      app.releaseSingleInstanceLock?.();
-      try { log.info(`🔓 ${tag("Released single instance lock - NSIS will restart app after installation")}`); } catch {}
-    } catch {}
-
-    // App beenden - NSIS startet automatisch neu
-    setTimeout(() => {
-      try { log.info(`🔚 ${tag("Exiting app for installer handover")}`); } catch {}
-      try { app.exit(0); } catch {}
-      setTimeout(() => {
-        // Interactive Installer läuft - App kann beendet werden
-        try { process.exit(0); } catch {}
-      }, 1000);
-    }, 1800);
-
-    return { ok: true, used: candidate, relaunchPlanned: true, runId };
+    // Legacy installer code removed - use installCustom IPC handler instead
+    return { 
+      ok: false, 
+      error: "Legacy install method deprecated. Use installCustom IPC handler instead." 
+    };
   } catch (e: any) {
     log.error("❌ [CUSTOM-UPDATER] Install exception:", e?.message || e);
     return { ok: false, error: e?.message ?? String(e) };
@@ -351,23 +317,38 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
 
 // === CUSTOM INSTALL IPC HANDLER ===
 
-ipcMain.handle("updater:install-custom", async (event, { filePath, args = [], expectedSha256 }: {
+type InstallCustomPayload = {
   filePath: string;
   args?: string[];
   expectedSha256?: string;
-}) => {
+  elevate?: boolean;       // default: true
+  unblock?: boolean;       // default: true
+  quitDelayMs?: number;    // default: 7000
+};
+
+ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPayload) => {
+  const {
+    filePath,
+    args = [],
+    expectedSha256,
+    elevate = true,
+    unblock = true,
+    quitDelayMs = 7000,
+  } = payload ?? {};
+
   const runId = Date.now().toString(36);
   const tag = (msg: string) => `[CUSTOM-INSTALL ${runId}] ${msg}`;
-  
+
   try {
     log.info("🚀 [INSTALL_CLICKED] Custom installer requested");
     log.info(tag(`Install requested: ${filePath}`));
     log.info(tag(`Args: ${JSON.stringify(args)}`));
     log.info(tag(`Expected SHA256: ${expectedSha256 ? "provided" : "none"}`));
+    log.info(tag(`Elevate: ${elevate}, Unblock: ${unblock}, QuitDelay: ${quitDelayMs}ms`));
 
-    // 1. Datei existiert?
-    if (!fs.existsSync(filePath)) {
-      const msg = `Installer-Datei nicht gefunden: ${filePath}`;
+    // 1. Validation - Datei existiert?
+    if (!filePath || !fs.existsSync(filePath)) {
+      const msg = `Installer nicht gefunden: ${filePath}`;
       log.error("❌ [CUSTOM-INSTALL] " + msg);
       return { ok: false, error: msg };
     }
@@ -375,12 +356,9 @@ ipcMain.handle("updater:install-custom", async (event, { filePath, args = [], ex
     // 2. SHA256-Verifikation (optional)
     if (expectedSha256) {
       try {
-        const crypto = require('crypto');
-        const fileBuffer = fs.readFileSync(filePath);
-        const actualSha256 = crypto.createHash('sha256').update(fileBuffer).digest('hex');
-        
-        if (actualSha256.toLowerCase() !== expectedSha256.toLowerCase()) {
-          const msg = `SHA256 mismatch. Expected: ${expectedSha256}, Got: ${actualSha256}`;
+        const digest = await sha256Of(filePath);
+        if (digest.toLowerCase() !== expectedSha256.toLowerCase()) {
+          const msg = `SHA256-Mismatch. expected=${expectedSha256} got=${digest}`;
           log.error("❌ [CUSTOM-INSTALL] " + msg);
           return { ok: false, error: msg };
         }
@@ -390,9 +368,16 @@ ipcMain.handle("updater:install-custom", async (event, { filePath, args = [], ex
       }
     }
 
-    // 3. Installer-Argumente vorbereiten (Interactive statt Silent)
-    const installerArgs = args.length > 0 ? args : []; // Default: Interactive Installation
-    log.info(tag(`Final args: ${JSON.stringify(installerArgs)}`));
+    // 3. MOTW-Unblocking (Windows-spezifisch)
+    if (unblock && process.platform === "win32") {
+      try {
+        await unblockFileWindows(filePath);
+        log.info("✅ [CUSTOM-INSTALL] MOTW unblocked successfully");
+      } catch (unblockError: any) {
+        log.warn("⚠️ [CUSTOM-INSTALL] MOTW unblock failed:", unblockError.message);
+        // Continue anyway - nicht kritisch
+      }
+    }
 
     // 4. Single Instance Lock freigeben
     try {
@@ -400,56 +385,47 @@ ipcMain.handle("updater:install-custom", async (event, { filePath, args = [], ex
       log.info("🔓 [CUSTOM-INSTALL] Released single instance lock for installer");
     } catch {}
 
-    // 5. Interactive Installer starten mit NSIS-optimierten Parametern
+    // 5. Robuster Windows-Installer-Start mit Fallback-Strategie
+    let child: ChildProcess;
     try {
-      const child = spawn(filePath, installerArgs, {
-        detached: true,     // Komplett unabhängiger Prozess
-        stdio: ["ignore", "pipe", "pipe"], // stdout/stderr für Logs, stdin ignore
-        windowsHide: false, // NSIS-Fenster sichtbar
-        shell: false        // Direkter Prozess-Start (nicht Shell)
-      });
-      
-      child.on("error", (err: any) => {
-        log.error("❌ [SPAWN_ERROR] Installer spawn failed:", err?.message || err);
-      });
-      
-      child.on("close", (code: number | null) => {
-        log.info(`✅ [SPAWN_OK] Installer finished with code: ${code}`);
-      });
-      
-      // Detach immediately for true independence
+      if (process.platform === "win32") {
+        child = await launchWindowsInstaller(filePath, args, elevate);
+      } else {
+        // Fallback für andere Plattformen
+        child = spawn(filePath, args, { 
+          detached: true, 
+          stdio: "ignore" 
+        });
+      }
+
+      // Vollständig abkoppeln - KRITISCH für echten Detach
       child.unref();
       
-      log.info("✅ [SPAWN_OK] Interactive installer started successfully");
-      log.info(tag(`Started: ${filePath} with args: ${JSON.stringify(installerArgs)}`));
+      log.info("✅ [SPAWN_OK] Robust installer launched successfully");
+      log.info(tag(`PID: ${child.pid}, Detached: true, Unref: true`));
+      
     } catch (spawnError: any) {
-      log.error("❌ [SPAWN_ERROR] Failed to start installer:", spawnError?.message || spawnError);
+      log.error("❌ [SPAWN_ERROR] All launch attempts failed:", spawnError?.message || spawnError);
       return { ok: false, error: spawnError?.message ?? String(spawnError) };
     }
 
-    // 6. NSIS mehr Zeit geben zum Starten - längere Verzögerung
+    // 6. Robustes Quit-Delay - App erst nach sicherem Installer-Start beenden
     setTimeout(() => {
       try {
-        log.info("🔚 [CUSTOM-INSTALL] Exiting app for installer handover (extended delay)");
-        app.quit();
-      } catch (quitError: any) {
-        log.warn("⚠️ [CUSTOM-INSTALL] App quit failed:", quitError?.message);
+        log.info(`🔚 [CUSTOM-INSTALL] Exiting app after robust delay (${quitDelayMs}ms)`);
+        app.exit(0);
+      } catch (exitError: any) {
+        log.warn("⚠️ [CUSTOM-INSTALL] App exit failed:", exitError?.message);
+        // No fallback needed - app.exit(0) is the most reliable exit method
       }
-      
-      // Fallback exit mit längerer Verzögerung
-      setTimeout(() => {
-        try { 
-          log.info("🔚 [CUSTOM-INSTALL] Fallback process exit");
-          process.exit(0); 
-        } catch {}
-      }, 2000);
-    }, 3000); // 3 Sekunden für NSIS-Initialisierung
+    }, quitDelayMs);
 
     return { 
       ok: true, 
       installerStarted: true, 
+      pid: child.pid ?? null,
       filePath, 
-      args: installerArgs,
+      args,
       runId 
     };
 
@@ -458,6 +434,95 @@ ipcMain.handle("updater:install-custom", async (event, { filePath, args = [], ex
     return { ok: false, error: error?.message ?? String(error) };
   }
 });
+
+// === HELPER FUNCTIONS FOR ROBUST INSTALLER ===
+
+async function sha256Of(path: string): Promise<string> {
+  const h = crypto.createHash("sha256");
+  return await new Promise<string>((resolve, reject) => {
+    const s = fs.createReadStream(path);
+    s.on("data", d => h.update(d));
+    s.on("end", () => resolve(h.digest("hex")));
+    s.on("error", reject);
+  });
+}
+
+function psEscape(s: string) { 
+  return s.replace(/'/g, "''"); 
+}
+
+async function unblockFileWindows(filePath: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const ps = spawn("powershell.exe", [
+      "-NoProfile",
+      "-ExecutionPolicy", "Bypass",
+      "-Command",
+      `Unblock-File -Path '${psEscape(filePath)}'`
+    ], { stdio: "ignore", windowsHide: true });
+    
+    ps.once("error", reject);
+    ps.once("exit", () => resolve());
+  });
+}
+
+function launchWindowsInstaller(filePath: string, args: string[], elevate: boolean): Promise<ChildProcess> {
+  return new Promise<ChildProcess>((resolve, reject) => {
+    // Strategie 1: Direkter spawn() mit optimalen Parametern
+    try {
+      const direct = spawn(filePath, args, {
+        detached: true,
+        stdio: "ignore",        // KRITISCH: Vollständige Pipe-Trennung
+        windowsHide: false,     // GUI sichtbar
+        shell: false            // Direkter Prozess-Start
+      });
+
+      let resolved = false;
+      
+      // Bei Fehler: PowerShell RunAs Fallback
+      direct.once("error", () => {
+        if (resolved) return;
+        tryPowershellRunAs()
+          .then(cp => { resolved = true; resolve(cp); })
+          .catch(reject);
+      });
+
+      // Kurze Wartezeit für erfolgreichen Start
+      setTimeout(() => {
+        if (!resolved) { 
+          resolved = true; 
+          resolve(direct); 
+        }
+      }, 150);
+
+    } catch {
+      // Sofortiger Fallback bei spawn()-Exception
+      tryPowershellRunAs()
+        .then(resolve)
+        .catch(reject);
+    }
+
+    function tryPowershellRunAs(): Promise<ChildProcess> {
+      const arglist = args.map(a => `'${psEscape(String(a))}'`).join(", ");
+      const verb = elevate ? " -Verb RunAs" : "";
+      const cmd = `Start-Process -FilePath '${psEscape(filePath)}'${arglist ? ` -ArgumentList ${arglist}` : ""}${verb}`;
+
+      const ps = spawn("powershell.exe", [
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-Command", cmd
+      ], {
+        detached: true,
+        stdio: "ignore",        // KRITISCH: Keine offenen Pipes
+        windowsHide: false,
+      });
+
+      return new Promise<ChildProcess>((res, rej) => {
+        ps.once("error", rej);
+        setTimeout(() => res(ps), 150);
+      });
+    }
+  });
+}
 
 // === CUSTOM UPDATER HELPER FUNCTIONS ===
 

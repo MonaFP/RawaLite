@@ -130,27 +130,32 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
     setState('installing');
     
     try {
-      console.log('🚀 [INSTALL_CLICKED] Starting custom installer with file:', downloadedFile);
+      console.log('🚀 [INSTALL_CLICKED] Starting robust custom installer with file:', downloadedFile);
       
-      // ✅ NEW: Use Custom Install API instead of legacy install()
+      // ✅ ROBUST: Use Enhanced Custom Install API with all reliability features
       const result = await window.rawalite?.updater?.installCustom?.({
         filePath: downloadedFile,
-        args: [], // Interactive Installation (no /S flags)
-        // Optional: expectedSha256 could be added here for verification
+        args: [],                    // Interactive Installation (no /S silent flags)
+        elevate: true,               // Enable UAC elevation for proper admin rights
+        unblock: true,               // Enable MOTW unblocking for downloaded files
+        quitDelayMs: 7000,          // Robust 7s delay for NSIS initialization
+        // Optional: expectedSha256 could be added for verification if available
       });
       
       if (!result?.ok) {
         throw new Error(result?.error || 'Installation fehlgeschlagen');
       }
       
-      console.log('✅ [SPAWN_OK] Custom installer started successfully:', {
+      console.log('✅ [SPAWN_OK] Robust custom installer started successfully:', {
+        installerStarted: result.installerStarted,
+        pid: result.pid,
         filePath: result.filePath,
         args: result.args,
         runId: result.runId
       });
       
-      // Installation successful - app will quit and installer will handle restart
-      console.log('✅ Interactive installer launched - App will close for installation');
+      // Installation successful - enhanced system ensures proper detach and timing
+      console.log('✅ Robust Interactive installer launched - App will close after safe delay for installation');
       
     } catch (error) {
       console.error('❌ [SPAWN_ERROR] Installation fehlgeschlagen:', error);

@@ -42,14 +42,18 @@ declare interface Window {
         error?: string;
       }>;
       
-      // 🚀 NEW: Custom Install API - Direct installer launch with verification
+      // 🚀 ROBUST: Custom Install API with enhanced parameters for reliable installer launch
       installCustom: (options: {
         filePath: string;
         args?: string[];
         expectedSha256?: string;
+        elevate?: boolean;       // default: true (UAC elevation)
+        unblock?: boolean;       // default: true (MOTW unblock)
+        quitDelayMs?: number;    // default: 7000 (robust quit delay)
       }) => Promise<{
         ok: boolean;
         installerStarted?: boolean;
+        pid?: number | null;
         filePath?: string;
         args?: string[];
         runId?: string;
