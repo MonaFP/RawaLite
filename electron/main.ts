@@ -543,6 +543,38 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
                         Log-Message "⚠️ [PS-INSTALLER] Failed to adjust priority: $_"
                     }
                     
+                    # 🚨 CRITICAL FIX: NSIS-Prozesshierarchie-Verfolgung
+                    # NSIS-Installer starten einen temporären Extraktionsprozess, der dann den eigentlichen Installer startet
+                    Log-Message "🔍 [PS-INSTALLER] Starting NSIS process hierarchy monitoring..."
+                    
+                    # Warte kurz, damit der temporäre Prozess den eigentlichen Installer starten kann
+                    Start-Sleep -Milliseconds 1500
+                    
+                    # Suche nach neu gestarteten NSIS-Prozessen, die Kinder des temporären Prozesses sind oder den Namen "Setup" enthalten
+                    try {
+                        $startTime = (Get-Date).AddSeconds(-5)
+                        $setupProcesses = Get-Process | Where-Object { 
+                            ($_.StartTime -gt $startTime) -and 
+                            (($_.ProcessName -like "*setup*") -or ($_.ProcessName -like "*install*") -or ($_.Path -like "*$($fileInfo.Name)*")) 
+                        }
+                        
+                        if ($setupProcesses.Count -gt 0) {
+                            foreach ($setupProc in $setupProcesses) {
+                                Log-Message "✅ [PS-INSTALLER] Found potential NSIS installer: $($setupProc.ProcessName) (PID: $($setupProc.Id))"
+                                try {
+                                    $setupProc.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::High
+                                    Log-Message "✅ [PS-INSTALLER] Raised priority for actual installer: PID $($setupProc.Id)"
+                                } catch {
+                                    Log-Message "⚠️ [PS-INSTALLER] Could not modify actual installer priority: $_"
+                                }
+                            }
+                        } else {
+                            Log-Message "⚠️ [PS-INSTALLER] No NSIS installer processes found within 5 second window"
+                        }
+                    } catch {
+                        Log-Message "⚠️ [PS-INSTALLER] Error while searching for NSIS child processes: $_"
+                    }
+                    
                     # Erfolg signalisieren
                     Log-Message "✅ [PS-INSTALLER] Installation process launched successfully"
                     exit 0
@@ -742,7 +774,7 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
     
       // 6. 🚨 VOLLSTÄNDIG ÜBERARBEITETES Quit-Delay-System
     // KRITISCHER FIX: Viel längeres Delay und verbesserte Beendigung
-    const updatedQuitDelayMs = 12000; // 12 Sekunden statt der übergebenen 7 Sekunden
+    const updatedQuitDelayMs = 20000; // 20 Sekunden statt der übergebenen 7 Sekunden (vorher: 12 Sekunden)
     log.info(tag(`Setting up EXTENDED delayed app termination in ${updatedQuitDelayMs}ms (vs. requested ${quitDelayMs}ms)`));
     
     // Status-Update vor der Beendigung
