@@ -9,6 +9,11 @@ import { spawn, ChildProcess } from "node:child_process";
 import crypto from "node:crypto";
 import pkg from "../package.json" assert { type: "json" };
 
+// TypeScript-Erweiterung für globale Variablen
+declare global {
+  var __rawaliteUpdateInProgress: boolean;
+}
+
 // --- Debug/Telemetry helpers (nur Node-Core) ---
 // Debug-Environment-Variables entfernt - Interactive Installer ist viel einfacher
 function safeMkdirp(p: string) { try { fs.mkdirSync(p, { recursive: true }); } catch {} }
@@ -346,11 +351,42 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
     log.info(tag(`Expected SHA256: ${expectedSha256 ? "provided" : "none"}`));
     log.info(tag(`Elevate: ${elevate}, Unblock: ${unblock}, QuitDelay: ${quitDelayMs}ms`));
 
+    // ⚠️ FIX: Prüfen ob Update-Installation bereits läuft (verhindert Doppelausführungen)
+    const isUpdateInProgress = !!global.__rawaliteUpdateInProgress;
+    if (isUpdateInProgress) {
+      const msg = "Update-Installation läuft bereits";
+      log.warn(tag(msg));
+      return { ok: false, error: msg, alreadyInProgress: true };
+    }
+
+    // ⚠️ FIX: Markieren dass Update-Installation läuft
+    global.__rawaliteUpdateInProgress = true;
+
     // 1. Validation - Datei existiert?
     if (!filePath || !fs.existsSync(filePath)) {
       const msg = `Installer nicht gefunden: ${filePath}`;
       log.error("❌ [CUSTOM-INSTALL] " + msg);
+      global.__rawaliteUpdateInProgress = false; // Reset Flag
       return { ok: false, error: msg };
+    }
+
+    // ⚠️ FIX: Prüfe ob Datei ausführbar ist
+    try {
+      const stats = fs.statSync(filePath);
+      const isExecutable = stats.isFile() && filePath.toLowerCase().endsWith('.exe');
+      if (!isExecutable) {
+        const msg = `Datei ist keine ausführbare .exe: ${filePath}`;
+        log.error("❌ [CUSTOM-INSTALL] " + msg);
+        global.__rawaliteUpdateInProgress = false; // Reset Flag
+        return { ok: false, error: msg };
+      }
+      
+      // 💡 VERBESSERUNG: Größe protokollieren
+      const fileSizeMB = Math.round(stats.size / 1024 / 1024 * 100) / 100;
+      log.info(tag(`Installer file size: ${fileSizeMB} MB`));
+    } catch (statError: any) {
+      log.warn(tag(`Could not check file stats: ${statError.message}`));
+      // Continue anyway - nicht kritisch
     }
 
     // 2. SHA256-Verifikation (optional)
@@ -360,6 +396,7 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
         if (digest.toLowerCase() !== expectedSha256.toLowerCase()) {
           const msg = `SHA256-Mismatch. expected=${expectedSha256} got=${digest}`;
           log.error("❌ [CUSTOM-INSTALL] " + msg);
+          global.__rawaliteUpdateInProgress = false; // Reset Flag
           return { ok: false, error: msg };
         }
         log.info("✅ [CUSTOM-INSTALL] SHA256 verification passed");
@@ -379,6 +416,20 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
       }
     }
 
+    // ⚠️ FIX: Status an Renderer melden bevor Single-Instance-Lock freigegeben wird
+    try {
+      // Sende Nachricht an Renderer vor Lock-Freigabe
+      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+      if (mainWindow) {
+        mainWindow.webContents.send("updater:status", {
+          status: "preparing-installer",
+          message: "Installer wird vorbereitet..."
+        });
+      }
+    } catch (notifyError) {
+      log.warn(tag(`Failed to notify renderer: ${notifyError instanceof Error ? notifyError.message : String(notifyError)}`));
+    }
+
     // 4. Single Instance Lock freigeben
     try {
       app.releaseSingleInstanceLock?.();
@@ -388,14 +439,60 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
     // 5. Robuster Windows-Installer-Start mit Fallback-Strategie
     let child: ChildProcess;
     try {
+      // ⚠️ FIX: Zuerst Priorität des aktuellen Prozesses senken, damit Installer mehr Ressourcen bekommt
       if (process.platform === "win32") {
+        try {
+          // Versuche, die Priorität des Electron-Prozesses zu senken
+          const lowerPriorityPs = spawn("powershell.exe", [
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-Command", `$currentPid = [System.Diagnostics.Process]::GetCurrentProcess().Id; (Get-Process -Id $currentPid).PriorityClass = [System.Diagnostics.ProcessPriorityClass]::BelowNormal`
+          ], { stdio: "ignore" });
+          
+          // Warten auf Abschluss des PowerShell-Befehls
+          await new Promise<void>((resolve) => {
+            lowerPriorityPs.on("exit", () => resolve());
+            setTimeout(resolve, 500); // Timeout falls PowerShell hängt
+          });
+          
+          log.info("✅ [PRIORITY] Lowered current process priority for better installer performance");
+        } catch (priorityError) {
+          log.warn("⚠️ [PRIORITY] Failed to lower process priority:", priorityError instanceof Error ? priorityError.message : String(priorityError));
+          // Nicht kritisch, fortfahren
+        }
+        
+        // Windows-spezifischer Installer-Launch mit verbesserter Funktion
         child = await launchWindowsInstaller(filePath, args, elevate);
+        
       } else {
         // Fallback für andere Plattformen
         child = spawn(filePath, args, { 
           detached: true, 
           stdio: "ignore" 
         });
+      }
+
+      // ⚠️ FIX: Versuche Installer-Priorität zu erhöhen nach dem Start
+      if (process.platform === "win32" && child.pid) {
+        try {
+          // Erhöhe die Priorität des Installer-Prozesses
+          const raisePriorityPs = spawn("powershell.exe", [
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-Command", `try { $p = Get-Process -Id ${child.pid} -ErrorAction Stop; $p.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::AboveNormal; "✅ Priority raised for PID ${child.pid}" } catch { "❌ Failed for PID ${child.pid}: $_" }`
+          ], { stdio: "pipe" });
+          
+          raisePriorityPs.stdout?.on("data", (data) => {
+            log.info(`[PRIORITY] ${data.toString().trim()}`);
+          });
+          
+          raisePriorityPs.stderr?.on("data", (data) => {
+            log.warn(`[PRIORITY-ERR] ${data.toString().trim()}`);
+          });
+        } catch (priorityError) {
+          log.warn("⚠️ [PRIORITY] Failed to raise installer priority:", priorityError instanceof Error ? priorityError.message : String(priorityError));
+          // Nicht kritisch, fortfahren
+        }
       }
 
       // Vollständig abkoppeln - KRITISCH für echten Detach
@@ -409,14 +506,79 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
       return { ok: false, error: spawnError?.message ?? String(spawnError) };
     }
 
+    // ⚠️ FIX: Vor dem Beenden versuchen, die Benutzeroberfläche zu aktualisieren
+    try {
+      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+      if (mainWindow) {
+        mainWindow.webContents.send("updater:status", {
+          status: "install-started",
+          message: "Installer wurde gestartet. Die App wird in Kürze beendet..."
+        });
+      }
+    } catch (notifyError) {
+      log.warn(tag(`Failed to notify renderer before exit: ${notifyError instanceof Error ? notifyError.message : String(notifyError)}`));
+    }
+    
     // 6. Robustes Quit-Delay - App erst nach sicherem Installer-Start beenden
+    // ⚠️ FIX: Längeres Delay und verbesserte Beendigung
+    log.info(tag(`Setting up delayed app termination in ${quitDelayMs}ms`));
+    
     setTimeout(() => {
       try {
         log.info(`🔚 [CUSTOM-INSTALL] Exiting app after robust delay (${quitDelayMs}ms)`);
-        app.exit(0);
+        
+        // 🔑 KRITISCHER FIX: Robuste Beendigung mit mehreren Strategien
+        // Strategie 1: Alle Fenster schließen und auf natürliches Beenden warten
+        log.info("💡 [FIX] Stage 1: Closing all windows gracefully");
+        
+        const allWindows = BrowserWindow.getAllWindows();
+        if (allWindows.length > 0) {
+          allWindows.forEach(win => {
+            try {
+              // Speichere Status in die Log-Datei für späteren Debug
+              log.info(`📊 [WINDOW-INFO] id=${win.id} size=${win.getSize()} title='${win.getTitle()}' visible=${win.isVisible()} focused=${win.isFocused()}`);
+              
+              if (!win.isDestroyed()) {
+                win.close();
+              }
+            } catch (winErr: any) {
+              log.warn(`⚠️ [WINDOW-CLOSE] Error closing window: ${winErr?.message}`);
+            }
+          });
+        }
+        
+        // Strategie 2: Nach kurzem Delay sanft beenden mit app.quit()
+        setTimeout(() => {
+          try {
+            log.info("💡 [FIX] Stage 2: Using app.quit() for graceful shutdown");
+            app.quit();
+            
+            // Strategie 3: Fallback zu app.exit() nach weiterem Delay falls app.quit() nicht erfolgreich
+            setTimeout(() => {
+              try {
+                log.info("💡 [FIX] Stage 3: Fallback to app.exit(0)");
+                app.exit(0);
+              } catch (finalExitErr: any) {
+                log.error(`❌ [EXIT-FALLBACK] Final exit attempt failed: ${finalExitErr?.message}`);
+                // Nichts mehr zu tun, wenn selbst app.exit() fehlschlägt
+              }
+            }, 1500);
+            
+          } catch (quitErr: any) {
+            log.warn(`⚠️ [QUIT-ERROR] app.quit() failed: ${quitErr?.message}`);
+            // Direkt zu app.exit() übergehen
+            try {
+              app.exit(0);
+            } catch {
+              // Ignorieren - wir haben alles versucht
+            }
+          }
+        }, 500);
+        
       } catch (exitError: any) {
-        log.warn("⚠️ [CUSTOM-INSTALL] App exit failed:", exitError?.message);
-        // No fallback needed - app.exit(0) is the most reliable exit method
+        log.warn("⚠️ [CUSTOM-INSTALL] Exit sequence failed:", exitError?.message);
+        // Fallback zu direktem app.exit
+        try { app.exit(0); } catch { /* Ignorieren */ }
       }
     }, quitDelayMs);
 
@@ -467,19 +629,45 @@ async function unblockFileWindows(filePath: string): Promise<void> {
 
 function launchWindowsInstaller(filePath: string, args: string[], elevate: boolean): Promise<ChildProcess> {
   return new Promise<ChildProcess>((resolve, reject) => {
-    // Strategie 1: Direkter spawn() mit optimalen Parametern
+    // 🚀 VERBESSERUNG: Update-spezifische Parameter für NSIS (dezente Installation)
+    const updateArgs = [...args];
+    
+    // ⚠️ FIX: Keine silent Installation - Interaktive Installation wird bevorzugt
+    // updateArgs.push('/S'); // Nicht hinzufügen - Benutzerinteraktion erlauben
+    
+    // ⚠️ FIX: Andere kritische NSIS-Parameter für Updates (nur bei Bedarf)
+    if (!updateArgs.includes('/NCRC')) {
+      updateArgs.push('/NCRC'); // Skip CRC checks für schnellere Installation
+    }
+
+    // 💡 VERBESSERUNG: Logging verbessern
+    log.info(`🚀 [INSTALL-FIX] Launching installer with args: ${JSON.stringify(updateArgs)}`);
+    log.info(`🚀 [INSTALL-FIX] Using filePath: ${filePath}`);
+    
+    // Strategie 1: Direkter spawn() mit verbesserten Parametern
     try {
-      const direct = spawn(filePath, args, {
-        detached: true,
+      const direct = spawn(filePath, updateArgs, {
+        detached: true,        // KRITISCH: Prozess von Electron abkoppeln
         stdio: "ignore",        // KRITISCH: Vollständige Pipe-Trennung
         windowsHide: false,     // GUI sichtbar
-        shell: false            // Direkter Prozess-Start
+        shell: false,           // Direkter Prozess-Start
+        windowsVerbatimArguments: true // WICHTIG: Argumente unverändert weitergeben
       });
 
       let resolved = false;
       
+      // 🛠️ VERBESSERUNG: Ereignisbehandlung
+      direct.once("spawn", () => {
+        log.info("✅ [INSTALL-FIX] Installer process spawned directly");
+        if (!resolved) {
+          resolved = true;
+          resolve(direct);
+        }
+      });
+      
       // Bei Fehler: PowerShell RunAs Fallback
-      direct.once("error", () => {
+      direct.once("error", (err) => {
+        log.warn(`⚠️ [INSTALL-FIX] Direct spawn failed: ${err.message}`);
         if (resolved) return;
         tryPowershellRunAs()
           .then(cp => { resolved = true; resolve(cp); })
@@ -489,37 +677,96 @@ function launchWindowsInstaller(filePath: string, args: string[], elevate: boole
       // Kurze Wartezeit für erfolgreichen Start
       setTimeout(() => {
         if (!resolved) { 
+          log.info("⏱️ [INSTALL-FIX] Resolving after timeout");
           resolved = true; 
           resolve(direct); 
         }
-      }, 150);
+      }, 300); // Längere Wartezeit für sichereren Start
 
-    } catch {
+    } catch (error) {
       // Sofortiger Fallback bei spawn()-Exception
+      log.warn(`⚠️ [INSTALL-FIX] Direct spawn exception: ${error instanceof Error ? error.message : String(error)}`);
       tryPowershellRunAs()
         .then(resolve)
         .catch(reject);
     }
 
     function tryPowershellRunAs(): Promise<ChildProcess> {
-      const arglist = args.map(a => `'${psEscape(String(a))}'`).join(", ");
+      const arglist = updateArgs.map(a => `'${psEscape(String(a))}'`).join(", ");
       const verb = elevate ? " -Verb RunAs" : "";
-      const cmd = `Start-Process -FilePath '${psEscape(filePath)}'${arglist ? ` -ArgumentList ${arglist}` : ""}${verb}`;
+      
+      // ⚠️ FIX: Verbesserte PowerShell-Befehlsoptionen
+      const cmd = `
+        $ErrorActionPreference = 'Stop';
+        $installerPath = '${psEscape(filePath)}';
+        $currentPid = [System.Diagnostics.Process]::GetCurrentProcess().Id;
+        
+        # Protokollierung für bessere Diagnose
+        Write-Host "🚀 [PS-INSTALLER] Starting installer from PowerShell with PID: $currentPid";
+        Write-Host "🚀 [PS-INSTALLER] Installer path: $installerPath";
+        
+        try {
+          # Hauptprozess starten mit Wait=$false damit PowerShell nicht blockiert
+          Start-Process -FilePath "$installerPath"${arglist ? ` -ArgumentList ${arglist}` : ""}${verb} -Wait:$false;
+          Write-Host "✅ [PS-INSTALLER] Installer started successfully";
+          exit 0;
+        }
+        catch {
+          Write-Host "❌ [PS-INSTALLER] Failed to start installer: $_";
+          exit 1;
+        }
+      `;
 
+      log.info(`🚀 [INSTALL-FIX] Attempting PowerShell RunAs fallback`);
+      
       const ps = spawn("powershell.exe", [
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
         "-Command", cmd
       ], {
         detached: true,
-        stdio: "ignore",        // KRITISCH: Keine offenen Pipes
+        stdio: ["ignore", "pipe", "pipe"],  // VERBESSERUNG: Erfassen der Ausgabe für Diagnose
         windowsHide: false,
         cwd: path.dirname(filePath)  // WorkingDirectory für korrekten Installer-Start
       });
+      
+      // Erfassen der PowerShell-Ausgabe für bessere Diagnose
+      ps.stdout?.on('data', (data) => {
+        log.info(`[PS-STDOUT] ${data.toString().trim()}`);
+      });
+      
+      ps.stderr?.on('data', (data) => {
+        log.warn(`[PS-STDERR] ${data.toString().trim()}`);
+      });
 
       return new Promise<ChildProcess>((res, rej) => {
-        ps.once("error", rej);
-        setTimeout(() => res(ps), 150);
+        let resolved = false;
+        
+        ps.once("error", (err) => {
+          log.error(`❌ [PS-ERROR] ${err.message}`);
+          if (!resolved) {
+            resolved = true;
+            rej(err);
+          }
+        });
+        
+        ps.once("exit", (code) => {
+          const success = code === 0;
+          log.info(`${success ? "✅" : "❌"} [PS-EXIT] PowerShell exited with code: ${code}`);
+          if (!resolved && !success) {
+            resolved = true;
+            rej(new Error(`PowerShell exited with code: ${code}`));
+          }
+        });
+        
+        // Längere Wartezeit für sichereren Start
+        setTimeout(() => {
+          if (!resolved) {
+            log.info("⏱️ [PS-TIMEOUT] Resolving PowerShell process after timeout");
+            resolved = true;
+            res(ps);
+          }
+        }, 500);
       });
     }
   });

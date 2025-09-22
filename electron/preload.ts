@@ -4,7 +4,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 // Import custom updater types
-import type { UpdateCheckResponse, UpdateDownloadResponse, UpdateInstallResponse, UpdateProgress } from "../src/types/updater";
+import type { UpdateManifest, UpdateFile, UpdateProgress, UpdateStatus } from "../src/types/updater";
 
 // 🔄 CUSTOM UPDATER API - Pure IPC Implementation
 const updater = {
@@ -45,6 +45,17 @@ const updater = {
   
   offProgress: () => {
     ipcRenderer.removeAllListeners("updater:progress");
+  },
+  
+  // 🆕 Status event listener for detailed update process status
+  onStatus: (callback: (status: UpdateStatus) => void): (() => void) => {
+    const handler = (_: any, status: UpdateStatus) => callback(status);
+    ipcRenderer.on("updater:status", handler);
+    return () => ipcRenderer.removeListener("updater:status", handler);
+  },
+  
+  offStatus: () => {
+    ipcRenderer.removeAllListeners("updater:status");
   }
 };
 

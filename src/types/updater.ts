@@ -52,6 +52,23 @@ export interface UpdateProgress {
   etaSec?: number;     // estimated time remaining in seconds
 }
 
+// === STATUS EVENTS ===
+export interface UpdateStatus {
+  status: 
+    | 'checking'
+    | 'download-started'
+    | 'downloading'
+    | 'download-complete'
+    | 'preparing-installer'
+    | 'install-started'
+    | 'installing'
+    | 'complete'
+    | 'error';
+  message: string;
+  error?: string;
+  data?: any;
+}
+
 // === WINDOW API TYPES ===
 export interface CustomUpdaterAPI {
   check: () => Promise<UpdateCheckResponse>;
