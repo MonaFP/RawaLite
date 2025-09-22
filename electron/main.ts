@@ -400,13 +400,13 @@ ipcMain.handle("updater:install-custom", async (event, { filePath, args = [], ex
       log.info("🔓 [CUSTOM-INSTALL] Released single instance lock for installer");
     } catch {}
 
-    // 5. Interactive Installer starten
+    // 5. Interactive Installer starten mit NSIS-optimierten Parametern
     try {
       const child = spawn(filePath, installerArgs, {
-        detached: true,   // Komplett unabhängiger Prozess für UI
-        stdio: "ignore",  // Keine Pipes - verhindert invisible spawn
-        windowsHide: false, // Installer-Fenster anzeigen
-        shell: true       // Windows Shell für korrekte UI-Anzeige
+        detached: true,     // Komplett unabhängiger Prozess
+        stdio: ["ignore", "pipe", "pipe"], // stdout/stderr für Logs, stdin ignore
+        windowsHide: false, // NSIS-Fenster sichtbar
+        shell: false        // Direkter Prozess-Start (nicht Shell)
       });
       
       child.on("error", (err: any) => {
@@ -427,18 +427,23 @@ ipcMain.handle("updater:install-custom", async (event, { filePath, args = [], ex
       return { ok: false, error: spawnError?.message ?? String(spawnError) };
     }
 
-    // 6. App sauber schließen nach kurzer Verzögerung
+    // 6. NSIS mehr Zeit geben zum Starten - längere Verzögerung
     setTimeout(() => {
       try {
-        log.info("🔚 [CUSTOM-INSTALL] Exiting app for installer handover");
+        log.info("🔚 [CUSTOM-INSTALL] Exiting app for installer handover (extended delay)");
         app.quit();
-      } catch {}
+      } catch (quitError: any) {
+        log.warn("⚠️ [CUSTOM-INSTALL] App quit failed:", quitError?.message);
+      }
       
-      // Fallback exit
+      // Fallback exit mit längerer Verzögerung
       setTimeout(() => {
-        try { process.exit(0); } catch {}
-      }, 1000);
-    }, 1500);
+        try { 
+          log.info("🔚 [CUSTOM-INSTALL] Fallback process exit");
+          process.exit(0); 
+        } catch {}
+      }, 2000);
+    }, 3000); // 3 Sekunden für NSIS-Initialisierung
 
     return { 
       ok: true, 
