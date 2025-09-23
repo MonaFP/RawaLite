@@ -9,8 +9,11 @@ files:
 extraResources:
   - from: templates
     to: app/templates
+  # Andere Ressourcen außer update-launcher.js
   - from: resources
+    filter: ['!**/update-launcher.js']  # Schließe update-launcher.js aus
     to: resources
+  # Update-Launcher explizit im resources-Root platzieren
   - from: resources/update-launcher.js
     to: resources/update-launcher.js
 

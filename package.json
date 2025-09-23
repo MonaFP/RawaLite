@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.8.90",
+  "version": "1.8.92",
   "private": true,
   "license": "UNLICENSED",
   "author": "MonaFP",
@@ -19,6 +19,8 @@
     "build:launcher": "node scripts/build-launcher.js",
     "build:clean": "rimraf dist dist-electron && pnpm build",
     "clean:build": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Remove-Item -Recurse -Force .\\dist, .\\release, .\\dist-electron, .\\node_modules\\.vite, .\\node_modules\\.cache -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force $env:APPDATA\\electron-builder -ErrorAction SilentlyContinue\"",
+    "clean:dist": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cleanup-dist.ps1",
+    "create:release-notes": "node scripts/create-release-notes.mjs",
     "rebuild:dist": "pnpm clean:build && pnpm install && pnpm build && pnpm dist",
     "build:preload": "esbuild electron/preload.ts --bundle --platform=node --external:electron --outfile=dist-electron/preload.js",
     "build:preload:clean": "esbuild electron/preload.ts --bundle --platform=node --external:electron --outfile=dist-electron/preload.js --no-bundle-cache",
@@ -50,7 +52,8 @@
     "guard:release:assets": "node guard-release-assets.mjs",
     "guard:build:freshness": "node scripts/validate-build-freshness.mjs",
     "precommit": "pnpm typecheck && pnpm lint && pnpm guard:external && pnpm guard:pdf && pnpm guard:templates && pnpm guard:backup && pnpm ipc:validate && pnpm version:check && pnpm guard:build:freshness",
-    "postinstall": "node -e \"require('fs').mkdirSync('public',{recursive:true});require('fs').cpSync(require.resolve('sql.js/dist/sql-wasm.wasm'),'public/sql-wasm.wasm',{force:true})\""
+    "postinstall": "node -e \"require('fs').mkdirSync('public',{recursive:true});require('fs').cpSync(require.resolve('sql.js/dist/sql-wasm.wasm'),'public/sql-wasm.wasm',{force:true})\"",
+    "cleanup:repo": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cleanup-repository-interactive.ps1"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.2.7",

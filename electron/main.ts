@@ -552,25 +552,28 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
                         try {
                             $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
                             if ($proc) {
-                                Log-Message "${indent}📊 Process: $($proc.ProcessName) (PID: $pid), Handles: $($proc.HandleCount), Window Title: '$($proc.MainWindowTitle)'"
+                                Log-Message "$indent📊 Process: $($proc.ProcessName) (PID: $pid), Handles: $($proc.HandleCount), Window Title: '$($proc.MainWindowTitle)'"
                                 
                                 # Versuche Informationen zum Pfad zu bekommen
                                 try { 
                                     $procPath = $proc.Path
-                                    Log-Message "${indent}📂 Path: $procPath" 
-                                } catch { Log-Message "${indent}⚠️ Path not accessible" }
+                                    Log-Message "$indent📂 Path: $procPath" 
+                                } catch { Log-Message "$indent⚠️ Path not accessible" }
                                 
                                 # Versuche Informationen zum Befehlszeilen-Argument zu bekommen (WMI)
                                 try {
                                     $wmiQuery = "SELECT CommandLine FROM Win32_Process WHERE ProcessId = $pid"
                                     $cmdLine = (Get-WmiObject -Query $wmiQuery).CommandLine
-                                    if ($cmdLine) { Log-Message "${indent}🔶 Command line: $cmdLine" }
+                                    if ($cmdLine) { 
+                                        $localIndent = $indent
+                                        Log-Message "$localIndent🔶 Command line: $cmdLine" 
+                                    }
                                 } catch {}
                             } else {
-                                Log-Message "${indent}❌ Process with PID $pid no longer exists!"
+                                Log-Message "$indent❌ Process with PID $pid no longer exists!"
                             }
                         } catch {
-                            Log-Message "${indent}⚠️ Error examining process $pid: $_"
+                            Log-Message "$indent⚠️ Error examining process $pid: $_"
                         }
                     }
                     
@@ -942,21 +945,42 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
       // Pfad zum Update-Launcher im Ressourcen-Verzeichnis (außerhalb von app.asar!)
       // WICHTIG: Verwende app.getPath('exe') um den Programmordner zu bekommen, nicht app.getAppPath()
       const appDir = path.dirname(app.getPath('exe'));
+      
+      // Korrekter Pfad zum Update-Launcher: Direkt im resources-Verzeichnis
       const updateLauncherPath = path.join(appDir, 'resources', 'update-launcher.js');
       
       // WICHTIG: Verwende process.execPath statt 'node', um den richtigen Interpreter zu garantieren
       const execPath = process.execPath;
       
-      // Prüfe, ob Launcher und Installer existieren
-      if (!fs.existsSync(updateLauncherPath)) {
-        throw new Error(`Update-Launcher nicht gefunden: ${updateLauncherPath}`);
+      // Definiere mögliche Pfade zum Update-Launcher (in Prioritätsreihenfolge)
+      const possibleLauncherPaths = [
+        updateLauncherPath, // Primärer Pfad (resources/update-launcher.js)
+        path.join(appDir, 'resources', 'resources', 'update-launcher.js'), // Legacy-Fallback (verschachtelt)
+        path.join(app.getAppPath(), 'resources', 'update-launcher.js') // ASAR-Fallback (weniger empfohlen)
+      ];
+      
+      // Suche nach dem Update-Launcher in allen möglichen Pfaden
+      let actualLauncherPath = null;
+      for (const launcherPath of possibleLauncherPaths) {
+        log.info(tag(`Checking for Update-Launcher at: ${launcherPath}`));
+        if (fs.existsSync(launcherPath)) {
+          actualLauncherPath = launcherPath;
+          log.info(tag(`✅ Found Update-Launcher at: ${actualLauncherPath}`));
+          break;
+        }
       }
       
+      // Prüfe, ob Update-Launcher gefunden wurde
+      if (!actualLauncherPath) {
+        throw new Error(`Update-Launcher nicht gefunden in möglichen Pfaden: ${possibleLauncherPaths.join(', ')}`);
+      }
+      
+      // Prüfe, ob Installer existiert
       if (!fs.existsSync(filePath)) {
         throw new Error(`Installer nicht gefunden: ${filePath}`);
       }
       
-      log.info(tag(`Starting Update-Launcher: ${updateLauncherPath}`));
+      log.info(tag(`Starting Update-Launcher: ${actualLauncherPath}`));
       log.info(tag(`Using Electron/Node executable: ${execPath}`));
       log.info(tag(`Installer path: ${filePath}`));
       log.info(tag(`Main process PID: ${process.pid}`));
@@ -964,7 +988,7 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
       // Starte den Update-Launcher als separaten Prozess
       // WICHTIG: PID vor filePath übergeben (in update-launcher.ts geänderte Reihenfolge)
       const launcher = spawn(execPath, [
-        updateLauncherPath,    // Pfad zum Launcher-Skript
+        actualLauncherPath,    // Gefundener Pfad zum Launcher-Skript
         process.pid.toString(),// Aktuelle PID (Hauptprozess) - WICHTIG: Zuerst!
         filePath,              // Installer-Pfad - WICHTIG: Als zweites!
         '--debug',             // Debug-Modus für detaillierte Logs
@@ -984,6 +1008,7 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
       launcher.unref();
       
       log.info(tag(`✅ Update-Launcher started with arguments: [${process.pid}, ${filePath}]`));
+      log.info(tag(`📂 Using launcher at: ${actualLauncherPath}`));
       
       // Status-Update vor der Beendigung
       const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];

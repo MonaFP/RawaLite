@@ -18,6 +18,17 @@
 ### 3. Verpackungs-Konfiguration
 - **electron-builder.yml:** Angepasst, um den Update-Launcher als Ressource einzubinden
 - **Ziel-Pfad:** `resources/update-launcher.js` in der installierten App
+- **Konfiguration:**
+  ```yaml
+  extraResources:
+    # Andere Ressourcen außer update-launcher.js
+    - from: resources
+      filter: ['!**/update-launcher.js']  # Schließe update-launcher.js aus
+      to: resources
+    # Update-Launcher explizit im resources-Root platzieren
+    - from: resources/update-launcher.js
+      to: resources/update-launcher.js
+  ```
 
 ### 4. Hauptprozess-Integration
 - **Datei:** `electron/main.ts`
@@ -26,6 +37,24 @@
   - Start des Update-Launchers kurz vor App-Beendigung
   - Verbesserte Status-Updates für den Benutzer
   - Graceful Shutdown der App nach Launcher-Start
+  - Robuste Pfadsuche mit Fallback-Mechanismen (ab v1.8.91):
+    ```javascript
+    // Definiere mögliche Pfade zum Update-Launcher (in Prioritätsreihenfolge)
+    const possibleLauncherPaths = [
+      updateLauncherPath,                                        // Primärer Pfad
+      path.join(appDir, 'resources', 'resources', 'update-launcher.js'), // Legacy-Fallback
+      path.join(app.getAppPath(), 'resources', 'update-launcher.js')     // ASAR-Fallback
+    ];
+      
+    // Suche nach dem Update-Launcher in allen möglichen Pfaden
+    let actualLauncherPath = null;
+    for (const launcherPath of possibleLauncherPaths) {
+      if (fs.existsSync(launcherPath)) {
+        actualLauncherPath = launcherPath;
+        break;
+      }
+    }
+    ```
 
 ### 5. Testdokumentation
 - **Anleitung:** `docs/update-launcher-test.md`
