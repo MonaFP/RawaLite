@@ -22,7 +22,7 @@ export interface UpdateCheckResult {
   updateNotes?: string;
 }
 
-export const BUILD_DATE = "2025-09-23";
+export const BUILD_DATE = "2025-09-24";
 
 export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
@@ -368,7 +368,7 @@ export class VersionService {
    */
   private async getPackageJsonFallback(): Promise<string | null> {
     try {
-      return "1.8.92";  // Current package.json version as absolute fallback
+      return "1.8.93";  // Current package.json version as absolute fallback
     } catch (error) {
       console.error("[VersionService] Package.json fallback failed:", error);
       return null;
