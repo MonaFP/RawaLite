@@ -274,21 +274,16 @@ ipcMain.handle("updater:download", async () => {
   }
 });
 
-// 4️⃣ UPDATE:INSTALL - Install update and restart app
+// 4️⃣ UPDATE:INSTALL - Wait for installer completion before app exit
 ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
   const runId = Date.now().toString(36);
-  const tag = (m: string) => `[CUSTOM-UPDATER ${runId}] ${m}`;
+  const tag = (m: string) => `[WAIT-INSTALL ${runId}] ${m}`;
+  
   try {
-    log.info(tag("Install requested"));
-    log.info(tag("Interactive installer mode"));
-    log.info(tag(`App=${app.getName()} v=${app.getVersion()} id=${app.getAppPath ? app.getAppPath() : "?"}`));
-    log.info(tag(`execPath=${process.execPath} pid=${process.pid} ppid=${process.ppid}`));
-    log.info(tag(`isPackaged=${app.isPackaged} platform=${process.platform} arch=${process.arch}`));
-  } catch {}
-
-  try {
+    log.info(tag("Install requested - waiting for installer completion"));
+    
+    // Find installer path
     let candidate = stripQuotes(exePath);
-
     if (!candidate) candidate = lastDownloadedPath ?? "";
     if (!candidate || !fs.existsSync(candidate)) {
       const fallback = await findLatestExeInPending();
@@ -297,25 +292,116 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
 
     if (!candidate || !fs.existsSync(candidate)) {
       const msg = "Installer-Datei nicht gefunden. Bitte zuerst herunterladen.";
-      log.error("❌ [CUSTOM-UPDATER] Install failed:", msg, {
-        exePathArg: exePath, lastDownloadedPath, pendingDir
-      });
+      log.error(tag(`Install failed: ${msg}`));
       return { ok: false, error: msg };
     }
 
-    const currentExe = process.execPath; // z. B. ...\Programs\rawalite\rawalite.exe
-    // ENV-Toggle für Fallback-Delay (Sekunden), Default 45
-    // Fallback delay entfernt - Interactive Installer braucht das nicht
+    log.info(tag(`Starting installer and waiting for completion: ${candidate}`));
+    
+    // Enhanced PowerShell script that waits for installer completion
+    const psCommand = `
+      $ErrorActionPreference = 'Stop'
+      $installerPath = '${candidate.replace(/'/g, "''")}'
+      
+      Write-Host "[WAIT-INSTALL] Starting installer process..." -ForegroundColor Green
+      
+      try {
+        # Start installer process and get handle
+        $process = Start-Process -FilePath $installerPath -Verb RunAs -PassThru
+        $installerPid = $process.Id
+        
+        Write-Host "[WAIT-INSTALL] Installer started with PID: $installerPid" -ForegroundColor Green
+        
+        # Wait for installer process to complete
+        Write-Host "[WAIT-INSTALL] Waiting for installer to complete..." -ForegroundColor Yellow
+        $process.WaitForExit()
+        
+        $exitCode = $process.ExitCode
+        Write-Host "[WAIT-INSTALL] Installer completed with exit code: $exitCode" -ForegroundColor Green
+        
+        # Check if installation was successful (exit code 0)
+        if ($exitCode -eq 0) {
+          Write-Host "[WAIT-INSTALL] Installation successful! App will now restart." -ForegroundColor Green
+          
+          # Optional: Start new version if it exists
+          $newAppPath = "$env:LOCALAPPDATA\\Programs\\rawalite\\rawalite.exe"
+          if (Test-Path $newAppPath) {
+            Write-Host "[WAIT-INSTALL] Starting updated application..." -ForegroundColor Green
+            Start-Process -FilePath $newAppPath
+          }
+          
+          exit 0
+        } else {
+          Write-Host "[WAIT-INSTALL] Installation failed with exit code: $exitCode" -ForegroundColor Red
+          exit 1
+        }
+      } catch {
+        Write-Host "[WAIT-INSTALL] Error during installation: $_" -ForegroundColor Red
+        exit 2
+      }
+    `;
+    
+    log.info(tag(`PowerShell command prepared for waiting installation`));
+    
+    const child = spawn("powershell.exe", [
+      "-NoProfile",
+      "-ExecutionPolicy", "Bypass",
+      "-Command", psCommand
+    ], {
+      detached: false,  // Keep attached to monitor completion
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: false
+    });
 
-    // Sentinel file system entfernt - Interactive Installer braucht das nicht
+    // Monitor PowerShell output
+    child.stdout?.on('data', (data) => {
+      log.info(tag(`PS-OUT: ${data.toString().trim()}`));
+    });
+    
+    child.stderr?.on('data', (data) => {
+      log.warn(tag(`PS-ERR: ${data.toString().trim()}`));
+    });
 
-    // Legacy installer code removed - use installCustom IPC handler instead
-    return { 
-      ok: false, 
-      error: "Legacy install method deprecated. Use installCustom IPC handler instead." 
-    };
+    // Return promise that resolves when installation completes
+    return new Promise((resolve) => {
+      child.on('exit', (code) => {
+        log.info(tag(`PowerShell process exited with code: ${code}`));
+        
+        if (code === 0) {
+          log.info(tag("✅ Installation successful - app will quit now"));
+          // Quit app after successful installation
+          setTimeout(() => {
+            log.info(tag("Quitting app after successful installation"));
+            app.quit();
+          }, 1000);
+          
+          resolve({ 
+            ok: true, 
+            installerCompleted: true, 
+            exitCode: code,
+            message: "Installation erfolgreich abgeschlossen"
+          });
+        } else {
+          log.error(tag(`❌ Installation failed with code: ${code}`));
+          resolve({ 
+            ok: false, 
+            error: `Installation fehlgeschlagen (Exit Code: ${code})`,
+            exitCode: code
+          });
+        }
+      });
+      
+      child.on('error', (error) => {
+        log.error(tag(`PowerShell process error: ${error.message}`));
+        resolve({ 
+          ok: false, 
+          error: `PowerShell-Fehler: ${error.message}`
+        });
+      });
+    });
+    
   } catch (e: any) {
-    log.error("❌ [CUSTOM-UPDATER] Install exception:", e?.message || e);
+    log.error(tag(`Exception: ${e?.message || e}`));
     return { ok: false, error: e?.message ?? String(e) };
   }
 });
@@ -334,784 +420,135 @@ type InstallCustomPayload = {
 ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPayload) => {
   const {
     filePath,
-    args = [],
-    expectedSha256,
     elevate = true,
-    unblock = true,
-    quitDelayMs = 7000,
+    quitDelayMs = 1000, // Reduced since we now wait for completion
   } = payload ?? {};
 
   const runId = Date.now().toString(36);
-  const tag = (msg: string) => `[CUSTOM-INSTALL ${runId}] ${msg}`;
+  const tag = (msg: string) => `[WAIT-INSTALL-CUSTOM ${runId}] ${msg}`;
 
   try {
-    log.info("🚀 [INSTALL_CLICKED] Custom installer requested");
     log.info(tag(`Install requested: ${filePath}`));
-    log.info(tag(`Args: ${JSON.stringify(args)}`));
-    log.info(tag(`Expected SHA256: ${expectedSha256 ? "provided" : "none"}`));
-    log.info(tag(`Elevate: ${elevate}, Unblock: ${unblock}, QuitDelay: ${quitDelayMs}ms`));
-
-    // ⚠️ FIX: Prüfen ob Update-Installation bereits läuft (verhindert Doppelausführungen)
-    const isUpdateInProgress = !!global.__rawaliteUpdateInProgress;
-    if (isUpdateInProgress) {
-      const msg = "Update-Installation läuft bereits";
-      log.warn(tag(msg));
-      return { ok: false, error: msg, alreadyInProgress: true };
-    }
-
-    // ⚠️ FIX: Markieren dass Update-Installation läuft
-    global.__rawaliteUpdateInProgress = true;
 
     // 1. Validation - Datei existiert?
     if (!filePath || !fs.existsSync(filePath)) {
       const msg = `Installer nicht gefunden: ${filePath}`;
-      log.error("❌ [CUSTOM-INSTALL] " + msg);
-      global.__rawaliteUpdateInProgress = false; // Reset Flag
+      log.error(tag(msg));
       return { ok: false, error: msg };
     }
 
-    // ⚠️ FIX: Prüfe ob Datei ausführbar ist
-    try {
-      const stats = fs.statSync(filePath);
-      const isExecutable = stats.isFile() && filePath.toLowerCase().endsWith('.exe');
-      if (!isExecutable) {
-        const msg = `Datei ist keine ausführbare .exe: ${filePath}`;
-        log.error("❌ [CUSTOM-INSTALL] " + msg);
-        global.__rawaliteUpdateInProgress = false; // Reset Flag
-        return { ok: false, error: msg };
-      }
+    log.info(tag(`Starting installer and waiting for completion: ${filePath}`));
+    
+    // 2. Enhanced PowerShell script with completion waiting (same as updater:install)
+    const psCommand = `
+      $ErrorActionPreference = 'Stop'
+      $installerPath = '${filePath.replace(/'/g, "''")}'
       
-      // 💡 VERBESSERUNG: Größe protokollieren
-      const fileSizeMB = Math.round(stats.size / 1024 / 1024 * 100) / 100;
-      log.info(tag(`Installer file size: ${fileSizeMB} MB`));
-    } catch (statError: any) {
-      log.warn(tag(`Could not check file stats: ${statError.message}`));
-      // Continue anyway - nicht kritisch
-    }
-
-    // 2. SHA256-Verifikation (optional)
-    if (expectedSha256) {
+      Write-Host "[WAIT-INSTALL-CUSTOM] Starting installer process..." -ForegroundColor Green
+      
       try {
-        const digest = await sha256Of(filePath);
-        if (digest.toLowerCase() !== expectedSha256.toLowerCase()) {
-          const msg = `SHA256-Mismatch. expected=${expectedSha256} got=${digest}`;
-          log.error("❌ [CUSTOM-INSTALL] " + msg);
-          global.__rawaliteUpdateInProgress = false; // Reset Flag
-          return { ok: false, error: msg };
-        }
-        log.info("✅ [CUSTOM-INSTALL] SHA256 verification passed");
-      } catch (shaError: any) {
-        log.warn("⚠️ [CUSTOM-INSTALL] SHA256 verification failed:", shaError.message);
-      }
-    }
-
-    // 3. MOTW-Unblocking (Windows-spezifisch)
-    if (unblock && process.platform === "win32") {
-      try {
-        await unblockFileWindows(filePath);
-        log.info("✅ [CUSTOM-INSTALL] MOTW unblocked successfully");
-      } catch (unblockError: any) {
-        log.warn("⚠️ [CUSTOM-INSTALL] MOTW unblock failed:", unblockError.message);
-        // Continue anyway - nicht kritisch
-      }
-    }
-
-    // ⚠️ FIX: Status an Renderer melden bevor Single-Instance-Lock freigegeben wird
-    try {
-      // Sende Nachricht an Renderer vor Lock-Freigabe
-      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-      if (mainWindow) {
-        mainWindow.webContents.send("updater:status", {
-          status: "preparing-installer",
-          message: "Installer wird vorbereitet..."
-        });
-      }
-    } catch (notifyError) {
-      log.warn(tag(`Failed to notify renderer: ${notifyError instanceof Error ? notifyError.message : String(notifyError)}`));
-    }
-
-    // 4. Single Instance Lock freigeben
-    try {
-      app.releaseSingleInstanceLock?.();
-      log.info("🔓 [CUSTOM-INSTALL] Released single instance lock for installer");
-    } catch {}
-
-    // 5. 🚨 VOLLSTÄNDIG ÜBERARBEITETER Windows-Installer-Start mit Multi-Strategie
-    let child: ChildProcess;
-    try {
-      // ⚠️ FIX: Zuerst Priorität des aktuellen Prozesses senken, damit Installer mehr Ressourcen bekommt
-      if (process.platform === "win32") {
-        try {
-          // Versuche, die Priorität des Electron-Prozesses zu senken
-          const lowerPriorityPs = spawn("powershell.exe", [
-            "-NoProfile",
-            "-ExecutionPolicy", "Bypass",
-            "-Command", `$currentPid = [System.Diagnostics.Process]::GetCurrentProcess().Id; (Get-Process -Id $currentPid).PriorityClass = [System.Diagnostics.ProcessPriorityClass]::BelowNormal`
-          ], { stdio: "ignore" });
-          
-          // Warten auf Abschluss des PowerShell-Befehls
-          await new Promise<void>((resolve) => {
-            lowerPriorityPs.on("exit", () => resolve());
-            setTimeout(resolve, 500); // Timeout falls PowerShell hängt
-          });
-          
-          log.info("✅ [PRIORITY] Lowered current process priority for better installer performance");
-        } catch (priorityError) {
-          log.warn("⚠️ [PRIORITY] Failed to lower process priority:", priorityError instanceof Error ? priorityError.message : String(priorityError));
-          // Nicht kritisch, fortfahren
-        }
+        # Start installer process and get handle
+        $process = Start-Process -FilePath $installerPath ${elevate ? "-Verb RunAs" : ""} -PassThru
+        $installerPid = $process.Id
         
-        // 🚨 CRITICAL FIX: NEUE MULTI-STRATEGIE FÜR INSTALLER-START
-        log.info(`🔄 [STRATEGY] Using multi-strategy installer launch sequence`);
+        Write-Host "[WAIT-INSTALL-CUSTOM] Installer started with PID: $installerPid" -ForegroundColor Green
         
-          // STRATEGIE 1: Direkter Aufruf über unsere verbesserte PowerShell-Methode
-        // Diese Methode ist am robustesten und wird daher zuerst versucht
-        try {
-          log.info(`🚀 [STRATEGY-1] Using direct PowerShell as primary method`);
-          // Aufruf über die eigene tryPowershellRunAs-Methode von weiter unten im Code
-          child = await (function(): Promise<ChildProcess> {
-            return new Promise<ChildProcess>((resolve, reject) => {
-              const arglist = args.map(a => `'${psEscape(String(a))}'`).join(", ");
-              const verb = elevate ? " -Verb RunAs" : "";
-              
-              // Gleicher PowerShell-Befehl wie in tryPowershellRunAs
-              // 🚨 CRITICAL-FIX: Stark verbesserter PowerShell-Befehl mit Prozess-Verfolgung
-              const cmd = `
-                $ErrorActionPreference = 'Stop';
-                $installerPath = '${psEscape(filePath)}';
-                $currentPid = [System.Diagnostics.Process]::GetCurrentProcess().Id;
-                $logFile = "$env:TEMP\\rawalite_installer_launch_${Date.now()}.log";
-                
-                # Ausführliche Protokollierung aktivieren
-                function Log-Message {
-                    param($msg)
-                    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-                    Write-Host "$timestamp $msg"
-                    Add-Content -Path $logFile -Value "$timestamp $msg" -ErrorAction SilentlyContinue
-                }
-                
-                Log-Message "🚀 [PS-INSTALLER] Starting installer log to $logFile"
-                Log-Message "🚀 [PS-INSTALLER] Current PowerShell PID: $currentPid"
-                Log-Message "🚀 [PS-INSTALLER] Installer path: $installerPath"
-                
-                # Prüfe ob Installer existiert
-                if (!(Test-Path -Path "$installerPath")) {
-                    Log-Message "❌ [PS-INSTALLER] ERROR: Installer file not found"
-                    exit 2
-                }
-                
-                # Prüfe ob Installer ausführbar ist
-                try {
-                    $fileInfo = Get-Item -Path "$installerPath"
-                    Log-Message "📊 [PS-INSTALLER] Installer file size: $($fileInfo.Length / 1MB) MB"
-                    Log-Message "📊 [PS-INSTALLER] Last modified: $($fileInfo.LastWriteTime)"
-                } catch {
-                    Log-Message "⚠️ [PS-INSTALLER] Cannot get file info: $_"
-                }
-                
-                # Entferne Zone-Identifier falls vorhanden (MOTW)
-                try {
-                    Unblock-File -Path "$installerPath" -ErrorAction SilentlyContinue
-                    Log-Message "✅ [PS-INSTALLER] File unblocked successfully"
-                } catch {
-                    Log-Message "⚠️ [PS-INSTALLER] Failed to unblock file: $_"
-                }
-                
-                # Hauptprozess starten mit robuster Ausführung
-                try {
-                    # Direkte Prozesserstellung mit .NET
-                    Log-Message "🚀 [PS-INSTALLER] Attempting to start installer using .NET Process class..."
-                    
-                    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-                    $startInfo.FileName = "$installerPath"
-                    $startInfo.UseShellExecute = $true
-                    $startInfo.Verb = ${elevate ? "'RunAs'" : "''"} # Nur bei Elevate
-                    ${arglist ? `$startInfo.Arguments = ${arglist}` : "# No args"}
-                    
-                    Log-Message "🚀 [PS-INSTALLER] Starting process with UseShellExecute=$($startInfo.UseShellExecute), Verb=$($startInfo.Verb)"
-                    
-                    $process = [System.Diagnostics.Process]::Start($startInfo)
-                    $installerPid = $process.Id
-                    
-                    Log-Message "✅ [PS-INSTALLER] Installer started with PID: $installerPid"
-                    
-                    # Priorisiere Installer-Prozess
-                    try {
-                        $process.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::AboveNormal
-                        Log-Message "✅ [PS-INSTALLER] Priority raised for installer process"
-                    } catch {
-                        Log-Message "⚠️ [PS-INSTALLER] Failed to adjust priority: $_"
-                    }
-                    
-                    # � DEBUG-MODUS: Umfassende Prozessverfolgung für NSIS-Installer
-                    Log-Message "🔍 [DEBUG-MODE] Starting enhanced NSIS process tracking..."
-                    
-                    # Debugging-Funktionen definieren
-                    function Debug-ProcessTree {
-                        param($pid, $indent = "")
-                        try {
-                            $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
-                            if ($proc) {
-                                Log-Message "$indent📊 Process: $($proc.ProcessName) (PID: $pid), Handles: $($proc.HandleCount), Window Title: '$($proc.MainWindowTitle)'"
-                                
-                                # Versuche Informationen zum Pfad zu bekommen
-                                try { 
-                                    $procPath = $proc.Path
-                                    Log-Message "$indent📂 Path: $procPath" 
-                                } catch { Log-Message "$indent⚠️ Path not accessible" }
-                                
-                                # Versuche Informationen zum Befehlszeilen-Argument zu bekommen (WMI)
-                                try {
-                                    $wmiQuery = "SELECT CommandLine FROM Win32_Process WHERE ProcessId = $pid"
-                                    $cmdLine = (Get-WmiObject -Query $wmiQuery).CommandLine
-                                    if ($cmdLine) { 
-                                        $localIndent = $indent
-                                        Log-Message "$localIndent🔶 Command line: $cmdLine" 
-                                    }
-                                } catch {}
-                            } else {
-                                Log-Message "$indent❌ Process with PID $pid no longer exists!"
-                            }
-                        } catch {
-                            Log-Message "$indent⚠️ Error examining process $pid: $_"
-                        }
-                    }
-                    
-                    function Find-ProcessesByTime {
-                        param($secondsAgo = 10, $filter = "*")
-                        $startTime = (Get-Date).AddSeconds(-$secondsAgo)
-                        
-                        Log-Message "🔍 [PROCESS-SEARCH] Looking for processes started in last $secondsAgo seconds matching '$filter'"
-                        
-                        $processes = Get-Process | Where-Object { 
-                            ($_.StartTime -gt $startTime) -and
-                            ($_.ProcessName -like $filter -or $_.Path -like $filter)
-                        }
-                        
-                        Log-Message "🔍 [PROCESS-SEARCH] Found $($processes.Count) matching processes"
-                        
-                        foreach ($proc in $processes) {
-                            Debug-ProcessTree $proc.Id "  "
-                        }
-                        
-                        return $processes
-                    }
-                    
-                    # Aktuelle Prozesse vor dem Installer-Start erfassen (als Baseline)
-                    Log-Message "📊 [BASELINE] Capturing process baseline before installer launch..."
-                    $beforeProcesses = Get-Process | Select-Object -ExpandProperty Id
-                    
-                    # Start-Process mit -PassThru und -Wait für bessere Kontrolle
-                    # Wichtig: Benutze -ArgumentList, um Argumente sauber zu übergeben
-                    Log-Message "🚀 [INSTALLER] Starting installer with -Wait -PassThru..."
-                    
-                    try {
-                        # Wir verwenden Start-Process mit -PassThru, damit wir den Prozess verfolgen können
-                        $installerProcess = Start-Process -FilePath $installerPath -ArgumentList '/NCRC' -Wait:$false -PassThru -Verb "RunAs"
-                        
-                        if ($installerProcess) {
-                            Log-Message "✅ [INSTALLER] Process created successfully with PID: $($installerProcess.Id)"
-                            Debug-ProcessTree $installerProcess.Id
-                            
-                            # Verfolge den Installer-Prozess für 3 Sekunden
-                            Log-Message "⏱️ [TRACKING] Following installer process for 3 seconds..."
-                            
-                            $timeout = [System.Diagnostics.Stopwatch]::StartNew()
-                            $maxTracking = 3000 # 3 seconds
-                            
-                            while ($timeout.ElapsedMilliseconds -lt $maxTracking) {
-                                try {
-                                    $proc = Get-Process -Id $installerProcess.Id -ErrorAction SilentlyContinue
-                                    if ($proc) {
-                                        Log-Message "✓ [TRACKING] Installer process still running at $(Get-Date -Format 'HH:mm:ss.fff')"
-                                    } else {
-                                        Log-Message "! [TRACKING] Installer process has terminated at $(Get-Date -Format 'HH:mm:ss.fff')"
-                                        break
-                                    }
-                                } catch {
-                                    Log-Message "! [TRACKING] Error checking installer process: $_"
-                                    break
-                                }
-                                Start-Sleep -Milliseconds 500
-                            }
-                            
-                            # Nach neuen Prozessen suchen, die seit dem Start erschienen sind
-                            Log-Message "🔍 [PROCESS-DIFF] Looking for new processes created since installer launch..."
-                            $afterProcesses = Get-Process | Select-Object -ExpandProperty Id
-                            $newProcessIds = $afterProcesses | Where-Object { $beforeProcesses -notcontains $_ }
-                            
-                            Log-Message "🔍 [PROCESS-DIFF] Found $($newProcessIds.Count) new processes"
-                            foreach ($pid in $newProcessIds) {
-                                Debug-ProcessTree $pid
-                            }
-                            
-                            # Suche nach Setup- oder Installer-ähnlichen Prozessen
-                            Log-Message "🔍 [INSTALLER-SEARCH] Looking for NSIS or installer-like processes..."
-                            $installProcesses = Find-ProcessesByTime -secondsAgo 10 -filter "*setup*"
-                            if ($installProcesses.Count -eq 0) {
-                                $installProcesses = Find-ProcessesByTime -secondsAgo 10 -filter "*install*"
-                            }
-                            if ($installProcesses.Count -eq 0) {
-                                $installProcesses = Find-ProcessesByTime -secondsAgo 10 -filter "*nsis*"
-                            }
-                            
-                            # Versuche, die Priorität der gefundenen Prozesse zu erhöhen
-                            foreach ($proc in $installProcesses) {
-                                try {
-                                    $proc.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::High
-                                    Log-Message "✅ [PRIORITY] Raised priority for process: $($proc.ProcessName) (PID: $($proc.Id))"
-                                } catch {
-                                    Log-Message "⚠️ [PRIORITY] Could not modify process priority: $_"
-                                }
-                            }
-                        } else {
-                            Log-Message "❌ [INSTALLER] Failed to create process object"
-                        }
-                    } catch {
-                        Log-Message "❌ [INSTALLER] Failed to start installer: $_"
-                        
-                        # Fallback-Methode: ShellExecute über .NET direkt
-                        Log-Message "🔄 [FALLBACK] Using ShellExecute via .NET..."
-                        try {
-                            Add-Type -TypeDefinition @"
-                            using System;
-                            using System.Diagnostics;
-                            using System.Runtime.InteropServices;
-                            
-                            public class ShellExecute {
-                                [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-                                public static extern IntPtr ShellExecuteW(IntPtr hwnd, string lpOperation, string lpFile, string lpParameters, string lpDirectory, int nShowCmd);
-                                
-                                public const int SW_SHOW = 5;
-                            }
-"@
-                            $result = [ShellExecute]::ShellExecuteW([IntPtr]::Zero, "runas", $installerPath, "/NCRC", [System.IO.Path]::GetDirectoryName($installerPath), [ShellExecute]::SW_SHOW)
-                            Log-Message "✅ [FALLBACK] ShellExecute returned: $result"
-                        } catch {
-                            Log-Message "❌ [FALLBACK] ShellExecute failed: $_"
-                        }
-                    }
-                    
-                    # Erfolg signalisieren
-                    Log-Message "✅ [PS-INSTALLER] Installation process launched successfully"
-                    exit 0
-                } catch {
-                    $errorMsg = $_
-                    Log-Message "❌ [PS-INSTALLER] .NET Process start failed: $errorMsg"
-                    
-                    # Fallback zu Start-Process
-                    try {
-                        Log-Message "🔄 [PS-INSTALLER] Trying fallback with Start-Process..."
-                        $processParams = @{
-                            FilePath = "$installerPath"
-                            Wait = $false
-                            PassThru = $true
-                            ${elevate ? "Verb = 'RunAs'" : ""}
-                        }
-                        
-                        ${arglist ? `$processParams.ArgumentList = @(${arglist})` : "# No args"}
-                        
-                        $fallbackProcess = Start-Process @processParams
-                        Log-Message "✅ [PS-INSTALLER] Fallback successful. PID: $($fallbackProcess.Id)"
-                        exit 0
-                    } catch {
-                        Log-Message "❌ [PS-INSTALLER] All methods failed! Error: $_"
-                        exit 1
-                    }
-                }
-              `;
-              
-              // � DEBUG-MODE: PowerShell mit erweitertem Debug-Modus, voller Sichtbarkeit und interaktiver Konsole
-              // Wir verwenden ein spezielles Farbschema und behalten das Fenster offen
-              const debugModeParams = [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-NoExit", // WICHTIG: PowerShell-Fenster bleibt offen für Debugging
-                "-Command", `
-                  # Visual Debug Mode Setup
-                  $host.UI.RawUI.BackgroundColor = "Black"
-                  $host.UI.RawUI.ForegroundColor = "Green"
-                  $host.UI.RawUI.WindowTitle = "RawaLite Update-Debugger v1.8.84 - NICHT SCHLIESSEN"
-                  Clear-Host
-                  Write-Host "🔍 RawaLite Update-System Debug Mode" -ForegroundColor Yellow
-                  Write-Host "=================================================" -ForegroundColor Yellow
-                  Write-Host "Dieses Fenster analysiert den Update-Prozess" -ForegroundColor Cyan
-                  Write-Host "Bitte NICHT schließen während der Installation!" -ForegroundColor Red
-                  Write-Host "=================================================" -ForegroundColor Yellow
-                  Write-Host ""
-                  
-                  # Jetzt den eigentlichen Installer-Code ausführen
-                  ${cmd}
-                  
-                  # Nachdem der Installer-Code abgeschlossen ist, einen Hinweis anzeigen
-                  Write-Host ""
-                  Write-Host "=================================================" -ForegroundColor Yellow
-                  Write-Host "Debug-Analyse abgeschlossen." -ForegroundColor Green
-                  Write-Host "Dieses Fenster kann jetzt geschlossen werden." -ForegroundColor Green
-                  Write-Host "=================================================" -ForegroundColor Yellow
-                `
-              ];
-              
-              // Debug-Konsole mit vollem interaktiven Modus starten
-              const ps = spawn("powershell.exe", debugModeParams, {
-                detached: true,
-                stdio: ["ignore", "pipe", "pipe"],  // VERBESSERUNG: Erfassen der Ausgabe für Diagnose
-                windowsHide: false,   // WICHTIG: PowerShell-Fenster sichtbar machen
-                cwd: path.dirname(filePath),  // WorkingDirectory für korrekten Installer-Start
-                windowsVerbatimArguments: true // WICHTIG für korrekte Argumentübergabe
-              });
-              
-              // Erfassen der PowerShell-Ausgabe für bessere Diagnose
-              ps.stdout?.on('data', (data) => {
-                log.info(`[PS-STDOUT] ${data.toString().trim()}`);
-              });
-              
-              ps.stderr?.on('data', (data) => {
-                log.warn(`[PS-STDERR] ${data.toString().trim()}`);
-              });
-              
-              let resolved = false;
-              
-              ps.once("error", (err) => {
-                log.error(`❌ [PS-ERROR] ${err.message}`);
-                if (!resolved) {
-                  resolved = true;
-                  reject(err);
-                }
-              });
-              
-              ps.once("exit", (code) => {
-                const success = code === 0;
-                log.info(`${success ? "✅" : "❌"} [PS-EXIT] PowerShell exited with code: ${code}`);
-                if (!resolved && !success) {
-                  resolved = true;
-                  reject(new Error(`PowerShell exited with code: ${code}`));
-                }
-              });
-              
-              // Längere Wartezeit für sichereren Start
-              setTimeout(() => {
-                if (!resolved) {
-                  log.info("⏱️ [PS-TIMEOUT] Resolving PowerShell process after timeout");
-                  resolved = true;
-                  resolve(ps);
-                }
-              }, 1000);
-            });
-          })();
+        # Wait for installer process to complete
+        Write-Host "[WAIT-INSTALL-CUSTOM] Waiting for installer to complete..." -ForegroundColor Yellow
+        $process.WaitForExit()
+        
+        $exitCode = $process.ExitCode
+        Write-Host "[WAIT-INSTALL-CUSTOM] Installer completed with exit code: $exitCode" -ForegroundColor Green
+        
+        # Check if installation was successful (exit code 0)
+        if ($exitCode -eq 0) {
+          Write-Host "[WAIT-INSTALL-CUSTOM] Installation successful! App will now restart." -ForegroundColor Green
           
-          log.info(`✅ [STRATEGY-1] PowerShell method succeeded`);
-        } catch (psError) {
-          log.warn(`⚠️ [STRATEGY-1] PowerShell method failed: ${psError instanceof Error ? psError.message : String(psError)}`);
-          
-          // STRATEGIE 2: Direkter spawn Aufruf (überarbeitet für TypeScript-Kompatibilität)
-          try {
-            log.info(`🚀 [STRATEGY-2] Trying direct spawn as fallback`);
-            child = await new Promise<ChildProcess>((resolve, reject) => {
-              // TypeScript-kompatible Optionen
-              const direct = spawn(filePath, args, {
-                detached: true,
-                stdio: 'inherit',  // Verbinde mit Terminal statt Pipes zu verwenden
-                windowsHide: false,
-                windowsVerbatimArguments: true,
-                cwd: path.dirname(filePath)
-              });              let resolved = false;
-              
-              // Erfolg sofort melden
-              direct.once("spawn", () => {
-                log.info("✅ [STRATEGY-2] execFile spawned process successfully");
-                if (!resolved) {
-                  resolved = true;
-                  resolve(direct);
-                }
-              });
-              
-              // Bei Fehler: Reject mit Fehler
-              direct.once("error", (err) => {
-                if (!resolved) {
-                  log.error(`❌ [STRATEGY-2] execFile failed: ${err.message}`);
-                  resolved = true;
-                  reject(err);
-                }
-              });
-              
-              // Timeout-Failsafe: Nach kurzer Zeit fortfahren
-              setTimeout(() => {
-                if (!resolved) {
-                  log.info("⏱️ [STRATEGY-2] Assuming execFile success after timeout");
-                  resolved = true;
-                  resolve(direct);
-                }
-              }, 800);
-            });
-            
-            log.info(`✅ [STRATEGY-2] execFile succeeded`);
-          } catch (execError) {
-            log.warn(`⚠️ [STRATEGY-2] execFile failed: ${execError instanceof Error ? execError.message : String(execError)}`);
-            
-            // STRATEGIE 3: Shell-Ausführung als letzte Option
-            log.info(`🚀 [STRATEGY-3] Using shell execution as last resort`);
-            child = spawn("cmd.exe", ["/c", "start", "", filePath, ...args], {
-              detached: true,
-              stdio: "ignore",
-              windowsHide: false,
-              shell: true
-            });
-            log.info(`✅ [STRATEGY-3] Shell execution initiated`);
+          # Optional: Start new version if it exists
+          $newAppPath = "$env:LOCALAPPDATA\\Programs\\rawalite\\rawalite.exe"
+          if (Test-Path $newAppPath) {
+            Write-Host "[WAIT-INSTALL-CUSTOM] Starting updated application..." -ForegroundColor Green
+            Start-Process -FilePath $newAppPath
           }
-        }
-      } else {
-        // Fallback für andere Plattformen
-        child = spawn(filePath, args, { 
-          detached: true, 
-          stdio: "ignore" 
-        });
-      }
-
-      // ⚠️ FIX: Versuche Installer-Priorität zu erhöhen nach dem Start
-      if (process.platform === "win32" && child.pid) {
-        try {
-          // Erhöhe die Priorität des Installer-Prozesses
-          const raisePriorityPs = spawn("powershell.exe", [
-            "-NoProfile",
-            "-ExecutionPolicy", "Bypass",
-            "-Command", `try { $p = Get-Process -Id ${child.pid} -ErrorAction Stop; $p.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::AboveNormal; "✅ Priority raised for PID ${child.pid}" } catch { "❌ Failed for PID ${child.pid}: $_" }`
-          ], { stdio: "pipe" });
           
-          raisePriorityPs.stdout?.on("data", (data) => {
-            log.info(`[PRIORITY] ${data.toString().trim()}`);
-          });
+          exit 0
+        } else {
+          Write-Host "[WAIT-INSTALL-CUSTOM] Installation failed with exit code: $exitCode" -ForegroundColor Red
+          exit 1
+        }
+      } catch {
+        Write-Host "[WAIT-INSTALL-CUSTOM] Error during installation: $_" -ForegroundColor Red
+        exit 2
+      }
+    `;
+    
+    log.info(tag(`PowerShell command prepared for waiting installation`));
+    
+    const child = spawn("powershell.exe", [
+      "-NoProfile",
+      "-ExecutionPolicy", "Bypass",
+      "-Command", psCommand
+    ], {
+      detached: false,  // Keep attached to monitor completion
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: false
+    });
+
+    // Monitor PowerShell output
+    child.stdout?.on('data', (data) => {
+      log.info(tag(`PS-OUT: ${data.toString().trim()}`));
+    });
+    
+    child.stderr?.on('data', (data) => {
+      log.warn(tag(`PS-ERR: ${data.toString().trim()}`));
+    });
+
+    // Return promise that resolves when installation completes
+    return new Promise((resolve) => {
+      child.on('exit', (code) => {
+        log.info(tag(`PowerShell process exited with code: ${code}`));
+        
+        if (code === 0) {
+          log.info(tag("✅ Installation successful - app will quit now"));
+          // Quit app after successful installation
+          setTimeout(() => {
+            log.info(tag("Quitting app after successful installation"));
+            app.quit();
+          }, quitDelayMs);
           
-          raisePriorityPs.stderr?.on("data", (data) => {
-            log.warn(`[PRIORITY-ERR] ${data.toString().trim()}`);
+          resolve({ 
+            ok: true, 
+            installerCompleted: true, 
+            exitCode: code,
+            message: "Installation erfolgreich abgeschlossen",
+            filePath,
+            runId
           });
-        } catch (priorityError) {
-          log.warn("⚠️ [PRIORITY] Failed to raise installer priority:", priorityError instanceof Error ? priorityError.message : String(priorityError));
-          // Nicht kritisch, fortfahren
-        }
-      }
-
-      // Vollständig abkoppeln - KRITISCH für echten Detach
-      child.unref();
-      
-      log.info("✅ [SPAWN_OK] Robust installer launched successfully");
-      log.info(tag(`PID: ${child.pid}, Detached: true, Unref: true`));
-      
-    } catch (spawnError: any) {
-      log.error("❌ [SPAWN_ERROR] All launch attempts failed:", spawnError?.message || spawnError);
-      return { ok: false, error: spawnError?.message ?? String(spawnError) };
-    }
-
-    // ⚠️ FIX: Vor dem Beenden versuchen, die Benutzeroberfläche zu aktualisieren
-    try {
-      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-      if (mainWindow) {
-        mainWindow.webContents.send("updater:status", {
-          status: "install-started",
-          message: "Installer wurde gestartet. Die App wird in Kürze beendet..."
-        });
-      }
-    } catch (notifyError) {
-      log.warn(tag(`Failed to notify renderer before exit: ${notifyError instanceof Error ? notifyError.message : String(notifyError)}`));
-    }
-    
-      // 🔍 DEBUG-MODE: IPC-Kommunikation für Installation und verzögerte App-Beendigung
-    // Einrichten einer temporären IPC-Datei zur Kommunikation mit dem Installer-Prozess
-    const ipcId = `rawalite-update-${Date.now()}`;
-    const ipcPath = path.join(os.tmpdir(), `${ipcId}.json`);
-    
-    try {
-      fs.writeFileSync(ipcPath, JSON.stringify({
-        status: "waiting",
-        app: {
-          pid: process.pid,
-          version: app.getVersion(),
-          name: app.getName()
-        },
-        installer: {
-          path: filePath,
-          timestamp: Date.now()
-        }
-      }));
-      
-      log.info(tag(`Created IPC file at ${ipcPath} for installer communication`));
-    } catch (ipcError) {
-      log.warn(tag(`Failed to create IPC file: ${ipcError instanceof Error ? ipcError.message : String(ipcError)}`));
-    }
-    
-    // 6. 🆕 UPDATE-LAUNCHER: Starte den separaten Update-Launcher bevor die App beendet wird
-    // Diese Methode nutzt einen separaten Node.js-Prozess, der auf das Ende des Hauptprozesses wartet
-    try {
-      // Pfad zum Update-Launcher im Ressourcen-Verzeichnis (außerhalb von app.asar!)
-      // WICHTIG: Verwende app.getPath('exe') um den Programmordner zu bekommen, nicht app.getAppPath()
-      const appDir = path.dirname(app.getPath('exe'));
-      
-      // Korrekter Pfad zum Update-Launcher: Direkt im resources-Verzeichnis
-      const updateLauncherPath = path.join(appDir, 'resources', 'update-launcher.js');
-      
-      // WICHTIG: Verwende process.execPath statt 'node', um den richtigen Interpreter zu garantieren
-      const execPath = process.execPath;
-      
-      // Definiere mögliche Pfade zum Update-Launcher (in Prioritätsreihenfolge)
-      const possibleLauncherPaths = [
-        updateLauncherPath, // Primärer Pfad (resources/update-launcher.js)
-        path.join(appDir, 'resources', 'resources', 'update-launcher.js'), // Legacy-Fallback (verschachtelt)
-        path.join(app.getAppPath(), 'resources', 'update-launcher.js') // ASAR-Fallback (weniger empfohlen)
-      ];
-      
-      // Suche nach dem Update-Launcher in allen möglichen Pfaden
-      let actualLauncherPath = null;
-      for (const launcherPath of possibleLauncherPaths) {
-        log.info(tag(`Checking for Update-Launcher at: ${launcherPath}`));
-        if (fs.existsSync(launcherPath)) {
-          actualLauncherPath = launcherPath;
-          log.info(tag(`✅ Found Update-Launcher at: ${actualLauncherPath}`));
-          break;
-        }
-      }
-      
-      // Prüfe, ob Update-Launcher gefunden wurde
-      if (!actualLauncherPath) {
-        throw new Error(`Update-Launcher nicht gefunden in möglichen Pfaden: ${possibleLauncherPaths.join(', ')}`);
-      }
-      
-      // Prüfe, ob Installer existiert
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`Installer nicht gefunden: ${filePath}`);
-      }
-      
-      log.info(tag(`Starting Update-Launcher: ${actualLauncherPath}`));
-      log.info(tag(`Using Electron/Node executable: ${execPath}`));
-      log.info(tag(`Installer path: ${filePath}`));
-      log.info(tag(`Main process PID: ${process.pid}`));
-      
-      // Starte den Update-Launcher als separaten Prozess
-      // WICHTIG: PID vor filePath übergeben (in update-launcher.ts geänderte Reihenfolge)
-      const launcher = spawn(execPath, [
-        actualLauncherPath,    // Gefundener Pfad zum Launcher-Skript
-        process.pid.toString(),// Aktuelle PID (Hauptprozess) - WICHTIG: Zuerst!
-        filePath,              // Installer-Pfad - WICHTIG: Als zweites!
-        '--debug',             // Debug-Modus für detaillierte Logs
-        `--wait-delay=500`,    // Wartezeit zwischen Prozess-Checks
-        `--max-wait=30`        // Maximale Wartezeit in Sekunden
-      ], {
-        detached: true,        // Wichtig: Vom Elternprozess abkoppeln
-        stdio: 'ignore',
-        windowsHide: true,     // Verstecke das Konsolenfenster
-        env: {
-          ...process.env,
-          ELECTRON_RUN_AS_NODE: '1'  // Wichtig: Stelle sicher, dass Electron als Node läuft
+        } else {
+          log.error(tag(`❌ Installation failed with code: ${code}`));
+          resolve({ 
+            ok: false, 
+            error: `Installation fehlgeschlagen (Exit Code: ${code})`,
+            exitCode: code,
+            filePath,
+            runId
+          });
         }
       });
       
-      // Vollständig abkoppeln vom Hauptprozess
-      launcher.unref();
-      
-      log.info(tag(`✅ Update-Launcher started with arguments: [${process.pid}, ${filePath}]`));
-      log.info(tag(`📂 Using launcher at: ${actualLauncherPath}`));
-      
-      // Status-Update vor der Beendigung
-      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-      if (mainWindow) {
-        mainWindow.webContents.send("updater:status", {
-          status: "launcher-started",
-          message: "Update-Launcher gestartet. Die Anwendung wird in Kürze beendet..."
+      child.on('error', (error) => {
+        log.error(tag(`PowerShell process error: ${error.message}`));
+        resolve({ 
+          ok: false, 
+          error: `PowerShell-Fehler: ${error.message}`,
+          filePath,
+          runId
         });
-      }
-      
-      // WICHTIG: Verzögerung vor dem Beenden der App, damit Launcher stabil starten kann
-      setTimeout(() => {
-        log.info(tag("🔄 Beende App nach Launcher-Start-Verzögerung (2 Sekunden)"));
-        app.quit();
-      }, 2000);
-      
-    } catch (launcherError) {
-      log.error(tag(`Failed to start Update-Launcher: ${launcherError instanceof Error ? launcherError.message : String(launcherError)}`));
-      
-      // Fallback zum alten Quit-Delay-System
-      log.info(tag(`Falling back to old quit-delay system`));
-    }
-    
-    // Altes Quit-Delay-System als Fallback beibehalten
-    const updatedQuitDelayMs = 15000; // 15 Sekunden (verkürzt von 30 da jetzt Launcher aktiv)
-    log.info(tag(`Setting up EXTENDED delayed app termination in ${updatedQuitDelayMs}ms (vs. requested ${quitDelayMs}ms)`));
-    
-    try {
-      const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-      if (mainWindow) {
-        mainWindow.webContents.send("updater:status", {
-          status: "extended-delay",
-          message: "Installer wurde gestartet. Bitte warten Sie, während der Installer initialisiert wird..."
-        });
-      }
-    } catch {}
-    
-    // ERSTE PHASE - Nach 10 Sekunden die Fenster schließen und Status aktualisieren
-    setTimeout(() => {
-      log.info("⏱️ [DELAY-FIX] Phase 1: Notifying UI before window closing");
-      
-      try {
-        const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-        if (mainWindow) {
-          mainWindow.webContents.send("updater:status", {
-            status: "preparing-exit",
-            message: "Installer gestartet. Die Anwendung wird nun beendet..."
-          });
-        }
-      } catch {}
-      
-      // Nach kurzer Verzögerung für UI-Update die Fenster schließen
-      setTimeout(() => {
-        log.info("💡 [DELAY-FIX] Phase 2: Closing all windows gracefully");
-        
-        const allWindows = BrowserWindow.getAllWindows();
-        if (allWindows.length > 0) {
-          allWindows.forEach(win => {
-            try {
-              // Speichere Status in die Log-Datei für späteren Debug
-              log.info(`📊 [WINDOW-INFO] id=${win.id} size=${win.getSize()} title='${win.getTitle()}' visible=${win.isVisible()} focused=${win.isFocused()}`);
-              
-              if (!win.isDestroyed()) {
-                win.close();
-              }
-            } catch (winErr: any) {
-              log.warn(`⚠️ [WINDOW-CLOSE] Error closing window: ${winErr?.message}`);
-            }
-          });
-        }
-      }, 500);
-    }, 10000);
-    
-    // ZWEITE PHASE - Nach 12 Sekunden App beenden
-    setTimeout(() => {
-      try {
-        log.info(`� [DELAY-FIX] Phase 3: Exiting app after extended delay (${updatedQuitDelayMs}ms)`);
-        
-        // Sanfte Beendigung mit app.quit()
-        log.info("💡 [DELAY-FIX] Phase 3a: Using app.quit() for graceful shutdown");
-        app.quit();
-        
-        // Fallback nach kurzem Delay
-        setTimeout(() => {
-          log.info("💡 [DELAY-FIX] Phase 3b: Fallback to app.exit(0)");
-          app.exit(0);
-        }, 2000);
-      } catch (exitError: any) {
-        log.warn("⚠️ [CUSTOM-INSTALL] Exit sequence failed:", exitError?.message);
-        // Fallback zu direktem app.exit
-        try { app.exit(0); } catch { /* Ignorieren */ }
-      }
-    }, updatedQuitDelayMs);    return { 
-      ok: true, 
-      installerStarted: true, 
-      pid: child.pid ?? null,
-      filePath, 
-      args,
-      runId 
-    };
+      });
+    });
 
   } catch (error: any) {
-    log.error("❌ [CUSTOM-INSTALL] Exception:", error?.message || error);
+    log.error(tag(`Exception: ${error?.message || error}`));
     return { ok: false, error: error?.message ?? String(error) };
   }
 });
