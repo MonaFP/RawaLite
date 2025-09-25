@@ -296,10 +296,35 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       return { ok: false, error: msg };
     }
 
-    // Get launcher script path
-    const launcherPath = isDev
-      ? path.join(process.cwd(), "resources", "update-launcher.ps1")
-      : path.join(process.resourcesPath, "update-launcher.ps1");
+    // Get launcher script path with ASAR extraction
+    let launcherPath: string;
+    
+    if (isDev) {
+      launcherPath = path.join(process.cwd(), "resources", "update-launcher.ps1");
+    } else {
+      // In production, extract launcher from ASAR to temp directory
+      const tempDir = path.join(os.tmpdir(), "rawalite-launcher");
+      const tempLauncherPath = path.join(tempDir, "update-launcher.ps1");
+      
+      // Create temp directory
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      // Extract launcher from resources
+      const resourcesLauncherPath = path.join(process.resourcesPath, "update-launcher.ps1");
+      
+      try {
+        // Copy launcher to temp location
+        fs.copyFileSync(resourcesLauncherPath, tempLauncherPath);
+        launcherPath = tempLauncherPath;
+        log.info(tag(`Launcher extracted to temp: ${tempLauncherPath}`));
+      } catch (extractError) {
+        const msg = `Launcher extraction failed: ${extractError}`;
+        log.error(tag(msg));
+        return { ok: false, error: msg };
+      }
+    }
 
     if (!fs.existsSync(launcherPath)) {
       const msg = "Update-Launcher nicht gefunden. Installation nicht möglich.";
@@ -466,10 +491,35 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
       return { ok: false, error: msg };
     }
 
-    // Get launcher script path
-    const launcherPath = isDev
-      ? path.join(process.cwd(), "resources", "update-launcher.ps1")
-      : path.join(process.resourcesPath, "update-launcher.ps1");
+    // Get launcher script path with ASAR extraction
+    let launcherPath: string;
+    
+    if (isDev) {
+      launcherPath = path.join(process.cwd(), "resources", "update-launcher.ps1");
+    } else {
+      // In production, extract launcher from ASAR to temp directory
+      const tempDir = path.join(os.tmpdir(), "rawalite-launcher");
+      const tempLauncherPath = path.join(tempDir, "update-launcher.ps1");
+      
+      // Create temp directory
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      // Extract launcher from resources
+      const resourcesLauncherPath = path.join(process.resourcesPath, "update-launcher.ps1");
+      
+      try {
+        // Copy launcher to temp location
+        fs.copyFileSync(resourcesLauncherPath, tempLauncherPath);
+        launcherPath = tempLauncherPath;
+        log.info(tag(`Launcher extracted to temp: ${tempLauncherPath}`));
+      } catch (extractError) {
+        const msg = `Launcher extraction failed: ${extractError}`;
+        log.error(tag(msg));
+        return { ok: false, error: msg };
+      }
+    }
 
     if (!fs.existsSync(launcherPath)) {
       const msg = "Update-Launcher nicht gefunden. Installation nicht möglich.";
