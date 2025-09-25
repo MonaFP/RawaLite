@@ -20,19 +20,21 @@ extraResources:
 win:
   target:
     - nsis         # KEIN nsisWeb
+  requestedExecutionLevel: requireAdministrator
   # publisherName:  # ← ENTFERNT / NICHT setzen!
 
 nsis:
   oneClick: false
-  allowToChangeInstallationDirectory: false
+  allowToChangeInstallationDirectory: true
   allowElevation: true
   runAfterFinish: true
-  perMachine: false
+  perMachine: true
   artifactName: rawalite-Setup-${version}.exe
   createDesktopShortcut: true
   createStartMenuShortcut: true
   installerIcon: assets/icon.ico
   uninstallerIcon: assets/icon.ico
+  packElevateHelper: true
   # Silent Installation Support
   warningsAsErrors: false
   unicode: true
