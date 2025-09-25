@@ -5,7 +5,7 @@ import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
 import https from "node:https";
-import { spawn, execFile, ChildProcess } from "node:child_process";
+import { spawn } from "node:child_process";
 import crypto from "node:crypto";
 import pkg from "../package.json" assert { type: "json" };
 
@@ -274,13 +274,13 @@ ipcMain.handle("updater:download", async () => {
   }
 });
 
-// 4️⃣ UPDATE:INSTALL - Wait for installer completion before app exit
+// 4️⃣ UPDATE:INSTALL-LAUNCHER - UAC-resistant launcher-based installation
 ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
   const runId = Date.now().toString(36);
-  const tag = (m: string) => `[WAIT-INSTALL ${runId}] ${m}`;
+  const tag = (m: string) => `[LAUNCHER-INSTALL ${runId}] ${m}`;
   
   try {
-    log.info(tag("Install requested - waiting for installer completion"));
+    log.info(tag("Launcher-based install requested"));
     
     // Find installer path
     let candidate = stripQuotes(exePath);
@@ -296,106 +296,94 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       return { ok: false, error: msg };
     }
 
-    log.info(tag(`Starting installer and waiting for completion: ${candidate}`));
+    // Get launcher script path
+    const launcherPath = isDev
+      ? path.join(process.cwd(), "resources", "update-launcher.ps1")
+      : path.join(process.resourcesPath, "app", "resources", "update-launcher.ps1");
+
+    if (!fs.existsSync(launcherPath)) {
+      const msg = "Update-Launcher nicht gefunden. Installation nicht möglich.";
+      log.error(tag(msg));
+      return { ok: false, error: msg };
+    }
+
+    log.info(tag(`Starting UAC-resistant launcher: ${candidate}`));
+    log.info(tag(`Launcher script: ${launcherPath}`));
     
-    // Enhanced PowerShell script that waits for installer completion
-    const psCommand = `
-      $ErrorActionPreference = 'Stop'
-      $installerPath = '${candidate.replace(/'/g, "''")}'
-      
-      Write-Host "[WAIT-INSTALL] Starting installer process..." -ForegroundColor Green
-      
-      try {
-        # Start installer process and get handle
-        $process = Start-Process -FilePath $installerPath -Verb RunAs -PassThru
-        $installerPid = $process.Id
-        
-        Write-Host "[WAIT-INSTALL] Installer started with PID: $installerPid" -ForegroundColor Green
-        
-        # Wait for installer process to complete
-        Write-Host "[WAIT-INSTALL] Waiting for installer to complete..." -ForegroundColor Yellow
-        $process.WaitForExit()
-        
-        $exitCode = $process.ExitCode
-        Write-Host "[WAIT-INSTALL] Installer completed with exit code: $exitCode" -ForegroundColor Green
-        
-        # Check if installation was successful (exit code 0)
-        if ($exitCode -eq 0) {
-          Write-Host "[WAIT-INSTALL] Installation successful! App will now restart." -ForegroundColor Green
-          
-          # Optional: Start new version if it exists
-          $newAppPath = "$env:LOCALAPPDATA\\Programs\\rawalite\\rawalite.exe"
-          if (Test-Path $newAppPath) {
-            Write-Host "[WAIT-INSTALL] Starting updated application..." -ForegroundColor Green
-            Start-Process -FilePath $newAppPath
-          }
-          
-          exit 0
-        } else {
-          Write-Host "[WAIT-INSTALL] Installation failed with exit code: $exitCode" -ForegroundColor Red
-          exit 1
-        }
-      } catch {
-        Write-Host "[WAIT-INSTALL] Error during installation: $_" -ForegroundColor Red
-        exit 2
-      }
-    `;
-    
-    log.info(tag(`PowerShell command prepared for waiting installation`));
-    
-    const child = spawn("powershell.exe", [
+    // Execute launcher script with detached process
+    const launcherArgs = [
       "-NoProfile",
-      "-ExecutionPolicy", "Bypass",
-      "-Command", psCommand
-    ], {
-      detached: false,  // Keep attached to monitor completion
+      "-ExecutionPolicy", "Bypass", 
+      "-File", `"${launcherPath}"`,
+      "-InstallerPath", `"${candidate}"`
+    ];
+    
+    const launcherProcess = spawn("powershell.exe", launcherArgs, {
+      detached: true,  // CRITICAL: Detached for UAC-resistance
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: false
     });
 
-    // Monitor PowerShell output
-    child.stdout?.on('data', (data) => {
-      log.info(tag(`PS-OUT: ${data.toString().trim()}`));
+    // Monitor launcher output briefly
+    let launcherOutput = "";
+    let launcherError = "";
+
+    launcherProcess.stdout?.on('data', (data) => {
+      const output = data.toString().trim();
+      launcherOutput += output + "\n";
+      log.info(tag(`LAUNCHER-OUT: ${output}`));
     });
     
-    child.stderr?.on('data', (data) => {
-      log.warn(tag(`PS-ERR: ${data.toString().trim()}`));
+    launcherProcess.stderr?.on('data', (data) => {
+      const error = data.toString().trim();
+      launcherError += error + "\n";
+      log.warn(tag(`LAUNCHER-ERR: ${error}`));
     });
 
-    // Return promise that resolves when installation completes
+    // Return promise that resolves when launcher starts (not when install completes)
     return new Promise((resolve) => {
-      child.on('exit', (code) => {
-        log.info(tag(`PowerShell process exited with code: ${code}`));
+      launcherProcess.on('exit', (code) => {
+        log.info(tag(`Launcher process exited with code: ${code}`));
         
         if (code === 0) {
-          log.info(tag("✅ Installation successful - app will quit now"));
-          // Quit app after successful installation
-          setTimeout(() => {
-            log.info(tag("Quitting app after successful installation"));
-            app.quit();
-          }, 1000);
+          log.info(tag("✅ Launcher started successfully - installation running independently"));
+          
+          // Notify UI about launcher success
+          const allWindows = BrowserWindow.getAllWindows();
+          allWindows.forEach((window) => {
+            window.webContents.send('updater:launcher-started', {
+              success: true,
+              message: 'Installation gestartet. Bitte bestätigen Sie die UAC-Anfrage.',
+              launcherOutput: launcherOutput.trim()
+            });
+          });
           
           resolve({ 
             ok: true, 
-            installerCompleted: true, 
+            launcherStarted: true, 
             exitCode: code,
-            message: "Installation erfolgreich abgeschlossen"
+            message: "Launcher gestartet - Installation läuft unabhängig",
+            output: launcherOutput.trim()
           });
         } else {
-          log.error(tag(`❌ Installation failed with code: ${code}`));
+          log.error(tag(`❌ Launcher failed with code: ${code}`));
+          
           resolve({ 
             ok: false, 
-            error: `Installation fehlgeschlagen (Exit Code: ${code})`,
-            exitCode: code
+            error: `Launcher fehlgeschlagen (Exit Code: ${code})`,
+            exitCode: code,
+            output: launcherOutput.trim(),
+            errorOutput: launcherError.trim()
           });
         }
       });
       
-      child.on('error', (error) => {
-        log.error(tag(`PowerShell process error: ${error.message}`));
+      launcherProcess.on('error', (error) => {
+        log.error(tag(`Launcher process error: ${error.message}`));
         resolve({ 
           ok: false, 
-          error: `PowerShell-Fehler: ${error.message}`
+          error: `Launcher-Fehler: ${error.message}`,
+          output: launcherOutput.trim()
         });
       });
     });
@@ -403,6 +391,47 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
   } catch (e: any) {
     log.error(tag(`Exception: ${e?.message || e}`));
     return { ok: false, error: e?.message ?? String(e) };
+  }
+});
+
+// 5️⃣ UPDATE:CHECK-RESULTS - Check installation results from launcher
+ipcMain.handle("updater:check-results", async () => {
+  const tag = "[CHECK-RESULTS]";
+  
+  try {
+    const resultsPath = path.join(os.homedir(), "AppData", "Local", "rawalite-updater", "install-results.json");
+    
+    if (!fs.existsSync(resultsPath)) {
+      log.info(tag + " No installation results found");
+      return { ok: true, hasResults: false };
+    }
+    
+    // Read and parse results
+    const resultsData = fs.readFileSync(resultsPath, "utf-8");
+    const results = JSON.parse(resultsData);
+    
+    log.info(tag + ` Found installation results: Success=${results.success}, ExitCode=${results.exitCode}`);
+    
+    // Clean up results file after reading
+    try {
+      fs.unlinkSync(resultsPath);
+      log.info(tag + " Results file cleaned up");
+    } catch (cleanupError) {
+      log.warn(tag + ` Could not clean up results file: ${cleanupError}`);
+    }
+    
+    return {
+      ok: true,
+      hasResults: true,
+      results: results
+    };
+    
+  } catch (error) {
+    log.error(tag + ` Error checking results: ${error}`);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : String(error)
+    };
   }
 });
 
@@ -421,14 +450,14 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
   const {
     filePath,
     elevate = true,
-    quitDelayMs = 1000, // Reduced since we now wait for completion
+    quitDelayMs = 1000,
   } = payload ?? {};
 
   const runId = Date.now().toString(36);
-  const tag = (msg: string) => `[WAIT-INSTALL-CUSTOM ${runId}] ${msg}`;
+  const tag = (msg: string) => `[LAUNCHER-INSTALL-CUSTOM ${runId}] ${msg}`;
 
   try {
-    log.info(tag(`Install requested: ${filePath}`));
+    log.info(tag(`Launcher-based custom install requested: ${filePath}`));
 
     // 1. Validation - Datei existiert?
     if (!filePath || !fs.existsSync(filePath)) {
@@ -437,112 +466,100 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
       return { ok: false, error: msg };
     }
 
-    log.info(tag(`Starting installer and waiting for completion: ${filePath}`));
+    // Get launcher script path
+    const launcherPath = isDev
+      ? path.join(process.cwd(), "resources", "update-launcher.ps1")
+      : path.join(process.resourcesPath, "app", "resources", "update-launcher.ps1");
+
+    if (!fs.existsSync(launcherPath)) {
+      const msg = "Update-Launcher nicht gefunden. Installation nicht möglich.";
+      log.error(tag(msg));
+      return { ok: false, error: msg };
+    }
+
+    log.info(tag(`Starting UAC-resistant launcher: ${filePath}`));
+    log.info(tag(`Launcher script: ${launcherPath}`));
     
-    // 2. Enhanced PowerShell script with completion waiting (same as updater:install)
-    const psCommand = `
-      $ErrorActionPreference = 'Stop'
-      $installerPath = '${filePath.replace(/'/g, "''")}'
-      
-      Write-Host "[WAIT-INSTALL-CUSTOM] Starting installer process..." -ForegroundColor Green
-      
-      try {
-        # Start installer process and get handle
-        $process = Start-Process -FilePath $installerPath ${elevate ? "-Verb RunAs" : ""} -PassThru
-        $installerPid = $process.Id
-        
-        Write-Host "[WAIT-INSTALL-CUSTOM] Installer started with PID: $installerPid" -ForegroundColor Green
-        
-        # Wait for installer process to complete
-        Write-Host "[WAIT-INSTALL-CUSTOM] Waiting for installer to complete..." -ForegroundColor Yellow
-        $process.WaitForExit()
-        
-        $exitCode = $process.ExitCode
-        Write-Host "[WAIT-INSTALL-CUSTOM] Installer completed with exit code: $exitCode" -ForegroundColor Green
-        
-        # Check if installation was successful (exit code 0)
-        if ($exitCode -eq 0) {
-          Write-Host "[WAIT-INSTALL-CUSTOM] Installation successful! App will now restart." -ForegroundColor Green
-          
-          # Optional: Start new version if it exists
-          $newAppPath = "$env:LOCALAPPDATA\\Programs\\rawalite\\rawalite.exe"
-          if (Test-Path $newAppPath) {
-            Write-Host "[WAIT-INSTALL-CUSTOM] Starting updated application..." -ForegroundColor Green
-            Start-Process -FilePath $newAppPath
-          }
-          
-          exit 0
-        } else {
-          Write-Host "[WAIT-INSTALL-CUSTOM] Installation failed with exit code: $exitCode" -ForegroundColor Red
-          exit 1
-        }
-      } catch {
-        Write-Host "[WAIT-INSTALL-CUSTOM] Error during installation: $_" -ForegroundColor Red
-        exit 2
-      }
-    `;
-    
-    log.info(tag(`PowerShell command prepared for waiting installation`));
-    
-    const child = spawn("powershell.exe", [
+    // Execute launcher script with detached process
+    const launcherArgs = [
       "-NoProfile",
-      "-ExecutionPolicy", "Bypass",
-      "-Command", psCommand
-    ], {
-      detached: false,  // Keep attached to monitor completion
+      "-ExecutionPolicy", "Bypass", 
+      "-File", `"${launcherPath}"`,
+      "-InstallerPath", `"${filePath}"`
+    ];
+    
+    const launcherProcess = spawn("powershell.exe", launcherArgs, {
+      detached: true,  // CRITICAL: Detached for UAC-resistance
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: false
     });
 
-    // Monitor PowerShell output
-    child.stdout?.on('data', (data) => {
-      log.info(tag(`PS-OUT: ${data.toString().trim()}`));
+    // Monitor launcher output briefly
+    let launcherOutput = "";
+    let launcherError = "";
+
+    launcherProcess.stdout?.on('data', (data) => {
+      const output = data.toString().trim();
+      launcherOutput += output + "\n";
+      log.info(tag(`LAUNCHER-OUT: ${output}`));
     });
     
-    child.stderr?.on('data', (data) => {
-      log.warn(tag(`PS-ERR: ${data.toString().trim()}`));
+    launcherProcess.stderr?.on('data', (data) => {
+      const error = data.toString().trim();
+      launcherError += error + "\n";
+      log.warn(tag(`LAUNCHER-ERR: ${error}`));
     });
 
-    // Return promise that resolves when installation completes
+    // Return promise that resolves when launcher starts (not when install completes)
     return new Promise((resolve) => {
-      child.on('exit', (code) => {
-        log.info(tag(`PowerShell process exited with code: ${code}`));
+      launcherProcess.on('exit', (code) => {
+        log.info(tag(`Launcher process exited with code: ${code}`));
         
         if (code === 0) {
-          log.info(tag("✅ Installation successful - app will quit now"));
-          // Quit app after successful installation
-          setTimeout(() => {
-            log.info(tag("Quitting app after successful installation"));
-            app.quit();
-          }, quitDelayMs);
+          log.info(tag("✅ Launcher started successfully - installation running independently"));
+          
+          // Notify UI about launcher success
+          const allWindows = BrowserWindow.getAllWindows();
+          allWindows.forEach((window) => {
+            window.webContents.send('updater:launcher-started', {
+              success: true,
+              message: 'Installation gestartet. Bitte bestätigen Sie die UAC-Anfrage.',
+              launcherOutput: launcherOutput.trim()
+            });
+          });
           
           resolve({ 
             ok: true, 
-            installerCompleted: true, 
+            launcherStarted: true, 
             exitCode: code,
-            message: "Installation erfolgreich abgeschlossen",
+            message: "Launcher gestartet - Installation läuft unabhängig",
             filePath,
-            runId
+            runId,
+            output: launcherOutput.trim()
           });
         } else {
-          log.error(tag(`❌ Installation failed with code: ${code}`));
+          log.error(tag(`❌ Launcher failed with code: ${code}`));
+          
           resolve({ 
             ok: false, 
-            error: `Installation fehlgeschlagen (Exit Code: ${code})`,
+            error: `Launcher fehlgeschlagen (Exit Code: ${code})`,
             exitCode: code,
             filePath,
-            runId
+            runId,
+            output: launcherOutput.trim(),
+            errorOutput: launcherError.trim()
           });
         }
       });
       
-      child.on('error', (error) => {
-        log.error(tag(`PowerShell process error: ${error.message}`));
+      launcherProcess.on('error', (error) => {
+        log.error(tag(`Launcher process error: ${error.message}`));
         resolve({ 
           ok: false, 
-          error: `PowerShell-Fehler: ${error.message}`,
+          error: `Launcher-Fehler: ${error.message}`,
           filePath,
-          runId
+          runId,
+          output: launcherOutput.trim()
         });
       });
     });
@@ -553,279 +570,7 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
   }
 });
 
-// === HELPER FUNCTIONS FOR ROBUST INSTALLER ===
-
-async function sha256Of(path: string): Promise<string> {
-  const h = crypto.createHash("sha256");
-  return await new Promise<string>((resolve, reject) => {
-    const s = fs.createReadStream(path);
-    s.on("data", d => h.update(d));
-    s.on("end", () => resolve(h.digest("hex")));
-    s.on("error", reject);
-  });
-}
-
-function psEscape(s: string) { 
-  return s.replace(/'/g, "''"); 
-}
-
-async function unblockFileWindows(filePath: string): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const ps = spawn("powershell.exe", [
-      "-NoProfile",
-      "-ExecutionPolicy", "Bypass",
-      "-Command",
-      `Unblock-File -Path '${psEscape(filePath)}'`
-    ], { stdio: "ignore", windowsHide: false });
-    
-    ps.once("error", reject);
-    ps.once("exit", () => resolve());
-  });
-}
-
-function launchWindowsInstaller(filePath: string, args: string[], elevate: boolean): Promise<ChildProcess> {
-  return new Promise<ChildProcess>((resolve, reject) => {
-    // 🚀 VERBESSERUNG: Update-spezifische Parameter für NSIS (dezente Installation)
-    const updateArgs = [...args];
-    
-    // ⚠️ FIX: Keine silent Installation - Interaktive Installation wird bevorzugt
-    // updateArgs.push('/S'); // Nicht hinzufügen - Benutzerinteraktion erlauben
-    
-    // ⚠️ FIX: Andere kritische NSIS-Parameter für Updates (nur bei Bedarf)
-    if (!updateArgs.includes('/NCRC')) {
-      updateArgs.push('/NCRC'); // Skip CRC checks für schnellere Installation
-    }
-
-    // 💡 VERBESSERUNG: Logging verbessern
-    log.info(`🚀 [INSTALL-FIX] Launching installer with args: ${JSON.stringify(updateArgs)}`);
-    log.info(`🚀 [INSTALL-FIX] Using filePath: ${filePath}`);
-    
-    // Strategie 1: Direkter spawn() mit verbesserten Parametern
-    try {
-      // 🔧 DEBUG-FIX: Verwende Child Process Exec statt Spawn für bessere Win32-Kompatibilität
-      log.info(`🔍 [DEBUG] Attempting to execute installer using child_process.execFile`);
-      
-      // Argumente als String zusammenfügen für die Kommandozeile
-      const argString = updateArgs.join(' ');
-      log.info(`🔍 [DEBUG] Full command: "${filePath}" ${argString}`);
-      
-      // Verwende execFile statt spawn für bessere Windows-Kompatibilität
-      const execFileOptions = {
-        detached: true,         // KRITISCH: Prozess von Electron abkoppeln
-        windowsHide: false,     // GUI sichtbar
-        maxBuffer: 10 * 1024 * 1024, // Größerer Buffer für eventuelle Ausgabe
-        windowsVerbatimArguments: true // WICHTIG: Argumente unverändert weitergeben
-      };
-      
-      log.info(`🔧 [DEBUG] Launching with execFile and options: ${JSON.stringify(execFileOptions)}`);
-      
-      const direct = execFile(filePath, updateArgs, execFileOptions, (error, stdout, stderr) => {
-        if (error) {
-          log.error(`❌ [EXEC-ERROR] execFile error: ${error.message}`);
-          // Fehler protokollieren, aber nicht sofort ablehnen - möglicher false negative
-        }
-        
-        if (stdout) log.info(`� [EXEC-STDOUT] ${stdout.trim()}`);
-        if (stderr) log.warn(`📥 [EXEC-STDERR] ${stderr.trim()}`);
-      });
-      
-      // Als Child Process behandeln
-      let resolved = false;
-      
-      direct.once("spawn", () => {
-        log.info("✅ [INSTALL-FIX] Installer process spawned via execFile");
-        if (!resolved) {
-          resolved = true;
-          resolve(direct);
-        }
-      });
-      
-      direct.once("error", (err) => {
-        log.warn(`⚠️ [INSTALL-FIX] execFile spawn failed: ${err.message}`);
-        if (resolved) return;
-        
-        // Bei Fehler: PowerShell RunAs Fallback
-        log.info(`🔄 [FALLBACK] Trying PowerShell method after execFile failed`);
-        tryPowershellRunAs()
-          .then(cp => { resolved = true; resolve(cp); })
-          .catch(reject);
-      });
-
-      // Längere Wartezeit für erfolgreichen Start
-      setTimeout(() => {
-        if (!resolved) { 
-          log.info("⏱️ [INSTALL-FIX] Resolving after timeout (execFile)");
-          resolved = true; 
-          resolve(direct); 
-        }
-      }, 800); // Längere Wartezeit für sichereren Start
-
-    } catch (error) {
-      // Sofortiger Fallback bei spawn()-Exception
-      log.warn(`⚠️ [INSTALL-FIX] Direct spawn exception: ${error instanceof Error ? error.message : String(error)}`);
-      tryPowershellRunAs()
-        .then(resolve)
-        .catch(reject);
-    }
-
-    function tryPowershellRunAs(): Promise<ChildProcess> {
-      const arglist = updateArgs.map(a => `'${psEscape(String(a))}'`).join(", ");
-      const verb = elevate ? " -Verb RunAs" : "";
-      
-      // 🚨 CRITICAL-FIX: Stark verbesserter PowerShell-Befehl mit Prozess-Verfolgung
-      const cmd = `
-        $ErrorActionPreference = 'Stop';
-        $installerPath = '${psEscape(filePath)}';
-        $currentPid = [System.Diagnostics.Process]::GetCurrentProcess().Id;
-        $logFile = "$env:TEMP\\rawalite_installer_launch_${Date.now()}.log";
-        
-        # Ausführliche Protokollierung aktivieren
-        function Log-Message {
-            param($msg)
-            $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-            Write-Host "$timestamp $msg"
-            Add-Content -Path $logFile -Value "$timestamp $msg" -ErrorAction SilentlyContinue
-        }
-        
-        Log-Message "🚀 [PS-INSTALLER] Starting installer log to $logFile"
-        Log-Message "🚀 [PS-INSTALLER] Current PowerShell PID: $currentPid"
-        Log-Message "🚀 [PS-INSTALLER] Installer path: $installerPath"
-        
-        # Prüfe ob Installer existiert
-        if (!(Test-Path -Path "$installerPath")) {
-            Log-Message "❌ [PS-INSTALLER] ERROR: Installer file not found"
-            exit 2
-        }
-        
-        # Prüfe ob Installer ausführbar ist
-        try {
-            $fileInfo = Get-Item -Path "$installerPath"
-            Log-Message "📊 [PS-INSTALLER] Installer file size: $($fileInfo.Length / 1MB) MB"
-            Log-Message "📊 [PS-INSTALLER] Last modified: $($fileInfo.LastWriteTime)"
-        } catch {
-            Log-Message "⚠️ [PS-INSTALLER] Cannot get file info: $_"
-        }
-        
-        # Entferne Zone-Identifier falls vorhanden (MOTW)
-        try {
-            Unblock-File -Path "$installerPath" -ErrorAction SilentlyContinue
-            Log-Message "✅ [PS-INSTALLER] File unblocked successfully"
-        } catch {
-            Log-Message "⚠️ [PS-INSTALLER] Failed to unblock file: $_"
-        }
-        
-        # Hauptprozess starten mit robuster Ausführung
-        try {
-            # Direkte Prozesserstellung mit .NET
-            Log-Message "🚀 [PS-INSTALLER] Attempting to start installer using .NET Process class..."
-            
-            $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-            $startInfo.FileName = "$installerPath"
-            $startInfo.UseShellExecute = $true
-            $startInfo.Verb = ${elevate ? "'RunAs'" : "''"} # Nur bei Elevate
-            ${arglist ? `$startInfo.Arguments = ${arglist}` : "# No args"}
-            
-            Log-Message "🚀 [PS-INSTALLER] Starting process with UseShellExecute=$($startInfo.UseShellExecute), Verb=$($startInfo.Verb)"
-            
-            $process = [System.Diagnostics.Process]::Start($startInfo)
-            $installerPid = $process.Id
-            
-            Log-Message "✅ [PS-INSTALLER] Installer started with PID: $installerPid"
-            
-            # Priorisiere Installer-Prozess
-            try {
-                $process.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::AboveNormal
-                Log-Message "✅ [PS-INSTALLER] Priority raised for installer process"
-            } catch {
-                Log-Message "⚠️ [PS-INSTALLER] Failed to adjust priority: $_"
-            }
-            
-            # Erfolg signalisieren
-            Log-Message "✅ [PS-INSTALLER] Installation process launched successfully"
-            exit 0
-        } catch {
-            $errorMsg = $_
-            Log-Message "❌ [PS-INSTALLER] .NET Process start failed: $errorMsg"
-            
-            # Fallback zu Start-Process
-            try {
-                Log-Message "🔄 [PS-INSTALLER] Trying fallback with Start-Process..."
-                $processParams = @{
-                    FilePath = "$installerPath"
-                    Wait = $false
-                    PassThru = $true
-                    ${elevate ? "Verb = 'RunAs'" : ""}
-                }
-                
-                ${arglist ? `$processParams.ArgumentList = @(${arglist})` : "# No args"}
-                
-                $fallbackProcess = Start-Process @processParams
-                Log-Message "✅ [PS-INSTALLER] Fallback successful. PID: $($fallbackProcess.Id)"
-                exit 0
-            } catch {
-                Log-Message "❌ [PS-INSTALLER] All methods failed! Error: $_"
-                exit 1
-            }
-        }
-      `;
-
-      log.info(`🚀 [INSTALL-FIX] Attempting PowerShell RunAs fallback (improved)`);
-      
-      // 🚨 CRITICAL-FIX: PowerShell mit voller Sichtbarkeit ausführen
-      const ps = spawn("powershell.exe", [
-        "-NoProfile",
-        "-ExecutionPolicy", "Bypass",
-        "-NoExit", // WICHTIG: PowerShell-Fenster bleibt offen für Debugging
-        "-Command", cmd
-      ], {
-        detached: true,
-        stdio: ["ignore", "pipe", "pipe"],  // VERBESSERUNG: Erfassen der Ausgabe für Diagnose
-        windowsHide: false,   // WICHTIG: PowerShell-Fenster sichtbar machen
-        cwd: path.dirname(filePath),  // WorkingDirectory für korrekten Installer-Start
-        windowsVerbatimArguments: true // WICHTIG für korrekte Argumentübergabe
-      });
-      
-      // Erfassen der PowerShell-Ausgabe für bessere Diagnose
-      ps.stdout?.on('data', (data) => {
-        log.info(`[PS-STDOUT] ${data.toString().trim()}`);
-      });
-      
-      ps.stderr?.on('data', (data) => {
-        log.warn(`[PS-STDERR] ${data.toString().trim()}`);
-      });
-
-      return new Promise<ChildProcess>((res, rej) => {
-        let resolved = false;
-        
-        ps.once("error", (err) => {
-          log.error(`❌ [PS-ERROR] ${err.message}`);
-          if (!resolved) {
-            resolved = true;
-            rej(err);
-          }
-        });
-        
-        ps.once("exit", (code) => {
-          const success = code === 0;
-          log.info(`${success ? "✅" : "❌"} [PS-EXIT] PowerShell exited with code: ${code}`);
-          if (!resolved && !success) {
-            resolved = true;
-            rej(new Error(`PowerShell exited with code: ${code}`));
-          }
-        });
-        
-        // Längere Wartezeit für sichereren Start
-        setTimeout(() => {
-          if (!resolved) {
-            log.info("⏱️ [PS-TIMEOUT] Resolving PowerShell process after timeout");
-            resolved = true;
-            res(ps);
-          }
-        }, 500);
-      });
-    }
-  });
-}
+// === CLEANED UP UPDATER (Removed complex installer functions) ===
 
 // === CUSTOM UPDATER HELPER FUNCTIONS ===
 
@@ -1367,6 +1112,20 @@ function createWindow() {
 ipcMain.handle("app:restart", async () => {
   app.relaunch();
   app.exit();
+});
+
+// 🔄 NEW: Manual restart after successful update installation
+ipcMain.handle("app:restart-after-update", async () => {
+  log.info("🔄 Manual app restart requested after update installation");
+  
+  // Short delay to allow UI feedback
+  setTimeout(() => {
+    log.info("🔄 Restarting app to load new version");
+    app.relaunch();
+    app.exit();
+  }, 500);
+  
+  return { ok: true, message: "App wird neu gestartet..." };
 });
 
 // � DEPRECATED: app:getVersion handler kept for backward compatibility only

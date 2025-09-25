@@ -130,37 +130,83 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
     setState('installing');
     
     try {
-      console.log('🚀 [INSTALL_CLICKED] Starting robust custom installer with file:', downloadedFile);
+      console.log('🚀 [LAUNCHER-INSTALL] Starting UAC-resistant launcher with file:', downloadedFile);
       
-      // ✅ ROBUST: Use Enhanced Custom Install API with all reliability features
+      // ✅ LAUNCHER-BASED: Use new launcher-based installation API for UAC-resistance
       const result = await window.rawalite?.updater?.installCustom?.({
         filePath: downloadedFile,
-        args: [],                    // Interactive Installation (no /S silent flags)
         elevate: true,               // Enable UAC elevation for proper admin rights
-        unblock: true,               // Enable MOTW unblocking for downloaded files
-        quitDelayMs: 7000,          // Robust 7s delay for NSIS initialization
-        // Optional: expectedSha256 could be added for verification if available
+        quitDelayMs: 1000,          // Launcher delay (not installer delay)
       });
       
       if (!result?.ok) {
-        throw new Error(result?.error || 'Installation fehlgeschlagen');
+        throw new Error(result?.error || 'Launcher-Start fehlgeschlagen');
       }
       
-      console.log('✅ [SPAWN_OK] Robust custom installer started successfully:', {
-        installerStarted: result.installerStarted,
-        pid: result.pid,
-        filePath: result.filePath,
-        args: result.args,
-        runId: result.runId
+      console.log('✅ [LAUNCHER-STARTED] UAC-resistant launcher started successfully:', {
+        launcherStarted: result.launcherStarted,
+        exitCode: result.exitCode,
+        message: result.message,
+        output: result.output
       });
       
-      // Installation successful - enhanced system ensures proper detach and timing
-      console.log('✅ Robust Interactive installer launched - App will close after safe delay for installation');
+      // Show launcher success message
+      setErrorMessage(''); // Clear any previous errors
+      
+      // Set up completion monitoring
+      setTimeout(() => {
+        checkInstallationResults();
+      }, 2000); // Check results after 2 seconds
       
     } catch (error) {
-      console.error('❌ [SPAWN_ERROR] Installation fehlgeschlagen:', error);
-      setErrorMessage(`Fehler bei der Installation: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
+      console.error('❌ [LAUNCHER-ERROR] Launcher-Start fehlgeschlagen:', error);
+      setErrorMessage(`Fehler beim Starten des Launchers: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
       setState('error');
+    }
+  };
+
+  const checkInstallationResults = async () => {
+    try {
+      const resultCheck = await window.rawalite?.updater?.checkResults?.();
+      
+      if (resultCheck?.ok && resultCheck.hasResults && resultCheck.results) {
+        const results = resultCheck.results;
+        console.log('📊 Installation results found:', results);
+        
+        if (results.success) {
+          console.log('✅ Installation completed successfully');
+          setState('idle');
+          setErrorMessage('');
+          
+          // Show success message and restart option
+          if (window.confirm('Installation erfolgreich abgeschlossen! Möchten Sie die App jetzt neu starten?')) {
+            try {
+              await window.rawalite?.app?.restartAfterUpdate?.();
+            } catch (restartError) {
+              console.error('Restart failed:', restartError);
+              alert('Bitte starten Sie die App manuell neu.');
+            }
+          }
+          
+          handleCloseModal();
+        } else {
+          console.error('❌ Installation failed:', results.message);
+          setErrorMessage(`Installation fehlgeschlagen: ${results.message}`);
+          setState('error');
+        }
+      } else {
+        // No results yet - installation might still be running
+        console.log('⏳ No installation results yet - retrying in 5 seconds');
+        setTimeout(() => {
+          checkInstallationResults();
+        }, 5000);
+      }
+    } catch (error) {
+      console.error('❌ Error checking installation results:', error);
+      // Continue checking - this might be a temporary error
+      setTimeout(() => {
+        checkInstallationResults();
+      }, 5000);
     }
   };
 

@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import { useDesignSettings } from "./hooks/useDesignSettings";
@@ -41,5 +42,36 @@ function Layout() {
 }
 
 export default function App(){
+  // Check for installation results on app startup
+  useEffect(() => {
+    const checkInstallationResults = async () => {
+      try {
+        const resultCheck = await window.rawalite?.updater?.checkResults?.();
+        
+        if (resultCheck?.ok && resultCheck.hasResults && resultCheck.results) {
+          const results = resultCheck.results;
+          console.log('🚀 [APP-STARTUP] Installation results found:', results);
+          
+          if (results.success) {
+            // Show success notification
+            setTimeout(() => {
+              alert(`✅ Update erfolgreich installiert!\n\nVersion wurde erfolgreich aktualisiert.\nDauer: ${Math.round(results.duration)}s`);
+            }, 1000); // Delay to allow UI to fully load
+          } else {
+            // Show failure notification
+            setTimeout(() => {
+              alert(`❌ Update-Installation fehlgeschlagen\n\nFehler: ${results.message}\nExit Code: ${results.exitCode}`);
+            }, 1000);
+          }
+        }
+      } catch (error) {
+        console.error('❌ [APP-STARTUP] Error checking installation results:', error);
+      }
+    };
+    
+    // Check results after app loads
+    setTimeout(checkInstallationResults, 2000);
+  }, []);
+  
   return <Layout />;
 }

@@ -6,7 +6,7 @@ import { contextBridge, ipcRenderer } from "electron";
 // Import custom updater types
 import type { UpdateManifest, UpdateFile, UpdateProgress, UpdateStatus } from "../src/types/updater";
 
-// 🔄 CUSTOM UPDATER API - Pure IPC Implementation
+// 🔄 CUSTOM UPDATER API - Launcher-based Implementation
 const updater = {
   
   check: (): Promise<UpdateCheckResponse> =>
@@ -15,26 +15,52 @@ const updater = {
   download: (): Promise<{ ok: boolean; file?: string; error?: string; size?: number }> =>
     ipcRenderer.invoke("updater:download"),
     
-  install: (exePath?: string): Promise<{ ok: boolean; used?: string; error?: string }> =>
-    ipcRenderer.invoke("updater:install", exePath),
+  // 🆕 LAUNCHER-BASED: UAC-resistant installation using PowerShell launcher
+  install: (exePath?: string): Promise<{ 
+    ok: boolean; 
+    launcherStarted?: boolean;
+    exitCode?: number;
+    message?: string;
+    output?: string;
+    error?: string; 
+  }> => ipcRenderer.invoke("updater:install", exePath),
     
-  // 🚀 ROBUST: Custom Install API with enhanced parameters for reliable installer launch
+  // 🆕 LAUNCHER-BASED: Custom Install API using PowerShell launcher
   installCustom: (options: {
     filePath: string;
     args?: string[];
     expectedSha256?: string;
     elevate?: boolean;       // default: true (UAC elevation)
     unblock?: boolean;       // default: true (MOTW unblock)
-    quitDelayMs?: number;    // default: 7000 (robust quit delay)
+    quitDelayMs?: number;    // default: 1000 (launcher delay)
   }): Promise<{
     ok: boolean;
-    installerStarted?: boolean;
-    pid?: number | null;
+    launcherStarted?: boolean;
+    exitCode?: number;
+    message?: string;
     filePath?: string;
-    args?: string[];
     runId?: string;
+    output?: string;
+    errorOutput?: string;
     error?: string;
   }> => ipcRenderer.invoke("updater:install-custom", options),
+  
+  // 🆕 RESULT CHECKING: Check installation results from launcher
+  checkResults: (): Promise<{
+    ok: boolean;
+    hasResults: boolean;
+    results?: {
+      launcherId: string;
+      timestamp: string;
+      success: boolean;
+      message: string;
+      exitCode: number;
+      installerPath: string;
+      duration: number;
+      additionalData?: any;
+    };
+    error?: string;
+  }> => ipcRenderer.invoke("updater:check-results"),
   
   // 📡 Progress event listener
   onProgress: (callback: (progress: UpdateProgress) => void): (() => void) => {
@@ -56,6 +82,24 @@ const updater = {
   
   offStatus: () => {
     ipcRenderer.removeAllListeners("updater:status");
+  },
+  
+  // 🆕 Launcher event listeners
+  onLauncherStarted: (callback: (data: { success: boolean; message: string; launcherOutput?: string }) => void): (() => void) => {
+    const handler = (_: any, data: any) => callback(data);
+    ipcRenderer.on("updater:launcher-started", handler);
+    return () => ipcRenderer.removeListener("updater:launcher-started", handler);
+  },
+  
+  onInstallCompleted: (callback: (data: { success: boolean; message: string; showRestartButton?: boolean }) => void): (() => void) => {
+    const handler = (_: any, data: any) => callback(data);
+    ipcRenderer.on("updater:install-completed", handler);
+    return () => ipcRenderer.removeListener("updater:install-completed", handler);
+  },
+  
+  offLauncherEvents: () => {
+    ipcRenderer.removeAllListeners("updater:launcher-started");
+    ipcRenderer.removeAllListeners("updater:install-completed");
   }
 };
 
@@ -72,6 +116,7 @@ const version = {
 const appApi = {
   getVersion: (): Promise<string> => ipcRenderer.invoke("app:getVersion"),
   restart: (): Promise<void> => ipcRenderer.invoke("app:restart"),
+  restartAfterUpdate: (): Promise<{ ok: boolean; message?: string }> => ipcRenderer.invoke("app:restart-after-update"),
   exportLogs: (): Promise<{
     success: boolean;
     filePath?: string;

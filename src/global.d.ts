@@ -17,6 +17,7 @@ declare interface Window {
     };
     app: {
       restart: () => Promise<void>;
+      restartAfterUpdate: () => Promise<{ ok: boolean; message?: string }>;
       getVersion: () => Promise<string>;
       exportLogs: () => Promise<{
         success: boolean;
@@ -28,7 +29,7 @@ declare interface Window {
       openExternal: (url: string) => Promise<void>;
     };
     updater: {
-      // ✅ CUSTOM UPDATER API: Pure IPC Implementation
+      // ✅ LAUNCHER-BASED UPDATER API: UAC-resistant implementation
       check: () => Promise<{
         ok: boolean;
         hasUpdate?: boolean;
@@ -36,27 +37,52 @@ declare interface Window {
         target?: any;  // UpdateManifest
         error?: string;
       }>;
-      download: (url: string) => Promise<{ ok: boolean; file?: string; error?: string }>;  // Returns download result
-      install: (exePath: string) => Promise<{
+      download: (url: string) => Promise<{ ok: boolean; file?: string; error?: string; size?: number }>;
+      
+      // 🆕 LAUNCHER-BASED: UAC-resistant installation using PowerShell launcher
+      install: (exePath?: string) => Promise<{
         ok: boolean;
+        launcherStarted?: boolean;
+        exitCode?: number;
+        message?: string;
+        output?: string;
         error?: string;
       }>;
       
-      // 🚀 ROBUST: Custom Install API with enhanced parameters for reliable installer launch
+      // 🆕 LAUNCHER-BASED: Custom Install API using PowerShell launcher
       installCustom: (options: {
         filePath: string;
         args?: string[];
         expectedSha256?: string;
         elevate?: boolean;       // default: true (UAC elevation)
         unblock?: boolean;       // default: true (MOTW unblock)
-        quitDelayMs?: number;    // default: 7000 (robust quit delay)
+        quitDelayMs?: number;    // default: 1000 (launcher delay)
       }) => Promise<{
         ok: boolean;
-        installerStarted?: boolean;
-        pid?: number | null;
+        launcherStarted?: boolean;
+        exitCode?: number;
+        message?: string;
         filePath?: string;
-        args?: string[];
         runId?: string;
+        output?: string;
+        errorOutput?: string;
+        error?: string;
+      }>;
+      
+      // 🆕 RESULT CHECKING: Check installation results from launcher
+      checkResults: () => Promise<{
+        ok: boolean;
+        hasResults: boolean;
+        results?: {
+          launcherId: string;
+          timestamp: string;
+          success: boolean;
+          message: string;
+          exitCode: number;
+          installerPath: string;
+          duration: number;
+          additionalData?: any;
+        };
         error?: string;
       }>;
       
@@ -70,6 +96,11 @@ declare interface Window {
       }) => void) => (() => void);
       
       offProgress: () => void;
+      
+      // 🆕 Launcher event listeners
+      onLauncherStarted: (callback: (data: { success: boolean; message: string; launcherOutput?: string }) => void) => (() => void);
+      onInstallCompleted: (callback: (data: { success: boolean; message: string; showRestartButton?: boolean }) => void) => (() => void);
+      offLauncherEvents: () => void;
     };
     backup: {
       create: (options: {
