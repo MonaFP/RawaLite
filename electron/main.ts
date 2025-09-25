@@ -299,7 +299,7 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
     // Get launcher script path
     const launcherPath = isDev
       ? path.join(process.cwd(), "resources", "update-launcher.ps1")
-      : path.join(process.resourcesPath, "app", "resources", "update-launcher.ps1");
+      : path.join(process.resourcesPath, "update-launcher.ps1");
 
     if (!fs.existsSync(launcherPath)) {
       const msg = "Update-Launcher nicht gefunden. Installation nicht möglich.";
@@ -469,7 +469,7 @@ ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPay
     // Get launcher script path
     const launcherPath = isDev
       ? path.join(process.cwd(), "resources", "update-launcher.ps1")
-      : path.join(process.resourcesPath, "app", "resources", "update-launcher.ps1");
+      : path.join(process.resourcesPath, "update-launcher.ps1");
 
     if (!fs.existsSync(launcherPath)) {
       const msg = "Update-Launcher nicht gefunden. Installation nicht möglich.";
