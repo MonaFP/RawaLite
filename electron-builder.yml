@@ -18,6 +18,8 @@ extraResources:
     to: app/templates
   - from: resources
     to: resources
+  - from: resources/update-launcher.ps1
+    to: update-launcher.ps1
 
 # Windows-specific configuration
 win:

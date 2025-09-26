@@ -135,6 +135,28 @@ function resolvePackagedLauncherScript(): string {
   throw new Error(`update-launcher.ps1 nicht gefunden. Prüfpfade: ${candidatePaths.join(", ")}`);
 }
 
+function ensureLegacyLauncherPath(): void {
+  const rootLauncherPath = path.join(process.resourcesPath, "update-launcher.ps1");
+  const nestedLauncherPath = path.join(process.resourcesPath, "resources", "update-launcher.ps1");
+
+  if (fs.existsSync(rootLauncherPath)) {
+    return;
+  }
+
+  try {
+    if (fs.existsSync(nestedLauncherPath)) {
+      fs.copyFileSync(nestedLauncherPath, rootLauncherPath);
+      log.info(
+        `[LEGACY-LAUNCHER] Repariert: ${nestedLauncherPath} -> ${rootLauncherPath}`
+      );
+    }
+  } catch (error) {
+    log.warn(`[LEGACY-LAUNCHER] Konnte nicht repariert werden: ${error}`);
+  }
+}
+
+ensureLegacyLauncherPath();
+
 // === CUSTOM UPDATER IPC HANDLERS ===
 
 // 1️⃣ VERSION:GET - Single source of truth for app version

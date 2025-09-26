@@ -20,7 +20,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const distDir = path.join(__dirname, 'release');
+const projectRoot = path.join(__dirname, '..');
+const distDir = path.join(projectRoot, 'release');
 
 console.log('🛡️ Release Asset Guard - Validating electron-updater assets...\n');
 

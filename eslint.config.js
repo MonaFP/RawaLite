@@ -8,6 +8,7 @@ export default [
       'tests/scripts/**/*.{js,cjs}',
       'dist/**',
       'dist-electron/**',
+      'release/**',
       '_cleanup_backup/**',
       '_final_cleanup_legacy_docs/**',
       'resources/update-launcher.js',
