@@ -157,6 +157,31 @@ function ensureLegacyLauncherPath(): void {
 
 ensureLegacyLauncherPath();
 
+function scheduleQuitAfterLauncherStart(originTag: (message: string) => string) {
+  if (!app.isPackaged) {
+    log.info(originTag("DEV-Modus - kein automatisches Beenden"));
+    return;
+  }
+
+  const windows = BrowserWindow.getAllWindows();
+  windows.forEach((window) => {
+    try {
+      window.webContents.send("updater:will-quit", {
+        message: "Anwendung wird für das Update beendet",
+      });
+    } catch (notifyError) {
+      log.warn(originTag(`Renderer-Benachrichtigung fehlgeschlagen: ${notifyError}`));
+    }
+  });
+
+  const quitDelayMs = 1500;
+  log.info(originTag(`App wird in ${quitDelayMs}ms für das Update beendet`));
+  setTimeout(() => {
+    log.info(originTag("App quit ausgelöst"));
+    app.quit();
+  }, quitDelayMs);
+}
+
 // === CUSTOM UPDATER IPC HANDLERS ===
 
 // 1️⃣ VERSION:GET - Single source of truth for app version
@@ -412,7 +437,7 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
         
         if (code === 0) {
           log.info(tag("✅ Launcher started successfully - installation running independently"));
-          
+
           // Notify UI about launcher success
           const allWindows = BrowserWindow.getAllWindows();
           allWindows.forEach((window) => {
@@ -422,7 +447,9 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
               launcherOutput: launcherOutput.trim()
             });
           });
-          
+
+          scheduleQuitAfterLauncherStart(tag);
+
           resolve({ 
             ok: true, 
             launcherStarted: true, 
@@ -606,7 +633,7 @@ ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPa
         
         if (code === 0) {
           log.info(tag("✅ Launcher started successfully - installation running independently"));
-          
+
           // Notify UI about launcher success
           const allWindows = BrowserWindow.getAllWindows();
           allWindows.forEach((window) => {
@@ -616,10 +643,12 @@ ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPa
               launcherOutput: launcherOutput.trim()
             });
           });
-          
-          resolve({ 
-            ok: true, 
-            launcherStarted: true, 
+
+          scheduleQuitAfterLauncherStart(tag);
+
+          resolve({
+            ok: true,
+            launcherStarted: true,
             exitCode: code,
             message: "Launcher gestartet - Installation läuft unabhängig",
             filePath,
