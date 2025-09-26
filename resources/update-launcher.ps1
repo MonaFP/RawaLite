@@ -203,11 +203,11 @@ try {
     while ($true) {
         try {
             if ($installerArgs.Count -gt 0) {
-                $processInfo = Start-Process -FilePath $staged -ArgumentList $installerArgs -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -Wait -PassThru
+                $processInfo = Start-Process -FilePath $staged -ArgumentList $installerArgs -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -PassThru
             } else {
-                $processInfo = Start-Process -FilePath $staged -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -Wait -PassThru
+                $processInfo = Start-Process -FilePath $staged -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -PassThru
             }
-            Write-Log "✅ Installer started: $staged"
+            Write-Log "✅ Installer started: $staged (Process ID: $($processInfo.Id))"
             break
         } catch {
             $tries++
@@ -219,23 +219,12 @@ try {
 
 
 
-    $exitCode = $processInfo.ExitCode
-
-    Write-Log "Installer completed with exit code: $exitCode"
-
-
-
-    $success = $exitCode -eq 0
-
-    if ($success) {
-
-        Write-Log "Installation completed successfully"
-
-    } else {
-
-        Write-Log "Installation failed with exit code: $exitCode"
-
-    }
+    # Process started successfully - installer runs independently
+    Write-Log "Installer process launched successfully (PID: $($processInfo.Id))"
+    Write-Log "NSIS installer should now be visible to the user"
+    
+    $success = $true  # Launch success, not installation completion
+    $exitCode = 0     # Launcher success
 
 
 

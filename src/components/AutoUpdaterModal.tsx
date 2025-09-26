@@ -135,7 +135,7 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
       // ? LAUNCHER-BASED: Use launcher-based installation API so the NSIS wizard stays visible
       const result = await window.rawalite?.updater?.installCustom?.({
         installerPath: downloadedFile,
-        quitDelayMs: 1000,
+        quitDelayMs: 3000,  // Increased delay for async NSIS dialog
       });
       
       if (!result?.ok) {
