@@ -118,6 +118,23 @@ function afterDownloadComplete(outPath: string) {
   log.info("✅ [CUSTOM-UPDATER] Download completed and registered:", outPath);
 }
 
+function resolvePackagedLauncherScript(): string {
+  // electron-builder can bundle extra resources either directly under resourcesPath
+  // or in a nested `resources/` directory. Probe both locations before failing.
+  const candidatePaths = [
+    path.join(process.resourcesPath, "resources", "update-launcher.ps1"),
+    path.join(process.resourcesPath, "update-launcher.ps1")
+  ];
+
+  for (const candidate of candidatePaths) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new Error(`update-launcher.ps1 nicht gefunden. Prüfpfade: ${candidatePaths.join(", ")}`);
+}
+
 // === CUSTOM UPDATER IPC HANDLERS ===
 
 // 1️⃣ VERSION:GET - Single source of truth for app version
@@ -314,9 +331,8 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       }
       
       // Extract launcher from resources
-      const resourcesLauncherPath = path.join(process.resourcesPath, "update-launcher.ps1");
-      
       try {
+        const resourcesLauncherPath = resolvePackagedLauncherScript();
         // Copy launcher to temp location
         fs.copyFileSync(resourcesLauncherPath, tempLauncherPath);
         launcherPath = tempLauncherPath;
@@ -509,9 +525,8 @@ ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPa
       }
       
       // Extract launcher from resources
-      const resourcesLauncherPath = path.join(process.resourcesPath, "update-launcher.ps1");
-      
       try {
+        const resourcesLauncherPath = resolvePackagedLauncherScript();
         // Copy launcher to temp location
         fs.copyFileSync(resourcesLauncherPath, tempLauncherPath);
         launcherPath = tempLauncherPath;
@@ -889,6 +904,7 @@ async function verifyFileSha512(filePath: string, expectedSha512Base64: string):
 // PDF Theme Integration Import
 // Note: Import path needs compilation compatibility
 const _pdfThemesPath = path.join(__dirname, "..", "src", "lib", "pdfThemes.ts");  // Referenced for future PDF theme customization
+void _pdfThemesPath;
 let injectThemeIntoTemplate: any = null;
 
 // Dynamic import for theme integration (compiled compatibility)

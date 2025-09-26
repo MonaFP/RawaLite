@@ -4,7 +4,15 @@ import typescript from '@typescript-eslint/eslint-plugin';
 export default [
   {
     files: ['**/*.{js,mjs,cjs,ts,tsx}'],
-    ignores: ['tests/scripts/**/*.{js,cjs}', 'dist/**', 'dist-electron/**', '_cleanup_backup/**', '_final_cleanup_legacy_docs/**'],
+    ignores: [
+      'tests/scripts/**/*.{js,cjs}',
+      'dist/**',
+      'dist-electron/**',
+      '_cleanup_backup/**',
+      '_final_cleanup_legacy_docs/**',
+      'resources/update-launcher.js',
+      'electron/updater-integration-example.ts'
+    ],
     languageOptions: {
       parser: typescriptParser,
       ecmaVersion: 'latest',
