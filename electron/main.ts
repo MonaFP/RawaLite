@@ -414,6 +414,11 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       windowsHide: false
     });
 
+    // Allow launcher to outlive the Electron process (otherwise Windows tears it down).
+    if (launcherProcess.unref) {
+      launcherProcess.unref();
+    }
+
     // Monitor launcher output briefly
     let launcherOutput = "";
     let launcherError = "";
@@ -609,6 +614,10 @@ ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPa
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: false
     });
+
+    if (launcherProcess.unref) {
+      launcherProcess.unref();
+    }
 
     // Monitor launcher output briefly
     let launcherOutput = "";
