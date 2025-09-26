@@ -518,7 +518,7 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
             });
           });
 
-          scheduleQuitAfterLauncherStart(tag);
+          scheduleQuitAfterLauncherStart(tag, 2000);
 
           resolve({ 
             ok: true, 

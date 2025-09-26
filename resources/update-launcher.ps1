@@ -186,34 +186,35 @@ try {
 
 
 
-    if ($needsElevation) {
+    # ==== STAGING IN %TEMP% GEGEN LOCKS ====
+    $stagingDir = Join-Path $env:TEMP 'rawalite-launcher\staged'
+    New-Item -ItemType Directory -Force -Path $stagingDir | Out-Null
+    $staged = Join-Path $stagingDir ("rawalite-" + [IO.Path]::GetFileName($InstallerPath))
 
-        Write-Log "Administrator privileges required - requesting UAC elevation..."
+    Copy-Item $InstallerPath $staged -Force
+    Unblock-File $staged -ErrorAction SilentlyContinue
+    Write-Log "Staged installer to: $staged"
 
-        if ($installerArgs.Count -gt 0) {
-
-            $processInfo = Start-Process -FilePath $InstallerPath -ArgumentList $installerArgs -Verb RunAs -WindowStyle Normal -Wait -PassThru
-
-        } else {
-
-            $processInfo = Start-Process -FilePath $InstallerPath -Verb RunAs -WindowStyle Normal -Wait -PassThru
-
+    # ==== RETRY-LOOP FÜR KURZE LOCKS/SCANS ====
+    $tries = 0
+    $max = 10
+    $processInfo = $null
+    
+    while ($true) {
+        try {
+            if ($installerArgs.Count -gt 0) {
+                $processInfo = Start-Process -FilePath $staged -ArgumentList $installerArgs -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -PassThru
+            } else {
+                $processInfo = Start-Process -FilePath $staged -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -PassThru
+            }
+            Write-Log "✅ Installer started: $staged"
+            break
+        } catch {
+            $tries++
+            Write-Log "⏳ Locked? Retry $tries/$max : $($_.Exception.Message)"
+            if ($tries -ge $max) { throw }
+            Start-Sleep 1
         }
-
-    } else {
-
-        Write-Log "Starting installer in current context (no elevation needed)..."
-
-        if ($installerArgs.Count -gt 0) {
-
-            $processInfo = Start-Process -FilePath $InstallerPath -ArgumentList $installerArgs -WindowStyle Normal -Wait -PassThru
-
-        } else {
-
-            $processInfo = Start-Process -FilePath $InstallerPath -WindowStyle Normal -Wait -PassThru
-
-        }
-
     }
 
 
