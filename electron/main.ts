@@ -174,7 +174,7 @@ function scheduleQuitAfterLauncherStart(originTag: (message: string) => string) 
     }
   });
 
-  const quitDelayMs = 1500;
+  const quitDelayMs = 5000;
   log.info(originTag(`App wird in ${quitDelayMs}ms für das Update beendet`));
   setTimeout(() => {
     log.info(originTag("App quit ausgelöst"));

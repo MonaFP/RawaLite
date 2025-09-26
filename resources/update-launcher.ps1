@@ -3,7 +3,9 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [string]$InstallerPath
+    [string]$InstallerPath,
+    [switch]$Silent,
+    [string[]]$InstallerArguments
 )
 
 $ErrorActionPreference = "Stop"
@@ -76,8 +78,22 @@ $needsElevation = ($inProgramFiles -or $inProgramFilesX86) -and -not $isAdmin
 
 # Start installer with appropriate elevation
 try {
-    $installerArgs = @("/S")  # Silent installation
-    
+    $installerArgs = @()
+
+    if ($InstallerArguments) {
+        $installerArgs += $InstallerArguments
+    }
+
+    if ($Silent) {
+        $installerArgs += "/S"
+    }
+
+    if ($installerArgs.Count -gt 0) {
+        Write-Log "Installer arguments: $($installerArgs -join ' ')"
+    } else {
+        Write-Log "Installer arguments: <none>"
+    }
+
     if ($needsElevation) {
         Write-Log "Administrator privileges required - requesting UAC elevation..."
         
