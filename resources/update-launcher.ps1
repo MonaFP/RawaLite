@@ -203,9 +203,9 @@ try {
     while ($true) {
         try {
             if ($installerArgs.Count -gt 0) {
-                $processInfo = Start-Process -FilePath $staged -ArgumentList $installerArgs -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -PassThru
+                $processInfo = Start-Process -FilePath $staged -ArgumentList $installerArgs -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -Wait -PassThru
             } else {
-                $processInfo = Start-Process -FilePath $staged -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -PassThru
+                $processInfo = Start-Process -FilePath $staged -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -Wait -PassThru
             }
             Write-Log "✅ Installer started: $staged"
             break
