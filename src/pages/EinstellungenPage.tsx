@@ -2578,7 +2578,6 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
           <AutoUpdaterModal 
             isOpen={showAutoUpdater}
             onClose={() => setShowAutoUpdater(false)}
-            autoCheck={false}
           />
         </div>
       )}

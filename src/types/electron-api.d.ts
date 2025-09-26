@@ -10,27 +10,9 @@ declare global {
       updater: {
         check: () => Promise<{ ok: true } | { ok: false; reason: string }>;
         download: () => Promise<{ ok: true } | { ok: false; reason: string }>;
-        quitAndInstall: () => Promise<{ ok: true }>;
-        on: <T extends
-          | 'updater:update-available'
-          | 'updater:update-not-available'
-          | 'updater:error'
-          | 'updater:progress'
-          | 'updater:ready'
-        >(
-          channel: T,
-          cb: (payload: any) => void
-        ) => void;
-        off: <T extends
-          | 'updater:update-available'
-          | 'updater:update-not-available'
-          | 'updater:error'
-          | 'updater:progress'
-          | 'updater:ready'
-        >(
-          channel: T,
-          cb: (payload: any) => void
-        ) => void;
+        install: (exePath?: string) => Promise<{ ok: true; used?: string } | { ok: false; error: string }>;
+        onProgress: (callback: (progress: any) => void) => () => void;
+        offProgress: () => void;
       };
       system: {
         getVersion: () => Promise<string>;

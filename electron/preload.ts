@@ -1,90 +1,100 @@
-// ============================================================
-// FILE: electron/preload.ts
-// ============================================================
-import { contextBridge, ipcRenderer } from "electron";
+// electron/preload.ts
+// Unified Preload Script for RawaLite Custom Updater
 
-// 🔧 CRITICAL FIX: Unified IPC API for electron-updater integration
-// Match main.ts IPC handlers and global.d.ts expectations
+import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
-type CheckResult = { success: boolean; updateInfo?: any; error?: string };
-type DownloadResult = { success: boolean; error?: string };
-type InstallResult = { success: boolean; error?: string };
-
-type UpdaterEvents = {
-  "update-message": (payload: { type: string; data?: any }) => void;
-};
-
+// Custom Updater API
 const updater = {
-  // 🔧 FIXED: Match main.ts IPC handler names exactly
-  checkForUpdates: (): Promise<CheckResult> =>
-    ipcRenderer.invoke("updater:check-for-updates"),
-  startDownload: (): Promise<DownloadResult> =>
-    ipcRenderer.invoke("updater:start-download"),
-  installAndRestart: (): Promise<InstallResult> =>
-    ipcRenderer.invoke("updater:quit-and-install"),
-  installManual: (installerPath?: string): Promise<InstallResult> =>
-    ipcRenderer.invoke("updater:quit-and-install", installerPath),
-  getVersion: (): Promise<{ current: string; appName: string }> =>
-    ipcRenderer.invoke("updater:get-version"),
-
-  // 🧪 DEVELOPMENT TEST: Force-simulate update for testing
-  forceTestUpdate: (): Promise<{ success: boolean; testUpdate?: any; message?: string }> =>
-    ipcRenderer.invoke("updater:force-test-update"),
-
-  // 🔧 CRITICAL FIX: Event bridging for electron-updater events
-  onUpdateMessage: (
-    callback: (event: any, data: { type: string; data?: any }) => void
-  ): void => {
-    ipcRenderer.on("update-message", callback);
+  check: () => ipcRenderer.invoke("updater:check"),
+  download: () => ipcRenderer.invoke("updater:download"),
+  install: (exePath?: string) => ipcRenderer.invoke("updater:install", exePath),
+  installCustom: (options: any) => ipcRenderer.invoke("updater:install-custom", options),
+  checkResults: () => ipcRenderer.invoke("updater:check-results"),
+  
+  // Progress event listeners
+  onProgress: (callback: (progress: any) => void) => {
+    const handler = (_: IpcRendererEvent, progress: any) => callback(progress);
+    ipcRenderer.on("updater:progress", handler);
+    return () => ipcRenderer.removeListener("updater:progress", handler);
   },
-  removeUpdateMessageListener: (
-    callback: (event: any, data: { type: string; data?: any }) => void
-  ): void => {
-    ipcRenderer.removeListener("update-message", callback);
+  offProgress: () => {
+    ipcRenderer.removeAllListeners("updater:progress");
   },
-};
-
-const app = {
-  getVersion: (): Promise<string> => ipcRenderer.invoke("app:getVersion"),
-  restart: (): Promise<void> => ipcRenderer.invoke("app:restart"),
-  exportLogs: (): Promise<{
-    success: boolean;
-    filePath?: string;
-    error?: string;
-  }> => ipcRenderer.invoke("app:exportLogs"),
-};
-
-// 🔧 CRITICAL FIX: PDF Service IPC handlers
-const pdf = {
-  generate: (options: any): Promise<{
-    success: boolean;
-    filePath?: string;
-    previewUrl?: string;
-    fileSize?: number;
-    error?: string;
-  }> => ipcRenderer.invoke("pdf:generate", options),
-  getStatus: (): Promise<{
-    electronAvailable: boolean;
-    ghostscriptAvailable: boolean;
-    veraPDFAvailable: boolean;
-    pdfa2bSupported: boolean;
-  }> => ipcRenderer.invoke("pdf:getStatus"),
-};
-
-// 🔧 UNIFIED: All APIs under window.rawalite namespace  
-contextBridge.exposeInMainWorld("rawalite", { 
-  // Keep existing rawalite APIs (defined in main.ts)
-  updater, 
-  app,
-  pdf  // Add PDF service to unified namespace
-});
-
-declare global {
-  interface Window {
-    rawalite: {
-      updater: typeof updater;
-      app: typeof app;
-      pdf: typeof pdf;
-    };
+  
+  // Status event listeners
+  onStatus: (callback: (status: any) => void) => {
+    const handler = (_: IpcRendererEvent, status: any) => callback(status);
+    ipcRenderer.on("updater:status", handler);
+    return () => ipcRenderer.removeListener("updater:status", handler);
+  },
+  offStatus: () => {
+    ipcRenderer.removeAllListeners("updater:status");
+  },
+  
+  // Launcher event listeners
+  onLauncherStarted: (callback: (data: any) => void) => {
+    const handler = (_: IpcRendererEvent, data: any) => callback(data);
+    ipcRenderer.on("updater:launcher-started", handler);
+    return () => ipcRenderer.removeListener("updater:launcher-started", handler);
+  },
+  onInstallCompleted: (callback: (data: any) => void) => {
+    const handler = (_: IpcRendererEvent, data: any) => callback(data);
+    ipcRenderer.on("updater:install-completed", handler);
+    return () => ipcRenderer.removeListener("updater:install-completed", handler);
+  },
+  offLauncherEvents: () => {
+    ipcRenderer.removeAllListeners("updater:launcher-started");
+    ipcRenderer.removeAllListeners("updater:install-completed");
   }
-}
+};
+
+// Version API (unified version system)
+const version = {
+  get: () => ipcRenderer.invoke("version:get")
+};
+
+// App API
+const app = {
+  getVersion: () => ipcRenderer.invoke("app:getVersion"), // Legacy, use version.get()
+  restart: () => ipcRenderer.invoke("app:restart"),
+  restartAfterUpdate: () => ipcRenderer.invoke("app:restart-after-update"),
+  exportLogs: () => ipcRenderer.invoke("app:exportLogs")
+};
+
+// Database API
+const db = {
+  load: () => ipcRenderer.invoke("db:load"),
+  save: (data: Uint8Array) => ipcRenderer.invoke("db:save", data)
+};
+
+// PDF API
+const pdf = {
+  generate: (options: any) => ipcRenderer.invoke("pdf:generate", options),
+  getStatus: () => ipcRenderer.invoke("pdf:getStatus")
+};
+
+// Backup API
+const backup = {
+  create: (options: any) => ipcRenderer.invoke("backup:create", options),
+  list: () => ipcRenderer.invoke("backup:list"),
+  prune: (options: any) => ipcRenderer.invoke("backup:prune", options)
+};
+
+// Logo API
+const logo = {
+  upload: (options: any) => ipcRenderer.invoke("logo:upload", options),
+  get: (filePath: string) => ipcRenderer.invoke("logo:get", filePath),
+  getUrl: (filePath: string) => ipcRenderer.invoke("logo:getUrl", filePath),
+  delete: (filePath: string) => ipcRenderer.invoke("logo:delete", filePath)
+};
+
+// Expose unified API to renderer
+contextBridge.exposeInMainWorld("rawalite", {
+  updater,
+  version,
+  app,
+  db,
+  pdf,
+  backup,
+  logo
+});

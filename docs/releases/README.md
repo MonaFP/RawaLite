@@ -51,4 +51,12 @@ cp docs/releases/TEMPLATE.md docs/releases/v1.8.31-release-notes.md
 
 ---
 
-*Letzte Aktualisierung: 19. September 2025*
+## 🔄 **Migration Information**
+
+Am 23. September 2025 wurden alle Release Notes aus dem Root-Verzeichnis in diesen zentralen Ordner migriert. Dies verbessert die Repository-Organisation und erleichtert das Auffinden historischer Informationen zu Releases.
+
+Die Migration umfasste:
+- 33 Release Notes Dateien (v1.8.31 bis v1.8.91)
+- Konsistente Namenskonvention (`RELEASE_NOTES_V[Version].md`)
+
+*Letzte Aktualisierung: 23. September 2025*

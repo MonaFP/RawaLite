@@ -1,0 +1,11 @@
+# RawaLite Lokale Installations-Log - 2025-09-23 21:45:49
+[2025-09-23 21:45:49] Starte lokale Installation für RawaLite v1.8.92
+[2025-09-23 21:45:49] Suche nach Setup-Datei in C:\Users\ramon\Desktop\RawaLite\release und C:\Users\ramon\Desktop\RawaLite
+[2025-09-23 21:45:49] Setup-Datei gefunden: C:\Users\ramon\Desktop\RawaLite\rawalite-Setup-1.8.76.exe (Version 1.8.76)
+[2025-09-23 21:45:49] Entferne Mark of the Web (MOTW) von der Setup-Datei
+[2025-09-23 21:45:49] ✅ MOTW erfolgreich entfernt
+[2025-09-23 21:45:49] Setup-Dateigröße: 169.65 MB
+[2025-09-23 21:45:55] Starte Setup: C:\Users\ramon\Desktop\RawaLite\rawalite-Setup-1.8.76.exe
+[2025-09-23 21:45:56] Starte Installer mit ShellExecute: Operation=runas, Args=/NCRC
+[2025-09-23 21:45:59] ✅ ShellExecute erfolgreich gestartet, Rückgabewert: 42
+[2025-09-23 21:45:59] Installations-Skript beendet

@@ -1,28 +1,44 @@
 # 🏗️ RawaLite - Architektur-Dokumentation
 
-> **Technische Architektur und Design-Patterns** - Version 1.8.5+ (Current: September 2025)
+> **Technische Architektur und Design-Patterns** - Version 1.8.44+ (Current: September 2025)
 
-## 🚨 **KRITISCHE ARCHITEKTUR-UPDATES (v1.8.5+)**
+## 🚨 **KRITISCHE ARCHITEKTUR-UPDATES (v1.8.44+)**
 
-### **Namespace-Konsolidierung (September 2025)**
+### **Unified Version System (September 2025)**
+- **Problem**: Inkonsistente Version-Services führten zu Blue-Screens und Versionsdrift
+- **Root Cause**: `app.getVersion()` lieferte Electron-Version (31.7.7), nicht App-Version (1.8.44)
+- **Lösung**: **Single Source of Truth** mit `package.json` als einzige Version-Quelle
+- **Auswirkung**: Eliminierte Version-Konflikte, stabilere Update-Services, einheitliche UI-Anzeige
+
+### **Version API Refactoring**
+```typescript
+// ✅ NACH Unified System (v1.8.44+)
+window.rawalite.version.get(): Promise<{
+  app: string;       // "1.8.44" - Aus package.json
+  electron: string;  // "31.7.7" - Debug-Info
+  chrome: string;    // Debug-Info
+}>
+
+window.rawalite.updater.check(): Promise<{
+  available: boolean;
+  latest: { version: string } | null;  // Nur Remote-Daten
+}>
+
+// 🚨 DEPRECATED (Backward Compatibility)
+window.rawalite.updater.getVersion(): Promise<{
+  current: string;   // Wrapper um version.get()
+  target: string;    // Wrapper um updater.check()
+}>
+
+// ❌ VORHER (v1.8.43 und älter)
+window.rawalite.app.getVersion()             // Inkonsistent
+window.rawalite.updater.check().current      // Gemischte Daten
+```
+
+### **Namespace-Konsolidierung (v1.8.5+)**
 - **Problem**: Drei verschiedene IPC-Namespaces (`window.api`, `window.rawalite`, `window.elektronAPI`)
 - **Lösung**: **Einheitlicher `window.rawalite` Namespace** für alle IPC-Kommunikation
 - **Auswirkung**: Vereinfachte Entwicklung, konsistente API, bessere TypeScript-Unterstützung
-
-### **IPC-Mapping Vereinheitlichung**
-```typescript
-// ✅ NACH Konsolidierung (v1.8.5+)
-window.rawalite.updater.checkForUpdates()    // Auto-Update
-window.rawalite.pdf.generate(options)        // PDF-Service  
-window.rawalite.app.getVersion()             // App-Info
-window.rawalite.db.save(data)                // Database
-window.rawalite.backup.create(options)       // Backup-Service
-
-// ❌ VORHER (v1.8.4 und älter)
-window.api.updater.checkForUpdates()         // Nicht verwendet
-window.elektronAPI.pdf.generate(options)     // Inkonsistent
-window.rawalite.updater.checkForUpdates()    // Gemischt
-```
 
 ## 📊 **Überblick**
 
@@ -118,12 +134,17 @@ contextBridge.exposeInMainWorld("rawalite", {
     save: (data) => ipcRenderer.invoke("db:save", data)
   },
   
+  // 🔢 Unified Version System (v1.8.44+)
+  version: {
+    get: () => ipcRenderer.invoke("version:get")  // Single Source of Truth
+  },
+  
   // Auto-Update System  
   updater: {
     checkForUpdates: () => ipcRenderer.invoke("updater:check-for-updates"),
     startDownload: () => ipcRenderer.invoke("updater:start-download"),
     installAndRestart: () => ipcRenderer.invoke("updater:quit-and-install"),
-    getVersion: () => ipcRenderer.invoke("updater:get-version")
+    getVersion: () => ipcRenderer.invoke("updater:get-version")  // 🚨 DEPRECATED
   },
   
   // PDF Generation

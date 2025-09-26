@@ -69,6 +69,7 @@ export interface UpdateInfo {
   version: string;
   releaseNotes: string;
   releaseDate: string;
+  size?: number; // ✅ Add size field for GitHub API asset size (in bytes)
 }
 
 export interface UpdateCheckResult {
@@ -103,7 +104,7 @@ export interface UpdaterAPI {
 }
 
 export interface UpdateMessage {
-  type: 'checking-for-update' | 'update-available' | 'update-not-available' | 'download-progress' | 'update-downloaded' | 'update-error';
+  type: 'check-start' | 'update-available' | 'update-not-available' | 'download-progress' | 'download-complete' | 'install-start' | 'update-error';
   data?: any;
 }
 

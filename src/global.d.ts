@@ -1,123 +1,90 @@
-declare interface Window {
-  rawa?: {
-    listCustomers: () => Promise<any[]>;
-    addCustomer: (data: { Name: string; Adresse?: string }) => Promise<any>;
-    deleteCustomer: (id: string) => Promise<void>;
-    getCounters: () => Promise<any>;
-    getNextId: (
-      entity: "customers" | "invoices" | "offers" | "packages"
-    ) => Promise<string>;
-    getSettings: () => Promise<any>;
-    setKleinunternehmer: (val: boolean) => Promise<void>;
-  };
-  rawalite?: {
-    db: {
-      load: () => Promise<Uint8Array | null>;
-      save: (data: Uint8Array) => Promise<boolean>;
-    };
-    app: {
-      restart: () => Promise<void>;
-      getVersion: () => Promise<string>;
-      exportLogs: () => Promise<{
-        success: boolean;
-        filePath?: string;
-        error?: string;
-      }>;
-    };
-    shell: {
-      openExternal: (url: string) => Promise<void>;
-    };
-    updater: {
-      checkForUpdates: () => Promise<{
-        success: boolean;
-        updateInfo?: any;
-        error?: string;
-      }>;
-      startDownload: () => Promise<{ success: boolean; error?: string }>;
-      installAndRestart: () => Promise<{ success: boolean; error?: string }>;
-      getVersion: () => Promise<{ current: string; appName: string }>;
-      onUpdateMessage: (
-        callback: (event: any, data: { type: string; data?: any }) => void
-      ) => void;
-      removeUpdateMessageListener: (
-        callback: (event: any, data: { type: string; data?: any }) => void
-      ) => void;
-      // 🧪 DEVELOPMENT TEST: Force-simulate update for testing
-      forceTestUpdate?: () => Promise<{ 
-        success: boolean; 
-        testUpdate?: any; 
-        message?: string; 
-      }>;
-    };
-    backup: {
-      create: (options: {
-        kind: "pre-update" | "manual" | "post-download";
-        description?: string;
-        payloadMeta?: { version?: string; sizeEst?: number };
-      }) => Promise<{
-        success: boolean;
-        backupId?: string;
-        filePath?: string;
-        size?: number;
-        error?: string;
-      }>;
-      list: () => Promise<{
-        success: boolean;
-        backups?: Array<{
-          id: string;
-          kind: string;
-          filePath: string;
-          size: number;
-          createdAt: string;
-          description: string;
-          version: string;
+// src/global.d.ts
+// Global Window Type Definitions
+
+import type { 
+  UpdateCheckResult, 
+  UpdateDownloadResult, 
+  UpdateInstallResult,
+  InstallCustomResult,
+  UpdateResultsCheckResult,
+  UpdateProgress,
+  UpdateStatus 
+} from './types/updater';
+
+declare global {
+  interface Window {
+    rawalite: {
+      // Custom Updater API
+      updater: {
+        check: () => Promise<UpdateCheckResult>;
+        download: () => Promise<UpdateDownloadResult>;
+        install: (exePath?: string) => Promise<UpdateInstallResult>;
+        installCustom: (options: any) => Promise<InstallCustomResult>;
+        checkResults: () => Promise<UpdateResultsCheckResult>;
+        onProgress: (callback: (progress: UpdateProgress) => void) => () => void;
+        offProgress: () => void;
+        onStatus: (callback: (status: UpdateStatus) => void) => () => void;
+        offStatus: () => void;
+        onLauncherStarted: (callback: (data: any) => void) => () => void;
+        onInstallCompleted: (callback: (data: any) => void) => () => void;
+        offLauncherEvents: () => void;
+      };
+      
+      // Version API
+      version: {
+        get: () => Promise<{
+          ok: boolean;
+          app: string;
+          electron: string;
+          chrome: string;
         }>;
-        error?: string;
-      }>;
-      prune: (options: { keep?: number; maxTotalMB?: number }) => Promise<{
-        success: boolean;
-        removedCount?: number;
-        error?: string;
-      }>;
+      };
+      
+      // App API
+      app: {
+        getVersion: () => Promise<string>;
+        restart: () => Promise<void>;
+        restartAfterUpdate: () => Promise<{ ok: boolean; message?: string }>;
+        exportLogs: () => Promise<{
+          success: boolean;
+          filePath?: string;
+          error?: string;
+        }>;
+      };
+      
+      // Database API
+      db: {
+        load: () => Promise<Uint8Array | null>;
+        save: (data: Uint8Array) => Promise<boolean>;
+      };
+      
+      // PDF API
+      pdf: {
+        generate: (options: any) => Promise<any>;
+        getStatus: () => Promise<{
+          electronAvailable: boolean;
+          ghostscriptAvailable: boolean;
+          veraPDFAvailable: boolean;
+          pdfa2bSupported: boolean;
+        }>;
+      };
+      
+      // Backup API
+      backup: {
+        create: (options: any) => Promise<any>;
+        list: () => Promise<any>;
+        prune: (options: any) => Promise<any>;
+      };
+      
+      // Logo API
+      logo: {
+        upload: (options: any) => Promise<any>;
+        get: (filePath: string) => Promise<string | null>;
+        getUrl: (filePath: string) => Promise<string | null>;
+        delete: (filePath: string) => Promise<boolean>;
+      };
     };
-    logo: {
-      upload: (options: {
-        buffer: ArrayBuffer;
-        fileName: string;
-        mimeType: string;
-        maxWidth?: number;
-        maxHeight?: number;
-        quality?: number;
-      }) => Promise<{
-        success: boolean;
-        filePath?: string;
-        error?: string;
-        metadata?: {
-          fileName: string;
-          format: "svg" | "png" | "jpg";
-          width?: number;
-          height?: number;
-          fileSize: number;
-        };
-      }>;
-      get: (filePath: string) => Promise<string | null>;
-      getUrl: (filePath: string) => Promise<string>;
-      delete: (filePath: string) => Promise<boolean>;
-    };
-    pdf: {
-      generate: (options: any) => Promise<{
-        success: boolean;
-        filePath?: string;
-        previewUrl?: string;
-        fileSize?: number;
-        error?: string;
-      }>;
-      getStatus: () => Promise<{
-        electronAvailable: boolean;
-        ghostscriptAvailable: boolean;
-        veraPDFAvailable: boolean;
-        pdfa2bSupported: boolean;
-      }>;
-    };
-  };
+  }
 }
+
+export {};

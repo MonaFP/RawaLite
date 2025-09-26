@@ -1,8 +1,8 @@
 # 📚 RawaLite Documentation Index
 
-> **Zentrale Übersicht aller Dokumentation mit neuer Releases & Lessons-Learned Struktur**
+> **Zentrale Übersicht aller Dokumentation mit optimierter Releases & Lessons-Learned Struktur**
 
-*Stand: 19. September 2025 - Nach v1.8.30 Release & Cache-Prevention-System*
+*Stand: 23. September 2025 - Nach v1.8.91 Release & Update-Launcher-Verbesserungen*
 
 ## � **Aktualisierte Struktur**
 
@@ -11,8 +11,8 @@
 #### **📋 `/docs/releases/`** 
 - **`README.md`**: Übersicht und Guidelines für Release-Dokumentation
 - **`TEMPLATE.md`**: Standard-Template für Release Notes  
-- **`v1.8.30-release-notes.md`**: Detaillierte v1.8.30 Release-Dokumentation
-- **Future**: Chronologische Sammlung aller Release-Analysen
+- **Chronologische Release Notes**: Von v1.8.10 bis v1.8.91
+- **Aktuelle Notes**: `RELEASE_NOTES_V1891.md` (Update-Launcher-Verbesserungen)
 
 #### **🧠 `/docs/lessons-learned/`**
 - **`README.md`**: Übersicht und Guidelines für Lessons-Learned
@@ -25,9 +25,9 @@
 #### 🏗️ **`/docs/architecture/`** - System-Design & Architektur
 | Datei | Zweck | Status |
 |-------|-------|--------|
-| **PROJECT_OVERVIEW.md** | **Vollständiger Projekt-Status & Technologie-Stack** | ✅ Aktuell |
-| **ARCHITECTURE.md** | System-Architektur und Design-Entscheidungen | ✅ Aktuell |
-| **MIGRATION_SYSTEM.md** | Database-Migration Management | ✅ Aktuell |
+| **PROJECT_OVERVIEW.md** | **Vollständiger Projekt-Status & Technologie-Stack** | ✅ Aktuell v1.8.91 |
+| **ARCHITECTURE.md** | System-Architektur und Design-Entscheidungen | ✅ Aktuell v1.8.91 |
+| **MIGRATION_SYSTEM.md** | Database-Migration Management | ✅ Aktuell v1.8.91 |
 
 #### 🔧 **`/docs/development/`** - Entwickler-Guidelines & Tools
 | Datei | Zweck | Status |
@@ -41,11 +41,11 @@
 #### 🚀 **`/docs/operations/`** - Release & CI/CD Management  
 | Datei | Zweck | Status |
 |-------|-------|--------|
-| **RELEASE_GUIDELINES.md** | Release-Prozess und Quality Gates | ✅ Aktuell |
-| **RELEASE_PROCESS.md** | Schritt-für-Schritt Release-Workflow | ✅ Aktuell |
-| **VERSION_MANAGEMENT.md** | Automatisierte Versionierung und Release-Synchronisation | ✅ Aktuell |
-| **AUTO_UPDATER_IMPLEMENTATION.md** | electron-updater Integration | ✅ Aktuell |
-| **CI_CD_SETUP.md** | Continuous Integration Setup | ✅ Aktuell |
+| **RELEASE_GUIDELINES.md** | Release-Prozess und Quality Gates | ✅ Aktuell v1.8.91 |
+| **RELEASE_PROCESS.md** | Schritt-für-Schritt Release-Workflow | ✅ Aktuell v1.8.91 |
+| **VERSION_MANAGEMENT.md** | Automatisierte Versionierung und Release-Synchronisation | ✅ Aktuell v1.8.91 |
+| **AUTO_UPDATER_IMPLEMENTATION.md** | Custom In-App Updater Integration | ✅ Aktuell v1.8.91 |
+| **CI_CD_SETUP.md** | Continuous Integration Setup | ✅ Aktuell v1.8.91 |
 
 #### � **`/docs/troubleshooting/`** - Problem-Analysen & Fixes
 | Datei | Zweck | Status |
@@ -76,6 +76,9 @@ cp docs/lessons-learned/TEMPLATE.md docs/lessons-learned/problem-name.md
 
 # Während aktueller Probleme
 grep -r "ähnliches-keyword" docs/lessons-learned/
+
+# Für Release Notes Erstellung
+pnpm create:release-notes <version> "Release Title"
 ```
 
 ### **Für Entwickler-Onboarding:**
@@ -97,9 +100,10 @@ grep -r "ähnliches-keyword" docs/lessons-learned/
 - **🆕 Lessons Learned**: Systematische Erfassung etabliert
 
 ### **Aktualität-Tracking:**
-- **Letzte Updates**: Alle Docs aktuell per 19. September 2025
+- **Letzte Updates**: Alle Docs aktuell per 23. September 2025 (v1.8.91)
 - **Review-Zyklus**: Quarterly documentation review empfohlen
 - **Living Documents**: Problem-Solving und Lessons-Learned kontinuierlich erweitert
+- **Repository-Struktur**: Optimiert mit zentraler Release-Notes-Sammlung
 
 ---
 
@@ -162,6 +166,6 @@ grep -r "ähnliches-keyword" docs/lessons-learned/
 
 ---
 
-**Die neue `/docs/releases/` und `/docs/lessons-learned/` Struktur bietet systematic knowledge management für sustained project growth und team learning.** 🚀
+**Die optimierte `/docs/releases/` und `/docs/lessons-learned/` Struktur bietet systematic knowledge management für sustained project growth und team learning.** 🚀
 
-*Letzte Aktualisierung: 19. September 2025*
+*Letzte Aktualisierung: 23. September 2025 (v1.8.91)*

@@ -333,34 +333,9 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
         </div>
       </div>
 
-      {/* Action Button mit Pastellfarben */}
-      <div style={{ marginTop: 24, textAlign: 'center' }}>
-        <button
-          onClick={() => console.log('Dashboard Action Button clicked')}
-          style={{
-            background: 'linear-gradient(135deg, #a8d5ba 0%, #b8e0c7 100%)',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            color: '#2d3748',
-            fontWeight: '600',
-            fontSize: '14px',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(168, 213, 186, 0.3)',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(168, 213, 186, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0px)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(168, 213, 186, 0.3)';
-          }}
-        >
-          ✨ Dashboard-Aktion ausführen
-        </button>
-      </div>
+      {/* 🚨 DASHBOARD-HINWEIS DEFINITIV ENTFERNT - v1.8.60 */}
+      {/* Kein Update-Test Banner mehr! */}
+
     </div>
   );
 }

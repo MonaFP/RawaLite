@@ -1,27 +1,40 @@
-// electron/main.ts
+// electron/main.ts - 🚀 Custom In-App Updater
 import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from "electron";
-import { autoUpdater } from "electron-updater";
-// const { updateElectronApp } = require("update-electron-app"); // Disabled for real electron-updater
 import log from "electron-log";
 import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
+import https from "node:https";
+import { spawn } from "node:child_process";
+import crypto from "node:crypto";
+import pkg from "../package.json" assert { type: "json" };
 
-// 🔧 FIXED: Disable automatic update-electron-app initialization for NSIS builds
-// update-electron-app expects Squirrel, but we use NSIS - causes "Can not find Squirrel" error
-// We keep our GitHub API-based update system instead
-try {
-  // updateElectronApp() disabled - our GitHub API system works better for NSIS
-  log.info("✅ update-electron-app disabled (using GitHub API system for NSIS builds)");
-} catch (error) {
-  log.error("❌ update-electron-app initialization failed:", error);
+// TypeScript-Erweiterung für globale Variablen
+declare global {
+  var __rawaliteUpdateInProgress: boolean;
 }
+
+// --- Debug/Telemetry helpers (nur Node-Core) ---
+// Debug-Environment-Variables entfernt - Interactive Installer ist viel einfacher
+function safeMkdirp(p: string) { try { fs.mkdirSync(p, { recursive: true }); } catch {} }
+function safeWriteFile(p: string, data: string) { try { fs.writeFileSync(p, data); } catch {} }
+function safeReadJson<T=any>(p: string): T | null { try { return JSON.parse(fs.readFileSync(p, "utf-8")); } catch { return null; } }
+function safeUnlink(p: string) { try { fs.unlinkSync(p); } catch {} }
+
+// Mark helper functions as used to avoid TypeScript warnings
+// These are utility functions that may be needed for debugging/telemetry
+void safeMkdirp; void safeWriteFile; void safeReadJson; void safeUnlink;
+
+// 🚀 CUSTOM IN-APP UPDATER SYSTEM
 import {
   PDFPostProcessor,
   PDFAConversionOptions,
 } from "../src/services/PDFPostProcessor";
 import { initializeBackupSystem } from "./backup";
 import { initializeLogoSystem } from "./logo";
+
+// Import update system types
+import type { UpdateManifest, UpdateProgress } from "../src/types/updater";
 
 // === SINGLE INSTANCE LOCK ===
 const gotTheLock = app.requestSingleInstanceLock();
@@ -32,7 +45,7 @@ if (!gotTheLock) {
   app.quit();
 } else {
   // Handle second instance attempt - focus existing window
-  app.on("second-instance", (event, commandLine, workingDirectory) => {
+  app.on("second-instance", (_event, _commandLine, _workingDirectory) => {
     log.info("Second instance detected, focusing existing window");
     // Someone tried to run a second instance, focus our existing window instead
     const windows = BrowserWindow.getAllWindows();
@@ -44,59 +57,16 @@ if (!gotTheLock) {
   });
 }
 
-// === AUTO-UPDATER CONFIGURATION ===
-// Configure enhanced logging
+// === CUSTOM UPDATER CONFIGURATION ===
+// Configure enhanced logging for custom updater
 log.transports.file.level = "debug";
 log.transports.file.maxSize = 1024 * 1024 * 10; // 10MB max log file
 log.transports.file.format = "[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}";
 log.transports.console.level = "debug";
 
-// � NATIVE UPDATE SYSTEM: Konfiguration für vollständige in-app Updates
-autoUpdater.logger = log;
-autoUpdater.autoDownload = false; // User confirmation required - keeps UX control
-autoUpdater.autoInstallOnAppQuit = false; // Manual installation with user confirmation
-autoUpdater.allowDowngrade = false; // Prevent version downgrades for stability
-autoUpdater.allowPrerelease = false; // Stable releases only
-autoUpdater.disableWebInstaller = true; // Disable web installer fallback
-autoUpdater.forceDevUpdateConfig = false; // Production behavior always
-
-// 🌐 NETWORK OPTIMIZATION: Ensure HTTP/1.1 for stable downloads
-autoUpdater.requestHeaders = {
-  "User-Agent": "RawaLite-Updater/1.0",
-  "Cache-Control": "no-cache",
-  "Connection": "keep-alive"
-};
-
-// 🔧 DOWNLOAD OPTIMIZATION: Configure HTTP executor for stability
-try {
-  Object.defineProperty(autoUpdater, 'httpExecutor', {
-    get() {
-      const { HttpExecutor } = require("builder-util-runtime");
-      const executor = new HttpExecutor();
-      
-      // Force stable HTTP configuration
-      const originalRequest = executor.request;
-      if (originalRequest) {
-        executor.request = (options: any, cancellationToken: any, data: any) => {
-          // Ensure HTTP/1.1 to avoid protocol errors  
-          options.protocol = 'https:';
-          options.method = options.method || 'GET';
-          
-          return originalRequest.call(executor, options, cancellationToken, data);
-        };
-      }
-      
-      return executor;
-    }
-  });
-  log.info("✅ [NATIVE-UPDATE] HTTP executor configured for stable downloads");
-} catch (error) {
-  log.warn("⚠️ [NATIVE-UPDATE] HTTP executor configuration failed, using defaults:", error);
-}
-
-// 🔍 ENHANCED DEBUG: Comprehensive environment logging
-log.info("=== AUTO-UPDATER ENVIRONMENT DEBUG ===");
-log.info("App Version:", app.getVersion());
+// 🔍 CUSTOM UPDATER DEBUG: Environment logging
+log.info("=== CUSTOM UPDATER ENVIRONMENT DEBUG ===");
+log.info("App Version:", pkg.version);
 log.info("App Name:", app.getName());
 log.info("Product Name:", app.getName());
 log.info("App ID:", "com.rawalite.app");
@@ -106,560 +76,895 @@ log.info("Electron Version:", process.versions.electron);
 log.info("Node Version:", process.versions.node);
 log.info("App Path:", app.getAppPath());
 log.info("User Data Path:", app.getPath("userData"));
-log.info(
-  "Auto-updater feed URL will be:",
-  "https://github.com/MonaFP/RawaLite"
-);
-// 🔧 REPLACED: These settings are now handled by update-electron-app
-/*
-log.info("autoDownload setting:", autoUpdater.autoDownload);
-log.info("autoInstallOnAppQuit setting:", autoUpdater.autoInstallOnAppQuit);
-log.info("allowDowngrade setting:", autoUpdater.allowDowngrade);
-log.info("allowPrerelease setting:", autoUpdater.allowPrerelease);
-log.info("disableWebInstaller setting:", autoUpdater.disableWebInstaller);
-*/
+log.info("Update Manifest URL:", "https://api.github.com/repos/MonaFP/RawaLite/releases/latest");
 
-// === AUTO-UPDATER STATE MANAGEMENT ===
-let isUpdateAvailable = false;
-let currentUpdateInfo: any = null;
+// === CUSTOM UPDATER STATE MANAGEMENT ===
+let currentUpdateManifest: UpdateManifest | null = null;
 
-// � NATIVE UPDATE SYSTEM: Reaktivierte electron-updater Events für vollständige in-app Updates
-// Auto-updater events für IPC-Kommunikation
-autoUpdater.on("checking-for-update", () => {
-  log.info("🔍 [NATIVE-UPDATE] Starting update check...");
-  log.info("🔍 [NATIVE-UPDATE] Current app version:", app.getVersion());
-  log.info("🔍 [NATIVE-UPDATE] Checking against GitHub releases API");
-  // Reset state when starting new check
-  isUpdateAvailable = false;
-  currentUpdateInfo = null;
-  sendUpdateMessage("checking-for-update");
-});
+// 🔧 HOTFIX: Persistent paths & state for robust installer finding
+const pendingDir = path.join(app.getPath("userData"), "..", "Local", "rawalite-updater", "pending");
+let lastDownloadedPath: string | null = null;
 
-autoUpdater.on("update-available", (info) => {
-  log.info("✅ [NATIVE-UPDATE] Update available!");
-  log.info("📦 [UPDATE-AVAILABLE] Available version:", info.version);
-  log.info("📦 [UPDATE-AVAILABLE] Current version:", app.getVersion());
-  log.info(
-    "📦 [UPDATE-AVAILABLE] Release notes length:",
-    info.releaseNotes?.length || 0
-  );
-  log.info("📦 [UPDATE-AVAILABLE] Release date:", info.releaseDate);
-  log.info(
-    "📦 [UPDATE-AVAILABLE] Files to download:",
-    JSON.stringify(info.files, null, 2)
-  );
-  if (info.files && info.files[0]) {
-    log.info(
-      "📦 [UPDATE-AVAILABLE] Download size:",
-      info.files[0].size,
-      "bytes"
+function stripQuotes(p?: string) {
+  if (!p || typeof p !== "string") return p ?? "";
+  return p.replace(/^"+|"+$/g, "");
+}
+
+async function findLatestExeInPending(): Promise<string | null> {
+  try {
+    const entries = await fs.promises.readdir(pendingDir, { withFileTypes: true });
+    const exes = await Promise.all(
+      entries
+        .filter(e => e.isFile() && e.name.toLowerCase().endsWith(".exe"))
+        .map(async e => {
+          const full = path.join(pendingDir, e.name);
+          const st = await fs.promises.stat(full);
+          return { full, mtime: st.mtimeMs };
+        })
     );
-    log.info("📦 [UPDATE-AVAILABLE] Download URL:", info.files[0].url);
-    log.info("📦 [UPDATE-AVAILABLE] SHA512:", info.files[0].sha512);
+    if (exes.length === 0) return null;
+    exes.sort((a, b) => b.mtime - a.mtime);
+    return exes[0].full;
+  } catch {
+    return null;
   }
-  // Store state for download phase
-  isUpdateAvailable = true;
-  currentUpdateInfo = info;
-  sendUpdateMessage("update-available", {
-    version: info.version,
-    releaseNotes: info.releaseNotes,
-    releaseDate: info.releaseDate,
-  });
-});
+}
 
-autoUpdater.on("update-not-available", (info) => {
-  log.info("❌ [NATIVE-UPDATE] Update not available");
-  log.info("❌ [UPDATE-NOT-AVAILABLE] Current version:", app.getVersion());
-  log.info(
-    "❌ [UPDATE-NOT-AVAILABLE] Latest version:",
-    info?.version || "unknown"
-  );
-  log.info(
-    "❌ [UPDATE-NOT-AVAILABLE] Full info:",
-    JSON.stringify(info, null, 2)
-  );
-  // Reset state when no update available
-  isUpdateAvailable = false;
-  currentUpdateInfo = null;
-  sendUpdateMessage("update-not-available", info);
-});
+// Nach JEDER erfolgreichen Dateiübertragung aufrufen:
+function afterDownloadComplete(outPath: string) {
+  lastDownloadedPath = outPath;
+  const win = BrowserWindow.getAllWindows()[0];
+  win?.webContents.send("updater:progress", { transferred: 1, total: 1, percent: 100 });
+  log.info("✅ [CUSTOM-UPDATER] Download completed and registered:", outPath);
+}
 
-autoUpdater.on("error", (err) => {
-  log.error("💥 [NATIVE-UPDATE-ERROR] Update system error occurred!");
-  log.error("💥 [UPDATE-ERROR] Error type:", err.constructor.name);
-  log.error("💥 [UPDATE-ERROR] Error message:", err.message);
-  log.error("💥 [UPDATE-ERROR] Error code:", (err as any).code);
-  log.error("💥 [UPDATE-ERROR] Error stack:", err.stack);
-  log.error("💥 [UPDATE-ERROR] Current app version:", app.getVersion());
-  log.error("💥 [UPDATE-ERROR] App is packaged:", app.isPackaged);
-  
-  // 🔧 ENHANCED FIX: Handle verschiedene Update-Fehler mit spezifischen Fallbacks
-  if (err.message.includes("ERR_HTTP2_PROTOCOL_ERROR") || 
-      err.message.includes("net::ERR_HTTP2_PROTOCOL_ERROR")) {
-    log.error("🌐 [HTTP2-ERROR] Detected HTTP/2 protocol error - fallback to GitHub browser redirect");
-    sendUpdateMessage("update-error", {
-      message: "Netzwerkfehler beim Download. GitHub-Browser-Redirect wird verwendet.",
-      type: "network_error", 
-      code: "HTTP2_PROTOCOL_ERROR",
-      fallbackToBrowser: true
-    });
-    return;
-  }
-  
-  sendUpdateMessage("update-error", {
-    message: err.message,
-    stack: err.stack,
-    code: (err as any).code,
-  });
-});
+function resolvePackagedLauncherScript(): string {
+  // electron-builder can bundle extra resources either directly under resourcesPath
+  // or in a nested `resources/` directory. Probe both locations before failing.
+  const candidatePaths = [
+    path.join(process.resourcesPath, "resources", "update-launcher.ps1"),
+    path.join(process.resourcesPath, "update-launcher.ps1")
+  ];
 
-autoUpdater.on("download-progress", (progressObj) => {
-  const percent = Math.round(progressObj.percent * 100) / 100;
-  const speedMBps =
-    Math.round((progressObj.bytesPerSecond / 1024 / 1024) * 100) / 100;
-
-  // Log every 5% or at critical checkpoints
-  if (percent % 5 < 0.1 || (percent >= 74 && percent <= 76)) {
-    log.info(`📥 [NATIVE-DOWNLOAD] ${percent}% - ${speedMBps} MB/s`);
-    log.info(
-      `📥 [NATIVE-DOWNLOAD] ${progressObj.transferred}/${progressObj.total} bytes`
-    );
-
-    // Special logging for the problematic 74% range
-    if (percent >= 74 && percent <= 76) {
-      log.info(
-        "⚠️ [DOWNLOAD-CRITICAL] Entering 74-76% range - potential checksum validation phase"
-      );
-      log.info(
-        "⚠️ [DOWNLOAD-CRITICAL] This phase may take longer due to differential download validation"
-      );
+  for (const candidate of candidatePaths) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
     }
   }
 
-  sendUpdateMessage("download-progress", {
-    percent: Math.round(progressObj.percent),
-    transferred: progressObj.transferred,
-    total: progressObj.total,
-    bytesPerSecond: progressObj.bytesPerSecond,
-  });
-});
-
-autoUpdater.on("update-downloaded", (info) => {
-  log.info("🎉 [NATIVE-UPDATE-DOWNLOADED] Update successfully downloaded!");
-  log.info("🎉 [UPDATE-DOWNLOADED] Downloaded version:", info.version);
-  log.info("🎉 [UPDATE-DOWNLOADED] Current version:", app.getVersion());
-  log.info(
-    "🎉 [UPDATE-DOWNLOADED] Download completed at:",
-    new Date().toISOString()
-  );
-  log.info(
-    "🎉 [UPDATE-DOWNLOADED] Files info:",
-    JSON.stringify(info.files, null, 2)
-  );
-  log.info("🎉 [UPDATE-DOWNLOADED] Ready for quitAndInstall()");
-  sendUpdateMessage("update-downloaded", {
-    version: info.version,
-    releaseNotes: info.releaseNotes,
-  });
-});
-
-// Helper function to send update messages to renderer
-function sendUpdateMessage(type: string, data?: any) {
-  const allWindows = BrowserWindow.getAllWindows();
-  allWindows.forEach((window) => {
-    window.webContents.send("update-message", { type, data });
-  });
+  throw new Error(`update-launcher.ps1 nicht gefunden. Prüfpfade: ${candidatePaths.join(", ")}`);
 }
 
-// 🚀 NATIVE UPDATE SYSTEM: IPC Handlers für vollständige in-app Updates
-ipcMain.handle("updater:check-for-updates", async () => {
+function ensureLegacyLauncherPath(): void {
+  const rootLauncherPath = path.join(process.resourcesPath, "update-launcher.ps1");
+  const nestedLauncherPath = path.join(process.resourcesPath, "resources", "update-launcher.ps1");
+
+  if (fs.existsSync(rootLauncherPath)) {
+    return;
+  }
+
   try {
-    log.info("🔍 [NATIVE-UPDATE] Manual update check requested via IPC");
+    if (fs.existsSync(nestedLauncherPath)) {
+      fs.copyFileSync(nestedLauncherPath, rootLauncherPath);
+      log.info(
+        `[LEGACY-LAUNCHER] Repariert: ${nestedLauncherPath} -> ${rootLauncherPath}`
+      );
+    }
+  } catch (error) {
+    log.warn(`[LEGACY-LAUNCHER] Konnte nicht repariert werden: ${error}`);
+  }
+}
+
+ensureLegacyLauncherPath();
+
+function scheduleQuitAfterLauncherStart(originTag: (message: string) => string) {
+  if (!app.isPackaged) {
+    log.info(originTag("DEV-Modus - kein automatisches Beenden"));
+    return;
+  }
+
+  const windows = BrowserWindow.getAllWindows();
+  windows.forEach((window) => {
+    try {
+      window.webContents.send("updater:will-quit", {
+        message: "Anwendung wird für das Update beendet",
+      });
+    } catch (notifyError) {
+      log.warn(originTag(`Renderer-Benachrichtigung fehlgeschlagen: ${notifyError}`));
+    }
+  });
+
+  const quitDelayMs = 5000;
+  log.info(originTag(`App wird in ${quitDelayMs}ms für das Update beendet`));
+  setTimeout(() => {
+    log.info(originTag("App quit ausgelöst"));
+    app.quit();
+  }, quitDelayMs);
+}
+
+// === CUSTOM UPDATER IPC HANDLERS ===
+
+// 1️⃣ VERSION:GET - Single source of truth for app version
+ipcMain.handle("version:get", () => {
+  log.info(`[version:get] Returning unified version data: app=${pkg.version}, electron=${process.versions.electron}`);
+  return {
+    ok: true,
+    app: pkg.version,
+    electron: process.versions.electron,
+    chrome: process.versions.chrome,
+  };
+});
+
+// 2️⃣ UPDATE:CHECK - Check for updates via GitHub manifest
+ipcMain.handle("updater:check", async () => {
+  try {
+    log.info("🔍 [CUSTOM-UPDATER] Checking for updates via GitHub update.json");
     
     // Development mode check
     if (!app.isPackaged) {
       log.info("🔧 [DEV-MODE] Update check skipped in development");
       return {
-        success: false,
-        devMode: true,
+        ok: false,
         error: "Update-System ist im Development-Modus deaktiviert"
       };
     }
-
-    // Use electron-updater for native update check
-    log.info("🚀 [NATIVE-UPDATE] Starting native electron-updater check");
     
-    const updateCheckResult = await autoUpdater.checkForUpdates();
+    const currentVersion = pkg.version;
     
-    if (updateCheckResult && updateCheckResult.updateInfo) {
-      log.info("✅ [NATIVE-UPDATE] electron-updater check completed successfully");
+    // Try to fetch update.json manifest from GitHub releases
+    const updateManifest = await fetchUpdateManifest();
+    
+    if (!updateManifest) {
+      return {
+        ok: true,
+        hasUpdate: false,
+        current: currentVersion
+      };
+    }
+    
+    // Compare versions using semver
+    const { isNewerVersion } = await import('../src/services/semver.js');
+    const hasUpdate = isNewerVersion(updateManifest.version, currentVersion);
+    
+    if (hasUpdate) {
+      // Store manifest for download phase
+      currentUpdateManifest = updateManifest;
       
-      // 🔧 CRITICAL FIX: Set global variables for download handler
-      isUpdateAvailable = true;
-      currentUpdateInfo = updateCheckResult.updateInfo;
+      // 🔧 0MB FIX: Try to get size if not available
+      const nsisFile = updateManifest.files.find(
+        file => file.kind === 'nsis' && file.arch === 'x64'
+      );
       
-      log.info(`🔍 [NATIVE-UPDATE] Update available: ${currentUpdateInfo.version}`);
+      if (nsisFile && (!nsisFile.size || nsisFile.size === 0) && nsisFile.url) {
+        log.info(`🔍 [CUSTOM-UPDATER] Size unknown, fetching via HEAD request: ${nsisFile.url}`);
+        nsisFile.size = await getContentLengthFromUrl(nsisFile.url);
+        if (nsisFile.size > 0) {
+          log.info(`✅ [CUSTOM-UPDATER] Size determined via HEAD: ${Math.round(nsisFile.size / 1024 / 1024 * 100) / 100} MB`);
+        }
+      }
       
-      return { 
-        success: true,
-        updateInfo: updateCheckResult.updateInfo
+      log.info(`✅ [CUSTOM-UPDATER] Update available: ${currentVersion} -> ${updateManifest.version}`);
+      
+      return {
+        ok: true,
+        hasUpdate: true,
+        current: currentVersion,
+        target: updateManifest
       };
     } else {
-      log.info("❌ [NATIVE-UPDATE] No update available via electron-updater");
+      // Clear any stored manifest
+      currentUpdateManifest = null;
       
-      // 🔧 CRITICAL FIX: Clear global variables when no update
-      isUpdateAvailable = false;
-      currentUpdateInfo = null;
+      log.info(`✅ [CUSTOM-UPDATER] No update available: ${currentVersion} is latest`);
       
-      return { 
-        success: true,
-        noUpdate: true 
+      return {
+        ok: true,
+        hasUpdate: false,
+        current: currentVersion
       };
     }
     
   } catch (error) {
-    log.error("💥 [NATIVE-UPDATE-ERROR] Update check failed:", error);
-    
-    // Fallback to GitHub API if electron-updater fails
-    log.info("🔄 [FALLBACK] Trying GitHub API as fallback");
-    return await checkForUpdatesViaGitHub();
+    log.error("❌ [CUSTOM-UPDATER] Update check failed:", error);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Update-Prüfung fehlgeschlagen',
+      current: pkg.version
+    };
   }
 });
 
-// 🔧 CRITICAL FIX: Gemeinsame GitHub API Update-Check Funktion
-async function checkForUpdatesViaGitHub() {
+// 3️⃣ UPDATE:DOWNLOAD - Download update file with progress
+ipcMain.handle("updater:download", async () => {
   try {
-    log.info("Checking for updates via GitHub API (bypassing electron-updater)");
+    if (!currentUpdateManifest) {
+      throw new Error('Kein Update verfügbar. Bitte zuerst nach Updates suchen.');
+    }
     
-    // 🔧 FIXED: Notify UI that update check is starting
-    sendUpdateMessage("checking-for-update");
+    // Find the NSIS x64 file
+    const nsisFile = currentUpdateManifest.files.find(
+      file => file.kind === 'nsis' && file.arch === 'x64'
+    );
     
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    if (!nsisFile) {
+      throw new Error('Keine kompatible Installer-Datei gefunden.');
+    }
     
-    const response = await fetch("https://api.github.com/repos/MonaFP/RawaLite/releases/latest", {
+    log.info("🔽 [CUSTOM-UPDATER] Starting download:", nsisFile.url);
+    
+    // Download file with progress tracking
+    const filePath = await downloadFileWithProgress(nsisFile.url, nsisFile.name, nsisFile.size);
+    
+    // Verify SHA512 if provided
+    if (nsisFile.sha512) {
+      const isValid = await verifyFileSha512(filePath, nsisFile.sha512);
+      if (!isValid) {
+        // Clean up invalid file
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+        throw new Error('Download-Verifikation fehlgeschlagen. Datei wurde nicht korrekt heruntergeladen.');
+      }
+      log.info("✅ [CUSTOM-UPDATER] SHA512 verification successful");
+    }
+    
+    // Store file path for installation (legacy) - removed downloadedFilePath
+    
+    // 🔧 HOTFIX: Register downloaded path and notify completion
+    afterDownloadComplete(filePath);
+    
+    // 🔧 0MB FIX: Get actual file size after download
+    let actualSize = nsisFile.size || 0;
+    try {
+      const stats = await fs.promises.stat(filePath);
+      actualSize = stats.size;
+      log.info(`📊 [CUSTOM-UPDATER] Actual file size: ${Math.round(actualSize / 1024 / 1024 * 100) / 100} MB`);
+    } catch (error) {
+      log.warn("⚠️ [CUSTOM-UPDATER] Could not get file stats:", error);
+    }
+    
+    log.info(`✅ [CUSTOM-UPDATER] Download completed: ${filePath}`);
+    
+    return {
+      ok: true,
+      file: filePath,
+      size: actualSize
+    };
+    
+  } catch (error) {
+    log.error("❌ [CUSTOM-UPDATER] Download failed:", error);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Download fehlgeschlagen'
+    };
+  }
+});
+
+// 4️⃣ UPDATE:INSTALL-LAUNCHER - UAC-resistant launcher-based installation
+ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
+  const runId = Date.now().toString(36);
+  const tag = (m: string) => `[LAUNCHER-INSTALL ${runId}] ${m}`;
+  
+  try {
+    log.info(tag("Launcher-based install requested"));
+    
+    // Find installer path
+    let candidate = stripQuotes(exePath);
+    if (!candidate) candidate = lastDownloadedPath ?? "";
+    if (!candidate || !fs.existsSync(candidate)) {
+      const fallback = await findLatestExeInPending();
+      if (fallback) candidate = fallback;
+    }
+
+    if (!candidate || !fs.existsSync(candidate)) {
+      const msg = "Installer-Datei nicht gefunden. Bitte zuerst herunterladen.";
+      log.error(tag(`Install failed: ${msg}`));
+      return { ok: false, error: msg };
+    }
+
+    // Get launcher script path with ASAR extraction
+    let launcherPath: string;
+    
+    if (isDev) {
+      launcherPath = path.join(process.cwd(), "resources", "update-launcher.ps1");
+    } else {
+      // In production, extract launcher from ASAR to temp directory
+      const tempDir = path.join(os.tmpdir(), "rawalite-launcher");
+      const tempLauncherPath = path.join(tempDir, "update-launcher.ps1");
+      
+      // Create temp directory
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      // Extract launcher from resources
+      try {
+        const resourcesLauncherPath = resolvePackagedLauncherScript();
+        // Copy launcher to temp location
+        fs.copyFileSync(resourcesLauncherPath, tempLauncherPath);
+        launcherPath = tempLauncherPath;
+        log.info(tag(`Launcher extracted to temp: ${tempLauncherPath}`));
+      } catch (extractError) {
+        const msg = `Launcher extraction failed: ${extractError}`;
+        log.error(tag(msg));
+        return { ok: false, error: msg };
+      }
+    }
+
+    if (!fs.existsSync(launcherPath)) {
+      const msg = "Update-Launcher nicht gefunden. Installation nicht möglich.";
+      log.error(tag(msg));
+      return { ok: false, error: msg };
+    }
+
+    log.info(tag(`Starting UAC-resistant launcher: ${candidate}`));
+    log.info(tag(`Launcher script: ${launcherPath}`));
+    
+    // Execute launcher script with detached process
+    const launcherArgs = [
+      "-NoProfile",
+      "-ExecutionPolicy", "Bypass", 
+      "-File", `"${launcherPath}"`,
+      "-InstallerPath", `"${candidate}"`
+    ];
+    
+    const launcherProcess = spawn("powershell.exe", launcherArgs, {
+      detached: true,  // CRITICAL: Detached for UAC-resistance
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: false
+    });
+
+    // Allow launcher to outlive the Electron process (otherwise Windows tears it down).
+    if (launcherProcess.unref) {
+      launcherProcess.unref();
+    }
+
+    // Monitor launcher output briefly
+    let launcherOutput = "";
+    let launcherError = "";
+
+    launcherProcess.stdout?.on('data', (data) => {
+      const output = data.toString().trim();
+      launcherOutput += output + "\n";
+      log.info(tag(`LAUNCHER-OUT: ${output}`));
+    });
+    
+    launcherProcess.stderr?.on('data', (data) => {
+      const error = data.toString().trim();
+      launcherError += error + "\n";
+      log.warn(tag(`LAUNCHER-ERR: ${error}`));
+    });
+
+    // Return promise that resolves when launcher starts (not when install completes)
+    return new Promise((resolve) => {
+      launcherProcess.on('exit', (code) => {
+        log.info(tag(`Launcher process exited with code: ${code}`));
+        
+        if (code === 0) {
+          log.info(tag("✅ Launcher started successfully - installation running independently"));
+
+          // Notify UI about launcher success
+          const allWindows = BrowserWindow.getAllWindows();
+          allWindows.forEach((window) => {
+            window.webContents.send('updater:launcher-started', {
+              success: true,
+              message: 'Installation gestartet. Bitte bestätigen Sie die UAC-Anfrage.',
+              launcherOutput: launcherOutput.trim()
+            });
+          });
+
+          scheduleQuitAfterLauncherStart(tag);
+
+          resolve({ 
+            ok: true, 
+            launcherStarted: true, 
+            exitCode: code,
+            message: "Launcher gestartet - Installation läuft unabhängig",
+            output: launcherOutput.trim()
+          });
+        } else {
+          log.error(tag(`❌ Launcher failed with code: ${code}`));
+          
+          resolve({ 
+            ok: false, 
+            error: `Launcher fehlgeschlagen (Exit Code: ${code})`,
+            exitCode: code,
+            output: launcherOutput.trim(),
+            errorOutput: launcherError.trim()
+          });
+        }
+      });
+      
+      launcherProcess.on('error', (error) => {
+        log.error(tag(`Launcher process error: ${error.message}`));
+        resolve({ 
+          ok: false, 
+          error: `Launcher-Fehler: ${error.message}`,
+          output: launcherOutput.trim()
+        });
+      });
+    });
+    
+  } catch (e: any) {
+    log.error(tag(`Exception: ${e?.message || e}`));
+    return { ok: false, error: e?.message ?? String(e) };
+  }
+});
+
+// 5️⃣ UPDATE:CHECK-RESULTS - Check installation results from launcher
+ipcMain.handle("updater:check-results", async () => {
+  const tag = "[CHECK-RESULTS]";
+  
+  try {
+    const resultsPath = path.join(os.homedir(), "AppData", "Local", "rawalite-updater", "install-results.json");
+    
+    if (!fs.existsSync(resultsPath)) {
+      log.info(tag + " No installation results found");
+      return { ok: true, hasResults: false };
+    }
+    
+    // Read and parse results
+    const resultsData = fs.readFileSync(resultsPath, "utf-8");
+    const results = JSON.parse(resultsData);
+    
+    log.info(tag + ` Found installation results: Success=${results.success}, ExitCode=${results.exitCode}`);
+    
+    // Clean up results file after reading
+    try {
+      fs.unlinkSync(resultsPath);
+      log.info(tag + " Results file cleaned up");
+    } catch (cleanupError) {
+      log.warn(tag + ` Could not clean up results file: ${cleanupError}`);
+    }
+    
+    return {
+      ok: true,
+      hasResults: true,
+      results: results
+    };
+    
+  } catch (error) {
+    log.error(tag + ` Error checking results: ${error}`);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+});
+
+// === CUSTOM INSTALL IPC HANDLER ===
+
+type InstallCustomPayload = {
+  filePath: string;
+  args?: string[];
+  expectedSha256?: string;
+  elevate?: boolean;       // default: true
+  unblock?: boolean;       // default: true
+  quitDelayMs?: number;    // default: 7000
+};
+
+ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPayload) => {
+  const {
+    filePath,
+    elevate: _elevate = true,
+    quitDelayMs: _quitDelayMs = 1000,
+  } = payload ?? {};
+
+  const runId = Date.now().toString(36);
+  const tag = (msg: string) => `[LAUNCHER-INSTALL-CUSTOM ${runId}] ${msg}`;
+
+  try {
+    log.info(tag(`Launcher-based custom install requested: ${filePath}`));
+
+    // 1. Validation - Datei existiert?
+    if (!filePath || !fs.existsSync(filePath)) {
+      const msg = `Installer nicht gefunden: ${filePath}`;
+      log.error(tag(msg));
+      return { ok: false, error: msg };
+    }
+
+    // Get launcher script path with ASAR extraction
+    let launcherPath: string;
+    
+    if (isDev) {
+      launcherPath = path.join(process.cwd(), "resources", "update-launcher.ps1");
+    } else {
+      // In production, extract launcher from ASAR to temp directory
+      const tempDir = path.join(os.tmpdir(), "rawalite-launcher");
+      const tempLauncherPath = path.join(tempDir, "update-launcher.ps1");
+      
+      // Create temp directory
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      // Extract launcher from resources
+      try {
+        const resourcesLauncherPath = resolvePackagedLauncherScript();
+        // Copy launcher to temp location
+        fs.copyFileSync(resourcesLauncherPath, tempLauncherPath);
+        launcherPath = tempLauncherPath;
+        log.info(tag(`Launcher extracted to temp: ${tempLauncherPath}`));
+      } catch (extractError) {
+        const msg = `Launcher extraction failed: ${extractError}`;
+        log.error(tag(msg));
+        return { ok: false, error: msg };
+      }
+    }
+
+    if (!fs.existsSync(launcherPath)) {
+      const msg = "Update-Launcher nicht gefunden. Installation nicht möglich.";
+      log.error(tag(msg));
+      return { ok: false, error: msg };
+    }
+
+    log.info(tag(`Starting UAC-resistant launcher: ${filePath}`));
+    log.info(tag(`Launcher script: ${launcherPath}`));
+    
+    // Execute launcher script with detached process
+    const launcherArgs = [
+      "-NoProfile",
+      "-ExecutionPolicy", "Bypass", 
+      "-File", `"${launcherPath}"`,
+      "-InstallerPath", `"${filePath}"`
+    ];
+    
+    const launcherProcess = spawn("powershell.exe", launcherArgs, {
+      detached: true,  // CRITICAL: Detached for UAC-resistance
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: false
+    });
+
+    if (launcherProcess.unref) {
+      launcherProcess.unref();
+    }
+
+    // Monitor launcher output briefly
+    let launcherOutput = "";
+    let launcherError = "";
+
+    launcherProcess.stdout?.on('data', (data) => {
+      const output = data.toString().trim();
+      launcherOutput += output + "\n";
+      log.info(tag(`LAUNCHER-OUT: ${output}`));
+    });
+    
+    launcherProcess.stderr?.on('data', (data) => {
+      const error = data.toString().trim();
+      launcherError += error + "\n";
+      log.warn(tag(`LAUNCHER-ERR: ${error}`));
+    });
+
+    // Return promise that resolves when launcher starts (not when install completes)
+    return new Promise((resolve) => {
+      launcherProcess.on('exit', (code) => {
+        log.info(tag(`Launcher process exited with code: ${code}`));
+        
+        if (code === 0) {
+          log.info(tag("✅ Launcher started successfully - installation running independently"));
+
+          // Notify UI about launcher success
+          const allWindows = BrowserWindow.getAllWindows();
+          allWindows.forEach((window) => {
+            window.webContents.send('updater:launcher-started', {
+              success: true,
+              message: 'Installation gestartet. Bitte bestätigen Sie die UAC-Anfrage.',
+              launcherOutput: launcherOutput.trim()
+            });
+          });
+
+          scheduleQuitAfterLauncherStart(tag);
+
+          resolve({
+            ok: true,
+            launcherStarted: true,
+            exitCode: code,
+            message: "Launcher gestartet - Installation läuft unabhängig",
+            filePath,
+            runId,
+            output: launcherOutput.trim()
+          });
+        } else {
+          log.error(tag(`❌ Launcher failed with code: ${code}`));
+          
+          resolve({ 
+            ok: false, 
+            error: `Launcher fehlgeschlagen (Exit Code: ${code})`,
+            exitCode: code,
+            filePath,
+            runId,
+            output: launcherOutput.trim(),
+            errorOutput: launcherError.trim()
+          });
+        }
+      });
+      
+      launcherProcess.on('error', (error) => {
+        log.error(tag(`Launcher process error: ${error.message}`));
+        resolve({ 
+          ok: false, 
+          error: `Launcher-Fehler: ${error.message}`,
+          filePath,
+          runId,
+          output: launcherOutput.trim()
+        });
+      });
+    });
+
+  } catch (error: any) {
+    log.error(tag(`Exception: ${error?.message || error}`));
+    return { ok: false, error: error?.message ?? String(error) };
+  }
+});
+
+// === CLEANED UP UPDATER (Removed complex installer functions) ===
+
+// === CUSTOM UPDATER HELPER FUNCTIONS ===
+
+/**
+ * Fetch file size via HEAD request (for 0MB size fix)
+ */
+async function getContentLengthFromUrl(url: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const requestUrl = new URL(url);
+    
+    const request = https.request({
+      hostname: requestUrl.hostname,
+      port: requestUrl.port || 443,
+      path: requestUrl.pathname + requestUrl.search,
+      method: 'HEAD',
+      headers: {
+        'User-Agent': 'RawaLite-CustomUpdater/1.0',
+        'Accept': '*/*'
+      }
+    }, (response) => {
+      // Handle redirects
+      if (response.statusCode === 302 || response.statusCode === 301) {
+        if (response.headers.location) {
+          getContentLengthFromUrl(response.headers.location).then(resolve).catch(reject);
+          return;
+        }
+      }
+      
+      const contentLength = response.headers['content-length'];
+      if (contentLength) {
+        resolve(parseInt(contentLength, 10));
+      } else {
+        resolve(0);
+      }
+    });
+    
+    request.on('error', (error) => {
+      log.warn(`[HEAD request failed for ${url}]:`, error.message);
+      resolve(0); // Fallback to 0, not reject
+    });
+    
+    // Timeout after 10 seconds
+    request.setTimeout(10000, () => {
+      log.warn(`[HEAD request timeout for ${url}]`);
+      request.destroy();
+      resolve(0);
+    });
+    
+    request.end();
+  });
+}
+
+/**
+ * Fetch update manifest from GitHub releases
+ */
+async function fetchUpdateManifest(): Promise<UpdateManifest | null> {
+  try {
+    // Try to get update.json from latest release assets
+    const releaseResponse = await fetch("https://api.github.com/repos/MonaFP/RawaLite/releases/latest", {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'RawaLite-UpdateChecker/1.0'
-      },
-      signal: controller.signal
+        'User-Agent': 'RawaLite-CustomUpdater/1.0'
+      }
     });
     
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      throw new Error(`GitHub API returned ${response.status}: ${response.statusText}`);
+    if (!releaseResponse.ok) {
+      throw new Error(`GitHub API error: ${releaseResponse.status}`);
     }
     
-    const release = await response.json();
-    const latestVersion = release.tag_name.replace(/^v/, '');
-    const currentVersion = app.getVersion();
+    const releaseData = await releaseResponse.json();
     
-    log.info(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
+    // Try to find update.json asset first (preferred)
+    const updateJsonAsset = releaseData.assets?.find((a: any) => a.name === 'update.json');
     
-    const updateAvailable = compareVersions(currentVersion, latestVersion) < 0;
+    if (updateJsonAsset) {
+      const updateJsonResponse = await fetch(updateJsonAsset.browser_download_url, {
+        headers: { 'User-Agent': 'RawaLite-CustomUpdater/1.0' }
+      });
+      
+      if (updateJsonResponse.ok) {
+        const manifest = await updateJsonResponse.json();
+        log.info("✅ [CUSTOM-UPDATER] Found update.json manifest");
+        return manifest;
+      }
+    }
     
-    // 🔧 CRITICAL FIX: Set global variables for download handler
-    if (updateAvailable) {
-      const updateInfo = {
+    // Fallback: Construct manifest from GitHub API data
+    log.info("⚠️ [CUSTOM-UPDATER] No update.json found, constructing from GitHub API");
+    
+    const latestVersion = releaseData.tag_name?.replace('v', '') || releaseData.name?.replace('v', '');
+    
+    // Find the Windows executable asset
+    const asset = releaseData.assets?.find((a: any) => 
+      a.name?.includes('Setup') && a.name?.endsWith('.exe')
+    );
+    
+    if (asset) {
+      const manifest: UpdateManifest = {
+        product: "RawaLite",
+        channel: "stable",
         version: latestVersion,
-        releaseNotes: release.body || "Neue Version verfügbar",
-        releaseDate: release.published_at,
-        downloadUrl: release.html_url
+        releasedAt: releaseData.published_at || new Date().toISOString(),
+        notes: releaseData.body || 'Neue Version verfügbar.',
+        files: [{
+          kind: "nsis",
+          arch: "x64",
+          name: asset.name,
+          size: asset.size,
+          sha512: "", // Empty for fallback
+          url: asset.browser_download_url
+        }]
       };
       
-      // 🚨 CRITICAL: Set global state for download handler
-      isUpdateAvailable = true;
-      currentUpdateInfo = updateInfo;
+      return manifest;
+    }
+    
+    return null;
+    
+  } catch (error) {
+    log.error("❌ [CUSTOM-UPDATER] Failed to fetch update manifest:", error);
+    return null;
+  }
+}
+
+/**
+ * Download file with progress tracking
+ */
+async function downloadFileWithProgress(url: string, fileName: string, expectedSize: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const downloadDir = path.join(os.homedir(), 'AppData', 'Local', 'rawalite-updater', 'pending');
+    
+    // Create download directory
+    if (!fs.existsSync(downloadDir)) {
+      fs.mkdirSync(downloadDir, { recursive: true });
+    }
+    
+    const filePath = path.join(downloadDir, fileName);
+    
+    // Remove existing file if present
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    
+    const request = https.get(url, (response) => {
+      // Handle redirects
+      if (response.statusCode === 302 || response.statusCode === 301) {
+        if (response.headers.location) {
+          // Recursive call for redirect
+          https.get(response.headers.location, handleResponse);
+        } else {
+          reject(new Error('Redirect without location header'));
+        }
+        return;
+      }
       
-      sendUpdateMessage("update-available", updateInfo);
-      log.info("✅ Update available - UI notified");
+      handleResponse(response);
+    });
+    
+    function handleResponse(response: any) {
+      if (response.statusCode !== 200) {
+        reject(new Error(`Download failed: HTTP ${response.statusCode}`));
+        return;
+      }
+      
+      const totalSize = parseInt(response.headers['content-length'] || '0') || expectedSize;
+      let downloadedSize = 0;
+      let lastProgressTime = Date.now();
+      const startTime = Date.now();
+      
+      const fileStream = fs.createWriteStream(filePath);
+      
+      response.on('data', (chunk: Buffer) => {
+        downloadedSize += chunk.length;
+        
+        // Send progress updates (throttled to 200ms)
+        const now = Date.now();
+        if (now - lastProgressTime > 200) {
+          const percent = totalSize > 0 ? (downloadedSize / totalSize) * 100 : 0;
+          const speed = downloadedSize / ((now - startTime) / 1000); // bytes per second
+          const etaSec = speed > 0 ? (totalSize - downloadedSize) / speed : 0;
+          
+          const progress: UpdateProgress = {
+            percent: Math.round(percent * 100) / 100,
+            transferred: downloadedSize,
+            total: totalSize,
+            speed,
+            etaSec
+          };
+          
+          // Send to renderer
+          const allWindows = BrowserWindow.getAllWindows();
+          allWindows.forEach((window) => {
+            window.webContents.send('updater:progress', progress);
+          });
+          
+          lastProgressTime = now;
+        }
+      });
+      
+      response.pipe(fileStream);
+      
+      fileStream.on('finish', () => {
+        log.info(`✅ [CUSTOM-UPDATER] Download completed: ${filePath}`);
+        log.info(`📊 [CUSTOM-UPDATER] Size: ${downloadedSize} bytes`);
+        resolve(filePath);
+      });
+      
+      fileStream.on('error', (error) => {
+        fs.unlink(filePath, () => {}); // Clean up on error
+        reject(error);
+      });
+    }
+    
+    request.on('error', (error) => {
+      reject(error);
+    });
+    
+    request.setTimeout(60000, () => {
+      request.destroy();
+      reject(new Error('Download timeout (60s)'));
+    });
+  });
+}
+
+/**
+ * Verify file SHA512 hash (Base64)
+ */
+async function verifyFileSha512(filePath: string, expectedSha512Base64: string): Promise<boolean> {
+  try {
+    if (!expectedSha512Base64) {
+      // No hash to verify
+      return true;
+    }
+    
+    const fileBuffer = fs.readFileSync(filePath);
+    const hash = crypto.createHash('sha512');
+    hash.update(fileBuffer);
+    const calculatedSha512Base64 = hash.digest('base64');
+    
+    const isValid = calculatedSha512Base64 === expectedSha512Base64;
+    
+    if (isValid) {
+      log.info("✅ [CUSTOM-UPDATER] SHA512 verification successful");
     } else {
-      // 🚨 CRITICAL: Reset global state when no update
-      isUpdateAvailable = false;
-      currentUpdateInfo = null;
-      
-      sendUpdateMessage("update-not-available", { version: latestVersion });
-      log.info("✅ No updates available - UI notified");
+      log.error("❌ [CUSTOM-UPDATER] SHA512 verification failed");
+      log.error(`Expected: ${expectedSha512Base64}`);
+      log.error(`Calculated: ${calculatedSha512Base64}`);
     }
     
-    return {
-      success: true,
-      updateInfo: isUpdateAvailable ? {
-        version: latestVersion,
-        releaseNotes: release.body || "Neue Version verfügbar",
-        releaseDate: release.published_at,
-        downloadUrl: release.html_url
-      } : null,
-      hasUpdate: isUpdateAvailable
-    };
+    return isValid;
     
   } catch (error) {
-    log.error("GitHub API update check failed:", error);
-    
-    // 🔧 FIXED: Notify UI about update check errors
-    sendUpdateMessage("update-error", {
-      message: error instanceof Error ? error.message : "Update check failed",
-      type: "github_api_error"
-    });
-    
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Update check failed",
-      hasUpdate: false
-    };
+    log.error("❌ [CUSTOM-UPDATER] SHA512 verification error:", error);
+    return false;
   }
 }
 
-// Simple version comparison helper
-function compareVersions(current: string, latest: string): number {
-  const parseVersion = (v: string) => v.split('.').map(n => parseInt(n, 10));
-  const currentParts = parseVersion(current);
-  const latestParts = parseVersion(latest);
-  
-  for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
-    const currentPart = currentParts[i] || 0;
-    const latestPart = latestParts[i] || 0;
-    
-    if (currentPart < latestPart) return -1;
-    if (currentPart > latestPart) return 1;
-  }
-  return 0;
-}
+// === LEGACY COMPATIBILITY HANDLERS ===
+// Note: These are deprecated and will be removed in future versions
 
-ipcMain.handle("updater:start-download", async () => {
-  try {
-    log.info("🚀 [NATIVE-UPDATE] Starting native download via electron-updater");
-
-    // Development mode check
-    if (!app.isPackaged) {
-      log.info("🔧 [DEV-MODE] Download skipped in development");
-      return {
-        success: false,
-        error: "Download-System ist im Development-Modus deaktiviert"
-      };
-    }
-
-    // 🚨 CRITICAL FIX: Check if update is available before download
-    if (!isUpdateAvailable || !currentUpdateInfo) {
-      log.error("❌ [NATIVE-DOWNLOAD] Cannot download: No update available or check not performed");
-      return {
-        success: false,
-        error: "Bitte prüfe zuerst auf Updates bevor der Download gestartet wird",
-      };
-    }
-
-    // Use electron-updater for native download
-    log.info("� [NATIVE-DOWNLOAD] Starting electron-updater download");
-    log.info("📥 [NATIVE-DOWNLOAD] Target version:", currentUpdateInfo.version);
-    
-    try {
-      await autoUpdater.downloadUpdate();
-      log.info("✅ [NATIVE-DOWNLOAD] Download initiated successfully");
-      
-      return {
-        success: true,
-        message: "Download gestartet - Fortschritt wird in der UI angezeigt"
-      };
-      
-    } catch (nativeError) {
-      log.error("💥 [NATIVE-DOWNLOAD-ERROR] electron-updater download failed:", nativeError);
-      
-      // Fallback to GitHub browser redirect if native download fails
-      log.info("🔄 [FALLBACK] Falling back to GitHub browser redirect");
-      
-      const releaseUrl = `https://github.com/MonaFP/RawaLite/releases/tag/v${currentUpdateInfo.version}`;
-      log.info(`🌐 [FALLBACK] Opening GitHub release page: ${releaseUrl}`);
-      
-      await shell.openExternal(releaseUrl);
-      
-      // Notify UI about fallback redirect
-      sendUpdateMessage("download-progress", {
-        percent: 100,
-        transferred: 1,
-        total: 1,
-        bytesPerSecond: 0,
-        fallback: true
-      });
-      
-      // Simulate fallback download completion
-      setTimeout(() => {
-        sendUpdateMessage("update-downloaded", {
-          version: currentUpdateInfo?.version,
-          downloadMethod: "github_fallback"
-        });
-      }, 1000);
-      
-      return { 
-        success: true, 
-        method: "github_fallback",
-        url: releaseUrl,
-        message: "Fallback zu GitHub-Download verwendet"
-      };
-    }
-    
-  } catch (error) {
-    log.error("💥 [NATIVE-DOWNLOAD-ERROR] Download system failed:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Download fehlgeschlagen",
-    };
-  }
-});
-
-// � NATIVE UPDATE SYSTEM: Installation mit electron-updater quitAndInstall
-ipcMain.handle("updater:quit-and-install", async () => {
-  try {
-    log.info("🚀 [NATIVE-INSTALL] Starting installation process");
-    log.info("🚀 [NATIVE-INSTALL] Current app version:", app.getVersion());
-
-    // Development mode check
-    if (!app.isPackaged) {
-      log.info("🔧 [DEV-MODE] Installation skipped in development");
-      return {
-        success: false,
-        error: "Installations-System ist im Development-Modus deaktiviert"
-      };
-    }
-
-    // Check if update is downloaded and ready
-    if (!isUpdateAvailable || !currentUpdateInfo) {
-      log.error("🚀 [INSTALL-ERROR] No update available for installation");
-      return {
-        success: false,
-        error: "Kein Update verfügbar. Bitte zuerst nach Updates suchen und herunterladen.",
-      };
-    }
-
-    // � NATIVE INSTALLATION: Use electron-updater's quitAndInstall
-    log.info("🚀 [NATIVE-INSTALL] Attempting native installation via electron-updater");
-    
-    try {
-      // Native installation with electron-updater
-      autoUpdater.quitAndInstall();
-      
-      log.info("✅ [NATIVE-INSTALL] Installation initiated successfully - app should restart");
-      return { 
-        success: true, 
-        action: 'native_install',
-        message: "Installation gestartet - App wird automatisch neu gestartet"
-      };
-      
-    } catch (nativeError) {
-      log.error("💥 [NATIVE-INSTALL-ERROR] electron-updater installation failed:", nativeError);
-      
-      // Fallback to manual installation guidance
-      log.info("🔄 [FALLBACK] Falling back to manual installation guidance");
-      
-      const result = await dialog.showMessageBox({
-        type: 'info',
-        title: 'RawaLite Update - Manuelle Installation',
-        message: `Update auf Version ${currentUpdateInfo.version} verfügbar`,
-        detail: 'Die automatische Installation ist fehlgeschlagen. Bitte führen Sie das Setup manuell aus:\n\n' +
-                '1. Laden Sie das Setup von GitHub herunter\n' +
-                '2. Führen Sie die Datei aus\n' +
-                '3. Ihre Daten bleiben erhalten\n\n' +
-                'Die neuen Features werden nach der Installation verfügbar sein.',
-        buttons: ['GitHub öffnen', 'App beenden', 'Später'],
-        defaultId: 0,
-        cancelId: 2
-      });
-
-      switch (result.response) {
-        case 0: // GitHub öffnen
-          const releaseUrl = `https://github.com/MonaFP/RawaLite/releases/tag/v${currentUpdateInfo.version}`;
-          await shell.openExternal(releaseUrl);
-          return { success: true, action: 'github_opened', method: 'manual_fallback' };
-          
-        case 1: // App beenden
-          log.info("🚀 [MANUAL-INSTALL] User chose to quit app for manual installation");
-          app.quit();
-          return { success: true, action: 'app_quit', method: 'manual_fallback' };
-          
-        case 2: // Später
-          return { success: true, action: 'postponed', method: 'manual_fallback' };
-          
-        default:
-          return { success: true, action: 'cancelled', method: 'manual_fallback' };
-      }
-    }
-    
-  } catch (error) {
-    log.error("💥 [NATIVE-INSTALL-ERROR] Installation system failed:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Installation fehlgeschlagen",
-    };
-  }
-});
-
-// 🧪 DEVELOPMENT TEST: Force-simulate update for download handler testing
-ipcMain.handle("updater:force-test-update", async () => {
-  log.info("🧪 [TEST] Forcing test update simulation for download handler validation");
-  
-  // Künstlich setze Update-State für Test
-  isUpdateAvailable = true;
-  currentUpdateInfo = {
-    version: "1.8.37",
-    releaseNotes: "🧪 TEST UPDATE - Download-Handler Validation",
-    releaseDate: new Date().toISOString(),
-    downloadUrl: "https://github.com/MonaFP/RawaLite/releases/tag/v1.8.37"
-  };
-  
-  // Benachrichtige UI über simuliertes Update
-  sendUpdateMessage("update-available", currentUpdateInfo);
-  
-  log.info("✅ [TEST] Test update state forced - Download button should now work");
-  
-  return {
-    success: true,
-    testUpdate: currentUpdateInfo,
-    message: "Test-Update simuliert - Download-Button sollte jetzt funktionieren"
-  };
-});
-
-// 🔧 CRITICAL FIX: Added missing version handler with package.json fallback
-ipcMain.handle("updater:get-version", async () => {
-  let version = app.getVersion();
-  
-  // 🔧 PRODUCTION FIX: In production builds, app.getVersion() might return Electron version
-  // Fallback to reading package.json if version looks like Electron version
-  if (version.startsWith('31.') || version.startsWith('30.') || version.startsWith('29.')) {
-    try {
-      // Try to read package.json from app resources
-      const { readFileSync } = await import('fs');
-      const { join } = await import('path');
-      
-      let packageJsonPath: string;
-      if (app.isPackaged) {
-        // Production: package.json should be in resources
-        packageJsonPath = join(process.resourcesPath, 'package.json');
-      } else {
-        // Development: package.json in project root
-        packageJsonPath = join(app.getAppPath(), 'package.json');
-      }
-      
-      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-      if (packageJson.version) {
-        version = packageJson.version;
-        console.log(`[main] Using package.json version: ${version}`);
-      }
-    } catch (error) {
-      console.warn('[main] Could not read package.json, using app version:', error);
-      // Fallback to current version if we can't read package.json
-      version = "1.8.29"; // Known current version
-    }
-  }
-  
-  return {
-    current: version,
-    appName: app.getName(),
-  };
-});
+// � DEPRECATED: updater:get-version handler removed in favor of unified version:get API (v1.8.44+)
+// Use window.rawalite.version.get() in renderer process instead
 
 // PDF Theme Integration Import
 // Note: Import path needs compilation compatibility
-const pdfThemesPath = path.join(__dirname, "..", "src", "lib", "pdfThemes.ts");
+const _pdfThemesPath = path.join(__dirname, "..", "src", "lib", "pdfThemes.ts");  // Referenced for future PDF theme customization
+void _pdfThemesPath;
 let injectThemeIntoTemplate: any = null;
 
 // Dynamic import for theme integration (compiled compatibility)
@@ -789,18 +1094,48 @@ function createMenu() {
           click: async () => {
             log.info("Manual update check triggered from menu");
             try {
-              // 🔧 CRITICAL FIX: Menu auch auf GitHub API Bypass umstellen
-              const result = await checkForUpdatesViaGitHub();
-              if (result.success && result.hasUpdate) {
-                log.info(`Update available: ${result.updateInfo?.version}`);
-                // Show update notification or open update window
-              } else if (result.success) {
-                log.info("No updates available");
+              // Use new custom updater check
+              const result = await fetchUpdateManifest();
+              if (result) {
+                const { isNewerVersion } = await import('../src/services/semver.js');
+                const hasUpdate = isNewerVersion(result.version, pkg.version);
+                
+                if (hasUpdate) {
+                  log.info(`Update available: ${result.version}`);
+                  // Show update notification
+                  dialog.showMessageBox({
+                    type: 'info',
+                    title: 'Update verfügbar',
+                    message: `RawaLite ${result.version} ist verfügbar`,
+                    detail: 'Öffnen Sie die Einstellungen um das Update zu installieren.',
+                    buttons: ['OK']
+                  });
+                } else {
+                  log.info("No updates available");
+                  dialog.showMessageBox({
+                    type: 'info',
+                    title: 'Keine Updates',
+                    message: 'Sie verwenden bereits die neueste Version',
+                    buttons: ['OK']
+                  });
+                }
               } else {
-                log.error("Menu update check failed:", result.error);
+                log.error("Menu update check failed: Could not fetch manifest");
+                dialog.showMessageBox({
+                  type: 'error',
+                  title: 'Update-Prüfung fehlgeschlagen',
+                  message: 'Konnte nicht nach Updates suchen. Bitte versuchen Sie es später erneut.',
+                  buttons: ['OK']
+                });
               }
             } catch (err) {
               log.error("Menu update check failed:", err);
+              dialog.showMessageBox({
+                type: 'error',
+                title: 'Update-Prüfung fehlgeschlagen',
+                message: 'Ein Fehler ist aufgetreten beim Suchen nach Updates.',
+                buttons: ['OK']
+              });
             }
           },
         },
@@ -808,7 +1143,7 @@ function createMenu() {
         {
           label: "App-Version anzeigen",
           click: () => {
-            const version = app.getVersion();
+            const version = pkg.version; // 🔧 FIX: Use unified version system (package.json)
             dialog.showMessageBox({
               type: "info",
               title: "App-Version",
@@ -833,7 +1168,7 @@ function createMenu() {
               dialog.showMessageBox(mainWindow, {
                 type: "info",
                 title: "Über RawaLite",
-                message: `RawaLite v${app.getVersion()}`,
+                message: `RawaLite v${pkg.version}`, // 🔧 FIX: Use unified version system (package.json)
                 detail:
                   "Professional Business Management Solution\n\nCopyright © 2025 MonaFP. All rights reserved.",
                 buttons: ["OK"],
@@ -851,7 +1186,7 @@ function createMenu() {
               dialog.showMessageBox(mainWindow, {
                 type: "info",
                 title: "Version Information",
-                message: `RawaLite v${app.getVersion()}`,
+                message: `RawaLite v${pkg.version}`, // 🔧 FIX: Use unified version system (package.json)
                 detail: `Electron: ${process.versions.electron}\nNode.js: ${process.versions.node}\nChrome: ${process.versions.chrome}`,
                 buttons: ["OK"],
               });
@@ -907,9 +1242,30 @@ ipcMain.handle("app:restart", async () => {
   app.exit();
 });
 
-ipcMain.handle("app:getVersion", async () => {
-  return app.getVersion();
+// 🔄 NEW: Manual restart after successful update installation
+ipcMain.handle("app:restart-after-update", async () => {
+  log.info("🔄 Manual app restart requested after update installation");
+  
+  // Short delay to allow UI feedback
+  setTimeout(() => {
+    log.info("🔄 Restarting app to load new version");
+    app.relaunch();
+    app.exit();
+  }, 500);
+  
+  return { ok: true, message: "App wird neu gestartet..." };
 });
+
+// � DEPRECATED: app:getVersion handler kept for backward compatibility only
+// Use window.rawalite.version.get() for new code instead (unified version system v1.8.44+)
+ipcMain.handle("app:getVersion", async () => {
+  console.warn("⚠️ DEPRECATED: app:getVersion used - migrate to version:get API");
+  
+  // For backward compatibility, return pkg.version (same as version:get)
+  return pkg.version;
+});
+
+// ===== DATENBANK & PDF HANDLER =====
 
 // IPC Handler für Datenbank-Operationen
 ipcMain.handle("db:load", async (): Promise<Uint8Array | null> => {
@@ -945,7 +1301,7 @@ ipcMain.handle("db:save", async (_, data: Uint8Array): Promise<boolean> => {
 ipcMain.handle(
   "pdf:generate",
   async (
-    event,
+    _event,
     options: {
       templateType: "offer" | "invoice" | "timesheet";
       data: {
@@ -1355,7 +1711,7 @@ async function renderTemplate(
 
     template = template.replace(
       /\{\{#if\s+([^}]+)\}\}(.*?)\{\{\/if\}\}/gs,
-      (match, condition, content) => {
+      (_match, condition, content) => {
         const value = getNestedValue(data, condition.trim());
         const result = value ? content : "";
         console.log(
@@ -1367,7 +1723,7 @@ async function renderTemplate(
 
     template = template.replace(
       /\{\{#unless\s+([^}]+)\}\}(.*?)\{\{\/unless\}\}/gs,
-      (match, condition, content) => {
+      (_match, condition, content) => {
         const value = getNestedValue(data, condition.trim());
         const result = !value ? content : "";
         console.log(
@@ -1380,7 +1736,7 @@ async function renderTemplate(
     // Handle loops {{#each}}
     template = template.replace(
       /\{\{#each\s+([^}]+)\}\}(.*?)\{\{\/each\}\}/gs,
-      (match, arrayVar, itemTemplate) => {
+      (_match, arrayVar, itemTemplate) => {
         const array = getNestedValue(data, arrayVar.trim());
         console.log(
           `🔄 Loop {{#each ${arrayVar.trim()}}}: array length=${
@@ -1453,7 +1809,7 @@ async function renderTemplate(
     // STEP 2: Handle special formatters BEFORE general variable replacement
     template = template.replace(
       /\{\{formatDate\s+([^}]+)\}\}/g,
-      (match, dateVar) => {
+      (_match, dateVar) => {
         const dateValue = getNestedValue(data, dateVar.trim());
         console.log(`📅 Formatting date: ${dateVar.trim()} = ${dateValue}`);
         if (dateValue) {
@@ -1473,7 +1829,7 @@ async function renderTemplate(
 
     template = template.replace(
       /\{\{formatCurrency\s+([^}]+)\}\}/g,
-      (match, amountVar) => {
+      (_match, amountVar) => {
         const amount = getNestedValue(data, amountVar.trim());
         console.log(`💰 Formatting currency: ${amountVar.trim()} = ${amount}`);
         if (typeof amount === "number") {
@@ -1488,7 +1844,7 @@ async function renderTemplate(
 
     // STEP 3: Replace simple {{variable}} with actual values
     console.log("🔄 Starting Handlebars-like variable replacement...");
-    template = template.replace(/\{\{([^}]+)\}\}/g, (match, variable) => {
+    template = template.replace(/\{\{([^}]+)\}\}/g, (_match, variable) => {
       const parts = variable.trim().split(".");
       let value = data;
       let path = "";
@@ -1777,7 +2133,16 @@ ipcMain.handle("app:exportLogs", async () => {
   }
 });
 
+// Lifecycle-Logging (hilft bei Race-Conditions)
+// Lifecycle events - Interactive Installer System
+app.on("will-quit", () => { try { log.info("[LIFECYCLE] app will-quit"); } catch {} });
+app.on("quit", (_e, _c) => { try { log.info("[LIFECYCLE] app quit"); } catch {} });
+process.on("beforeExit", (code) => { try { log.info(`[LIFECYCLE] process beforeExit code=${code}`); } catch {} });
+process.on("exit", (code) => { try { log.info(`[LIFECYCLE] process exit code=${code}`); } catch {} });
+
 app.whenReady().then(() => {
+  // Sentinel system entfernt - Interactive Installer System braucht das nicht
+
   createMenu();
   createWindow();
 
@@ -1792,15 +2157,27 @@ app.whenReady().then(() => {
 
   // Auto-check for updates on startup (delayed to avoid blocking app start)
   setTimeout(async () => {
+    if (!app.isPackaged) {
+      log.info("Skipping startup update check in development mode");
+      return;
+    }
+    
     log.info("Starting automatic update check on app ready");
     try {
-      const result = await checkForUpdatesViaGitHub();
-      if (result.success && result.hasUpdate) {
-        log.info(`Startup: Update available: ${result.updateInfo?.version}`);
-      } else if (result.success) {
-        log.info("Startup: No updates available");
+      const manifest = await fetchUpdateManifest();
+      if (manifest) {
+        const { isNewerVersion } = await import('../src/services/semver.js');
+        const hasUpdate = isNewerVersion(manifest.version, pkg.version);
+        
+        if (hasUpdate) {
+          log.info(`Startup: Update available: ${manifest.version}`);
+          // Store for later use
+          currentUpdateManifest = manifest;
+        } else {
+          log.info("Startup: No updates available");
+        }
       } else {
-        log.warn("Startup update check failed:", result.error);
+        log.warn("Startup update check failed: Could not fetch manifest");
       }
     } catch (err) {
       log.warn("Startup update check failed:", err instanceof Error ? err.message : err);
@@ -1815,9 +2192,9 @@ app.on("activate", () => {
   log.info("App activated");
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
-app.on("before-quit", (event) => {
+app.on("before-quit", (_event) => {
   log.info("App is about to quit");
 });
-app.on("will-quit", (event) => {
+app.on("will-quit", (_event) => {
   log.info("App will quit");
 });

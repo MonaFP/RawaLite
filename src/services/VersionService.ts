@@ -1,8 +1,8 @@
 /**
- * 🏷️ RawaLite Vers  // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
-  private readonly BUILD_DATE = "2025-09-19T21:10:00";n Service
+ * 🏷️ RawaLite Version Service
  *
  * Verwaltet App-Versionierung und automatische Updates der Versionsnummer
+ * 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
  */
 
 import { LoggingService } from "./LoggingService";
@@ -22,9 +22,10 @@ export interface UpdateCheckResult {
   updateNotes?: string;
 }
 
+export const BUILD_DATE = "2025-09-26";
+
 export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
-  private readonly BUILD_DATE = "2025-09-20T12:35:00";
 
   private currentVersionInfo: VersionInfo | null = null;
 
@@ -46,25 +47,9 @@ export class VersionService {
       return this.currentVersionInfo;
     }
 
-    // 🔧 CRITICAL FIX: Use electron-updater IPC for version detection
-    let version = await this.getElectronUpdaterVersion();
+    // 🔧 UNIFIED VERSION API: Use new custom updater version system
+    let version = await this.getUnifiedVersion();
     let buildNumber = 1;
-
-    // 🔧 CRITICAL FIX: If electron-updater IPC fails, fallback to legacy IPC
-    if (!version) {
-      console.warn(
-        "[VersionService] electron-updater IPC failed, using legacy IPC fallback"
-      );
-      version = await this.getElectronVersion();
-    }
-
-    // Last resort: package.json fallback
-    if (!version) {
-      console.warn(
-        "[VersionService] All Electron IPC failed, using package.json fallback"
-      );
-      version = await this.getPackageJsonFallback();
-    }
 
     if (!version) {
       console.error(
@@ -85,7 +70,7 @@ export class VersionService {
     this.currentVersionInfo = {
       version,
       buildNumber,
-      buildDate: this.BUILD_DATE,
+      buildDate: BUILD_DATE,
       isDevelopment: this.isDevelopmentMode(),
     };
 
@@ -106,7 +91,7 @@ export class VersionService {
   }
 
   /**
-   * Prüft auf verfügbare Updates via electron-updater mit GitHub API Fallback
+   * Prüft auf verfügbare Updates via Custom Updater mit GitHub API Fallback
    */
   async checkForUpdates(): Promise<UpdateCheckResult> {
     try {
@@ -116,16 +101,15 @@ export class VersionService {
         `[VersionService] Checking for updates, current version: ${currentVersion.version}`
       );
 
-      // Migration-Status-Check entfernt - wird durch electron-updater gehandhabt
+      // Migration-Status-Check entfernt - wird durch Custom Updater gehandhabt
       let migrationRequired = false;
 
-      // Verwende electron-updater falls verfügbar, sonst GitHub API Fallback
-      let hasElectronUpdate = false;
+      // Use custom updater system
+      let hasUpdate = false;
       let latestVersion: string | undefined;
       let releaseNotes: string | undefined;
 
-      const isElectron =
-        typeof window !== "undefined" && window.rawalite?.updater;
+      const isElectron = typeof window !== "undefined" && window.rawalite?.updater;
 
       // CRITICAL FIX: Erkenne Development-Modus besser
       const isDevelopment =
@@ -139,36 +123,36 @@ export class VersionService {
       if (isElectron && !isDevelopment) {
         try {
           LoggingService.log(
-            "[VersionService] Using electron-updater for update check"
+            "[VersionService] Using custom updater for update check"
           );
-          const updateResult = await window.rawalite!.updater.checkForUpdates();
+          const updateResult = await window.rawalite!.updater.check();
 
-          if (updateResult.success && updateResult.updateInfo) {
-            hasElectronUpdate = true;
-            latestVersion = updateResult.updateInfo.version;
-            releaseNotes = updateResult.updateInfo.releaseNotes;
+          if (updateResult.hasUpdate && updateResult.target) {
+            hasUpdate = true;
+            latestVersion = updateResult.target.version;
+            releaseNotes = updateResult.target.notes;
             LoggingService.log(
-              `[VersionService] electron-updater found update: ${latestVersion}`
+              `[VersionService] Custom updater found update: ${latestVersion}`
             );
           } else {
             LoggingService.log(
-              "[VersionService] electron-updater: No update available"
+              "[VersionService] Custom updater: No update available"
             );
           }
-        } catch (electronError) {
+        } catch (updaterError) {
           LoggingService.log(
-            `[VersionService] electron-updater failed, falling back to GitHub API: ${electronError}`
+            `[VersionService] Custom updater failed, falling back to GitHub API: ${updaterError}`
           );
 
           // Fallback zu GitHub API
           try {
             latestVersion = await this.fetchLatestVersionFromGitHub();
-            hasElectronUpdate = this.isUpdateAvailable(
+            hasUpdate = this.isUpdateAvailable(
               currentVersion.version,
               latestVersion
             );
 
-            if (hasElectronUpdate) {
+            if (hasUpdate) {
               releaseNotes = await this.fetchReleaseNotesFromGitHub(
                 latestVersion
               );
@@ -184,22 +168,22 @@ export class VersionService {
           "[VersionService] Development mode detected - skipping update checks"
         );
         // Im Development-Modus: Keine externen Update-Checks
-        hasElectronUpdate = false;
+        hasUpdate = false;
         latestVersion = currentVersion.version;
       } else {
         // Browser-Modus: Verwende GitHub API
         try {
           latestVersion = await this.fetchLatestVersionFromGitHub();
-          hasElectronUpdate = this.isUpdateAvailable(
+          hasUpdate = this.isUpdateAvailable(
             currentVersion.version,
             latestVersion
           );
 
           LoggingService.log(
-            `[VersionService] GitHub API check: current=${currentVersion.version}, latest=${latestVersion}, hasUpdate=${hasElectronUpdate}`
+            `[VersionService] GitHub API check: current=${currentVersion.version}, latest=${latestVersion}, hasUpdate=${hasUpdate}`
           );
 
-          if (hasElectronUpdate) {
+          if (hasUpdate) {
             releaseNotes = await this.fetchReleaseNotesFromGitHub(
               latestVersion
             );
@@ -211,16 +195,16 @@ export class VersionService {
         }
       }
 
-      const hasUpdate = hasElectronUpdate || migrationRequired;
+      const finalHasUpdate = hasUpdate || migrationRequired;
 
       LoggingService.log(
-        `[VersionService] Final update check result: hasUpdate=${hasUpdate}, migration=${migrationRequired}, electronUpdater=${hasElectronUpdate}`
+        `[VersionService] Final update check result: hasUpdate=${finalHasUpdate}, migration=${migrationRequired}, customUpdater=${hasUpdate}`
       );
 
       return {
-        hasUpdate,
+        hasUpdate: finalHasUpdate,
         currentVersion: currentVersion.version,
-        latestVersion: hasElectronUpdate ? latestVersion : undefined,
+        latestVersion: hasUpdate ? latestVersion : undefined,
         updateNotes:
           releaseNotes ||
           (migrationRequired ? "Datenbank-Updates verfügbar" : undefined),
@@ -258,15 +242,36 @@ export class VersionService {
 
       progressCallback?.(10, "Update wird vorbereitet...");
 
-      // Verwende electron-updater direkt
+      // Use custom updater system
       if (typeof window !== "undefined" && window.rawalite?.updater) {
-        progressCallback?.(50, "Update wird heruntergeladen...");
-        await window.rawalite.updater.startDownload();
+        // Check for update first
+        progressCallback?.(20, "Prüfung auf Updates...");
+        const checkResult = await window.rawalite.updater.check();
+        
+        if (!checkResult.hasUpdate || !checkResult.target) {
+          throw new Error("Kein Update verfügbar");
+        }
+        
+        // Find download URL
+        const nsisFile = checkResult.target.files?.find(
+          (file: any) => file.kind === 'nsis' && file.arch === 'x64'
+        );
+        
+        if (!nsisFile) {
+          throw new Error("Keine kompatible Update-Datei gefunden");
+        }
+        
+        progressCallback?.(40, "Update wird heruntergeladen...");
+        const downloadResult = await window.rawalite.updater.download();
+        
+        if (!downloadResult?.ok || !downloadResult?.file) {
+          throw new Error(downloadResult?.error || 'Download fehlgeschlagen');
+        }
         
         progressCallback?.(90, "Installation wird vorbereitet...");
-        await window.rawalite.updater.installAndRestart();
+        await window.rawalite.updater.install(downloadResult.file);
       } else {
-        throw new Error("electron-updater nicht verfügbar");
+        throw new Error("Custom updater nicht verfügbar");
       }
 
       progressCallback?.(100, "Update erfolgreich abgeschlossen");
@@ -314,49 +319,44 @@ export class VersionService {
   // Private Hilfsfunktionen
 
   /**
-   * 🔧 CRITICAL FIX: Holt Version über electron-updater IPC (neueste API)
+   * 🔧 UNIFIED VERSION API: Holt Version direkt vom Electron Main Process
    */
-  private async getElectronUpdaterVersion(): Promise<string | null> {
+  private async getUnifiedVersion(): Promise<string | null> {
     try {
-      // PRIMARY: Get version from electron-updater API (most current after updates)
-      if (typeof window !== "undefined" && window.rawalite?.updater) {
-        const versionInfo = await window.rawalite.updater.getVersion();
-        console.log(
-          "[VersionService] ✅ Got version from electron-updater (authoritative):",
-          versionInfo.current
-        );
-        return versionInfo.current;
+      // Use unified version API
+      if (typeof window !== "undefined" && window.rawalite?.version) {
+        const versionResponse = await window.rawalite.version.get();
+        if (versionResponse && versionResponse.app) {
+          console.log(
+            "[VersionService] ✅ Got version from unified API:",
+            versionResponse.app
+          );
+          return versionResponse.app;
+        }
       }
-      console.warn("[VersionService] ⚠️ electron-updater IPC not available");
-      return null;
-    } catch (error) {
-      console.warn(
-        "[VersionService] Failed to get version from electron-updater:",
-        error
-      );
-      return null;
-    }
-  }
-
-  /**
-   * 🔧 CRITICAL FIX: Direct Electron version retrieval with proper error handling (legacy fallback)
-   */
-  private async getElectronVersion(): Promise<string | null> {
-    try {
-      // PRIMARY: Get real app version from Electron via IPC (post-update correct)
+      
+      // Fallback to legacy app API
       if (typeof window !== "undefined" && window.rawalite?.app) {
         const electronVersion = await window.rawalite.app.getVersion();
         console.log(
-          "[VersionService] ✅ Got Electron app version (authoritative):",
+          "[VersionService] ✅ Got version from legacy app API:",
           electronVersion
         );
         return electronVersion;
       }
-      console.warn("[VersionService] ⚠️ Electron IPC not available");
+      
+      // Package.json fallback for version-sync validation
+      const fallbackVersion = await this.getPackageJsonFallback();
+      if (fallbackVersion) {
+        console.warn("[VersionService] ⚠️ Using package.json fallback:", fallbackVersion);
+        return fallbackVersion;
+      }
+      
+      console.warn("[VersionService] ⚠️ No version API available");
       return null;
     } catch (error) {
       console.warn(
-        "[VersionService] Failed to get version from Electron:",
+        "[VersionService] Failed to get version from unified API:",
         error
       );
       return null;
@@ -364,12 +364,11 @@ export class VersionService {
   }
 
   /**
-   * 🔧 NEW: Package.json fallback for development/edge cases
+   * Emergency fallback version from package.json (for validation scripts)
    */
   private async getPackageJsonFallback(): Promise<string | null> {
     try {
-      // This would read from the bundled package.json in development
-      return "1.8.30";  // Current package.json version as absolute fallback
+      return "1.8.108";        // Current package.json version as absolute fallback
     } catch (error) {
       console.error("[VersionService] Package.json fallback failed:", error);
       return null;
@@ -386,8 +385,7 @@ export class VersionService {
    */
   private async fetchLatestVersionFromGitHub(): Promise<string> {
     try {
-      // ⚠️ GITHUB-HTTP-CALL: Erlaubter FALLBACK wenn electron-updater fehlschlägt
-      // (Gemäß COPILOT_INSTRUCTIONS.md: "Fallback zu GitHub API wenn electron-updater fehlschlägt")
+      // ⚠️ GITHUB-HTTP-CALL: Erlaubter FALLBACK wenn Custom Updater fehlschlägt
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 Sekunden Timeout
 
@@ -445,8 +443,7 @@ export class VersionService {
    */
   private async fetchReleaseNotesFromGitHub(version: string): Promise<string> {
     try {
-      // ⚠️ GITHUB-HTTP-CALL: Erlaubter FALLBACK wenn electron-updater fehlschlägt
-      // (Gemäß COPILOT_INSTRUCTIONS.md: "Fallback zu GitHub API wenn electron-updater fehlschlägt")
+      // ⚠️ GITHUB-HTTP-CALL: Erlaubter FALLBACK wenn Custom Updater fehlschlägt
       const response = await fetch(
         "https://api.github.com/repos/MonaFP/RawaLite/releases/latest",
         {
@@ -516,7 +513,7 @@ export class VersionService {
     }
   }
 
-  private async updateStoredVersion(): Promise<void> {
+  private async _updateStoredVersion(): Promise<void> {
     // 🔧 CRITICAL FIX: Remove localStorage version overrides entirely
     // After successful updates, the version should come from Electron IPC only
 
@@ -564,3 +561,4 @@ export class VersionService {
 
 // Singleton-Instanz für globale Verwendung
 export const versionService = new VersionService();
+
