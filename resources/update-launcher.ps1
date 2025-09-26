@@ -202,11 +202,25 @@ try {
     
     while ($true) {
         try {
-            if ($installerArgs.Count -gt 0) {
-                $processInfo = Start-Process -FilePath $staged -ArgumentList $installerArgs -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -PassThru
-            } else {
-                $processInfo = Start-Process -FilePath $staged -WorkingDirectory (Split-Path $staged) -WindowStyle Normal -PassThru
+            $startProcessParams = @{
+                FilePath        = $staged
+                WorkingDirectory = (Split-Path $staged)
+                WindowStyle     = 'Normal'
+                PassThru        = $true
             }
+
+            if ($installerArgs.Count -gt 0) {
+                $startProcessParams.ArgumentList = $installerArgs
+            }
+
+            if ($needsElevation) {
+                Write-Log "Requesting elevation via RunAs for staged installer"
+                $startProcessParams.Verb = 'RunAs'
+            } else {
+                Write-Log "Launching staged installer without elevation"
+            }
+
+            $processInfo = Start-Process @startProcessParams
             Write-Log "✅ Installer started: $staged (Process ID: $($processInfo.Id))"
             break
         } catch {
