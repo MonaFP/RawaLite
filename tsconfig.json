@@ -1,24 +1,100 @@
 {
   "compilerOptions": {
+    // Target and Module
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM"
-    ],
     "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    
+    // Module Resolution
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    
+    // Type Checking
     "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    
+    // JSX
+    "jsx": "react-jsx",
+    
+    // Emit
     "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": true,
+    "removeComments": false,
+    
+    // Interop Constraints
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    // Skip Lib Check
     "skipLibCheck": true,
-    "baseUrl": "./",
+    
+    // Paths
+    "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
+      "@types/*": ["src/types/*"],
+      "@services/*": ["src/services/*"],
       "@components/*": ["src/components/*"],
-      "@pages/*": ["src/pages/*"]
-    }
+      "@hooks/*": ["src/hooks/*"],
+      "@pages/*": ["src/pages/*"],
+      "@contexts/*": ["src/contexts/*"],
+      "@lib/*": ["src/lib/*"]
+    },
+    
+    // Type Roots
+    "typeRoots": ["node_modules/@types", "src/types"],
+    
+    // Allow JavaScript
+    "allowJs": true,
+    "checkJs": false
   },
+  
+  // Include patterns
   "include": [
-    "src"
-  ]
+    "src/**/*",
+    "src/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.jsx",
+    "src/**/*.js",
+    "electron/**/*.ts",
+    "electron/**/*.js",
+    "scripts/**/*.mjs",
+    "scripts/**/*.ts",
+    "vite.config.mts"
+  ],
+  
+  // Exclude patterns
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-electron",
+    "release",
+    "build",
+    "public/sql-wasm.wasm",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "e2e/**/*"
+  ],
+  
+  // References for composite projects
+  // "references": [
+  //   { "path": "./tsconfig.node.json" }
+  // ]
 }

@@ -1,174 +1,100 @@
-// ============================================================
-// FILE: electron/preload.ts - 🚀 Custom In-App Updater
-// ============================================================
-import { contextBridge, ipcRenderer } from "electron";
+// electron/preload.ts
+// Unified Preload Script for RawaLite Custom Updater
 
-// Import custom updater types
-import type { UpdateManifest, UpdateFile, UpdateProgress, UpdateStatus } from "../src/types/updater";
+import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
-// 🔄 CUSTOM UPDATER API - Launcher-based Implementation
+// Custom Updater API
 const updater = {
+  check: () => ipcRenderer.invoke("updater:check"),
+  download: () => ipcRenderer.invoke("updater:download"),
+  install: (exePath?: string) => ipcRenderer.invoke("updater:install", exePath),
+  installCustom: (options: any) => ipcRenderer.invoke("updater:install-custom", options),
+  checkResults: () => ipcRenderer.invoke("updater:check-results"),
   
-  check: (): Promise<UpdateCheckResponse> =>
-    ipcRenderer.invoke("updater:check"),
-    
-  download: (): Promise<{ ok: boolean; file?: string; error?: string; size?: number }> =>
-    ipcRenderer.invoke("updater:download"),
-    
-  // 🆕 LAUNCHER-BASED: UAC-resistant installation using PowerShell launcher
-  install: (exePath?: string): Promise<{ 
-    ok: boolean; 
-    launcherStarted?: boolean;
-    exitCode?: number;
-    message?: string;
-    output?: string;
-    error?: string; 
-  }> => ipcRenderer.invoke("updater:install", exePath),
-    
-  // 🆕 LAUNCHER-BASED: Custom Install API using PowerShell launcher
-  installCustom: (options: {
-    filePath: string;
-    args?: string[];
-    expectedSha256?: string;
-    elevate?: boolean;       // default: true (UAC elevation)
-    unblock?: boolean;       // default: true (MOTW unblock)
-    quitDelayMs?: number;    // default: 1000 (launcher delay)
-  }): Promise<{
-    ok: boolean;
-    launcherStarted?: boolean;
-    exitCode?: number;
-    message?: string;
-    filePath?: string;
-    runId?: string;
-    output?: string;
-    errorOutput?: string;
-    error?: string;
-  }> => ipcRenderer.invoke("updater:install-custom", options),
-  
-  // 🆕 RESULT CHECKING: Check installation results from launcher
-  checkResults: (): Promise<{
-    ok: boolean;
-    hasResults: boolean;
-    results?: {
-      launcherId: string;
-      timestamp: string;
-      success: boolean;
-      message: string;
-      exitCode: number;
-      installerPath: string;
-      duration: number;
-      additionalData?: any;
-    };
-    error?: string;
-  }> => ipcRenderer.invoke("updater:check-results"),
-  
-  // 📡 Progress event listener
-  onProgress: (callback: (progress: UpdateProgress) => void): (() => void) => {
-    const handler = (_: any, progress: UpdateProgress) => callback(progress);
+  // Progress event listeners
+  onProgress: (callback: (progress: any) => void) => {
+    const handler = (_: IpcRendererEvent, progress: any) => callback(progress);
     ipcRenderer.on("updater:progress", handler);
     return () => ipcRenderer.removeListener("updater:progress", handler);
   },
-  
   offProgress: () => {
     ipcRenderer.removeAllListeners("updater:progress");
   },
   
-  // 🆕 Status event listener for detailed update process status
-  onStatus: (callback: (status: UpdateStatus) => void): (() => void) => {
-    const handler = (_: any, status: UpdateStatus) => callback(status);
+  // Status event listeners
+  onStatus: (callback: (status: any) => void) => {
+    const handler = (_: IpcRendererEvent, status: any) => callback(status);
     ipcRenderer.on("updater:status", handler);
     return () => ipcRenderer.removeListener("updater:status", handler);
   },
-  
   offStatus: () => {
     ipcRenderer.removeAllListeners("updater:status");
   },
   
-  // 🆕 Launcher event listeners
-  onLauncherStarted: (callback: (data: { success: boolean; message: string; launcherOutput?: string }) => void): (() => void) => {
-    const handler = (_: any, data: any) => callback(data);
+  // Launcher event listeners
+  onLauncherStarted: (callback: (data: any) => void) => {
+    const handler = (_: IpcRendererEvent, data: any) => callback(data);
     ipcRenderer.on("updater:launcher-started", handler);
     return () => ipcRenderer.removeListener("updater:launcher-started", handler);
   },
-  
-  onInstallCompleted: (callback: (data: { success: boolean; message: string; showRestartButton?: boolean }) => void): (() => void) => {
-    const handler = (_: any, data: any) => callback(data);
+  onInstallCompleted: (callback: (data: any) => void) => {
+    const handler = (_: IpcRendererEvent, data: any) => callback(data);
     ipcRenderer.on("updater:install-completed", handler);
     return () => ipcRenderer.removeListener("updater:install-completed", handler);
   },
-  
   offLauncherEvents: () => {
     ipcRenderer.removeAllListeners("updater:launcher-started");
     ipcRenderer.removeAllListeners("updater:install-completed");
   }
 };
 
-// 🆕 UNIFIED VERSION API - Single source of truth for all version queries
+// Version API (unified version system)
 const version = {
-  get: (): Promise<{
-    ok: boolean;
-    app?: string;
-    electron?: string;
-    chrome?: string;
-  }> => ipcRenderer.invoke("version:get"),
+  get: () => ipcRenderer.invoke("version:get")
 };
 
-const appApi = {
-  getVersion: (): Promise<string> => ipcRenderer.invoke("app:getVersion"),
-  restart: (): Promise<void> => ipcRenderer.invoke("app:restart"),
-  restartAfterUpdate: (): Promise<{ ok: boolean; message?: string }> => ipcRenderer.invoke("app:restart-after-update"),
-  exportLogs: (): Promise<{
-    success: boolean;
-    filePath?: string;
-    error?: string;
-  }> => ipcRenderer.invoke("app:exportLogs"),
+// App API
+const app = {
+  getVersion: () => ipcRenderer.invoke("app:getVersion"), // Legacy, use version.get()
+  restart: () => ipcRenderer.invoke("app:restart"),
+  restartAfterUpdate: () => ipcRenderer.invoke("app:restart-after-update"),
+  exportLogs: () => ipcRenderer.invoke("app:exportLogs")
 };
 
-// 🔧 DATABASE & PDF APIs (existing)
+// Database API
 const db = {
-  load: (): Promise<Uint8Array | null> => ipcRenderer.invoke("db:load"),
-  save: (data: Uint8Array): Promise<boolean> => ipcRenderer.invoke("db:save", data),
+  load: () => ipcRenderer.invoke("db:load"),
+  save: (data: Uint8Array) => ipcRenderer.invoke("db:save", data)
 };
 
+// PDF API
 const pdf = {
-  generate: (options: any): Promise<{
-    success: boolean;
-    filePath?: string;
-    previewUrl?: string;
-    fileSize?: number;
-    error?: string;
-  }> => ipcRenderer.invoke("pdf:generate", options),
-  getStatus: (): Promise<{
-    electronAvailable: boolean;
-    ghostscriptAvailable: boolean;
-    veraPDFAvailable: boolean;
-    pdfa2bSupported: boolean;
-  }> => ipcRenderer.invoke("pdf:getStatus"),
+  generate: (options: any) => ipcRenderer.invoke("pdf:generate", options),
+  getStatus: () => ipcRenderer.invoke("pdf:getStatus")
 };
 
-// Backup and logo APIs (existing)
+// Backup API
 const backup = {
   create: (options: any) => ipcRenderer.invoke("backup:create", options),
   list: () => ipcRenderer.invoke("backup:list"),
-  prune: (options: any) => ipcRenderer.invoke("backup:prune", options),
+  prune: (options: any) => ipcRenderer.invoke("backup:prune", options)
 };
 
+// Logo API
 const logo = {
   upload: (options: any) => ipcRenderer.invoke("logo:upload", options),
   get: (filePath: string) => ipcRenderer.invoke("logo:get", filePath),
   getUrl: (filePath: string) => ipcRenderer.invoke("logo:getUrl", filePath),
-  delete: (filePath: string) => ipcRenderer.invoke("logo:delete", filePath),
+  delete: (filePath: string) => ipcRenderer.invoke("logo:delete", filePath)
 };
 
-// 🔧 UNIFIED: All APIs under window.rawalite namespace
-contextBridge.exposeInMainWorld("rawalite", { 
-  updater, 
-  app: appApi,
+// Expose unified API to renderer
+contextBridge.exposeInMainWorld("rawalite", {
+  updater,
+  version,
+  app,
   db,
   pdf,
   backup,
-  logo,
-  version
+  logo
 });
-
-// No global types needed - they are in global.d.ts

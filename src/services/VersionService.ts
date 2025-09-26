@@ -22,7 +22,7 @@ export interface UpdateCheckResult {
   updateNotes?: string;
 }
 
-export const BUILD_DATE = "2025-09-25";
+export const BUILD_DATE = "2025-01-31";
 
 export class VersionService {
   // 🔧 CRITICAL FIX: Removed hardcoded BASE_VERSION to prevent version conflicts after updates
@@ -262,7 +262,7 @@ export class VersionService {
         }
         
         progressCallback?.(40, "Update wird heruntergeladen...");
-        const downloadResult = await window.rawalite.updater.download(nsisFile.url);
+        const downloadResult = await window.rawalite.updater.download();
         
         if (!downloadResult?.ok || !downloadResult?.file) {
           throw new Error(downloadResult?.error || 'Download fehlgeschlagen');
@@ -513,7 +513,7 @@ export class VersionService {
     }
   }
 
-  private async updateStoredVersion(): Promise<void> {
+  private async _updateStoredVersion(): Promise<void> {
     // 🔧 CRITICAL FIX: Remove localStorage version overrides entirely
     // After successful updates, the version should come from Electron IPC only
 

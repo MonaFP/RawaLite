@@ -1,46 +1,96 @@
 appId: com.rawalite.app
-productName: rawalite
+productName: RawaLite
 
+# Build directories
+directories:
+  output: release
+  buildResources: build
+
+# Files to include in the build
 files:
   - dist/**
   - dist-electron/**
   - package.json
 
+# Additional resources (templates, launcher scripts, etc.)
 extraResources:
   - from: templates
     to: app/templates
-  # Andere Ressourcen außer update-launcher.js
   - from: resources
-    filter: ['!**/update-launcher.js']  # Schließe update-launcher.js aus
     to: resources
-  # Update-Launcher explizit im resources-Root platzieren
-  - from: resources/update-launcher.js
-    to: resources/update-launcher.js
 
+# Windows-specific configuration
 win:
-  target:
-    - nsis         # KEIN nsisWeb
-  requestedExecutionLevel: requireAdministrator
-  # publisherName:  # ← ENTFERNT / NICHT setzen!
+  target: nsis
+  icon: assets/icon.ico
+  requestedExecutionLevel: asInvoker
+  certificateSubjectName: null  # Code signing certificate (if available)
 
+# NSIS installer configuration
 nsis:
+  # Installation options
   oneClick: false
   allowToChangeInstallationDirectory: true
   allowElevation: true
+  perMachine: false  # false = per-user installation (recommended)
   runAfterFinish: true
-  perMachine: true
+  
+  # Naming
   artifactName: rawalite-Setup-${version}.exe
+  shortcutName: RawaLite
+  
+  # Desktop and Start Menu shortcuts
   createDesktopShortcut: true
   createStartMenuShortcut: true
+  
+  # Icons
   installerIcon: assets/icon.ico
   uninstallerIcon: assets/icon.ico
+  installerHeaderIcon: assets/icon.ico
+  
+  # Include elevation helper for updater
   packElevateHelper: true
-  # Silent Installation Support
+  
+  # Build options
   warningsAsErrors: false
   unicode: true
+  
+  # Languages (German primary, English fallback)
+  installerLanguages:
+    - de
+    - en
 
+# macOS configuration (future)
+mac:
+  target: dmg
+  icon: assets/icon.icns
+  category: public.app-category.business
+
+# Linux configuration (future)
+linux:
+  target: AppImage
+  icon: assets/icon.png
+  category: Office
+
+# Publishing configuration for GitHub Releases
 publish:
   - provider: github
     owner: MonaFP
     repo: RawaLite
     releaseType: release
+    private: false
+
+# Auto-update configuration
+# afterSign: scripts/notarize.js  # macOS notarization (disabled for Windows)
+
+# Build compression
+compression: normal
+
+# Whether to build app installers in distributable format
+buildDependenciesFromSource: false
+
+# Node modules to rebuild
+nodeGypRebuild: false
+
+# Remove unnecessary files
+removePackageScripts: true

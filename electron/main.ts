@@ -21,6 +21,10 @@ function safeWriteFile(p: string, data: string) { try { fs.writeFileSync(p, data
 function safeReadJson<T=any>(p: string): T | null { try { return JSON.parse(fs.readFileSync(p, "utf-8")); } catch { return null; } }
 function safeUnlink(p: string) { try { fs.unlinkSync(p); } catch {} }
 
+// Mark helper functions as used to avoid TypeScript warnings
+// These are utility functions that may be needed for debugging/telemetry
+void safeMkdirp; void safeWriteFile; void safeReadJson; void safeUnlink;
+
 // 🚀 CUSTOM IN-APP UPDATER SYSTEM
 import {
   PDFPostProcessor,
@@ -30,7 +34,7 @@ import { initializeBackupSystem } from "./backup";
 import { initializeLogoSystem } from "./logo";
 
 // Import update system types
-import type { UpdateManifest, UpdateFile, UpdateProgress } from "../src/types/updater";
+import type { UpdateManifest, UpdateProgress } from "../src/types/updater";
 
 // === SINGLE INSTANCE LOCK ===
 const gotTheLock = app.requestSingleInstanceLock();
@@ -41,7 +45,7 @@ if (!gotTheLock) {
   app.quit();
 } else {
   // Handle second instance attempt - focus existing window
-  app.on("second-instance", (event, commandLine, workingDirectory) => {
+  app.on("second-instance", (_event, _commandLine, _workingDirectory) => {
     log.info("Second instance detected, focusing existing window");
     // Someone tried to run a second instance, focus our existing window instead
     const windows = BrowserWindow.getAllWindows();
@@ -76,7 +80,6 @@ log.info("Update Manifest URL:", "https://api.github.com/repos/MonaFP/RawaLite/r
 
 // === CUSTOM UPDATER STATE MANAGEMENT ===
 let currentUpdateManifest: UpdateManifest | null = null;
-let downloadedFilePath: string | null = null;
 
 // 🔧 HOTFIX: Persistent paths & state for robust installer finding
 const pendingDir = path.join(app.getPath("userData"), "..", "Local", "rawalite-updater", "pending");
@@ -241,8 +244,7 @@ ipcMain.handle("updater:download", async () => {
       log.info("✅ [CUSTOM-UPDATER] SHA512 verification successful");
     }
     
-    // Store file path for installation (legacy)
-    downloadedFilePath = filePath;
+    // Store file path for installation (legacy) - removed downloadedFilePath
     
     // 🔧 HOTFIX: Register downloaded path and notify completion
     afterDownloadComplete(filePath);
@@ -471,11 +473,11 @@ type InstallCustomPayload = {
   quitDelayMs?: number;    // default: 7000
 };
 
-ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPayload) => {
+ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPayload) => {
   const {
     filePath,
-    elevate = true,
-    quitDelayMs = 1000,
+    elevate: _elevate = true,
+    quitDelayMs: _quitDelayMs = 1000,
   } = payload ?? {};
 
   const runId = Date.now().toString(36);
@@ -886,7 +888,7 @@ async function verifyFileSha512(filePath: string, expectedSha512Base64: string):
 
 // PDF Theme Integration Import
 // Note: Import path needs compilation compatibility
-const pdfThemesPath = path.join(__dirname, "..", "src", "lib", "pdfThemes.ts");
+const _pdfThemesPath = path.join(__dirname, "..", "src", "lib", "pdfThemes.ts");  // Referenced for future PDF theme customization
 let injectThemeIntoTemplate: any = null;
 
 // Dynamic import for theme integration (compiled compatibility)
@@ -1223,7 +1225,7 @@ ipcMain.handle("db:save", async (_, data: Uint8Array): Promise<boolean> => {
 ipcMain.handle(
   "pdf:generate",
   async (
-    event,
+    _event,
     options: {
       templateType: "offer" | "invoice" | "timesheet";
       data: {
@@ -1633,7 +1635,7 @@ async function renderTemplate(
 
     template = template.replace(
       /\{\{#if\s+([^}]+)\}\}(.*?)\{\{\/if\}\}/gs,
-      (match, condition, content) => {
+      (_match, condition, content) => {
         const value = getNestedValue(data, condition.trim());
         const result = value ? content : "";
         console.log(
@@ -1645,7 +1647,7 @@ async function renderTemplate(
 
     template = template.replace(
       /\{\{#unless\s+([^}]+)\}\}(.*?)\{\{\/unless\}\}/gs,
-      (match, condition, content) => {
+      (_match, condition, content) => {
         const value = getNestedValue(data, condition.trim());
         const result = !value ? content : "";
         console.log(
@@ -1658,7 +1660,7 @@ async function renderTemplate(
     // Handle loops {{#each}}
     template = template.replace(
       /\{\{#each\s+([^}]+)\}\}(.*?)\{\{\/each\}\}/gs,
-      (match, arrayVar, itemTemplate) => {
+      (_match, arrayVar, itemTemplate) => {
         const array = getNestedValue(data, arrayVar.trim());
         console.log(
           `🔄 Loop {{#each ${arrayVar.trim()}}}: array length=${
@@ -1731,7 +1733,7 @@ async function renderTemplate(
     // STEP 2: Handle special formatters BEFORE general variable replacement
     template = template.replace(
       /\{\{formatDate\s+([^}]+)\}\}/g,
-      (match, dateVar) => {
+      (_match, dateVar) => {
         const dateValue = getNestedValue(data, dateVar.trim());
         console.log(`📅 Formatting date: ${dateVar.trim()} = ${dateValue}`);
         if (dateValue) {
@@ -1751,7 +1753,7 @@ async function renderTemplate(
 
     template = template.replace(
       /\{\{formatCurrency\s+([^}]+)\}\}/g,
-      (match, amountVar) => {
+      (_match, amountVar) => {
         const amount = getNestedValue(data, amountVar.trim());
         console.log(`💰 Formatting currency: ${amountVar.trim()} = ${amount}`);
         if (typeof amount === "number") {
@@ -1766,7 +1768,7 @@ async function renderTemplate(
 
     // STEP 3: Replace simple {{variable}} with actual values
     console.log("🔄 Starting Handlebars-like variable replacement...");
-    template = template.replace(/\{\{([^}]+)\}\}/g, (match, variable) => {
+    template = template.replace(/\{\{([^}]+)\}\}/g, (_match, variable) => {
       const parts = variable.trim().split(".");
       let value = data;
       let path = "";
@@ -2114,9 +2116,9 @@ app.on("activate", () => {
   log.info("App activated");
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
-app.on("before-quit", (event) => {
+app.on("before-quit", (_event) => {
   log.info("App is about to quit");
 });
-app.on("will-quit", (event) => {
+app.on("will-quit", (_event) => {
   log.info("App will quit");
 });

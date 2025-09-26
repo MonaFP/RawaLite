@@ -100,8 +100,8 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
         throw new Error('Keine kompatible Installer-Datei gefunden');
       }
       
-      // ✅ NEW CUSTOM UPDATER API: Download with URL
-      const downloadResult = await window.rawalite?.updater?.download?.(nsisFile.url);
+      // ✅ NEW CUSTOM UPDATER API: Download (manifest already selected)
+      const downloadResult = await window.rawalite?.updater?.download?.();
       
       if (downloadResult?.ok && downloadResult?.file) {
         setDownloadedFile(downloadResult.file);
