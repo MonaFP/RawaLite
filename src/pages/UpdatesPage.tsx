@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import CustomAutoUpdaterModal from '../components/CustomAutoUpdaterModal';
+import { AutoUpdaterModal } from '../components/AutoUpdaterModal';
 
 export default function UpdatesPage() {
   const [showModal, setShowModal] = useState(false);
@@ -48,7 +48,7 @@ export default function UpdatesPage() {
       </div>
 
       {showModal && (
-        <CustomAutoUpdaterModal 
+        <AutoUpdaterModal 
           isOpen={showModal}
           onClose={() => setShowModal(false)} 
         />

@@ -130,28 +130,30 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
     setState('installing');
     
     try {
-      console.log('🚀 [LAUNCHER-INSTALL] Starting UAC-resistant launcher with file:', downloadedFile);
+      console.log('?? [LAUNCHER-INSTALL] Starting installer via launcher with file:', downloadedFile);
       
-      // ✅ LAUNCHER-BASED: Use new launcher-based installation API for UAC-resistance
+      // ? LAUNCHER-BASED: Use launcher-based installation API so the NSIS wizard stays visible
       const result = await window.rawalite?.updater?.installCustom?.({
-        filePath: downloadedFile,
-        elevate: true,               // Enable UAC elevation for proper admin rights
-        quitDelayMs: 1000,          // Launcher delay (not installer delay)
+        installerPath: downloadedFile,
+        quitDelayMs: 1000,
       });
       
       if (!result?.ok) {
         throw new Error(result?.error || 'Launcher-Start fehlgeschlagen');
       }
       
-      console.log('✅ [LAUNCHER-STARTED] UAC-resistant launcher started successfully:', {
+      console.log('? [LAUNCHER-STARTED] Launcher started successfully:', {
         launcherStarted: result.launcherStarted,
         exitCode: result.exitCode,
         message: result.message,
         output: result.output
       });
       
-      // Show launcher success message
-      setErrorMessage(''); // Clear any previous errors
+      setErrorMessage('');
+
+      if (result?.message) {
+        console.log('? [LAUNCHER-MESSAGE]', result.message);
+      }
       
       // Set up completion monitoring
       setTimeout(() => {
@@ -159,7 +161,7 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
       }, 2000); // Check results after 2 seconds
       
     } catch (error) {
-      console.error('❌ [LAUNCHER-ERROR] Launcher-Start fehlgeschlagen:', error);
+      console.error('? [LAUNCHER-ERROR] Launcher-Start fehlgeschlagen:', error);
       setErrorMessage(`Fehler beim Starten des Launchers: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
       setState('error');
     }

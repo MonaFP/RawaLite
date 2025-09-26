@@ -7,7 +7,8 @@ declare namespace RawaLiteUpdater {
    */
   interface InstallCustomOptions {
     /** Absoluter Pfad zur Installer-Datei */
-    filePath: string;
+    filePath?: string;
+    installerPath?: string;
     /** Zusätzliche Kommandozeilenargumente für den Installer */
     args?: string[];
     /** Erwarteter SHA256-Hash der Installer-Datei (optional) */
@@ -18,6 +19,7 @@ declare namespace RawaLiteUpdater {
     unblock?: boolean;
     /** Verzögerung in Millisekunden vor dem Beenden der App */
     quitDelayMs?: number;
+    perMachine?: boolean;
   }
 
   /**
@@ -40,6 +42,12 @@ declare namespace RawaLiteUpdater {
     runId?: string;
     /** Gibt an, ob bereits ein Update-Prozess läuft */
     alreadyInProgress?: boolean;
+    /** Gibt an, ob perMachine-Modus aktiv war */
+    perMachine?: boolean;
+    /** Verwendeter Quit-Delay in Millisekunden */
+    quitDelayMs?: number;
+    /** Pfad zur geschriebenen Diagnose-Datei */
+    diagFilePath?: string;
   }
 
   /**

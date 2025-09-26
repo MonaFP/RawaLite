@@ -84,10 +84,17 @@ let currentUpdateManifest: UpdateManifest | null = null;
 // 🔧 HOTFIX: Persistent paths & state for robust installer finding
 const pendingDir = path.join(app.getPath("userData"), "..", "Local", "rawalite-updater", "pending");
 let lastDownloadedPath: string | null = null;
+let pendingQuitTimeout: NodeJS.Timeout | null = null;
 
 function stripQuotes(p?: string) {
   if (!p || typeof p !== "string") return p ?? "";
   return p.replace(/^"+|"+$/g, "");
+}
+
+function parseEnvBoolean(value?: string | null): boolean {
+  if (!value) return false;
+  const normalized = value.trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
 }
 
 async function findLatestExeInPending(): Promise<string | null> {
@@ -157,21 +164,27 @@ function ensureLegacyLauncherPath(): void {
 
 ensureLegacyLauncherPath();
 
-function scheduleQuitAfterLauncherStart(originTag: (message: string) => string) {
+function scheduleQuitAfterLauncherStart(originTag: (message: string) => string, quitDelayMs: number) {
   if (!app.isPackaged) {
     log.info(originTag("DEV mode - no restart request"));
     return;
   }
 
+  const delay = Number.isFinite(quitDelayMs) && quitDelayMs >= 0 ? quitDelayMs : 0;
   const payload = {
     message:
-      "Das Installationsprogramm wurde gestartet. Bitte schliessen Sie den Wizard ab und starten Sie RawaLite danach manuell neu.",
+      delay > 0
+        ? "Das Installationsprogramm wurde gestartet. RawaLite beendet sich in Kuerze automatisch."
+        : "Das Installationsprogramm wurde gestartet. RawaLite bleibt zur Diagnose geöffnet.",
     requestedAt: new Date().toISOString(),
+    quitDelayMs: delay,
   };
 
   log.info(
     originTag(
-      "Installer gestartet - Anwendung bleibt geoeffnet und wartet auf manuellen Neustart."
+      delay > 0
+        ? `Installer gestartet - Anwendung beendet sich nach ${delay}ms`
+        : "Installer gestartet - Anwendung bleibt geöffnet"
     )
   );
 
@@ -179,10 +192,54 @@ function scheduleQuitAfterLauncherStart(originTag: (message: string) => string) 
   windows.forEach((window) => {
     try {
       window.webContents.send("updater:restart-required", payload);
+      window.webContents.send("updater:status", {
+        status: "install-started",
+        message: payload.message,
+        quitDelayMs: delay,
+      });
     } catch (notifyError) {
       log.warn(originTag(`Renderer notification failed: ${notifyError}`));
     }
   });
+
+  if (delay <= 0) {
+    log.info(originTag("Quit delay disabled - skipping automatic shutdown"));
+    return;
+  }
+
+  if (pendingQuitTimeout) {
+    clearTimeout(pendingQuitTimeout);
+    pendingQuitTimeout = null;
+  }
+
+  pendingQuitTimeout = setTimeout(() => {
+    try {
+      log.info(originTag(`Quit delay elapsed (${delay}ms) - quitting application`));
+      app.quit();
+      const fallback = setTimeout(() => {
+        log.info(originTag("Fallback app.exit(0) after quit"));
+        app.exit(0);
+      }, 2000);
+      if (typeof fallback.unref === 'function') {
+        fallback.unref();
+      }
+    } catch (exitError) {
+      log.warn(
+        originTag(
+          `App quit failed: ${exitError instanceof Error ? exitError.message : String(exitError)}`
+        )
+      );
+      try {
+        app.exit(0);
+      } catch (secondaryError) {
+        log.warn(originTag(`Fallback exit failed: ${secondaryError}`));
+      }
+    }
+  }, delay);
+
+  if (pendingQuitTimeout && typeof pendingQuitTimeout.unref === 'function') {
+    pendingQuitTimeout.unref();
+  }
 }
 
 // === CUSTOM UPDATER IPC HANDLERS ===
@@ -543,53 +600,130 @@ ipcMain.handle("updater:check-results", async () => {
 // === CUSTOM INSTALL IPC HANDLER ===
 
 type InstallCustomPayload = {
-  filePath: string;
+  filePath?: string;
+  installerPath?: string;
   args?: string[];
   expectedSha256?: string;
-  elevate?: boolean;       // default: true
+  elevate?: boolean;       // default depends on per-machine flag
   unblock?: boolean;       // default: true
-  quitDelayMs?: number;    // default: 7000
+  quitDelayMs?: number;    // default: 1000
+  perMachine?: boolean;
 };
 
 ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPayload) => {
   const {
     filePath,
-    elevate: _elevate = true,
-    quitDelayMs: _quitDelayMs = 1000,
+    installerPath,
+    args = [],
+    expectedSha256,
+    elevate,
+    unblock = true,
+    quitDelayMs: requestedQuitDelayMs,
+    perMachine,
   } = payload ?? {};
 
+  const resolvedInstallerPath = stripQuotes(installerPath ?? filePath ?? "");
   const runId = Date.now().toString(36);
   const tag = (msg: string) => `[LAUNCHER-INSTALL-CUSTOM ${runId}] ${msg}`;
 
-  try {
-    log.info(tag(`Launcher-based custom install requested: ${filePath}`));
+  const envPerMachine = parseEnvBoolean(process.env.RAWALITE_PER_MACHINE);
+  const perMachineRequested = perMachine ?? envPerMachine;
+  const shouldElevate = elevate ?? perMachineRequested;
+  const quitDelayMs = Number.isFinite(requestedQuitDelayMs as number)
+    ? Math.max(0, Number(requestedQuitDelayMs))
+    : 1000;
 
-    // 1. Validation - Datei existiert?
-    if (!filePath || !fs.existsSync(filePath)) {
-      const msg = `Installer nicht gefunden: ${filePath}`;
+  try {
+    log.info(tag(`Launcher-based custom install requested: ${resolvedInstallerPath}`));
+    log.info(
+      tag(
+        `Options: perMachine=${perMachineRequested}, elevate=${shouldElevate}, unblock=${unblock}, quitDelayMs=${quitDelayMs}`
+      )
+    );
+
+    if (args.length > 0) {
+      log.info(tag(`Installer args: ${JSON.stringify(args)}`));
+    }
+    if (expectedSha256) {
+      log.info(tag(`Expected SHA256 provided`));
+    }
+
+    if (!resolvedInstallerPath || !fs.existsSync(resolvedInstallerPath)) {
+      const msg = `Installer nicht gefunden: ${resolvedInstallerPath || "<leer>"}`;
       log.error(tag(msg));
       return { ok: false, error: msg };
     }
 
-    // Get launcher script path with ASAR extraction
+    const diagRecord = {
+      status: "install-started",
+      app: {
+        pid: process.pid,
+        version: app.getVersion(),
+        name: app.getName(),
+      },
+      installer: {
+        path: resolvedInstallerPath,
+        timestamp: Date.now(),
+      },
+      options: {
+        perMachine: perMachineRequested,
+        elevate: shouldElevate,
+        quitDelayMs,
+        runId,
+      },
+    };
+
+    let diagFilePath: string | null = null;
+    try {
+      diagFilePath = path.join(os.tmpdir(), `rawalite-update-${Date.now()}-${runId}.json`);
+      fs.writeFileSync(diagFilePath, JSON.stringify(diagRecord, null, 2), "utf-8");
+      log.info(tag(`Diagnostic snapshot written: ${diagFilePath}`));
+    } catch (diagError) {
+      log.warn(
+        tag(
+          `Could not write diagnostic snapshot: ${diagError instanceof Error ? diagError.message : String(diagError)}`
+        )
+      );
+    }
+
+    const statusPayload = {
+      status: "install-started",
+      message: shouldElevate
+        ? "Update-Installer mit Administratorrechten gestartet. Bitte UAC bestaetigen."
+        : "Update-Installer gestartet. Bitte folgen Sie dem NSIS-Assistenten.",
+      installerPath: resolvedInstallerPath,
+      perMachine: perMachineRequested,
+      runId,
+      quitDelayMs,
+      diagFilePath,
+    };
+
+    BrowserWindow.getAllWindows().forEach((window) => {
+      try {
+        window.webContents.send("updater:status", statusPayload);
+      } catch (notifyError) {
+        log.warn(
+          tag(
+            `Failed to notify renderer (status): ${notifyError instanceof Error ? notifyError.message : notifyError}`
+          )
+        );
+      }
+    });
+
     let launcherPath: string;
-    
+
     if (isDev) {
       launcherPath = path.join(process.cwd(), "resources", "update-launcher.ps1");
     } else {
-      // In production, extract launcher from ASAR to temp directory
       const tempDir = path.join(os.tmpdir(), "rawalite-launcher");
       const tempLauncherPath = path.join(tempDir, "update-launcher.ps1");
-      
-      // Create temp directory
+
       if (!fs.existsSync(tempDir)) {
         fs.mkdirSync(tempDir, { recursive: true });
       }
-      
-      // Extract launcher from resources
+
       try {
         const resourcesLauncherPath = resolvePackagedLauncherScript();
-        // Copy launcher to temp location
         fs.copyFileSync(resourcesLauncherPath, tempLauncherPath);
         launcherPath = tempLauncherPath;
         log.info(tag(`Launcher extracted to temp: ${tempLauncherPath}`));
@@ -601,110 +735,127 @@ ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPa
     }
 
     if (!fs.existsSync(launcherPath)) {
-      const msg = "Update-Launcher nicht gefunden. Installation nicht möglich.";
+      const msg = "Update-Launcher nicht gefunden. Installation nicht moeglich.";
       log.error(tag(msg));
       return { ok: false, error: msg };
     }
 
-    log.info(tag(`Starting UAC-resistant launcher: ${filePath}`));
+    log.info(tag(`Starting launcher: ${resolvedInstallerPath}`));
     log.info(tag(`Launcher script: ${launcherPath}`));
-    
-    // Execute launcher script with detached process
+
     const launcherArgs = [
       "-NoProfile",
-      "-ExecutionPolicy", "Bypass", 
+      "-ExecutionPolicy", "Bypass",
       "-File", `"${launcherPath}"`,
-      "-InstallerPath", `"${filePath}"`
+      "-InstallerPath", `"${resolvedInstallerPath}"`,
     ];
-    if (_elevate) {
+
+    if (shouldElevate) {
       launcherArgs.push("-ForceElevation");
     }
-    
+
     const launcherProcess = spawn("powershell.exe", launcherArgs, {
-      detached: true,  // CRITICAL: Detached for UAC-resistance
+      detached: true,
       stdio: ["ignore", "pipe", "pipe"],
-      windowsHide: false
+      windowsHide: false,
     });
 
     if (launcherProcess.unref) {
       launcherProcess.unref();
     }
 
-    // Monitor launcher output briefly
     let launcherOutput = "";
     let launcherError = "";
 
-    launcherProcess.stdout?.on('data', (data) => {
+    launcherProcess.stdout?.on("data", (data) => {
       const output = data.toString().trim();
-      launcherOutput += output + "\n";
-      log.info(tag(`LAUNCHER-OUT: ${output}`));
+      if (output.length > 0) {
+        launcherOutput += `${output}
+`;
+        log.info(tag(`LAUNCHER-OUT: ${output}`));
+      }
     });
-    
-    launcherProcess.stderr?.on('data', (data) => {
+
+    launcherProcess.stderr?.on("data", (data) => {
       const error = data.toString().trim();
-      launcherError += error + "\n";
-      log.warn(tag(`LAUNCHER-ERR: ${error}`));
+      if (error.length > 0) {
+        launcherError += `${error}
+`;
+        log.warn(tag(`LAUNCHER-ERR: ${error}`));
+      }
     });
 
-    // Return promise that resolves when launcher starts (not when install completes)
     return new Promise((resolve) => {
-      launcherProcess.on('exit', (code) => {
+      launcherProcess.on("exit", (code) => {
         log.info(tag(`Launcher process exited with code: ${code}`));
-        
-        if (code === 0) {
-          log.info(tag("✅ Launcher started successfully - installation running independently"));
 
-          // Notify UI about launcher success
+        if (code === 0) {
+          log.info(tag("Launcher started successfully - installation running independently"));
+
           const allWindows = BrowserWindow.getAllWindows();
           allWindows.forEach((window) => {
-            window.webContents.send('updater:launcher-started', {
+            window.webContents.send("updater:launcher-started", {
               success: true,
-              message: 'Installation gestartet. Bitte bestätigen Sie die UAC-Anfrage.',
-              launcherOutput: launcherOutput.trim()
+              message: shouldElevate
+                ? "Installation gestartet. Bitte die UAC-Anfrage bestaetigen."
+                : "Installation gestartet. Der Assistent ist sichtbar.",
+              launcherOutput: launcherOutput.trim(),
+              perMachine: perMachineRequested,
+              installerPath: resolvedInstallerPath,
+              runId,
+              diagFilePath,
             });
           });
 
-          scheduleQuitAfterLauncherStart(tag);
+          scheduleQuitAfterLauncherStart(tag, quitDelayMs);
 
           resolve({
             ok: true,
             launcherStarted: true,
             exitCode: code,
-            message: "Launcher gestartet - Installation läuft unabhängig",
-            filePath,
+            message: shouldElevate
+              ? "Launcher gestartet - Installation laeuft mit Administratorrechten."
+              : "Launcher gestartet - Installation laeuft ohne UAC.",
+            filePath: resolvedInstallerPath,
             runId,
-            output: launcherOutput.trim()
+            perMachine: perMachineRequested,
+            quitDelayMs,
+            output: launcherOutput.trim(),
+            errorOutput: launcherError.trim(),
+            diagFilePath: diagFilePath ?? undefined,
           });
         } else {
-          log.error(tag(`❌ Launcher failed with code: ${code}`));
-          
-          resolve({ 
-            ok: false, 
+          log.error(tag(`Launcher failed with code: ${code}`));
+
+          resolve({
+            ok: false,
             error: `Launcher fehlgeschlagen (Exit Code: ${code})`,
             exitCode: code,
-            filePath,
+            filePath: resolvedInstallerPath,
             runId,
             output: launcherOutput.trim(),
-            errorOutput: launcherError.trim()
+            errorOutput: launcherError.trim(),
+            diagFilePath: diagFilePath ?? undefined,
           });
         }
       });
-      
-      launcherProcess.on('error', (error) => {
+
+      launcherProcess.on("error", (error) => {
         log.error(tag(`Launcher process error: ${error.message}`));
-        resolve({ 
-          ok: false, 
+        resolve({
+          ok: false,
           error: `Launcher-Fehler: ${error.message}`,
-          filePath,
+          filePath: resolvedInstallerPath,
           runId,
-          output: launcherOutput.trim()
+          output: launcherOutput.trim(),
+          errorOutput: launcherError.trim(),
+          diagFilePath: diagFilePath ?? undefined,
         });
       });
     });
-
-  } catch (error: any) {
-    log.error(tag(`Exception: ${error?.message || error}`));
-    return { ok: false, error: error?.message ?? String(error) };
+  } catch (e: any) {
+    log.error(tag(`Exception: ${e?.message || e}`));
+    return { ok: false, error: e?.message ?? String(e) };
   }
 });
 

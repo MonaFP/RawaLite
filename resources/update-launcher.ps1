@@ -192,11 +192,11 @@ try {
 
         if ($installerArgs.Count -gt 0) {
 
-            $processInfo = Start-Process -FilePath $InstallerPath -ArgumentList $installerArgs -Verb RunAs -Wait -PassThru
+            $processInfo = Start-Process -FilePath $InstallerPath -ArgumentList $installerArgs -Verb RunAs -WindowStyle Normal -Wait -PassThru
 
         } else {
 
-            $processInfo = Start-Process -FilePath $InstallerPath -Verb RunAs -Wait -PassThru
+            $processInfo = Start-Process -FilePath $InstallerPath -Verb RunAs -WindowStyle Normal -Wait -PassThru
 
         }
 
@@ -206,11 +206,11 @@ try {
 
         if ($installerArgs.Count -gt 0) {
 
-            $processInfo = Start-Process -FilePath $InstallerPath -ArgumentList $installerArgs -Wait -PassThru
+            $processInfo = Start-Process -FilePath $InstallerPath -ArgumentList $installerArgs -WindowStyle Normal -Wait -PassThru
 
         } else {
 
-            $processInfo = Start-Process -FilePath $InstallerPath -Wait -PassThru
+            $processInfo = Start-Process -FilePath $InstallerPath -WindowStyle Normal -Wait -PassThru
 
         }
 

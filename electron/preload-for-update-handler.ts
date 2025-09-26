@@ -5,12 +5,14 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 // Typdefinitionen für bessere IDE-Unterstützung
 interface InstallCustomOptions {
-  filePath: string;
+  filePath?: string;
+  installerPath?: string;
   args?: string[];
   expectedSha256?: string;
   elevate?: boolean;
   unblock?: boolean;
   quitDelayMs?: number;
+  perMachine?: boolean;
 }
 
 interface UpdaterStatus {

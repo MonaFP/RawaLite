@@ -60,12 +60,14 @@ export interface UpdateInstallResult {
 }
 
 export interface InstallCustomPayload {
-  filePath: string;
+  filePath?: string;
+  installerPath?: string;
   args?: string[];
   expectedSha256?: string;
   elevate?: boolean;
   unblock?: boolean;
   quitDelayMs?: number;
+  perMachine?: boolean;
 }
 
 export interface InstallCustomResult {
@@ -78,6 +80,9 @@ export interface InstallCustomResult {
   output?: string;
   errorOutput?: string;
   error?: string;
+  perMachine?: boolean;
+  quitDelayMs?: number;
+  diagFilePath?: string;
 }
 
 export interface UpdateResultsCheckResult {

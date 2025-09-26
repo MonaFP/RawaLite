@@ -136,8 +136,18 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
     setError(null);
 
     try {
-      await window.rawalite!.updater.install(downloadedPath);
-      // Installer wurde gestartet, App wartet auf manuellen Neustart
+      const result = await window.rawalite?.updater?.installCustom?.({
+        installerPath: downloadedPath,
+        quitDelayMs: 1000,
+      });
+
+      if (!result?.ok) {
+        throw new Error(result?.error || 'Installation fehlgeschlagen');
+      }
+
+      if (result?.message && result.message.trim().length > 0) {
+        setRestartMessage(result.message);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Installation fehlgeschlagen');
       setState('error');
