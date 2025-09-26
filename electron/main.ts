@@ -348,6 +348,7 @@ ipcMain.handle("updater:download", async (_evt, fileUrl?: string) => {
 ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
   const runId = Date.now().toString(36);
   const tag = (m: string) => `[LAUNCHER-INSTALL ${runId}] ${m}`;
+  const shouldForceElevation = true;
   
   try {
     log.info(tag("Launcher-based install requested"));
@@ -411,6 +412,9 @@ ipcMain.handle("updater:install", async (_evt, exePath?: string) => {
       "-File", `"${launcherPath}"`,
       "-InstallerPath", `"${candidate}"`
     ];
+    if (shouldForceElevation) {
+      launcherArgs.push("-ForceElevation");
+    }
     
     const launcherProcess = spawn("powershell.exe", launcherArgs, {
       detached: true,  // CRITICAL: Detached for UAC-resistance
@@ -612,6 +616,9 @@ ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPa
       "-File", `"${launcherPath}"`,
       "-InstallerPath", `"${filePath}"`
     ];
+    if (_elevate) {
+      launcherArgs.push("-ForceElevation");
+    }
     
     const launcherProcess = spawn("powershell.exe", launcherArgs, {
       detached: true,  // CRITICAL: Detached for UAC-resistance
