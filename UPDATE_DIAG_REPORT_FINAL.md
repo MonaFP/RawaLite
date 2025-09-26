@@ -2,8 +2,8 @@
 
 **Analysiert am:** 26. September 2025, 15:15 - 15:30 Uhr  
 **Problem:** NSIS-Installer startet nicht / kein UAC, App bleibt offen  
-**Branch:** `main` (commit: `1e0a0ee6` - "Force updater elevation and prep 1.8.112 release")  
-**Version:** v1.8.112
+**Branch:** `main` (commit: `1e0a0ee6` - "Force updater elevation and prep 1.8.113 release")  
+**Version:** v1.8.113
 
 ---
 
@@ -64,13 +64,13 @@ Handler: electron/install-custom-handler.ts → registerInstallCustomHandler()
 | Parameter | Erwartet | Tatsächlich gefunden |
 |-----------|----------|---------------------|
 | **Verzeichnis** | `C:\Users\ramon\AppData\Local\rawalite-updater\pending\` | ✅ Existiert |
-| **Dateimuster** | `rawalite-Setup-1.8.112.exe` | ✅ Vorhanden |
+| **Dateimuster** | `rawalite-Setup-1.8.113.exe` | ✅ Vorhanden |
 | **Dateigröße** | ~90-100 MB | ✅ 93,258,027 bytes (89.0 MB) |
 | **Existenz** | `fs.existsSync(filePath)` | ✅ `true` |
 
 **Log-Belege:**
 ```
-[DIAG] INSTALL exePath=C:\Users\ramon\AppData\Local\rawalite-updater\pending\rawalite-Setup-1.8.112.exe
+[DIAG] INSTALL exePath=C:\Users\ramon\AppData\Local\rawalite-updater\pending\rawalite-Setup-1.8.113.exe
 [DIAG] INSTALL exists=true, size=93258027
 ```
 
@@ -141,14 +141,14 @@ const ps = spawn("powershell.exe", [
 
 | Quelle | Version | Dateiname | SHA512 (Auszug) | Status |
 |--------|---------|-----------|------------------|---------|
-| **fixed-update.json** | 1.8.112 | rawalite-Setup-1.8.112.exe | GKGuxmZh... | ✅ Match |
-| **release/latest.yml** | 1.8.112 | rawalite-Setup-1.8.112.exe | GKGuxmZh... | ✅ Match |
-| **Handler erwartet** | 1.8.112 | rawalite-Setup-1.8.112.exe | - | ✅ Match |
-| **Tatsächlich vorhanden** | 1.8.112 | `C:\...\pending\rawalite-Setup-1.8.112.exe` | - | ✅ Existiert |
+| **fixed-update.json** | 1.8.113 | rawalite-Setup-1.8.113.exe | GKGuxmZh... | ✅ Match |
+| **release/latest.yml** | 1.8.113 | rawalite-Setup-1.8.113.exe | GKGuxmZh... | ✅ Match |
+| **Handler erwartet** | 1.8.113 | rawalite-Setup-1.8.113.exe | - | ✅ Match |
+| **Tatsächlich vorhanden** | 1.8.113 | `C:\...\pending\rawalite-Setup-1.8.113.exe` | - | ✅ Existiert |
 
 **GitHub Release URL:**
 ```
-https://github.com/MonaFP/RawaLite/releases/download/v1.8.112/rawalite-Setup-1.8.112.exe
+https://github.com/MonaFP/RawaLite/releases/download/v1.8.113/rawalite-Setup-1.8.113.exe
 ```
 
 **Befund:** Asset-Matching vollständig konsistent, keine Pfad- oder Namenskonflikte.
@@ -399,7 +399,7 @@ nsis:
 [DIAG] UI - AutoUpdaterModal.handleInstallUpdate() triggered
 [DIAG] PRELOAD - IPC bridge funktional  
 [DIAG] MAIN - install-custom-handler erreicht
-[DIAG] INSTALL exePath=...rawalite-Setup-1.8.112.exe, exists=true, size=93258027
+[DIAG] INSTALL exePath=...rawalite-Setup-1.8.113.exe, exists=true, size=93258027
 [DIAG] SPAWN windowsHide=false, detached=true, stdio=["ignore","pipe","pipe"]
 [DIAG] NSIS oneClick=false, perMachine=false, allowElevation=true
 [DIAG] LAUNCHER cmd=powershell.exe, args=["-NoProfile","-ExecutionPolicy","Bypass"], ExecutionPolicy=RemoteSigned->Bypass

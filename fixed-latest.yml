@@ -1,8 +1,8 @@
-version: 1.8.112
+version: 1.8.113
 files:
-  - url: rawalite-Setup-1.8.112.exe
+  - url: rawalite-Setup-1.8.113.exe
     sha512: GKGuxmZhnKrR2E6YbUn3u3a9Lq+I/aaWJG7bKEQlbTlxSsa6W63nnhv7gdnMzoATKdl6qHgm3I5v6oU00F7rLg==
     size: 93258027
-path: rawalite-Setup-1.8.112.exe
+path: rawalite-Setup-1.8.113.exe
 sha512: GKGuxmZhnKrR2E6YbUn3u3a9Lq+I/aaWJG7bKEQlbTlxSsa6W63nnhv7gdnMzoATKdl6qHgm3I5v6oU00F7rLg==
 releaseDate: '2025-09-26T12:50:10.850Z'

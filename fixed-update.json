@@ -1,16 +1,16 @@
 {
-  "version": "1.8.112",
+  "version": "1.8.113",
   "releaseDate": "2025-09-26T12:50:10.850Z",
   "files": [
     {
       "kind": "nsis",
       "arch": "x64",
-      "url": "https://github.com/MonaFP/RawaLite/releases/download/v1.8.112/rawalite-Setup-1.8.112.exe",
-      "name": "rawalite-Setup-1.8.112.exe",
+      "url": "https://github.com/MonaFP/RawaLite/releases/download/v1.8.113/rawalite-Setup-1.8.113.exe",
+      "name": "rawalite-Setup-1.8.113.exe",
       "sha512": "GKGuxmZhnKrR2E6YbUn3u3a9Lq+I/aaWJG7bKEQlbTlxSsa6W63nnhv7gdnMzoATKdl6qHgm3I5v6oU00F7rLg==",
       "size": 93258027
     }
   ],
-  "releaseNotes": "RawaLite v1.8.112 - Forced elevation test build",
+  "releaseNotes": "RawaLite v1.8.113 - Forced elevation test build",
   "mandatory": false
 }
