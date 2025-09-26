@@ -1,10 +1,21 @@
 // src/components/CustomAutoUpdaterModal.tsx - Custom In-App Updater UI
-import React, { useState, useEffect, useRef } from 'react';
-import { formatVersion } from '../services/semver';
+import { useState, useEffect, useRef } from 'react';
+import { formatVersion, parseVersion } from '../services/semver';
 import { useVersion } from '../hooks/useVersion'; // 🔧 NEW: Unified version system
-import type { UpdateCheckResponse, UpdateManifest, UpdateProgress, UpdateDownloadResponse, UpdateInstallResponse } from '../types/updater';
+import type { UpdateCheckResponse, UpdateProgress } from '../types/updater';
 
 // Using UpdateProgress from updater types instead of local DownloadProgress
+
+const INSTALLER_RUNNING_MESSAGE = "Der Installationsassistent wurde gestartet. Bitte schliessen Sie den Wizard ab und starten Sie RawaLite danach manuell neu.";
+
+const safeFormatVersion = (value?: string | null) => {
+  if (!value || value.trim().length === 0) {
+    return '0.0.0';
+  }
+
+  const parsed = parseVersion(value);
+  return parsed ? formatVersion(parsed) : value;
+};
 
 type UpdateState = 
   | 'idle'
@@ -28,6 +39,7 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
   const [progress, setProgress] = useState<UpdateProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [downloadedPath, setDownloadedPath] = useState<string | null>(null);
+  const [restartMessage, setRestartMessage] = useState<string | null>(null);
   // 🔧 UNIFIED VERSION: Use new version hook instead of local state
   const { appVersion } = useVersion();
   
@@ -52,6 +64,25 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
       if (window.rawalite?.updater?.offProgress) {
         window.rawalite.updater.offProgress();
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!window.rawalite?.updater?.onRestartRequired) {
+      return;
+    }
+
+    const dispose = window.rawalite.updater.onRestartRequired((data: any) => {
+      setState('installing');
+      setRestartMessage(
+        data && typeof data.message === 'string' && data.message.trim().length > 0
+          ? data.message
+          : INSTALLER_RUNNING_MESSAGE
+      );
+    });
+
+    return () => {
+      dispose?.();
     };
   }, []);
 
@@ -101,13 +132,24 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
     if (!downloadedPath) return;
 
     setState('installing');
+    setRestartMessage(INSTALLER_RUNNING_MESSAGE);
     setError(null);
 
     try {
       await window.rawalite!.updater.install(downloadedPath);
-      // App will quit and installer will start
+      // Installer wurde gestartet, App wartet auf manuellen Neustart
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Installation fehlgeschlagen');
+      setState('error');
+    }
+  };
+
+  const handleManualRestart = async () => {
+    try {
+      await window.rawalite?.app?.restartAfterUpdate?.();
+    } catch (err) {
+      console.error('Manual restart failed:', err);
+      setError('Neustart konnte nicht ausgelöst werden. Bitte Anwendung manuell neu starten.');
       setState('error');
     }
   };
@@ -158,7 +200,7 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
         <div className="auto-updater-content">
           {/* Current Version */}
           <div className="auto-updater-version">
-            <strong>Aktuelle Version:</strong> {formatVersion(appVersion || '0.0.0')}
+            <strong>Aktuelle Version:</strong> {safeFormatVersion(appVersion)}
           </div>
 
           {/* State-based content */}
@@ -186,7 +228,7 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
               <div className="auto-updater-success-icon">✓</div>
               <h3>Keine Updates verfügbar</h3>
               <p>
-                Du nutzt bereits die neueste Version ({formatVersion(appVersion || '0.0.0')})
+                Du nutzt bereits die neueste Version ({safeFormatVersion(appVersion)})
               </p>
               <button
                 onClick={onClose}
@@ -200,7 +242,7 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
           {state === 'available' && updateResponse?.target && (
             <div className="auto-updater-available">
               <div className="auto-updater-update-icon">📦</div>
-              <h3>Update verfügbar: v{formatVersion(updateResponse.target.version)}</h3>
+              <h3>Update verfügbar: v{safeFormatVersion(updateResponse.target.version)}</h3>
               <p>
                 Größe: {formatBytes(updateResponse.target.files[0]?.size || 0)}
               </p>
@@ -275,8 +317,8 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
                 Das Update wurde erfolgreich heruntergeladen und verifiziert.
               </p>
               <p className="auto-updater-install-note">
-                <strong>Hinweis:</strong> Die Anwendung wird geschlossen und der Installer startet automatisch. 
-                Nach der Installation wird RawaLite automatisch wieder geöffnet.
+                <strong>Hinweis:</strong> Nachdem Sie auf "Installation starten" klicken, öffnet sich der Windows-Installer.
+                Lassen Sie RawaLite geöffnet, bis der Wizard abgeschlossen ist, und starten Sie die Anwendung anschließend manuell neu.
               </p>
 
               <div className="auto-updater-actions">
@@ -299,8 +341,22 @@ export default function CustomAutoUpdaterModal({ isOpen, onClose }: CustomAutoUp
           {state === 'installing' && (
             <div className="auto-updater-installing">
               <div className="auto-updater-spinner"></div>
-              <h3>Installation wird gestartet...</h3>
-              <p>Die Anwendung wird gleich geschlossen.</p>
+              <h3>Installer läuft</h3>
+              <p>{restartMessage ?? INSTALLER_RUNNING_MESSAGE}</p>
+              <div className="auto-updater-actions">
+                <button
+                  onClick={handleManualRestart}
+                  className="auto-updater-button primary"
+                >
+                  App neu starten
+                </button>
+                <button
+                  onClick={onClose}
+                  className="auto-updater-button"
+                >
+                  Später
+                </button>
+              </div>
             </div>
           )}
 

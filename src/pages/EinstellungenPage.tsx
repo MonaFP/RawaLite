@@ -6,7 +6,7 @@ import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import { CustomColorPicker } from "../components/CustomColorPicker";
-import { AutoUpdaterModal } from "../components/AutoUpdaterModal";
+import CustomAutoUpdaterModal from "../components/CustomAutoUpdaterModal";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
 import type { Activity } from "../persistence/adapter";
 import { defaultSettings } from "../lib/settings";
@@ -2575,7 +2575,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
           </div>
           
           {/* Native Update Modal */}
-          <AutoUpdaterModal 
+          <CustomAutoUpdaterModal 
             isOpen={showAutoUpdater}
             onClose={() => setShowAutoUpdater(false)}
           />
@@ -2829,3 +2829,4 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
     </div>
   );
 }
+

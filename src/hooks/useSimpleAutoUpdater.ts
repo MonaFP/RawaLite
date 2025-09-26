@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import type { UpdateCheckResponse, UpdateManifest, UpdateProgress } from '../types/updater';
+import type { UpdateManifest, UpdateProgress } from '../types/updater';
 
 export type SimpleUpdateState =
   | "idle"
@@ -65,6 +65,22 @@ export function useSimpleAutoUpdater(options: SimpleAutoUpdaterOptions = {}): [S
       checkForUpdates();
     }
   }, [options.autoCheckOnStart]);
+
+  useEffect(() => {
+    if (!window.rawalite?.updater?.onRestartRequired) {
+      return;
+    }
+
+    const dispose = window.rawalite.updater.onRestartRequired(() => {
+      setState('installing');
+      setInstallInitiated(true);
+      setError(null);
+    });
+
+    return () => {
+      dispose?.();
+    };
+  }, []);
 
   const checkForUpdates = useCallback(async () => {
     if (!window.rawalite?.updater) {

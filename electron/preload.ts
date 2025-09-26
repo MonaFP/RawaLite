@@ -6,7 +6,7 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 // Custom Updater API
 const updater = {
   check: () => ipcRenderer.invoke("updater:check"),
-  download: () => ipcRenderer.invoke("updater:download"),
+  download: (fileUrl?: string) => ipcRenderer.invoke("updater:download", fileUrl),
   install: (exePath?: string) => ipcRenderer.invoke("updater:install", exePath),
   installCustom: (options: any) => ipcRenderer.invoke("updater:install-custom", options),
   checkResults: () => ipcRenderer.invoke("updater:check-results"),
@@ -37,6 +37,11 @@ const updater = {
     ipcRenderer.on("updater:launcher-started", handler);
     return () => ipcRenderer.removeListener("updater:launcher-started", handler);
   },
+  onRestartRequired: (callback: (data: any) => void) => {
+    const handler = (_: IpcRendererEvent, data: any) => callback(data);
+    ipcRenderer.on("updater:restart-required", handler);
+    return () => ipcRenderer.removeListener("updater:restart-required", handler);
+  },
   onInstallCompleted: (callback: (data: any) => void) => {
     const handler = (_: IpcRendererEvent, data: any) => callback(data);
     ipcRenderer.on("updater:install-completed", handler);
@@ -44,6 +49,7 @@ const updater = {
   },
   offLauncherEvents: () => {
     ipcRenderer.removeAllListeners("updater:launcher-started");
+    ipcRenderer.removeAllListeners("updater:restart-required");
     ipcRenderer.removeAllListeners("updater:install-completed");
   }
 };

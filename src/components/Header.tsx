@@ -58,9 +58,12 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}) {
       }
     } else if (updateHookState.state === "downloaded") {
       // Update heruntergeladen - installiere
-      if (confirm("Update bereit zur Installation! App wird neu gestartet.")) {
+      if (confirm("Update bereit zur Installation! Der Installer wird gestartet und RawaLite bleibt offen. Bitte fuehre die Installation im Wizard durch und starte RawaLite danach manuell neu.")) {
         try {
           await updateActions.installAndRestart();
+          alert(
+            "Installer wurde gestartet. Bitte fuehre das Setup zu Ende und starte RawaLite danach manuell neu."
+          );
         } catch (error) {
           console.error("Install failed:", error);
           alert(

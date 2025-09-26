@@ -159,27 +159,30 @@ ensureLegacyLauncherPath();
 
 function scheduleQuitAfterLauncherStart(originTag: (message: string) => string) {
   if (!app.isPackaged) {
-    log.info(originTag("DEV-Modus - kein automatisches Beenden"));
+    log.info(originTag("DEV mode - no restart request"));
     return;
   }
+
+  const payload = {
+    message:
+      "Das Installationsprogramm wurde gestartet. Bitte schliessen Sie den Wizard ab und starten Sie RawaLite danach manuell neu.",
+    requestedAt: new Date().toISOString(),
+  };
+
+  log.info(
+    originTag(
+      "Installer gestartet - Anwendung bleibt geoeffnet und wartet auf manuellen Neustart."
+    )
+  );
 
   const windows = BrowserWindow.getAllWindows();
   windows.forEach((window) => {
     try {
-      window.webContents.send("updater:will-quit", {
-        message: "Anwendung wird für das Update beendet",
-      });
+      window.webContents.send("updater:restart-required", payload);
     } catch (notifyError) {
-      log.warn(originTag(`Renderer-Benachrichtigung fehlgeschlagen: ${notifyError}`));
+      log.warn(originTag(`Renderer notification failed: ${notifyError}`));
     }
   });
-
-  const quitDelayMs = 5000;
-  log.info(originTag(`App wird in ${quitDelayMs}ms für das Update beendet`));
-  setTimeout(() => {
-    log.info(originTag("App quit ausgelöst"));
-    app.quit();
-  }, quitDelayMs);
 }
 
 // === CUSTOM UPDATER IPC HANDLERS ===
@@ -275,7 +278,7 @@ ipcMain.handle("updater:check", async () => {
 });
 
 // 3️⃣ UPDATE:DOWNLOAD - Download update file with progress
-ipcMain.handle("updater:download", async () => {
+ipcMain.handle("updater:download", async (_evt, fileUrl?: string) => {
   try {
     if (!currentUpdateManifest) {
       throw new Error('Kein Update verfügbar. Bitte zuerst nach Updates suchen.');
@@ -290,10 +293,11 @@ ipcMain.handle("updater:download", async () => {
       throw new Error('Keine kompatible Installer-Datei gefunden.');
     }
     
-    log.info("🔽 [CUSTOM-UPDATER] Starting download:", nsisFile.url);
+    const downloadUrl = typeof fileUrl === 'string' && fileUrl.trim().length > 0 ? fileUrl : nsisFile.url;
+    log.info("🔽 [CUSTOM-UPDATER] Starting download:", downloadUrl);
     
     // Download file with progress tracking
-    const filePath = await downloadFileWithProgress(nsisFile.url, nsisFile.name, nsisFile.size);
+    const filePath = await downloadFileWithProgress(downloadUrl, nsisFile.name, nsisFile.size);
     
     // Verify SHA512 if provided
     if (nsisFile.sha512) {

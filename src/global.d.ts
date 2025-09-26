@@ -17,7 +17,7 @@ declare global {
       // Custom Updater API
       updater: {
         check: () => Promise<UpdateCheckResult>;
-        download: () => Promise<UpdateDownloadResult>;
+        download: (url?: string) => Promise<UpdateDownloadResult>;
         install: (exePath?: string) => Promise<UpdateInstallResult>;
         installCustom: (options: any) => Promise<InstallCustomResult>;
         checkResults: () => Promise<UpdateResultsCheckResult>;
@@ -26,6 +26,7 @@ declare global {
         onStatus: (callback: (status: UpdateStatus) => void) => () => void;
         offStatus: () => void;
         onLauncherStarted: (callback: (data: any) => void) => () => void;
+        onRestartRequired: (callback: (data: any) => void) => () => void;
         onInstallCompleted: (callback: (data: any) => void) => () => void;
         offLauncherEvents: () => void;
       };
