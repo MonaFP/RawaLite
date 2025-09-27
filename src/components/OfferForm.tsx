@@ -5,6 +5,7 @@ import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useLoading } from '../contexts/LoadingContext';
 import { ValidationError, handleError } from '../lib/errors';
+import { MoneyInput } from './common/MoneyInput';
 
 interface OfferFormProps {
   offer?: Offer;
@@ -357,17 +358,10 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                     />
                   </div>
                   <div>
-                    <input
-                      type="text"
+                    <MoneyInput
+                      value={item.unitPrice}
+                      onChangeNumber={(value) => updateLineItem(item.id, 'unitPrice', value)}
                       placeholder="Einzelpreis"
-                      value={item.unitPrice.toString()}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (value === '' || /^\d*[.,]?\d*$/.test(value)) {
-                          const numericValue = parseFloat(value.replace(',', '.')) || 0;
-                          updateLineItem(item.id, 'unitPrice', numericValue);
-                        }
-                      }}
                       style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
                     />
                   </div>
@@ -425,17 +419,10 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                         />
                       </div>
                       <div>
-                        <input
-                          type="text"
+                        <MoneyInput
+                          value={subItem.unitPrice}
+                          onChangeNumber={(value) => updateLineItem(subItem.id, 'unitPrice', value)}
                           placeholder="Einzelpreis"
-                          value={subItem.unitPrice.toString()}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === '' || /^\d*[.,]?\d*$/.test(value)) {
-                              const numericValue = parseFloat(value.replace(',', '.')) || 0;
-                              updateLineItem(subItem.id, 'unitPrice', numericValue);
-                            }
-                          }}
                           style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
                         />
                       </div>
