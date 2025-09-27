@@ -626,9 +626,11 @@ ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPa
   const runId = Date.now().toString(36);
   const tag = (msg: string) => `[LAUNCHER-INSTALL-CUSTOM ${runId}] ${msg}`;
 
-  const envPerMachine = parseEnvBoolean(process.env.RAWALITE_PER_MACHINE);
+  const envPerMachineRaw = process.env.RAWALITE_PER_MACHINE;
+  const envPerMachine =
+    envPerMachineRaw === undefined ? undefined : parseEnvBoolean(envPerMachineRaw);
   const perMachineRequested = perMachine ?? envPerMachine;
-  const shouldElevate = elevate ?? perMachineRequested;
+  const shouldElevate = elevate ?? (perMachineRequested ?? true);
   const quitDelayMs = Number.isFinite(requestedQuitDelayMs as number)
     ? Math.max(0, Number(requestedQuitDelayMs))
     : 1000;
@@ -690,7 +692,7 @@ ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPa
       status: "install-started",
       message: shouldElevate
         ? "Update-Installer mit Administratorrechten gestartet. Bitte UAC bestaetigen."
-        : "Update-Installer gestartet. Bitte folgen Sie dem NSIS-Assistenten.",
+        : "Update-Installer ohne Administratorrechte gestartet. Bitte folgen Sie dem NSIS-Assistenten.",
       installerPath: resolvedInstallerPath,
       perMachine: perMachineRequested,
       runId,
@@ -798,7 +800,7 @@ ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPa
               success: true,
               message: shouldElevate
                 ? "Installation gestartet. Bitte die UAC-Anfrage bestaetigen."
-                : "Installation gestartet. Der Assistent ist sichtbar.",
+                : "Installation gestartet. Der Assistent ist sichtbar (ohne Administratorrechte).",
               launcherOutput: launcherOutput.trim(),
               perMachine: perMachineRequested,
               installerPath: resolvedInstallerPath,
@@ -815,7 +817,7 @@ ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPa
             exitCode: code,
             message: shouldElevate
               ? "Launcher gestartet - Installation laeuft mit Administratorrechten."
-              : "Launcher gestartet - Installation laeuft ohne UAC.",
+              : "Launcher gestartet - Installation laeuft ohne Administratorrechte.",
             filePath: resolvedInstallerPath,
             runId,
             perMachine: perMachineRequested,
