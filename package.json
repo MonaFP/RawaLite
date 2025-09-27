@@ -47,11 +47,12 @@
     "ipc:validate": "node scripts/validate-ipc-types.mjs",
     "guard:external": "git grep -nE \"shell\\.openExternal|window\\.open|target=\\\"_blank\\\"\" src/ electron/ templates/ && echo \"FOUND EXTERNALS - CHECK ABOVE\" || echo \"NO EXTERNALS FOUND\"",
     "guard:pdf": "git grep -nE \"<link[^>]+https?://|<script[^>]+https?://|<img[^>]+https?://\" templates || echo \"NO EXTERNAL ASSETS\"",
+    "guard:csp": "git grep -nE \"\\\\bunsafe-eval\\\\b(?!.*wasm)\" -- ':!vite.config.mts' ':!docs' ':!README*' || true",
     "guard:templates": "node scripts/guard-template-migrations.mjs",
     "guard:backup": "node scripts/guard-backup-storage.mjs",
     "guard:release:assets": "node scripts/guard-release-assets.mjs",
     "guard:build:freshness": "node scripts/validate-build-freshness.mjs",
-    "precommit": "pnpm typecheck && pnpm lint && pnpm guard:external && pnpm guard:pdf && pnpm guard:templates && pnpm guard:backup && pnpm ipc:validate && pnpm version:check && pnpm guard:build:freshness",
+    "precommit": "pnpm typecheck && pnpm lint && pnpm guard:external && pnpm guard:pdf && pnpm guard:templates && pnpm guard:backup && pnpm ipc:validate && pnpm version:check && pnpm guard:build:freshness && pnpm guard:csp",
     "postinstall": "node -e \"require('fs').mkdirSync('public',{recursive:true});require('fs').cpSync(require.resolve('sql.js/dist/sql-wasm.wasm'),'public/sql-wasm.wasm',{force:true})\"",
     "cleanup:repo": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/cleanup-repository-interactive.ps1"
   },

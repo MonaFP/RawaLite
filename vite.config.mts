@@ -9,18 +9,9 @@ import { fileURLToPath, URL } from 'node:url';
 // - PROD: keine Header von Vite -> strenge CSP aus index.html greift
 // -------------------------------------------------------------
 
-export default defineConfig(({ mode }) => {
-  const isDev = mode === 'development';
-
-  // DEV-CSP (nur das Nötigste für HMR/WS; keine externen Domains)
-  const devCsp = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-eval'",        // nötig für HMR in DEV
-    "connect-src 'self' ws: http://localhost:*", // HMR/WebSocket
-    "img-src 'self' data: blob:",
-    "style-src 'self' 'unsafe-inline'",
-    "font-src 'self' data:"
-  ].join('; ');
+export default defineConfig(() => {
+  // Zentrale CSP-Konfiguration (identisch zu electron/main.ts)
+  const CSP_BASE = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:";
 
   return {
     plugins: [
@@ -28,12 +19,14 @@ export default defineConfig(({ mode }) => {
       // 👉 weitere Plugins hier einfügen (falls vorhanden)
     ],
 
-    // ---- DEV-Server-Header: nur im Development-Mode setzen ----
+    // ---- DEV-Server-Header: einheitliche CSP-Konfiguration ----
     server: {
       // host/port optional anpassen
       // host: true,
       // port: 5173,
-      headers: isDev ? { 'Content-Security-Policy': devCsp } : {}
+      headers: {
+        'Content-Security-Policy': CSP_BASE
+      }
     },
 
     // ---- Preview-Server (optional) ----

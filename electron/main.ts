@@ -36,6 +36,16 @@ import { initializeLogoSystem } from "./logo";
 // Import update system types
 import type { UpdateManifest, UpdateProgress } from "../src/types/updater";
 
+// 🛡️ Zentrale CSP-Konfiguration (einheitlich für alle Kontexte)
+const CSP_BASE = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
+  "connect-src 'self'",
+  "img-src 'self' data: blob:",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:"
+].join('; ');
+
 // === SINGLE INSTANCE LOCK ===
 const gotTheLock = app.requestSingleInstanceLock();
 
@@ -1407,23 +1417,12 @@ function createWindow() {
     },
   });
 
-  // CSP-Header für WebAssembly-Unterstützung setzen
+  // CSP-Header für WebAssembly-Unterstützung setzen (zentrale Konfiguration)
   win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': [
-          "default-src 'self'; " +
-          "script-src 'self' 'wasm-unsafe-eval'; " +  // WASM-Unterstützung
-          "style-src 'self' 'unsafe-inline'; " +      // CSS-Unterstützung
-          "img-src 'self' data: blob:; " +             // Bilder & Daten-URLs
-          "font-src 'self' data:; " +                  // Web-Fonts
-          "connect-src 'self' blob:; " +               // Fetch/XHR
-          "worker-src 'self' blob:; " +                // Web Workers
-          "child-src 'self'; " +                       // Frames
-          "object-src 'none'; " +                      // Plugins blockieren
-          "base-uri 'self';"                           // Base-URI beschränken
-        ]
+        'Content-Security-Policy': [CSP_BASE]
       }
     });
   });
@@ -1856,23 +1855,12 @@ ipcMain.handle(
         },
       });
 
-      // CSP-Header für WebAssembly-Unterstützung setzen
+      // CSP-Header für WebAssembly-Unterstützung setzen (zentrale Konfiguration)
       pdfWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
         callback({
           responseHeaders: {
             ...details.responseHeaders,
-            'Content-Security-Policy': [
-              "default-src 'self'; " +
-              "script-src 'self' 'wasm-unsafe-eval'; " +  // WASM-Unterstützung
-              "style-src 'self' 'unsafe-inline'; " +      // CSS-Unterstützung
-              "img-src 'self' data: blob:; " +             // Bilder & Daten-URLs
-              "font-src 'self' data:; " +                  // Web-Fonts
-              "connect-src 'self' blob:; " +               // Fetch/XHR
-              "worker-src 'self' blob:; " +                // Web Workers
-              "child-src 'self'; " +                       // Frames
-              "object-src 'none'; " +                      // Plugins blockieren
-              "base-uri 'self';"                           // Base-URI beschränken
-            ]
+            'Content-Security-Policy': [CSP_BASE]
           }
         });
       });
