@@ -44,8 +44,20 @@ export default defineConfig(({ mode }) => {
     // ---- Build-Optionen (belasse schlank; electron handled bundling) ----
     build: {
       target: 'esnext',
-      // outDir, sourcemap etc. falls nötig hier ergänzen
+      // Relative paths for Electron compatibility
+      assetsDir: 'assets',
+      rollupOptions: {
+        output: {
+          // Ensure relative paths in generated HTML
+          assetFileNames: 'assets/[name]-[hash][extname]',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          entryFileNames: 'assets/[name]-[hash].js'
+        }
+      }
     },
+
+    // ---- Base path for Electron ----
+    base: './',
 
     // ---- Resolve/Aliasse (TypeScript path mapping) ----
     resolve: {

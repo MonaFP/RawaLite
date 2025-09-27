@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Offer, OfferLineItem, Customer, Package } from '../persistence/adapter';
 import { usePersistence } from '../contexts/PersistenceContext';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';

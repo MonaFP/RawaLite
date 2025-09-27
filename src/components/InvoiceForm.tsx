@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Invoice, InvoiceLineItem, Customer, Offer } from '../persistence/adapter';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { usePersistence } from '../contexts/PersistenceContext';

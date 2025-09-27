@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { CustomColorSettings } from '../lib/settings';
 import { defaultCustomColors } from '../lib/themes';
 
