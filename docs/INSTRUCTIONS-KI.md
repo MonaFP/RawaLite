@@ -62,3 +62,82 @@ Immer strikt befolgen, keine Abweichungen.
 - **Nur Regeln anwenden**, keine Workarounds vorschlagen.  
 - Änderungen immer in Einklang mit den Master-Dokumenten in `/docs`.  
 - Keine Duplikate oder widersprüchlichen Aussagen erzeugen.  
+
+---
+
+# 📄 Patch für `.github/copilot-instructions.md`
+
+**Einfügeposition:** Am Ende, neuer Abschnitt **„Release-Workflow (Safe Edition)“**
+
+````markdown
+## 🚀 Release-Workflow (Safe Edition, Zero-Interaction)
+
+Für Releases gilt ein **vollständig automatisierter, nicht-interaktiver Ablauf**.  
+Der KI-Assistent **führt alle Schritte selbstständig aus**, ohne Nachfragen oder To-Dos an den Benutzer.  
+
+### Grundprinzipien
+- **PNPM-only** – keine `npm`/`yarn`.  
+- **Zero-Interaction** – Defaults sind fix (Patch-Bump, Windows-Build).  
+- **Guards & Tests** – jedes Mal zwingend, bevor Version/Build/Publish ausgeführt wird.  
+- **GitHub Release** – nur über `electron-builder`/CI, keine manuelle Assets.  
+- **Safe Edition** – keine Abkürzungen, kein Überspringen von Schritten.  
+
+### Standard-Ablauf (immer befolgen)
+
+1. **Install (frozen):**
+   ```powershell
+   pnpm install --frozen-lockfile
+````
+
+2. **Caches & Artefakte leeren:**
+
+   ```powershell
+   @("dist","out","build","release","coverage",".vite","node_modules\.vite",".cache",".electron-builder","tests\test-results") | % { if (Test-Path $_) { Remove-Item -Recurse -Force $_ } }
+   ```
+
+3. **Guards & Tests (Zero-Tolerance):**
+
+   ```powershell
+   pnpm typecheck
+   pnpm lint
+   pnpm guard:external
+   pnpm guard:pdf
+   pnpm validate:ipc
+   pnpm validate:versions
+   pnpm guard:todos
+   pnpm validate:esm
+   pnpm test --run
+   ```
+
+4. **Version bump (Patch default):**
+
+   ```powershell
+   pnpm version patch -m "chore(release): v%s"
+   git push
+   git push --follow-tags
+   ```
+
+5. **Build & Publish (Windows):**
+
+   ```powershell
+   pnpm release:publish || pnpm exec electron-builder --win --publish always
+   ```
+
+6. **Asset-Guards:**
+
+   ```powershell
+   pnpm guard:release:assets
+   ```
+
+7. **Release-Verifikation (GitHub):**
+
+   ```powershell
+   gh release view v$(node -e "console.log(require('./package.json').version)") --json name,tagName,assets
+   ```
+
+### Ergebnis
+
+* KI gibt am Ende **Version, Tag, Release-Status und Artefakte** aus.
+* Falls ein Schritt fehlschlägt → **Abbruch + Diagnose** (keine Nachfragen).
+* **Immer strikt nach Doku**, keine eigenen Workflows.
+
