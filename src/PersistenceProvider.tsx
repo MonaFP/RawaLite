@@ -1,7 +1,7 @@
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { PersistenceContext } from "./contexts/PersistenceContext";
-import type { PersistenceAdapter } from "./persistence/adapter";
-import { SQLiteAdapter } from "./adapters/SQLiteAdapter";
+import type { PersistenceAdapter } from "./persistence";
+import { createAdapter } from "./persistence";
 
 interface Props {
   children: ReactNode;
@@ -13,18 +13,14 @@ export default function PersistenceProvider({ children, mode = "sqlite" }: Props
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string>();
 
-  const instance = useMemo(() => {
-    if (mode === "sqlite") return new SQLiteAdapter();
-    return new SQLiteAdapter();
-  }, [mode]);
-
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        await instance.ready();
+        // Use centralized adapter creation - already ready()
+        const adapterInstance = await createAdapter();
         if (!active) return;
-        setAdapter(instance);
+        setAdapter(adapterInstance);
         setReady(true);
       } catch (e: any) {
         setError(String(e?.message ?? e));
@@ -33,7 +29,7 @@ export default function PersistenceProvider({ children, mode = "sqlite" }: Props
     return () => {
       active = false;
     };
-  }, [instance]);
+  }, [mode]);
 
   return (
     <PersistenceContext.Provider value={{ adapter, ready, error }}>

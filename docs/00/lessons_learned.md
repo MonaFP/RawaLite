@@ -35,9 +35,9 @@ Jeder Eintrag folgt diesem Schema:
 - Jeder Versuch **muss eingetragen** werden.  
 - **Ergebnisse dürfen nicht geraten** werden → immer Entwickler fragen.  
 - Nur Fakten, keine Spekulationen.  
-- Keine Redundanzen → Eintrag referenziert ggf. vorherige Versuche.
+- Keine Redundanzen → Eintrag referenziert ggf. vorherige Versuche.  
+- **Vorgehen:** Immer dem [Debugging-Workflow](debugging.md) folgen (Problem definieren, Hypothese aufstellen, Test durchführen etc.).
 
----
 
 ## 📌 Status
 - [ ] Offene Fragen: ___  

@@ -1,11 +1,11 @@
-import { useSettings } from "../contexts/SettingsContext";
 import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
 import { useTimesheets } from "../hooks/useTimesheets";
 
 export default function HeaderWidgets() {
-  const { settings, loading } = useSettings();
-  const { offers } = useOffers();
+  const settings = { companyData: { logo: null, name: null } };
+  const loading = false;
+    const { offers } = useOffers();
   const { invoices } = useInvoices();
   const { timesheets } = useTimesheets();
 

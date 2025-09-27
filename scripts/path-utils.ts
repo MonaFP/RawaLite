@@ -46,10 +46,10 @@ export function getTempStandalone(): string {
 /**
  * Universal Path Helper - versucht Electron zuerst, dann Fallback
  */
-export function getUserDataDirUniversal(): string {
+export async function getUserDataDirUniversal(): Promise<string> {
   try {
     // Versuche Electron-Kontext
-    const { app } = require('electron');
+    const { app } = await import('electron');
     return app.getPath('userData');
   } catch (e) {
     // Fallback für Standalone-Scripts

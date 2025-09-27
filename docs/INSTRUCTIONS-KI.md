@@ -42,6 +42,8 @@ Immer strikt befolgen, keine Abweichungen.
   - Sidebar 240 px, kein FOUC.  
   - Farbpalette fix, darf nie geändert werden.
  **Testergebnisse (`test-results`) liegen in `/tests/`**, nicht im Projekt-Root. In der Dokumentation dürfen sie nur referenziert werden, nicht dupliziert.
+ - Debugging erfolgt ausschließlich nach dem 
+  [Systematischen Problemlösungsprozess (Safe Edition)](../development/DEBUGGING_STANDARDS.md).
 ---
 
 ## 🚫 Verbotene Muster (niemals generieren)

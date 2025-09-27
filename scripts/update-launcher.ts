@@ -11,8 +11,11 @@ import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { getUserDataDirUniversal } from './path-utils';
 
+// Main async function
+(async () => {
+
 // Verwende universal path helper mit Electron-Fallback
-const USER_DATA_PATH = getUserDataDirUniversal();
+const USER_DATA_PATH = await getUserDataDirUniversal();
 
 // Stelle sicher, dass der Log-Ordner existiert
 try {
@@ -22,7 +25,7 @@ try {
 }
 
 // Logge in eine Datei im userData-Verzeichnis
-const LOG_PATH = join(USER_DATA_PATH, `update-launcher-${Date.now()}.log`);
+const LOG_PATH = join(await getUserDataDirUniversal(), `update-launcher-${Date.now()}.log`);
 
 function log(message: string): void {
   const timestamp = new Date().toISOString();
@@ -162,7 +165,7 @@ async function launchInstaller(): Promise<boolean> {
   try {
     // Standardmethode: Direkter Start mit exec (nicht spawn)
     return new Promise((resolve) => {
-      exec(`"${installerPath}"`, (error, stdout, stderr) => {
+      exec(`"${installerPath}"`, (error, _stdout, _stderr) => {
         if (error) {
           log(`⚠️ Standard-Start fehlgeschlagen: ${error.message}`);
           log('🔄 Versuche Fallback mit PowerShell erhöhte Rechte...');
@@ -232,3 +235,6 @@ waitAndLaunchInstaller().catch(error => {
   log(`❌ Unerwarteter Fehler: ${error}`);
   process.exit(1);
 });
+
+})(); // End of async IIFE
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import {useState, useEffect } from 'react';
 import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
 import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
@@ -14,7 +14,7 @@ export interface TimesheetActivitiesEditorProps {
 export default function TimesheetActivitiesEditor({ timesheet, onUpdate, onCancel }: TimesheetActivitiesEditorProps) {
   const [activities, setActivities] = useState<TimesheetActivity[]>(timesheet.activities);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { activities: activityTypes, getActiveActivities, getActivityById } = useActivities();
+  const { getActiveActivities } = useActivities();
   const { showError, showSuccess } = useNotifications();
   const { settings } = useUnifiedSettings();
 
@@ -56,10 +56,7 @@ export default function TimesheetActivitiesEditor({ timesheet, onUpdate, onCance
       
       if (field === 'activityId') {
         activity.activityId = value;
-        const activityData = getActivityById(value);
-        if (activityData) {
-          activity.hourlyRate = activityData.defaultHourlyRate;
-        }
+                
       } else {
         (activity as any)[field] = value;
       }
@@ -162,8 +159,7 @@ export default function TimesheetActivitiesEditor({ timesheet, onUpdate, onCance
 
           {/* Table Rows */}
           {activities.map((activity, index) => {
-            const activityData = getActivityById(activity.activityId);
-            return (
+                        return (
               <div 
                 key={activity.id || index} 
                 style={{ 
@@ -373,3 +369,8 @@ export default function TimesheetActivitiesEditor({ timesheet, onUpdate, onCance
     </div>
   );
 }
+
+
+
+
+

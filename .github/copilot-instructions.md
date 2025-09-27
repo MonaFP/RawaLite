@@ -121,3 +121,6 @@ Die folgenden Muster sind **streng verboten**:
 - [ ] Nummernkreise atomar, Reset optional, Tests vorhanden.  
 - [ ] Theme persistiert, Sidebar 240 px, kein FOUC, Farbpalette unverändert.  
 - [ ] Keine verbotenen Patterns implementiert.  
+👉 Bei komplexeren Problemen ist der dokumentierte
+[Systematische Debugging-Standard](../docs/development/DEBUGGING_STANDARDS.md)
+zwingend einzuhalten.

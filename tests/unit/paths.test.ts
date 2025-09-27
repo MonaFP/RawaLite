@@ -32,6 +32,10 @@ describe('Database Path Management', () => {
   const mockUserDataPath = path.join(tmpdir(), 'rawalite-test-userdata');
   
   beforeEach(() => {
+    // ✅ Deterministische Zeit für Timestamp-Tests
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-01-01T10:00:00.000Z'));
+    
     // Mock app.getPath to return our test directory
     vi.mocked(mockApp.getPath).mockReturnValue(mockUserDataPath);
     
@@ -46,6 +50,9 @@ describe('Database Path Management', () => {
     if (fs.existsSync(mockUserDataPath)) {
       fs.rmSync(mockUserDataPath, { recursive: true, force: true });
     }
+    
+    // ✅ Restore real timers
+    vi.useRealTimers();
   });
 
   describe('Path Generation', () => {
@@ -76,7 +83,8 @@ describe('Database Path Management', () => {
 
     it('should use current time for timestamped backup when no timestamp provided', () => {
       const backupDir = getTimestampedBackupDir();
-      expect(backupDir).toMatch(new RegExp(`^${path.join(mockUserDataPath, 'backup', 'migration-\\d{4}-\\d{2}-\\d{2}T')}`));
+      // ✅ Deterministisch mit FakeTimer
+      expect(backupDir).toBe(path.join(mockUserDataPath, 'backup', 'migration-2025-01-01T10-00-00-000Z'));
     });
   });
 
@@ -126,6 +134,10 @@ describe('Database Migration Simulation', () => {
   const mockUserDataPath = path.join(tmpdir(), 'rawalite-migration-test');
   
   beforeEach(() => {
+    // ✅ Deterministische Zeit auch für Migration-Tests
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-01-01T10:00:00.000Z'));
+    
     vi.mocked(mockApp.getPath).mockReturnValue(mockUserDataPath);
     
     if (fs.existsSync(mockUserDataPath)) {
@@ -138,6 +150,9 @@ describe('Database Migration Simulation', () => {
     if (fs.existsSync(mockUserDataPath)) {
       fs.rmSync(mockUserDataPath, { recursive: true, force: true });
     }
+    
+    // ✅ Restore real timers
+    vi.useRealTimers();
   });
 
   it('should handle fresh installation scenario', () => {

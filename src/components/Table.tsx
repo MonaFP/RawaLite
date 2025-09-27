@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo, Fragment, type ReactNode } from 'react';
 
 export interface Column<T> {
   key: keyof T;
   header: string;
-  render?: (row: T) => React.ReactNode;
+  render?: (row: T) => ReactNode;
   width?: string | number;
   sortable?: boolean;
   visible?: boolean;
@@ -18,7 +18,7 @@ export interface TableProps<T> {
   columns: Column<T>[];
   data: T[];
   emptyMessage?: string;
-  expandableRows?: (row: T) => React.ReactNode;
+  expandableRows?: (row: T) => ReactNode;
   
   // Neue Props für erweiterte Funktionalität
   sortable?: boolean;
@@ -257,7 +257,7 @@ export function Table<T extends { id: number }>({
               </td>
             </tr>
           ) : paginatedData.map((row, i) => (
-            <React.Fragment key={i}>
+            <Fragment key={i}>
               <tr>
                 {expandableRows && (
                   <td>
@@ -293,7 +293,7 @@ export function Table<T extends { id: number }>({
                   </td>
                 </tr>
               )}
-            </React.Fragment>
+            </Fragment>
           ))}
         </tbody>
       </table>
@@ -347,3 +347,5 @@ export function Table<T extends { id: number }>({
     </div>
   );
 }
+
+

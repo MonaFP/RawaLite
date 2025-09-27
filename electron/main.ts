@@ -71,15 +71,14 @@ log.info("App Name:", app.getName());
 
 // 🔍 DATABASE PATH DEBUG: Log current paths for diagnosis
 log.info("=== DATABASE PATH DEBUG ===");
-log.info("userData Path:", app.getPath("userData"));
+log.info("userData Path:", PATHS.userData());
 
 // Import and log database paths
 import("../src/lib/paths").then(({ getDbPath, getLegacyDbPath }) => {
   log.info("Current DB Path:", getDbPath());
   log.info("Legacy DB Path:", getLegacyDbPath());
   
-  // Check existence of both paths
-  const fs = require('fs');
+  // Check existence of both paths (fs already imported at top)
   log.info("Current DB exists:", fs.existsSync(getDbPath()));
   log.info("Legacy DB exists:", fs.existsSync(getLegacyDbPath()));
   
@@ -95,7 +94,7 @@ log.info("Platform:", process.platform, process.arch);
 log.info("Electron Version:", process.versions.electron);
 log.info("Node Version:", process.versions.node);
 log.info("App Path:", app.getAppPath());
-log.info("User Data Path:", app.getPath("userData"));
+log.info("User Data Path:", PATHS.userData());
 log.info("Update Manifest URL:", "https://api.github.com/repos/MonaFP/RawaLite/releases/latest");
 
 // === CUSTOM UPDATER STATE MANAGEMENT ===
@@ -1147,8 +1146,8 @@ async function verifyFileSha512(filePath: string, expectedSha512Base64: string):
 
 // PDF Theme Integration Import
 // Note: Import path needs compilation compatibility
-const _pdfThemesPath = path.join(__dirname, "..", "src", "lib", "pdfThemes.ts");  // Referenced for future PDF theme customization
-void _pdfThemesPath;
+  // Referenced for future PDF theme customization
+// void _pdfThemesPath;
 let injectThemeIntoTemplate: any = null;
 
 // Dynamic import for theme integration (compiled compatibility)

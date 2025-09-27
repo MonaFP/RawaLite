@@ -16,6 +16,8 @@ export interface AppAPI {
   restart: () => Promise<void>;
   getVersion: () => Promise<string>;
   exportLogs: () => Promise<LogExportResult>;
+  // ✅ Fehlende Handler-Types hinzugefügt
+  restartAfterUpdate: () => Promise<void>;
 }
 
 export interface LogExportResult {
@@ -99,6 +101,10 @@ export interface UpdaterAPI {
   startDownload: () => Promise<UpdateDownloadResult>;
   installAndRestart: () => Promise<UpdateInstallResult>;
   getVersion: () => Promise<UpdateVersionResult>;
+  // ✅ Fehlende Handler-Types hinzugefügt
+  download: (fileUrl?: string) => Promise<UpdateDownloadResult>;
+  installCustom: (options: any) => Promise<UpdateInstallResult>;
+  checkResults: () => Promise<UpdateCheckResult>;
   onUpdateMessage: (callback: (event: IpcRendererEvent, data: UpdateMessage) => void) => void;
   removeUpdateMessageListener: (callback: (event: IpcRendererEvent, data: UpdateMessage) => void) => void;
 }
@@ -203,7 +209,14 @@ export type IPCChannels =
   | 'app:restart'
   | 'app:getVersion'
   | 'app:exportLogs'
+  | 'app:restart-after-update'
   | 'shell:openExternal'
+  | 'updater:check'
+  | 'updater:download'
+  | 'updater:install'
+  | 'updater:install-custom'
+  | 'updater:check-results'
+  | 'version:get'
   | 'updater:check-for-updates'
   | 'updater:start-download'
   | 'updater:install-and-restart'
@@ -225,7 +238,16 @@ export interface IPCHandlers {
   'app:restart': () => Promise<void>;
   'app:getVersion': () => Promise<string>;
   'app:exportLogs': () => Promise<LogExportResult>;
+  'app:restart-after-update': () => Promise<void>;
   'shell:openExternal': (url: string) => Promise<void>;
+  // ✅ Fehlende Handler-Types hinzugefügt
+  'updater:check': () => Promise<UpdateCheckResult>;
+  'updater:download': (fileUrl?: string) => Promise<UpdateDownloadResult>;
+  'updater:install': () => Promise<UpdateInstallResult>;
+  'updater:install-custom': (options: any) => Promise<UpdateInstallResult>;
+  'updater:check-results': () => Promise<UpdateCheckResult>;
+  'version:get': () => Promise<UpdateVersionResult>;
+  // Bestehende Handler
   'updater:check-for-updates': () => Promise<UpdateCheckResult>;
   'updater:start-download': () => Promise<UpdateDownloadResult>;
   'updater:install-and-restart': () => Promise<UpdateInstallResult>;

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import {useEffect, useState } from 'react';
 import { useNotifications } from "../contexts/NotificationContext";
 import { useLoading } from "../contexts/LoadingContext";
 import { ValidationError, handleError } from "../lib/errors";
 import { useCustomers } from "../hooks/useCustomers";
 import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
-import type { TimesheetActivity } from "../persistence/adapter";
+// TimesheetActivity import removed
 
 export interface BasicTimesheetFormValues {
   customerId: number | '';
@@ -36,7 +36,7 @@ export default function BasicTimesheetForm({ initial, onSubmit, onCancel, submit
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { customers } = useCustomers();
   const { showError, showSuccess } = useNotifications();
-  const { withLoading } = useLoading();
+  const { /* withLoading */ } = useLoading();
   const { settings } = useUnifiedSettings();
 
   useEffect(() => { 
@@ -332,3 +332,7 @@ export default function BasicTimesheetForm({ initial, onSubmit, onCancel, submit
     </div>
   );
 }
+
+
+
+

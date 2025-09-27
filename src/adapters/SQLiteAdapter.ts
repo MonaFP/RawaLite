@@ -1,6 +1,6 @@
 import { PersistenceAdapter, Settings, Customer, Package, Offer, Invoice, Timesheet, Activity, TimesheetActivity } from "../persistence/adapter";
 import { getDB, all, run, withTx } from "../persistence/sqlite/db";
-import type { ListPreferences, EntityKey, ListPreference, defaultListPreferences, mergeWithDefaults } from "../lib/listPreferences";
+import type { ListPreferences, EntityKey, ListPreference } from "../lib/listPreferences";
 
 function nowIso() {
   return new Date().toISOString();
@@ -650,7 +650,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
       
       // Insert activities
       for (const activity of data.activities) {
-        await this._createTimesheetActivityInternal({
+        await this.createTimesheetActivity({
           timesheetId,
           activityId: activity.activityId,
           hours: activity.hours,
@@ -705,7 +705,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         
         // Insert new activities
         for (const activity of patch.activities) {
-          await this._createTimesheetActivityInternal({
+          await this.createTimesheetActivity({
             timesheetId: id,
             activityId: activity.activityId,
             hours: activity.hours,
@@ -789,19 +789,9 @@ export class SQLiteAdapter implements PersistenceAdapter {
     return all<TimesheetActivity>(`SELECT * FROM timesheet_activities WHERE timesheetId = ? ORDER BY id`, [timesheetId]);
   }
 
-  private async _createTimesheetActivityInternal(data: Omit<TimesheetActivity, "id">): Promise<TimesheetActivity> {
-    run(
-      `INSERT INTO timesheet_activities (timesheetId, activityId, hours, hourlyRate, total, description, position) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [data.timesheetId, data.activityId, data.hours, data.hourlyRate, data.total, data.description || null, data.position || null]
-    );
-    
-    const rows = all<TimesheetActivity>(`SELECT * FROM timesheet_activities WHERE rowid = last_insert_rowid()`);
-    return rows[0];
-  }
-
   async createTimesheetActivity(data: Omit<TimesheetActivity, "id">): Promise<TimesheetActivity> {
     return withTx(async () => {
-      return this._createTimesheetActivityInternal(data);
+      return this.createTimesheetActivity(data);
     });
   }
 
@@ -962,3 +952,4 @@ export class SQLiteAdapter implements PersistenceAdapter {
     });
   }
 }
+

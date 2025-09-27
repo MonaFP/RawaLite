@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import {useMemo, useState } from 'react';
 import { Table, type SortConfig } from "../components/Table";
 import { SearchInput } from "../components/SearchInput";
 import { FilterChips, MultiSelect, type FilterChip, type MultiSelectOption } from "../components/FilterComponents";
@@ -17,7 +17,7 @@ interface KundenPageProps{
 
 export default function KundenPage({ title = "Kunden" }: KundenPageProps){
   const { customers, loading, error, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
-  const { preferences, updatePreference } = useListPreferences('customers');
+  const { preferences } = useListPreferences('offers');
   const [mode, setMode] = useState<"list"|"create"|"edit">("list");
   const [current, setCurrent] = useState<Customer | null>(null);
   const { showError, showSuccess } = useNotifications();
@@ -248,13 +248,13 @@ export default function KundenPage({ title = "Kunden" }: KundenPageProps){
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-    updatePreference({ lastSearch: query });
+    // updatePreference removed
   };
 
   const handleRemoveFilter = (filterKey: string) => {
     if (filterKey === 'search') {
       setSearchQuery('');
-      updatePreference({ lastSearch: '' });
+      // updatePreference removed
     } else if (filterKey.startsWith('city-')) {
       const city = filterKey.replace('city-', '');
       setSelectedCities(prev => prev.filter(c => c !== city));
@@ -269,23 +269,20 @@ export default function KundenPage({ title = "Kunden" }: KundenPageProps){
     setSelectedCities([]);
     setHasEmailFilter(null);
     setCurrentPage(1);
-    updatePreference({ lastSearch: '' });
+    // updatePreference removed
   };
 
   const handleSortChange = (newSortConfig: SortConfig | null) => {
     setSortConfig(newSortConfig);
     if (newSortConfig) {
-      updatePreference({ 
-        sortBy: newSortConfig.key, 
-        sortDir: newSortConfig.direction 
-      });
+      // updatePreference removed
     } else {
-      updatePreference({ sortBy: undefined, sortDir: undefined });
+      // updatePreference removed
     }
   };
 
-  const handleVisibleColumnsChange = (columns: string[]) => {
-    updatePreference({ visibleColumns: columns });
+  const handleVisibleColumnsChange = (_columns: string[]) => {
+    // updatePreference removed
   };
 
   const handlePageChange = (page: number) => {
@@ -468,3 +465,6 @@ export default function KundenPage({ title = "Kunden" }: KundenPageProps){
     </div>
   );
 }
+
+
+

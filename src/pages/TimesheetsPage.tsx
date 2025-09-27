@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import {useState, useMemo } from 'react';
 import { Table } from "../components/Table";
 import { useTimesheets } from "../hooks/useTimesheets";
 import { useCustomers } from "../hooks/useCustomers";
@@ -648,3 +648,5 @@ export default function TimesheetsPage() {
     </div>
   );
 }
+
+

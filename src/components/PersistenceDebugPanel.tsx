@@ -1,5 +1,5 @@
 // Debug Component für Persistence-Tests
-import React, { useState, useEffect } from 'react';
+import {useState, useEffect } from 'react';
 import { useCustomers } from '../hooks/useCustomers';
 
 export function PersistenceDebugPanel() {

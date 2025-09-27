@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import {useEffect, useState } from 'react';
 import { useNotifications } from "../contexts/NotificationContext";
 import { useLoading } from "../contexts/LoadingContext";
 import { ValidationError, handleError } from "../lib/errors";
 import { useCustomers } from "../hooks/useCustomers";
 import { useActivities } from "../hooks/useActivities";
 import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
-import type { Timesheet, TimesheetActivity } from "../persistence/adapter";
+import type { /* Timesheet, */ TimesheetActivity } from "../persistence/adapter";
 import { MoneyInput } from './common/MoneyInput';
 
 export interface TimesheetFormValues {
@@ -39,9 +39,9 @@ export default function TimesheetForm({ initial, onSubmit, onCancel, submitLabel
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { customers } = useCustomers();
-  const { activities, getActiveActivities, getActivityById } = useActivities();
+  const { getActiveActivities } = useActivities();
   const { showError, showSuccess } = useNotifications();
-  const { withLoading } = useLoading();
+  const { /* withLoading */ } = useLoading();
   const { settings } = useUnifiedSettings();
 
   useEffect(() => { 
@@ -104,10 +104,7 @@ export default function TimesheetForm({ initial, onSubmit, onCancel, submitLabel
       if (field === 'activityId') {
         activity.activityId = value;
         // Update hourly rate to default when activity changes
-        const activityData = getActivityById(value);
-        if (activityData) {
-          activity.hourlyRate = activityData.defaultHourlyRate;
-        }
+                
       } else {
         (activity as any)[field] = value;
       }
@@ -385,8 +382,7 @@ export default function TimesheetForm({ initial, onSubmit, onCancel, submitLabel
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {values.activities.map((activity, index) => {
-                  const activityData = getActivityById(activity.activityId);
-                  return (
+                                    return (
                     <div key={activity.id || index} style={{ 
                       background: "rgba(255,255,255,0.05)", 
                       border: "1px solid rgba(255,255,255,.2)", 
@@ -624,3 +620,9 @@ export default function TimesheetForm({ initial, onSubmit, onCancel, submitLabel
     </div>
   );
 }
+
+
+
+
+
+

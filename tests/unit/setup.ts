@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Mock window.rawalite for tests
 Object.defineProperty(window, 'rawalite', {
@@ -22,7 +23,6 @@ Object.defineProperty(window, 'rawalite', {
 (global as any).electronAPI = {
   persistenceExecute: vi.fn(),
 };
-import { vi } from 'vitest';
 
 // Mock window.matchMedia (used by some components)
 Object.defineProperty(window, 'matchMedia', {

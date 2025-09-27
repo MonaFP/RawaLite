@@ -12,7 +12,7 @@
  * - Strict IPC typing and error handling
  */
 
-import type { BackupCreateOptions, BackupCreateResult, BackupListResult, BackupPruneOptions, BackupPruneResult } from '../types/ipc';
+import type { BackupCreateOptions, BackupCreateResult, BackupPruneOptions, BackupPruneResult } from '../types/ipc';
 import { LoggingService } from './LoggingService';
 
 export interface BackupInfo {

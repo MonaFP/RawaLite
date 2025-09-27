@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
-import type { ThemeColor, NavigationMode, DesignSettings, CustomColorSettings } from '../lib/settings';
+import type { ThemeColor, NavigationMode, CustomColorSettings } from '../lib/settings';
 import { applyThemeToDocument, applyNavigationMode, getTheme } from '../lib/themes';
 
 export function useDesignSettings() {
@@ -14,7 +14,7 @@ export function useDesignSettings() {
       // Der SettingsContext kümmert sich bereits um die initiale Anwendung
       console.log('🔄 Design settings changed in useDesignSettings:', settings.designSettings);
     }
-  }, [settings.designSettings, loading]);
+  }, [settings]);
 
   const updateTheme = async (theme: ThemeColor, customColors?: CustomColorSettings): Promise<void> => {
     try {
@@ -119,3 +119,4 @@ export function useDesignSettings() {
     updateNavigationMode
   };
 }
+

@@ -38,23 +38,8 @@ class LogoService {
     console.log('🔒 Starting SVG sanitization...');
     
     // Erlaubte SVG-Elemente (Whitelist)
-    const allowedElements = [
-      'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon',
-      'text', 'tspan', 'defs', 'use', 'clipPath', 'mask', 'linearGradient', 'radialGradient',
-      'stop', 'pattern', 'image', 'title', 'desc', 'metadata'
-    ];
-
-    // Erlaubte Attribute (sichere Whitelist)
-    const allowedAttributes = [
-      'id', 'class', 'x', 'y', 'width', 'height', 'viewBox', 'xmlns', 'xmlns:xlink',
-      'fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'stroke-linecap', 'stroke-linejoin',
-      'opacity', 'fill-opacity', 'stroke-opacity', 'transform', 'cx', 'cy', 'r', 'rx', 'ry',
-      'd', 'points', 'x1', 'y1', 'x2', 'y2', 'offset', 'stop-color', 'stop-opacity',
-      'gradientUnits', 'gradientTransform', 'patternUnits', 'patternTransform',
-      'font-family', 'font-size', 'font-weight', 'text-anchor', 'dominant-baseline'
-    ];
-
-    try {
+        // Erlaubte Attribute (sichere Whitelist)
+        try {
       // 1. Entferne gefährliche Elemente
       let sanitized = svgContent;
       
@@ -524,3 +509,4 @@ export function initializeLogoSystem(): void {
 }
 
 export { logoService };
+

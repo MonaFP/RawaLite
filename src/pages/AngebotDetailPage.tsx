@@ -87,3 +87,4 @@ export default function AngebotDetailPage({}: AngebotDetailPageProps) {
     </div>
   );
 }
+

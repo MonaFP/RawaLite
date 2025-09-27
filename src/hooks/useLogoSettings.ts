@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useUnifiedSettings } from './useUnifiedSettings';
-import { SettingsAdapter } from '../adapters/SettingsAdapter';
+import { SettingsAdapter } from '../adapters/SettingsAdapter'; // Exception: Settings system
 import type { LogoSettings } from '../lib/settings';
 
 interface LogoUploadOptions {

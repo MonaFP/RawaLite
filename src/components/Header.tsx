@@ -1,33 +1,23 @@
-import { useLocation, NavLink } from "react-router-dom";
+import type { ReactNode } from 'react';
+import { NavLink } from "react-router-dom";
 import { useSimpleAutoUpdater } from "../hooks/useSimpleAutoUpdater";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import { useAppVersion } from "../hooks/useVersion";
 import HeaderWidgets from "./HeaderWidgets";
 
-const titles: Record<string, string> = {
-  "/": "Dashboard",
-  "/kunden": "Kunden",
-  "/pakete": "Pakete",
-  "/angebote": "Angebote",
-  "/rechnungen": "Rechnungen",
-  "/leistungsnachweise": "Leistungsnachweise",
-  "/einstellungen": "Einstellungen",
-};
-
 interface HeaderProps {
   title?: string;
-  right?: React.ReactNode;
+  right?: ReactNode;
 }
 
-export default function Header({ title: propTitle, right }: HeaderProps = {}) {
-  const { pathname } = useLocation();
-  // 🔧 CUSTOM UPDATER: Use new simplified hook for Custom Update System
+export default function Header({ right }: HeaderProps = {}) {
+    // 🔧 CUSTOM UPDATER: Use new simplified hook for Custom Update System
   const [updateHookState, updateActions] = useSimpleAutoUpdater({
     autoCheckOnStart: false,
   });
   const { currentNavigationMode } = useDesignSettings();
 
-  const title = propTitle ?? titles[pathname] ?? "RaWaLite";
+
 
   // 🔧 UNIFIED VERSION SYSTEM: Use new useAppVersion hook instead of updateHookState.currentVersion
   const appVersion = useAppVersion(); // Single source of truth from package.json via version:get IPC
@@ -264,3 +254,6 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}) {
     </header>
   );
 }
+
+
+

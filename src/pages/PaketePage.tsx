@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import {useMemo, useState } from 'react';
 import { Table } from "../components/Table";
 import type { Package } from "../persistence/adapter";
 import PackageForm, { PackageFormValues } from "../components/PackageForm";
@@ -18,11 +18,8 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
   const { showError, showSuccess } = useNotifications();
   const { withLoading } = useLoading();
 
-  // Separate main packages and subpackages
-  const mainPackages = packages.filter(p => !p.parentPackageId);
-  const subPackages = packages.filter(p => p.parentPackageId);
-
-  const columns = useMemo(()=>([
+  // Separate main packages and _subPackages
+      const columns = useMemo(()=>([
     { key: "internalTitle", header: "Bezeichnung" },
     { 
       key: "total", 
@@ -206,3 +203,7 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
     </div>
   );
 }
+
+
+
+

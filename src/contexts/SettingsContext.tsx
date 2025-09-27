@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { SettingsAdapter } from '../adapters/SettingsAdapter';
 import type { Settings, CompanyData, NumberingCircle } from '../lib/settings';
 import { defaultSettings } from '../lib/settings';
@@ -127,3 +127,4 @@ export function useSettings() {
   }
   return context;
 }
+

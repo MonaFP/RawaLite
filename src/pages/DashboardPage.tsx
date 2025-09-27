@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useEffect } from 'react';
 import { useCustomers } from "../hooks/useCustomers";
 import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
@@ -16,7 +16,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
   const { offers } = useOffers();
   const { invoices } = useInvoices();
   const { packages } = usePackages();
-  const { currentNavigationMode } = useDesignSettings();
+  const { currentNavigationMode: _currentNavigationMode } = useDesignSettings();
   const { settings } = useSettings();
   const { logoUrl, hasLogo, getLogoUrl } = useLogoSettings();
 
@@ -339,3 +339,5 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
     </div>
   );
 }
+
+

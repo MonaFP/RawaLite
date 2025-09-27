@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import {useEffect, useState } from 'react';
 import { useNotifications } from "../contexts/NotificationContext";
 import { useLoading } from "../contexts/LoadingContext";
 import { ValidationError, handleError } from "../lib/errors";
-import type { Customer } from "../persistence/adapter";
+// Customer import removed
 
 export interface CustomerFormValues {
   name: string;
@@ -266,3 +266,6 @@ export default function CustomerForm({ initial, onSubmit, onCancel, submitLabel 
     </form>
   );
 }
+
+
+

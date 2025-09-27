@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import {useState, useMemo } from 'react';
 import { Table } from '../components/Table';
 import { InvoiceForm } from '../components/InvoiceForm';
 import { useInvoices } from '../hooks/useInvoices';
@@ -8,7 +8,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useDesignSettings } from '../hooks/useDesignSettings';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useLogoSettings } from '../hooks/useLogoSettings';
-import { ExportService } from '../services/ExportService';
+// import { ExportService } from '../services/ExportService';
 import { PDFService } from '../services/PDFService';
 import type { Invoice } from '../persistence/adapter';
 
@@ -321,3 +321,5 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     </div>
   );
 }
+
+

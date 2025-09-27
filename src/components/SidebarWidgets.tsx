@@ -1,12 +1,10 @@
-import { useSettings } from "../contexts/SettingsContext";
 import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
 import { useTimesheets } from "../hooks/useTimesheets";
 import { useCustomers } from "../hooks/useCustomers";
 
 export default function SidebarWidgets() {
-  const { settings, loading } = useSettings();
-  const { offers } = useOffers();
+    const { offers } = useOffers();
   const { invoices } = useInvoices();
   const { timesheets } = useTimesheets();
   const { customers } = useCustomers();
@@ -279,3 +277,4 @@ export default function SidebarWidgets() {
     </div>
   );
 }
+

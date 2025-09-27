@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import {useState, useMemo } from 'react';
 import { Table, type SortConfig } from '../components/Table';
-import { SearchInput } from '../components/SearchInput';
-import { FilterChips, MultiSelect, type FilterChip, type MultiSelectOption } from '../components/FilterComponents';
+// SearchInput removed
+// FilterComponents removed
 import { OfferForm } from '../components/OfferForm';
 import { useOffers } from '../hooks/useOffers';
 import { useCustomers } from '../hooks/useCustomers';
@@ -11,7 +11,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useDesignSettings } from '../hooks/useDesignSettings';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useLogoSettings } from '../hooks/useLogoSettings';
-import { ExportService } from '../services/ExportService';
+// ExportService removed
 import { PDFService } from '../services/PDFService';
 import type { Offer } from '../persistence/adapter';
 
@@ -23,7 +23,7 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const { offers, loading, error, createOffer, updateOffer, deleteOffer } = useOffers();
   const { customers } = useCustomers();
   const { packages } = usePackages();
-  const { preferences, updatePreference } = useListPreferences('offers');
+  const { preferences } = useListPreferences('offers');
   const { settings } = useSettings();
   const { currentTheme, currentCustomColors } = useDesignSettings();
   const { showSuccess, showError } = useNotifications();
@@ -32,12 +32,12 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const [current, setCurrent] = useState<Offer | null>(null);
 
   // Search and filter state
-  const [searchQuery, setSearchQuery] = useState(preferences.lastSearch || '');
-  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
-  const [sortConfig, setSortConfig] = useState<SortConfig | null>(
+  const [_searchQuery, _setSearchQuery] = useState(preferences.lastSearch || '');
+  const [_selectedStatus, _setSelectedStatus] = useState<string[]>([]);
+  const [_sortConfig, _setSortConfig] = useState<SortConfig | null>(
     preferences.sortBy ? { key: preferences.sortBy, direction: preferences.sortDir || 'asc' } : null
   );
-  const [currentPage, setCurrentPage] = useState(1);
+  const [_currentPage, _setCurrentPage] = useState(1);
 
   const columns = useMemo(() => ([
     { key: "offerNumber", header: "Nummer" },
@@ -333,3 +333,6 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
     </div>
   );
 }
+
+
+

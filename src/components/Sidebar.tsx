@@ -1,5 +1,4 @@
 import { NavLink } from "react-router-dom";
-import { useSettings } from "../contexts/SettingsContext";
 import { useDesignSettings } from "../hooks/useDesignSettings";
 import SidebarWidgets from "./SidebarWidgets";
 // 🚨 CRITICAL v1.8.10: Robust logo loading for production builds
@@ -7,8 +6,7 @@ import SidebarWidgets from "./SidebarWidgets";
 import logoImg from "../../assets/rawalite-logo.png";
 
 export default function Sidebar(){
-  const { settings, loading } = useSettings();
-  const { currentNavigationMode } = useDesignSettings();
+    const { currentNavigationMode } = useDesignSettings();
 
   const items = [
     { to: "/", label: "Dashboard" },
@@ -42,13 +40,11 @@ export default function Sidebar(){
             onError={(e) => {
               console.warn('🚨 RawaLite Logo ES6 import failed, trying production fallbacks...');
               
-              // 🚨 CRITICAL: Multi-level fallback with GitHub CDN for v1.8.4 compatibility
+              // ✅ In-App-Only: Lokale Fallback-Kette ohne externe CDNs
               const fallbacks = [
                 '/rawalite-logo.png',                    // Public folder
                 './assets/rawalite-logo.png',            // Relative assets  
                 './rawalite-logo.png',                   // Current directory
-                'https://raw.githubusercontent.com/MonaFP/RawaLite/main/rawalite-logo.png', // GitHub CDN - v1.8.4 emergency fix
-                'https://github.com/MonaFP/RawaLite/raw/main/rawalite-logo.png',           // GitHub CDN alternative
                 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjx0ZXh0IHg9IjEwIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjZmZmIj5SYXdhTGl0ZTwvdGV4dD48L3N2Zz4='  // SVG fallback
               ];
               
@@ -97,14 +93,14 @@ export default function Sidebar(){
           border: "1px solid rgba(255,255,255,0.08)"
         }}>
         {/* Firmenlogo oder Platzhalter */}
-        {!loading && settings.companyData?.logo ? (
+        {false ? (
           <div style={{ 
             width: "100%", 
             textAlign: "center",
             marginBottom: "12px"
           }}>
             <img 
-              src={settings.companyData.logo} 
+              src="" 
               alt="Firmenlogo" 
               style={{ 
                 maxWidth: "100%", 
@@ -160,13 +156,13 @@ export default function Sidebar(){
           className="company-name"
           style={{ 
             fontSize: "16px", 
-            color: !loading && settings.companyData?.name ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.6)", 
+            color: false ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.6)", 
             fontWeight: "600",
             textAlign: "center",
-            fontStyle: !loading && settings.companyData?.name ? "normal" : "italic"
+            fontStyle: false ? "normal" : "italic"
           }}
         >
-          {!loading && settings.companyData?.name ? settings.companyData.name : "[Ihr Firmenname]"}
+          {false ? null : "[Ihr Firmenname]"}
         </div>
       </div>
       )}

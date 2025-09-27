@@ -60,7 +60,7 @@ async function unblockFileWindows(filePath: string): Promise<void> {
 
 // Handler-Implementierung
 export function registerInstallCustomHandler() {
-  ipcMain.handle("updater:install-custom", async (event, payload: InstallCustomPayload) => {
+  ipcMain.handle("updater:install-custom", async (_event, payload: InstallCustomPayload) => {
     const {
       filePath,
       args = [],

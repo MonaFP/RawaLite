@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { SettingsAdapter } from '../adapters/SettingsAdapter';
+import { SettingsAdapter } from '../adapters/SettingsAdapter'; // Exception: Settings system
 import type { Settings, CompanyData, NumberingCircle } from '../lib/settings';
 import { defaultSettings } from '../lib/settings';
 

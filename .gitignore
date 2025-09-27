@@ -4,11 +4,15 @@ dist/
 *.log
 .vscode/
 .DS_Store
+
+# Test-Ergebnisse & Laufzeit-Dateien
+tests/test-results/
+logs/
+
 # Build-/Release-Artefakte
 dist/
 dist-electron/
 build/
 release/
-*.log
 *.zip
 *.exe

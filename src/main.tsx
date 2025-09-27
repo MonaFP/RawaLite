@@ -7,7 +7,7 @@ import PersistenceProvider from "./PersistenceProvider";
 import { LoadingProvider, LoadingOverlay } from "./contexts/LoadingContext";
 import { NotificationProvider, NotificationContainer } from "./contexts/NotificationContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
-import { MigrationInitializer } from "./components/MigrationInitializer";
+// import { MigrationInitializer } from "./components/MigrationInitializer";
 import { applyThemeToDocument, applyNavigationMode } from "./lib/themes";
 
 // Pages werden jetzt direkt in App.tsx importiert
@@ -25,13 +25,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <NotificationProvider>
         <PersistenceProvider mode="sqlite">
           <SettingsProvider>
-            <MigrationInitializer>
-              <HashRouter>
-                <App />
-              </HashRouter>
-              <LoadingOverlay />
-              <NotificationContainer />
-            </MigrationInitializer>
+            <HashRouter>
+              <App />
+            </HashRouter>
+            <LoadingOverlay />
+            <NotificationContainer />
           </SettingsProvider>
         </PersistenceProvider>
       </NotificationProvider>

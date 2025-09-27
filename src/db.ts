@@ -1,8 +1,8 @@
-// Re-export core database functionality for backwards compatibility
+// ✅ Centralized exports - no direct adapter imports
 export { getDB, all, run, withTx } from './persistence/sqlite/db';
-export { SQLiteAdapter } from './adapters/SQLiteAdapter';
+export { getAdapter, createAdapter } from './persistence';
 
-// Export types
+// Export types through central interface
 export type {
   Settings,
   Customer,
@@ -10,4 +10,4 @@ export type {
   Offer,
   Invoice,
   PersistenceAdapter
-} from './persistence/adapter';
+} from './persistence';

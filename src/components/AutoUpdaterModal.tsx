@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import {useState, useEffect, useRef } from 'react';
 import type { UpdateManifest, UpdateProgress } from '../types/updater';
 
 type UpdateState = 
@@ -548,3 +548,4 @@ export const AutoUpdaterModal: React.FC<AutoUpdaterModalProps> = ({ isOpen, onCl
     </div>
   );
 };
+

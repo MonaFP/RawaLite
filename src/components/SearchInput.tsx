@@ -2,7 +2,7 @@
  * RawaLite - Search Component
  * Debounced Suchfeld für Listen-Seiten
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import {useState, useEffect, useCallback } from 'react';
 
 interface SearchProps {
   value?: string;

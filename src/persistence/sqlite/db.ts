@@ -367,16 +367,16 @@ export async function getDB(): Promise<Database> {
   if (db) return db;
   if (!SQL) {
     SQL = await initSqlJs({
-      locateFile: (file: string) => `${import.meta.env.BASE_URL}sql-wasm.wasm`,
+      locateFile: (_file: string) => `${import.meta.env.BASE_URL}sql-wasm.wasm`,
     });
   }
   const stored = localStorage.getItem(LS_KEY);
   db = stored ? new SQL!.Database(u8FromBase64(stored)) : new SQL!.Database();
   createSchemaIfNeeded();
 
-  const _exec = db.exec.bind(db);
+  const originalExec = db.exec.bind(db);
   db.exec = (...args: Parameters<Database["exec"]>) => {
-    const result = _exec(...args);
+    const result = originalExec(...args);
     const sqlText = String(args[0] ?? "").toUpperCase();
     if (/INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|ALTER/.test(sqlText)) {
       schedulePersist();
@@ -433,3 +433,4 @@ export async function withTx<T>(fn: () => T | Promise<T>): Promise<T> {
     inTransaction = false;
   }
 }
+

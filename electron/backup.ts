@@ -15,8 +15,8 @@
 import { app, ipcMain } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import { createWriteStream, createReadStream } from 'node:fs';
-import { pipeline } from 'node:stream/promises';
+import { /* createWriteStream, */ createReadStream } from 'node:fs';
+import { /* pipeline */ } from 'node:stream/promises';
 import { createHash } from 'node:crypto';
 import JSZip from 'jszip';
 import type { BackupCreateOptions, BackupCreateResult, BackupListResult, BackupPruneOptions, BackupPruneResult } from '../src/types/ipc';

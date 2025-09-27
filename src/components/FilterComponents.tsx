@@ -2,7 +2,7 @@
  * RawaLite - Filter Components
  * Wiederverwendbare Filter-Komponenten für Listen
  */
-import React, { useState } from 'react';
+import {useState } from 'react';
 
 // Base Filter Chip Component
 export interface FilterChip {

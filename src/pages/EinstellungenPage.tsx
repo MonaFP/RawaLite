@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useLocation } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
@@ -10,7 +10,7 @@ import CustomAutoUpdaterModal from "../components/CustomAutoUpdaterModal";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
 import type { Activity } from "../persistence/adapter";
 import { defaultSettings } from "../lib/settings";
-import { availableThemes, defaultCustomColors, type ThemeColor, type NavigationMode } from "../lib/themes";
+import { availableThemes, defaultCustomColors, /* type ThemeColor, type NavigationMode */ } from "../lib/themes";
 import type { CustomColorSettings } from "../lib/settings";
 
 interface EinstellungenPageProps {
@@ -18,8 +18,7 @@ interface EinstellungenPageProps {
 }
 
 export default function EinstellungenPage({ title = "Einstellungen" }: EinstellungenPageProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
+    const location = useLocation();
   const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useSettings();
   const { currentTheme, currentNavigationMode, currentCustomColors, updateTheme, updateNavigationMode, loading: designLoading } = useDesignSettings();
   const { adapter } = usePersistence();
@@ -56,14 +55,14 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   }, [activityFormData, saving]);
 
   // Update form data when settings change
-  React.useEffect(() => {
+  useEffect(() => {
     console.log('🔍 Settings loaded - Logo length:', settings.companyData.logo?.length || 0);
     setCompanyFormData(settings.companyData);
     setNumberingFormData(settings.numberingCircles);
   }, [settings]);
 
   // Update custom colors when current settings change
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentCustomColors) {
       setCustomColors(currentCustomColors);
     }
@@ -75,7 +74,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     const tabParam = params.get('tab');
     if (tabParam && ['company', 'logo', 'tax', 'bank', 'numbering', 'activities', 'design', 'navigation', 'updates', 'maintenance'].includes(tabParam)) {
       setActiveTab(tabParam as any);
-      console.log('🔗 Navigated to tab from URL parameter:', tabParam);
+      console.log('🔗 _navigated to tab from URL parameter:', tabParam);
     }
   }, [location.search]);
 
@@ -2826,4 +2825,10 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
     </div>
   );
 }
+
+
+
+
+
+
 

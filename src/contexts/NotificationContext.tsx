@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import {createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { AppError, getUserFriendlyMessage } from '../lib/errors';
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info';
@@ -117,3 +117,4 @@ export function NotificationContainer() {
     </div>
   );
 }
+

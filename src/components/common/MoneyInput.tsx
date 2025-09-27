@@ -1,4 +1,4 @@
-import React, { useState, useCallback, CSSProperties } from 'react';
+import {useState, useCallback, useEffect, type FC, type ChangeEvent, type CSSProperties } from 'react';
 
 // Hilfsfunktionen für Dezimal-Parsing
 export function parseDecimal(input: string): number | null {
@@ -53,7 +53,7 @@ export interface MoneyInputProps {
   disabled?: boolean;
 }
 
-export const MoneyInput: React.FC<MoneyInputProps> = ({
+export const MoneyInput: FC<MoneyInputProps> = ({
   value,
   onChangeNumber,
   placeholder = "0,00",
@@ -70,13 +70,13 @@ export const MoneyInput: React.FC<MoneyInputProps> = ({
   const [isFocused, setIsFocused] = useState(false);
 
   // Update interner State wenn value prop sich ändert (von außen)
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isFocused && value != null) {
       setInputValue(value.toString().replace('.', ','));
     }
   }, [value, isFocused]);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     
     // Validiere Eingabe während Tippen
