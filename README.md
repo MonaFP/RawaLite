@@ -1,5 +1,4 @@
-## 📄 Neue README.md (kopierfertig)
-
+## 📄 README.md 
 ````markdown
 # RawaLite – Professionelle Geschäftsverwaltung
 
