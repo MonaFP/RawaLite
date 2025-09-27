@@ -11,25 +11,24 @@
  * SICHERHEIT: Nur im Main-Process, IPC-basierte Kommunikation
  */
 
-import { app, ipcMain } from 'electron';
+import { ipcMain } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import { LogoUploadOptions, LogoProcessResult, LogoMetadata } from '../src/types/ipc';
+import { getTemplatesDir, ensureDirectoryExists } from '../src/lib/paths';
 
 class LogoService {
   private readonly templatesPath: string;
   
   constructor() {
-    // APP_DATA_PATH/templates/ für konsistente Pfade
-    this.templatesPath = path.join(app.getPath('userData'), 'templates');
+    // Nutze zentrale Path-Verwaltung
+    this.templatesPath = getTemplatesDir();
     this.ensureDirectoryExists();
   }
 
   private ensureDirectoryExists(): void {
-    if (!fs.existsSync(this.templatesPath)) {
-      fs.mkdirSync(this.templatesPath, { recursive: true });
-      console.log('📁 Created templates directory:', this.templatesPath);
-    }
+    ensureDirectoryExists(this.templatesPath);
+    console.log('📁 Templates directory ready:', this.templatesPath);
   }
 
   /**

@@ -11,6 +11,7 @@ files:
   - dist/**
   - dist-electron/**
   - package.json
+   - "!*.code-workspace"
 
 # Additional resources (templates, launcher scripts, etc.)
 extraResources:

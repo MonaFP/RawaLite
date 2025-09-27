@@ -1778,25 +1778,22 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                   Stundensatz (€) *
                 </label>
                 <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={activityFormData.defaultHourlyRate || ''}
+                  type="text"
+                  value={activityFormData.defaultHourlyRate?.toString() || ''}
                   onChange={(e) => {
                     const value = e.target.value;
-                    const parsed = parseFloat(value);
-                    const isValidNumber = !isNaN(parsed) && parsed > 0;
-                    console.log('💰 Hourly rate input changed:', { 
-                      value, 
-                      parsed, 
-                      isValidNumber,
-                      isEmptyString: value === '',
-                      finalValue: value === '' ? undefined : parsed
-                    });
-                    setActivityFormData({ 
-                      ...activityFormData, 
-                      defaultHourlyRate: value === '' ? undefined : parsed
-                    });
+                    if (value === '' || /^\d*[.,]?\d*$/.test(value)) {
+                      const parsed = value === '' ? undefined : parseFloat(value.replace(',', '.'));
+                      console.log('💰 Hourly rate input changed:', { 
+                        value, 
+                        parsed,
+                        finalValue: parsed
+                      });
+                      setActivityFormData({ 
+                        ...activityFormData, 
+                        defaultHourlyRate: parsed
+                      });
+                    }
                   }}
                   placeholder="85.00"
                   style={{

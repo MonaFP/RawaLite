@@ -358,13 +358,17 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                   </div>
                   <div>
                     <input
-                      type="number"
+                      type="text"
                       placeholder="Einzelpreis"
-                      value={item.unitPrice}
-                      onChange={(e) => updateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                      value={item.unitPrice.toString()}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || /^\d*[.,]?\d*$/.test(value)) {
+                          const numericValue = parseFloat(value.replace(',', '.')) || 0;
+                          updateLineItem(item.id, 'unitPrice', numericValue);
+                        }
+                      }}
                       style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                      min="0"
-                      step="0.01"
                     />
                   </div>
                   <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
@@ -422,13 +426,17 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                       </div>
                       <div>
                         <input
-                          type="number"
+                          type="text"
                           placeholder="Einzelpreis"
-                          value={subItem.unitPrice}
-                          onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          value={subItem.unitPrice.toString()}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || /^\d*[.,]?\d*$/.test(value)) {
+                              const numericValue = parseFloat(value.replace(',', '.')) || 0;
+                              updateLineItem(subItem.id, 'unitPrice', numericValue);
+                            }
+                          }}
                           style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                          min="0"
-                          step="0.01"
                         />
                       </div>
                       <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>

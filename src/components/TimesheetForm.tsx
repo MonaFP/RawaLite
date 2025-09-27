@@ -470,11 +470,17 @@ export default function TimesheetForm({ initial, onSubmit, onCancel, submitLabel
                             Stundensatz (€)
                           </label>
                           <input
-                            type="number"
-                            value={activity.hourlyRate}
-                            onChange={(e) => updatePosition(index, 'hourlyRate', parseFloat(e.target.value) || 0)}
-                            step="0.01"
-                            min="0"
+                            type="text"
+                            value={activity.hourlyRate.toString()}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              // Erlaubt freie Eingabe von Dezimalzahlen
+                              if (value === '' || /^\d*[.,]?\d*$/.test(value)) {
+                                const numericValue = parseFloat(value.replace(',', '.')) || 0;
+                                updatePosition(index, 'hourlyRate', numericValue);
+                              }
+                            }}
+                            placeholder="85.00"
                             style={{
                               width: "100%",
                               padding: "8px",

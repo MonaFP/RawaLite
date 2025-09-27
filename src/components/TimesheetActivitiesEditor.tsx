@@ -230,11 +230,17 @@ export default function TimesheetActivitiesEditor({ timesheet, onUpdate, onCance
 
                 {/* Stundensatz */}
                 <input
-                  type="number"
-                  value={activity.hourlyRate}
-                  onChange={(e) => updateActivity(index, 'hourlyRate', parseFloat(e.target.value) || 0)}
-                  step="0.01"
-                  min="0"
+                  type="text"
+                  value={activity.hourlyRate.toString()}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Erlaubt Zahlen, Punkte und Kommas für Dezimalzahlen
+                    if (value === '' || /^\d*[.,]?\d*$/.test(value)) {
+                      const numericValue = parseFloat(value.replace(',', '.')) || 0;
+                      updateActivity(index, 'hourlyRate', numericValue);
+                    }
+                  }}
+                  placeholder="85.00"
                   style={{
                     padding: "6px",
                     borderRadius: "4px",

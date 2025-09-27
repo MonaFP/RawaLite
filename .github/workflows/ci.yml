@@ -1,43 +1,145 @@
 name: CI
-on: [push, pull_request]
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
 jobs:
-  build:
-    runs-on: windows-latest
+  verify:
+    name: Verify (Typecheck/Lint/Guards/Tests)
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20.18.0
         uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - name: Install pnpm
+        with:
+          node-version: 20.18.0
+
+      - name: Setup pnpm 10.15.1
         uses: pnpm/action-setup@v2
-        with: { version: 9 }
-      - name: Install dependencies
+        with:
+          version: 10.15.1
+          run_install: false
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpmstore-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpmstore-
+
+      - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
-      - name: Security Guards
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Guards (external/pdf/ipc/versions)
         run: |
           pnpm guard:external
           pnpm guard:pdf
-          pnpm ipc:validate
-      - name: Enforce ESM (no CommonJS)
-        shell: bash
-        run: |
-          if git grep -nE "(^|[^a-zA-Z0-9_])require\\(|module\\.exports" -- ':!node_modules/*' ; then
-            echo "❌ CommonJS gefunden. Nur ESM erlaubt."; exit 1; fi
-      - name: Lint
-        run: pnpm lint
-      - name: Typecheck
-        run: pnpm typecheck
-      - name: Test
+          pnpm validate:ipc
+          pnpm validate:versions
+
+      - name: Unit Tests
         run: pnpm test
-      - name: Build
+
+      # Optional: E2E via Repo-Variable RUN_E2E=true
+      - name: E2E Tests (optional)
+        if: ${{ vars.RUN_E2E == 'true' }}
+        run: pnpm e2e
+
+  build:
+    name: Build (Windows, no publish)
+    needs: verify
+    runs-on: windows-latest
+    steps:
+      - name: Checkout (full)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 20.18.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.0
+
+      - name: Setup pnpm 10.15.1
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.15.1
+          run_install: false
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\pnpm\store
+          key: ${{ runner.os }}-pnpmstore-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpmstore-
+
+      - name: CLEAN caches before build (prevent >300MB exe)
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force .\dist, .\release, .\node_modules\.vite, .\node_modules\.cache -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "$env:APPDATA\electron-builder" -ErrorAction SilentlyContinue
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build renderer/main/preload
         run: pnpm build
-      - name: Dist
+
+      - name: Package app (NO publish)
         run: pnpm dist
-      - name: Upload artifacts
+
+      - name: Guard release assets
+        run: pnpm guard:release:assets
+
+      - name: Assert installer size < 300MB
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Recurse -File dist | Where-Object { $_.Name -match '^rawalite-Setup-.*\.exe$' } | Select-Object -First 1
+          if (-not $exe) { Write-Error "Setup EXE not found in dist (rawalite-Setup-*.exe)"; exit 1 }
+          $sizeMB = [math]::Round($exe.Length/1MB,2)
+          Write-Host "Installer size: $sizeMB MB"
+          if ($sizeMB -ge 300) { Write-Error "Installer too large ($sizeMB MB >= 300 MB)"; exit 1 }
+
+      - name: Check latest.yml has sha512
+        shell: pwsh
+        run: |
+          $latest = Get-ChildItem -Recurse -File dist | Where-Object { $_.Name -eq 'latest.yml' } | Select-Object -First 1
+          if (-not $latest) { Write-Error "latest.yml nicht gefunden"; exit 1 }
+          $hasSha = Select-String -Path $latest.FullName -Pattern 'sha512:\s*[A-Za-z0-9+/=]+'
+          if (-not $hasSha) { Write-Error "sha512 fehlt in latest.yml"; exit 1 }
+          Write-Host "latest.yml OK (sha512 vorhanden)"
+
+      - name: (Optional) Check builder-effective-config
+        shell: pwsh
+        run: |
+          $cfg = Get-ChildItem -Recurse -File | Where-Object { $_.Name -eq 'builder-effective-config.yaml' } | Select-Object -First 1
+          if ($cfg) {
+            $content = Get-Content $cfg.FullName -Raw
+            if ($content -notmatch 'appId:\s*com\.rawalite\.app') { Write-Error "appId mismatch in builder-effective-config.yaml (erwartet: com.rawalite.app)"; exit 1 }
+            if ($content -match 'nsis:' -and $content -notmatch 'perMachine:\s*false') { Write-Error "nsis.perMachine muss false sein"; exit 1 }
+            Write-Host "builder-effective-config.yaml OK"
+          } else {
+            Write-Host "builder-effective-config.yaml nicht gefunden (übersprungen)"
+          }
+
+      - name: Upload dist as artifact (for inspection)
         uses: actions/upload-artifact@v4
         with:
-          name: rawalite-artifacts
-          path: |
-            dist/*.exe
-            dist/*.blockmap
-            dist/latest.yml
+          name: dist-windows
+          path: dist

@@ -286,11 +286,17 @@ export default function PackageForm({
                 className={fieldErrors[`item_${index}_quantity`] ? 'error' : ''}
               />
               <input 
-                type="number"
-                value={item.amount}
-                onChange={e => updateLineItem(index, "amount", Number(e.target.value))}
-                placeholder={isSubItem ? "0" : "1000"}
-                step="0.01"
+                type="text"
+                value={item.amount.toString()}
+                onChange={e => {
+                  const value = e.target.value;
+                  // Freie Eingabe von Beträgen mit Komma oder Punkt
+                  if (value === '' || /^\d*[.,]?\d*$/.test(value)) {
+                    const numericValue = parseFloat(value.replace(',', '.')) || 0;
+                    updateLineItem(index, "amount", numericValue);
+                  }
+                }}
+                placeholder={isSubItem ? "0.00" : "1000.00"}
                 disabled={isSubmitting}
                 className={fieldErrors[`item_${index}_amount`] ? 'error' : ''}
               />
@@ -414,11 +420,17 @@ export default function PackageForm({
             disabled={isSubmitting}
           />
           <input 
-            type="number"
-            value={currentItem.amount}
-            onChange={e => setCurrentItem(prev => ({ ...prev, amount: Number(e.target.value) }))}
-            placeholder="0"
-            step="0.01"
+            type="text"
+            value={currentItem.amount.toString()}
+            onChange={e => {
+              const value = e.target.value;
+              // Freie Eingabe mit Komma/Punkt-Unterstützung
+              if (value === '' || /^\d*[.,]?\d*$/.test(value)) {
+                const numericValue = parseFloat(value.replace(',', '.')) || 0;
+                setCurrentItem(prev => ({ ...prev, amount: numericValue }));
+              }
+            }}
+            placeholder="0.00"
             disabled={isSubmitting}
           />
           {currentItem.parentItemId !== undefined && (
