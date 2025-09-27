@@ -68,6 +68,26 @@ log.transports.console.level = "debug";
 log.info("=== CUSTOM UPDATER ENVIRONMENT DEBUG ===");
 log.info("App Version:", pkg.version);
 log.info("App Name:", app.getName());
+
+// 🔍 DATABASE PATH DEBUG: Log current paths for diagnosis
+log.info("=== DATABASE PATH DEBUG ===");
+log.info("userData Path:", app.getPath("userData"));
+
+// Import and log database paths
+import("../src/lib/paths").then(({ getDbPath, getLegacyDbPath }) => {
+  log.info("Current DB Path:", getDbPath());
+  log.info("Legacy DB Path:", getLegacyDbPath());
+  
+  // Check existence of both paths
+  const fs = require('fs');
+  log.info("Current DB exists:", fs.existsSync(getDbPath()));
+  log.info("Legacy DB exists:", fs.existsSync(getLegacyDbPath()));
+  
+  if (fs.existsSync(getLegacyDbPath())) {
+    const stats = fs.statSync(getLegacyDbPath());
+    log.info("Legacy DB size:", stats.size, "bytes");
+  }
+});
 log.info("Product Name:", app.getName());
 log.info("App ID:", "com.rawalite.app");
 log.info("Is Packaged:", app.isPackaged);
@@ -82,7 +102,7 @@ log.info("Update Manifest URL:", "https://api.github.com/repos/MonaFP/RawaLite/r
 let currentUpdateManifest: UpdateManifest | null = null;
 
 // 🔧 HOTFIX: Persistent paths & state for robust installer finding
-const pendingDir = path.join(app.getPath("userData"), "..", "Local", "rawalite-updater", "pending");
+const pendingDir = path.join(PATHS.userData(), "..", "Local", "rawalite-updater", "pending");
 let lastDownloadedPath: string | null = null;
 let pendingQuitTimeout: NodeJS.Timeout | null = null;
 
@@ -1431,14 +1451,80 @@ ipcMain.handle("app:getVersion", async () => {
 
 // ===== DATENBANK & PDF HANDLER =====
 
-// IPC Handler für Datenbank-Operationen
+// Import path utilities for consistent database location
+import { getDbPath, getLegacyDbPath, getTimestampedBackupDir, ensureDirectoryExists, isWithinUserDataDir, getDownloadsDir, getLogsDir, PATHS } from "../src/lib/paths";
+
+/**
+ * Migrate legacy database to new standardized location.
+ * This function ensures data continuity across updates.
+ */
+async function migrateLegacyDatabase(): Promise<void> {
+  const currentDbPath = getDbPath();
+  const legacyDbPath = getLegacyDbPath();
+  
+  // Skip if current DB already exists (already migrated or new installation)
+  if (fs.existsSync(currentDbPath)) {
+    console.log('✅ Database already exists at current location:', currentDbPath);
+    return;
+  }
+  
+  // Check if legacy database exists
+  if (!fs.existsSync(legacyDbPath)) {
+    console.log('ℹ️ No legacy database found - fresh installation');
+    return;
+  }
+  
+  try {
+    // Create backup before migration
+    const backupDir = getTimestampedBackupDir();
+    ensureDirectoryExists(backupDir);
+    
+    const backupPath = path.join(backupDir, 'legacy-db-backup');
+    fs.copyFileSync(legacyDbPath, backupPath);
+    
+    const legacyStats = fs.statSync(legacyDbPath);
+    console.log(`📦 Legacy database backup created: ${backupPath} (${legacyStats.size} bytes)`);
+    
+    // Ensure target directory exists
+    ensureDirectoryExists(path.dirname(currentDbPath));
+    
+    // Copy legacy database to new location
+    fs.copyFileSync(legacyDbPath, currentDbPath);
+    
+    const newStats = fs.statSync(currentDbPath);
+    console.log(`✅ Database migration completed:`);
+    console.log(`   Legacy: ${legacyDbPath} (${legacyStats.size} bytes)`);
+    console.log(`   Current: ${currentDbPath} (${newStats.size} bytes)`);
+    console.log(`   Backup: ${backupPath}`);
+    
+    // Verify migration integrity
+    if (legacyStats.size !== newStats.size) {
+      throw new Error(`Migration size mismatch: ${legacyStats.size} !== ${newStats.size}`);
+    }
+    
+    console.log('🎉 Database migration successful - all data preserved!');
+    
+  } catch (error) {
+    console.error('❌ Database migration failed:', error);
+    // Don't delete legacy DB on failure - keep data safe
+    throw error;
+  }
+}
+
+// IPC Handler für Datenbank-Operationen mit Migration
 ipcMain.handle("db:load", async (): Promise<Uint8Array | null> => {
   try {
-    const dbPath = path.join(app.getPath("userData"), "database.sqlite");
+    // Perform migration check on every load
+    await migrateLegacyDatabase();
+    
+    const dbPath = getDbPath();
     if (!fs.existsSync(dbPath)) {
       return null;
     }
-    return fs.readFileSync(dbPath);
+    
+    const data = fs.readFileSync(dbPath);
+    console.log(`📄 Database loaded: ${dbPath} (${data.length} bytes)`);
+    return data;
   } catch (error) {
     console.error("Error loading database:", error);
     return null;
@@ -1447,13 +1533,18 @@ ipcMain.handle("db:load", async (): Promise<Uint8Array | null> => {
 
 ipcMain.handle("db:save", async (_, data: Uint8Array): Promise<boolean> => {
   try {
-    const userDataPath = app.getPath("userData");
-    if (!fs.existsSync(userDataPath)) {
-      fs.mkdirSync(userDataPath, { recursive: true });
+    const dbPath = getDbPath();
+    
+    // Security check
+    if (!isWithinUserDataDir(dbPath)) {
+      throw new Error('Unauthorized database path');
     }
-
-    const dbPath = path.join(userDataPath, "database.sqlite");
+    
+    // Ensure directory exists
+    ensureDirectoryExists(path.dirname(dbPath));
+    
     fs.writeFileSync(dbPath, data);
+    console.log(`💾 Database saved: ${dbPath} (${data.length} bytes)`);
     return true;
   } catch (error) {
     console.error("Error saving database:", error);
@@ -1709,11 +1800,11 @@ ipcMain.handle(
 
           outputPdfPath =
             saveResult.filePath ||
-            path.join(app.getPath("downloads"), options.options.filename);
+            path.join(getDownloadsDir(), options.options.filename);
         } catch (dialogError) {
           console.error("Dialog error, using Downloads folder:", dialogError);
           outputPdfPath = path.join(
-            app.getPath("downloads"),
+            getDownloadsDir(),
             options.options.filename
           );
         }
@@ -2250,9 +2341,10 @@ function cleanupTempFile(filePath: string): void {
 ipcMain.handle("app:exportLogs", async () => {
   try {
     const logPath = log.transports.file.getFile().path;
-    const userData = app.getPath("userData");
+    const logsDir = getLogsDir();
+    ensureDirectoryExists(logsDir);
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const exportPath = path.join(userData, `rawalite-logs-${timestamp}.log`);
+    const exportPath = path.join(logsDir, `rawalite-logs-${timestamp}.log`);
 
     log.info("LOG-EXPORT: Starting log export process...");
 

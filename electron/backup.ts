@@ -20,6 +20,7 @@ import { pipeline } from 'node:stream/promises';
 import { createHash } from 'node:crypto';
 import JSZip from 'jszip';
 import type { BackupCreateOptions, BackupCreateResult, BackupListResult, BackupPruneOptions, BackupPruneResult } from '../src/types/ipc';
+import { getBackupDir, getDbPath } from '../src/lib/paths';
 
 interface BackupMetadata {
   id: string;
@@ -37,8 +38,8 @@ export class BackupManager {
   private metadataFile: string;
 
   constructor() {
-    // Use userData directory for reliable cross-platform storage
-    this.backupsDir = path.join(app.getPath('userData'), 'backups');
+    // Use central path management for consistent backups directory
+    this.backupsDir = getBackupDir();
     this.metadataFile = path.join(this.backupsDir, 'metadata.json');
   }
 
@@ -278,8 +279,8 @@ export class BackupManager {
 
   private async getDatabaseData(): Promise<Buffer | null> {
     try {
-      // Try to get database data from the userData SQLite file
-      const dbPath = path.join(app.getPath('userData'), 'rawalite.db');
+      // Use standardized database path from central path management
+      const dbPath = getDbPath();
       
       try {
         const data = await fs.readFile(dbPath);

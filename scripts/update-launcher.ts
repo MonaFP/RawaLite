@@ -8,25 +8,11 @@
 
 import { spawn, execFile, exec } from 'child_process';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { tmpdir, userInfo } from 'os';
-import { app } from 'electron';
+import { join } from 'path';
+import { getUserDataDirUniversal } from './path-utils';
 
-// Definiere den userData-Pfad für die Logs
-let USER_DATA_PATH: string;
-try {
-  // Versuche, den Electron app.getPath zu verwenden, falls verfügbar
-  USER_DATA_PATH = app.getPath('userData');
-} catch (e) {
-  // Fallback für standalone Ausführung
-  USER_DATA_PATH = join(
-    process.env.APPDATA || 
-    (process.platform === 'darwin' ? 
-      join(userInfo().homedir, 'Library', 'Application Support') : 
-      join(userInfo().homedir, '.config')), 
-    'RawaLite'
-  );
-}
+// Verwende universal path helper mit Electron-Fallback
+const USER_DATA_PATH = getUserDataDirUniversal();
 
 // Stelle sicher, dass der Log-Ordner existiert
 try {

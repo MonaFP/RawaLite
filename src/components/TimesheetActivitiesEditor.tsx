@@ -3,6 +3,7 @@ import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
 import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
 import type { Timesheet, TimesheetActivity } from "../persistence/adapter";
+import { MoneyInput } from './common/MoneyInput';
 
 export interface TimesheetActivitiesEditorProps {
   timesheet: Timesheet;
@@ -229,12 +230,10 @@ export default function TimesheetActivitiesEditor({ timesheet, onUpdate, onCance
                 />
 
                 {/* Stundensatz */}
-                <input
-                  type="number"
+                <MoneyInput
                   value={activity.hourlyRate}
-                  onChange={(e) => updateActivity(index, 'hourlyRate', parseFloat(e.target.value) || 0)}
-                  step="0.01"
-                  min="0"
+                  onChangeNumber={(value) => updateActivity(index, 'hourlyRate', value)}
+                  placeholder="85,00"
                   style={{
                     padding: "6px",
                     borderRadius: "4px",

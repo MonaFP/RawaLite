@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Invoice, InvoiceLineItem, Customer, Offer } from '../persistence/adapter';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { usePersistence } from '../contexts/PersistenceContext';
+import { MoneyInput } from './common/MoneyInput';
 
 interface InvoiceFormProps {
   invoice?: Invoice;
@@ -269,14 +270,11 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     />
                   </div>
                   <div>
-                    <input
-                      type="number"
-                      placeholder="Einzelpreis"
+                    <MoneyInput
                       value={item.unitPrice}
-                      onChange={(e) => updateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                      onChangeNumber={(value) => updateLineItem(item.id, 'unitPrice', value)}
+                      placeholder="Einzelpreis"
                       style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                      min="0"
-                      step="0.01"
                     />
                   </div>
                   <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
@@ -333,14 +331,11 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                         />
                       </div>
                       <div>
-                        <input
-                          type="number"
-                          placeholder="Einzelpreis"
+                        <MoneyInput
                           value={subItem.unitPrice}
-                          onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          onChangeNumber={(value) => updateLineItem(subItem.id, 'unitPrice', value)}
+                          placeholder="Einzelpreis"
                           style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                          min="0"
-                          step="0.01"
                         />
                       </div>
                       <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>

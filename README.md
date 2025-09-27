@@ -1,181 +1,176 @@
-# RawaLite - Professionelle Geschäftsverwaltung
+Super, ich habe dein aktuelles `README.md` geprüft und mit den neuen Standards (Safe Edition, neue CI/CD-Workflows, Debug/lessons_learned) abgeglichen. Ergebnis: Wir brauchen eine **vollständig aktualisierte README**, die:
+
+1. **Alte Angaben korrigiert** (z. B. electron-updater → jetzt Custom In-App Updater).
+2. **Safe-Edition-Standards prominent darstellt** (PNPM-only, In-App, PDF offline, Security).
+3. **CI/CD Workflows** erklärt (neue `ci.yml`, `release.yml`).
+4. **Debugging-Standards** ergänzt (pro Themenordner `/docs/<topic>/lessons_learned.md`).
+
+---
+
+## 📄 Neue README.md (kopierfertig)
+
+````markdown
+# RawaLite – Professionelle Geschäftsverwaltung
 
 ![RawaLite Logo](./assets/rawalite-logo.png)
 
-> **Version 1.7.5** - Desktop-Anwendung für Geschäftsverwaltung mit einheitlichem Update-System
+> **Version** siehe [`src/lib/VersionService.ts`](src/lib/VersionService.ts)  
+> Desktop-Anwendung für Geschäftsverwaltung mit **vollständig integriertem In-App Update-System**.
 
-## 🏢 **Proprietäre Software**
+---
+
+## 🏢 Proprietäre Software
 
 **© 2025 MonaFP. Alle Rechte vorbehalten.**
 
-## ⚡ **Funktionen**
+---
 
-- 👥 **Kundenverwaltung** - Auto-Nummerierung (K-001, K-002...)
-- 📦 **Paketverwaltung** - Hierarchische Pakete (PAK-001...)
-- 📋 **Angebote** - Workflow (AN-2025-0001...)
-- 🧾 **Rechnungen** - Abrechnungssystem (RE-2025-0001...)
-- ⏱️ **Leistungsnachweise** - Zeiterfassung (LN-2025-0001...)
-- 🎨 **5 Pastel-Themes** - Mit Custom-Colors
-- 🔄 **Flexible Navigation** - Header/Sidebar mit Widgets
-- 📄 **PDF-Export** - Theme-Integration, DIN 5008
-- 🔄 **Einheitliches Update-System** - electron-updater + Backups
+## ⚡ Funktionen
 
-## 🚀 **Tech-Stack (v1.7.5)**
+- 👥 **Kundenverwaltung** – Auto-Nummerierung (K-001, K-002…)
+- 📦 **Paketverwaltung** – Hierarchische Pakete (PAK-001…)
+- 📋 **Angebote** – Workflow (AN-2025-0001…)
+- 🧾 **Rechnungen** – Abrechnungssystem (RE-2025-0001…)
+- ⏱️ **Leistungsnachweise** – Zeiterfassung (LN-2025-0001…)
+- 🎨 **Pastell-Themes** – 5 vordefinierte, unveränderbare Farbpaletten
+- 🔄 **Flexible Navigation** – Header/Sidebar mit Widgets
+- 📄 **PDF-Export** – Theme-Integration, DIN 5008, 100 % offline
+- 🔄 **Einheitliches Update-System** – In-App, ohne externe Links
 
-- **Runtime:** Node.js 20, **pnpm 10.15.1** (Primary Package Manager)
-- **Desktop:** Electron 31.7.7 + electron-updater 6.6.2
-- **Frontend:** React 18.3.1 + TypeScript 5.9.2 (strict)
-- **Build:** Vite 5.4.20 + electron-builder 24.13.3
-- **DB:** SQLite (sql.js) + IndexedDB (Dexie) - Adapter Pattern
-- **Update:** electron-updater → GitHub Releases (In-App Only)
+---
 
-## 📦 **Installation**
+## 🚀 Tech-Stack
 
-### **Windows**
-1. Download: `RawaLite Setup 1.7.1.exe`
-2. Als Administrator ausführen
-3. Installationsassistent folgen
+- **Runtime:** Node.js 20.18.0  
+- **Package Manager:** pnpm 10.15.1 (**PNPM-only**)  
+- **Desktop:** Electron 31.7.7  
+- **Frontend:** React 18.3.1 + TypeScript 5.9.2 (strict)  
+- **Build:** Vite 5.4.20 + electron-builder 24.13.3  
+- **DB:** SQLite (sql.js) primary, Dexie (IndexedDB) Dev-Fallback  
+- **Update:** Custom In-App Updater (100 % in-app, `autoDownload: false`)  
 
-### **Automatische Updates (v1.7.1)**
-- 🔄 In-App Updates ohne externe Navigation
-- 📦 Automatische Backups vor Installation
-- 🛡️ Vollständig über electron-updater
+---
 
-## 🛠️ **Development (pnpm-only)**
+## 📦 Installation
 
-⚠️ **WICHTIG:** Dieses Projekt ist **PNPM-ONLY**. npm/yarn nicht unterstützt.
+### Windows
+1. Lade die aktuelle Setup-EXE aus dem GitHub Release (Asset `rawalite-Setup-X.Y.Z.exe`) herunter.  
+2. Ausführen, Assistent folgen.  
+3. Daten bleiben in `%APPDATA%/RawaLite/` persistent erhalten.  
+
+### Updates
+- Automatischer Check beim App-Start  
+- Manuelle Prüfung im Header (Versionsnummer) oder über Einstellungen → Updates  
+- Download/Install nur mit Bestätigung  
+- Vor Installation wird automatisch ein Backup angelegt  
+
+---
+
+## 🛠️ Development (PNPM-only)
+
+⚠️ Dieses Projekt ist **PNPM-ONLY**. Niemals npm oder yarn verwenden.
 
 ```bash
 # Setup
 pnpm install
 pnpm dev                    # Vite + Electron
 
-# Building & Release
-pnpm build                 # Production Build
-pnpm dist                  # electron-builder → GitHub Release
-pnpm release:dry           # Lokaler Build
+# Build
+pnpm build                  # Production Build
+pnpm dist                   # electron-builder (NO publish!)
 
-# Testing & Validation
-pnpm test                  # Unit Tests (Vitest)
-pnpm typecheck             # TypeScript
-pnpm lint                  # ESLint
+# Tests & Guards
+pnpm typecheck
+pnpm lint
+pnpm test                   # Unit Tests (Vitest)
+pnpm e2e                    # Playwright (optional)
 
-# CI Guards (COPILOT_INSTRUCTIONS.md)
-pnpm guard:external        # Keine externen Links
-pnpm guard:pdf             # PDF-Assets offline
-pnpm guard:release:assets  # Release Assets complete
-```
-
-### **Validation Scripts**
-```bash
-node validate-version-sync.mjs    # package.json ↔ VersionService
-node validate-ipc-types.mjs       # IPC Security Check
-node guard-release-assets.mjs     # electron-updater Assets
-```
-
-## 📚 **Dokumentation**
-
-> **📁 Strukturierte Dokumentation:** Alle Docs sind jetzt thematisch in `/docs/` organisiert
-
-### 🏗️ **Architektur & System**
-- **[📋 Projekt-Übersicht](docs/architecture/PROJECT_OVERVIEW.md)** - Vollständiger Tech-Stack & Status
-- **[🏛️ System-Architektur](docs/architecture/ARCHITECTURE.md)** - Design-Entscheidungen & Patterns
-- **[🔄 Migration-System](docs/architecture/MIGRATION_SYSTEM.md)** - Database-Migrations
-
-### 🔧 **Development & Tools**
-- **[�️ Installation & Setup](docs/development/INSTALL.md)** - Entwicklungsumgebung
-- **[🧠 Problem-Solving](docs/development/SYSTEMATIC_PROBLEM_SOLVING_LEARNINGS.md)** - Strukturierte Methodologie
-- **[🐛 Debug-Standards](docs/development/DEBUGGING_STANDARDS.md)** - Debug-Guidelines
-- **[🎨 Themes & Navigation](docs/development/THEMES_NAVIGATION.md)** - UI/UX System
-- **[📄 PDF-System](docs/development/PDF_SYSTEM.md)** - Template Engine & Generation
-
-### 🚀 **Operations & Release**
-- **[🚀 Release-Guidelines](docs/operations/RELEASE_GUIDELINES.md)** - Quality Gates & Prozess
-- **[� Release-Prozess](docs/operations/RELEASE_PROCESS.md)** - Schritt-für-Schritt Workflow
-- **[�🔄 Auto-Updater](docs/operations/AUTO_UPDATER_IMPLEMENTATION.md)** - Update-System Implementation
-- **[🏷️ Version-Management](docs/operations/VERSION_MANAGEMENT.md)** - Automatisierte Versionierung
-
-### � **Troubleshooting & Support**
-- **[🔧 Troubleshooting](docs/troubleshooting/TROUBLESHOOTING.md)** - User-Support & häufige Probleme
-- **[📊 Historische Analysen](docs/troubleshooting/)** - Problem-Analysen & Fixes
-
-### 📝 **Knowledge-Management**
-- **[📚 Dokumentations-Index](docs/README.md)** - Vollständige Übersicht aller Docs
-- **[📋 Release-Notes](docs/releases/)** - Strukturierte Release-Dokumentation
-- **[🧠 Lessons-Learned](docs/lessons-learned/)** - Systematische Erkenntnissammlung
+pnpm guard:external         # Keine externen Links
+pnpm guard:pdf              # PDF-Assets offline
+pnpm validate:ipc           # IPC Security Check
+pnpm validate:versions      # Version-Sync
+pnpm guard:release:assets   # Release Assets complete
+````
 
 ---
 
-## �🔧 **Architektur**
+## 🔄 CI/CD Workflows
 
-### **Update-System (v1.7.1)**
-```
-UpdateOrchestrator Hook
-├── electron-updater (Primary)
-├── BackupService (ZIP Archives)
-└── UpdateService (Migration Only)
-```
+### CI (`.github/workflows/ci.yml`)
 
-**Ein Transport, eine State-Machine, robuste Hooks.**
+* **verify-Job (Ubuntu):** Typecheck, Lint, Guards, Tests, optional E2E
+* **build-Job (Windows):** Build + Dist, ohne `--publish`, mit
 
-### **Persistenz-Adapter**
-```
-Unified Interface
-├── SQLiteAdapter (Production)
-└── IndexedDBAdapter (Dev Fallback)
-```
+  * Cache-Cleanup (Setup <300 MB)
+  * `latest.yml` mit `sha512`-Check
+  * `builder-effective-config.yaml`-Check (`appId=com.rawalite.app`, `nsis.perMachine=false`)
 
-## 🔒 **Security & Compliance**
+### Release (`.github/workflows/release.yml`)
 
-- ✅ **pnpm-only:** Alle Scripts verwenden ausschließlich pnpm
-- ✅ **In-App Updates:** Keine externen Links/Browser-Navigation
-- ✅ **PDF Offline:** Alle Assets eingebettet, keine CDN/HTTP
-- ✅ **IPC Security:** contextIsolation: true, typisierte Kanäle
-- ✅ **Release Pipeline:** electron-builder → GitHub mit Asset-Guards
+* **workflow_dispatch:**
 
-## 📋 **Changelog v1.7.1**
+  * Eingabe `patch`/`minor`/`major` → KI hebt Version automatisch in
 
-### **🔄 Update-System Redesign**
-- **Neu:** UpdateOrchestrator Hook (electron-updater + Backup + Migration)
-- **Neu:** Automatische ZIP-Backups vor Installation
-- **Verbessert:** electron-updater als einziger Transport
-- **Entfernt:** Externe Navigation aus App-Menü
+    * `package.json`
+    * `src/lib/VersionService.ts` (`BASE_VERSION`, `BUILD_DATE`)
+  * Commit + Tag + Push
+  * Build + Release
+* **push tags vX.Y.Z:**
 
-### **🚀 Release Pipeline**
-- **Neu:** pnpm-only Scripts mit npm-run-all2
-- **Neu:** Asset-Guard für Release-Validation
-- **Fix:** TypeScript-Fehler in UpdatesPage.tsx
+  * Build + Release-Upload über GitHub CLI (`gh release upload`)
 
-### **🛡️ Security**
-- **Entfernt:** shell.openExternal aus IPC
-- **Neu:** CI Guards für externe Links/PDF-Assets
-- **Neu:** IPC Security Validator
+---
 
-## 🔧 **Troubleshooting**
+## 📚 Dokumentation
 
-### **Updates**
-```bash
-# Update-Logs prüfen: F12 → Console
-# Cache leeren: %APPDATA%/RawaLite/updates/* löschen
-```
+> Alle Themen sind in `/docs/` als **Master-Dokumente** organisiert.
+> Keine Redundanzen, jede Regel nur an einer Stelle.
 
-### **Development**
-```bash
-# Dependencies zurücksetzen
-pnpm store prune && rm -rf node_modules && pnpm install
+### Hauptdokumente
 
-# Vollvalidierung
-pnpm typecheck && pnpm lint
-node validate-version-sync.mjs
-```
+* `00-index.md` – Übersicht & Code-Wahrheit
+* `20-paths.md` – Pfad-Management
+* `30-updates.md` – Update-System
+* `40-pdf-workflow.md` – PDF-Workflow
+* `50-persistence.md` – Persistenz
+* `60-security-ipc.md` – Security & IPC
+* `70-numbering.md` – Nummernkreise
+* `80-ui-theme-navigation.md` – UI & Theme
+* `90-deprecated-patterns.md` – Verbotene Muster
+* `INSTRUCTIONS.md` – Safe Edition der Projektregeln
+* `WORKFLOWS.md` – CI/CD Regeln
 
-## 📚 **Quick-Docs**
+---
 
-- **[📋 Projekt-Übersicht](docs/architecture/PROJECT_OVERVIEW.md)** - Vollständige Architektur & Tech-Stack
-- **[📚 Dokumentations-Index](docs/README.md)** - Strukturierte Übersicht aller verfügbaren Docs
-- **[🚀 Release-Guidelines](docs/operations/RELEASE_GUIDELINES.md)** - Release-Prozess & Quality Gates
-- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Entwicklungsrichtlinien & Technologie-Stack
+## 🐛 Debugging-Standards
+
+Für **jedes Thema** (Unterordner in `/docs`) gilt:
+
+* Eine Datei `lessons_learned.md` dokumentiert Debug-Versuche.
+* Inhalt: **Was wurde versucht? Welches Ergebnis?**
+* Das **Ergebnis muss aktiv beim Entwickler erfragt** werden, da Logs unvollständig sein können.
+* Ziel: KI weiß, was schon probiert wurde → vermeidet doppelte Versuche.
+
+---
+
+## 🔒 Security & Compliance
+
+* ✅ PNPM-only
+* ✅ In-App Updates, keine externen Links
+* ✅ PDF offline, alle Assets lokal & lizenzkonform
+* ✅ IPC Security: `contextIsolation:true`, `sandbox:true`, typisierte Kanäle
+* ✅ Release Pipeline: CI Guards, Cache-Checks, Upload nur via GitHub CLI
+
+---
+
+## 📋 Changelog
+
+Siehe [docs/releases](docs/releases).
 
 ---
 
 **© 2025 MonaFP. Alle Rechte vorbehalten.**
+
+```
+
+---

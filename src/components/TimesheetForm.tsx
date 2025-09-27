@@ -6,6 +6,7 @@ import { useCustomers } from "../hooks/useCustomers";
 import { useActivities } from "../hooks/useActivities";
 import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
 import type { Timesheet, TimesheetActivity } from "../persistence/adapter";
+import { MoneyInput } from './common/MoneyInput';
 
 export interface TimesheetFormValues {
   customerId: number | '';
@@ -469,12 +470,10 @@ export default function TimesheetForm({ initial, onSubmit, onCancel, submitLabel
                           <label style={{ display: "block", fontSize: "12px", fontWeight: "500", marginBottom: "4px", color: "#374151" }}>
                             Stundensatz (€)
                           </label>
-                          <input
-                            type="number"
+                          <MoneyInput
                             value={activity.hourlyRate}
-                            onChange={(e) => updatePosition(index, 'hourlyRate', parseFloat(e.target.value) || 0)}
-                            step="0.01"
-                            min="0"
+                            onChangeNumber={(value) => updatePosition(index, 'hourlyRate', value)}
+                            placeholder="85,00"
                             style={{
                               width: "100%",
                               padding: "8px",
