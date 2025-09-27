@@ -1,12 +1,3 @@
-Super, ich habe dein aktuelles `README.md` geprüft und mit den neuen Standards (Safe Edition, neue CI/CD-Workflows, Debug/lessons_learned) abgeglichen. Ergebnis: Wir brauchen eine **vollständig aktualisierte README**, die:
-
-1. **Alte Angaben korrigiert** (z. B. electron-updater → jetzt Custom In-App Updater).
-2. **Safe-Edition-Standards prominent darstellt** (PNPM-only, In-App, PDF offline, Security).
-3. **CI/CD Workflows** erklärt (neue `ci.yml`, `release.yml`).
-4. **Debugging-Standards** ergänzt (pro Themenordner `/docs/<topic>/lessons_learned.md`).
-
----
-
 ## 📄 Neue README.md (kopierfertig)
 
 ````markdown
