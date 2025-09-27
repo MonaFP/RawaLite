@@ -20,7 +20,7 @@ applyNavigationMode('sidebar');
 // Router v6 uses component-based routing
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+  // <React.StrictMode> // TEMP DISABLED: Testing double initialization hypothesis
     <LoadingProvider>
       <NotificationProvider>
         <PersistenceProvider mode="sqlite">
@@ -34,5 +34,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </PersistenceProvider>
       </NotificationProvider>
     </LoadingProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

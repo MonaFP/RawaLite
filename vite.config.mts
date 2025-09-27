@@ -10,8 +10,8 @@ import { fileURLToPath, URL } from 'node:url';
 // -------------------------------------------------------------
 
 export default defineConfig(() => {
-  // Zentrale CSP-Konfiguration (identisch zu electron/main.ts)
-  const CSP_BASE = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:";
+  // ✨ CRITICAL FIX: CSP für Vite Dev Server muss 'unsafe-inline' enthalten für HMR
+  const CSP_BASE = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; connect-src 'self' ws://localhost:*; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:";
 
   return {
     plugins: [
@@ -19,7 +19,7 @@ export default defineConfig(() => {
       // 👉 weitere Plugins hier einfügen (falls vorhanden)
     ],
 
-    // ---- DEV-Server-Header: einheitliche CSP-Konfiguration ----
+    // ---- DEV-Server-Header: CSP für Vite HMR kompatibel ----
     server: {
       // host/port optional anpassen
       // host: true,

@@ -21,9 +21,36 @@ function schedulePersist() {
   if (persistTimer) window.clearTimeout(persistTimer);
   persistTimer = window.setTimeout(() => {
     if (!db) return;
+    console.log('🔄 [PERSIST] Scheduled persist triggered');
     const data = db.export();
     localStorage.setItem(LS_KEY, base64FromU8(data));
+    console.log(`💾 [PERSIST] Data saved to localStorage (${data.length} bytes)`);
   }, 250);
+}
+
+// ✨ CRITICAL: Force immediate persistence - called on app quit or critical operations
+export function forcePersist(): void {
+  if (!db) {
+    console.warn('⚠️ [FORCE-PERSIST] No database to persist');
+    return;
+  }
+  
+  console.log('🚨 [FORCE-PERSIST] Immediate persistence triggered');
+  
+  // Clear any pending scheduled persist
+  if (persistTimer) {
+    window.clearTimeout(persistTimer);
+    persistTimer = undefined;
+  }
+  
+  try {
+    const data = db.export();
+    localStorage.setItem(LS_KEY, base64FromU8(data));
+    console.log(`💾 [FORCE-PERSIST] SUCCESS: ${data.length} bytes saved`);
+  } catch (error) {
+    console.error('❌ [FORCE-PERSIST] FAILED:', error);
+    throw error;
+  }
 }
 function createSchemaIfNeeded() {
   if (!db) return;
@@ -373,12 +400,26 @@ export async function getDB(): Promise<Database> {
   const stored = localStorage.getItem(LS_KEY);
   db = stored ? new SQL!.Database(u8FromBase64(stored)) : new SQL!.Database();
   createSchemaIfNeeded();
+  
+  // ✨ CRITICAL: Install beforeunload handler for forced persistence
+  if (typeof window !== 'undefined' && !window.onbeforeunload) {
+    window.addEventListener('beforeunload', () => {
+      console.log('🚨 [BEFOREUNLOAD] App closing - forcing persistence');
+      try {
+        forcePersist();
+      } catch (error) {
+        console.error('❌ [BEFOREUNLOAD] Force persist failed:', error);
+      }
+    });
+    console.log('✅ [INIT] beforeunload handler installed for database persistence');
+  }
 
   const originalExec = db.exec.bind(db);
   db.exec = (...args: Parameters<Database["exec"]>) => {
     const result = originalExec(...args);
     const sqlText = String(args[0] ?? "").toUpperCase();
     if (/INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|ALTER/.test(sqlText)) {
+      console.log(`📝 [DB] Mutation detected: ${sqlText.substring(0, 50)}...`);
       schedulePersist();
     }
     return result;
@@ -420,13 +461,16 @@ export async function withTx<T>(fn: () => T | Promise<T>): Promise<T> {
   }
   
   // Start new transaction
+  console.log('🔄 [TX] Starting new transaction');
   inTransaction = true;
   d.exec("BEGIN");
   try {
     const res = await fn();
     d.exec("COMMIT");
+    console.log('✅ [TX] Transaction committed successfully');
     return res;
   } catch (e) {
+    console.error('❌ [TX] Transaction failed, rolling back:', e);
     d.exec("ROLLBACK");
     throw e;
   } finally {

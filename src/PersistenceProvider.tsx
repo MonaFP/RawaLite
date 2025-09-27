@@ -17,12 +17,15 @@ export default function PersistenceProvider({ children, mode = "sqlite" }: Props
     let active = true;
     (async () => {
       try {
+        console.log('🚀 [PersistenceProvider] Starting adapter creation...');
         // Use centralized adapter creation - already ready()
         const adapterInstance = await createAdapter();
         if (!active) return;
+        console.log('✅ [PersistenceProvider] Adapter created successfully');
         setAdapter(adapterInstance);
         setReady(true);
       } catch (e: any) {
+        console.error('❌ [PersistenceProvider] Adapter creation failed:', e);
         setError(String(e?.message ?? e));
       }
     })();

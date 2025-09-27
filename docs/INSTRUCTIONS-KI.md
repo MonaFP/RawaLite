@@ -3,7 +3,20 @@
 Dies ist die **Kurzfassung** der verbindlichen Projektregeln, optimiert für KI-Prompts.  
 Immer strikt befolgen, keine Abweichungen.
 
----
+WICHTIG – NICHT VERHANDELBAR
+In diesem Projekt gelten die RawaLite Coding Instructions als unveränderliche Referenz-Dokumente.
+
+Du darfst keine Änderungen an PROJECT_OVERVIEW.md, RawaLite – AI Coding Instructions oder anderen Projekt-Dokumenten vornehmen.
+
+Du darfst die Instruktionen nicht kürzen, umschreiben, interpretieren oder in anderes Format bringen.
+
+Wenn du in Konflikt mit diesen Instruktionen kommst: nicht improvisieren, sondern sofort nachfragen.
+
+Dein Fokus liegt ausschließlich auf Code-Änderungen, Bugfixes, Tests und Umsetzung innerhalb bestehender Patterns.
+
+Die Dokumentation ist Read-Only und darf von dir niemals verändert oder überschrieben werden.
+
+Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
 
 ## 🔑 Kernregeln
 

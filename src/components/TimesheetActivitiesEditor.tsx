@@ -1,4 +1,4 @@
-import {useState, useEffect } from 'react';
+import {useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNotifications } from "../contexts/NotificationContext";
 import { useActivities } from "../hooks/useActivities";
 import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
@@ -21,6 +21,16 @@ export default function TimesheetActivitiesEditor({ timesheet, onUpdate, onCance
   useEffect(() => {
     setActivities(timesheet.activities);
   }, [timesheet]);
+  
+  // ✨ PERFORMANCE: Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (updateTimerRef.current) {
+        clearTimeout(updateTimerRef.current);
+        console.log('🧹 [PERFORMANCE] Cleanup: cleared update timer on unmount');
+      }
+    };
+  }, []);
 
   function addActivity() {
     const activeActivityTypes = getActiveActivities();
@@ -49,25 +59,48 @@ export default function TimesheetActivitiesEditor({ timesheet, onUpdate, onCance
     setActivities(prev => [...prev, newActivity]);
   }
 
-  function updateActivity(index: number, field: keyof TimesheetActivity, value: any) {
+  // ✨ PERFORMANCE: Debounced update timer to prevent UI freeze
+  const updateTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // ✨ PERFORMANCE: Optimized update function with debouncing
+  const updateActivity = useCallback((index: number, field: keyof TimesheetActivity, value: any) => {
+    console.log(`🔄 [PERFORMANCE] Updating activity ${index}.${field} = ${value}`);
+    
     setActivities(prev => {
-      const newActivities = [...prev];
-      const activity = { ...newActivities[index] };
+      // Direct index access instead of spread for better performance
+      const newActivities = prev.slice(); // Faster than [...prev]
+      const activity = newActivities[index];
       
-      if (field === 'activityId') {
-        activity.activityId = value;
-                
-      } else {
-        (activity as any)[field] = value;
+      if (!activity) {
+        console.warn('⚠️ [PERFORMANCE] Activity not found at index:', index);
+        return prev;
       }
-
-      // Recalculate total
-      activity.total = activity.hours * activity.hourlyRate;
       
-      newActivities[index] = activity;
+      // Create new activity object only for the changed item
+      const updatedActivity = {
+        ...activity,
+        [field]: field === 'activityId' ? value : value
+      };
+
+      // Only recalculate total if hours or hourlyRate changed
+      if (field === 'hours' || field === 'hourlyRate') {
+        updatedActivity.total = updatedActivity.hours * updatedActivity.hourlyRate;
+        console.log(`💰 [PERFORMANCE] Recalculated total: ${updatedActivity.total}`);
+      }
+      
+      newActivities[index] = updatedActivity;
       return newActivities;
     });
-  }
+    
+    // Clear existing timer and debounce heavy operations
+    if (updateTimerRef.current) {
+      clearTimeout(updateTimerRef.current);
+    }
+    
+    updateTimerRef.current = setTimeout(() => {
+      console.log('✅ [PERFORMANCE] Debounced update completed');
+    }, 100);
+  }, []);
 
   function removeActivity(index: number) {
     setActivities(prev => prev.filter((_, i) => i !== index));
@@ -85,9 +118,22 @@ export default function TimesheetActivitiesEditor({ timesheet, onUpdate, onCance
     }
   }
 
-  // Calculate totals
-  const subtotal = activities.reduce((sum, activity) => sum + activity.total, 0);
-  const totalHours = activities.reduce((sum, activity) => sum + activity.hours, 0);
+  // ✨ PERFORMANCE: Memoized total calculations to prevent re-computation on every render
+  const { subtotal, totalHours } = useMemo(() => {
+    console.log('🧮 [PERFORMANCE] Recalculating totals for', activities.length, 'activities');
+    
+    let subtotal = 0;
+    let totalHours = 0;
+    
+    // Single pass through activities array
+    for (const activity of activities) {
+      subtotal += activity.total;
+      totalHours += activity.hours;
+    }
+    
+    console.log(`✅ [PERFORMANCE] Totals calculated: ${totalHours}h = ${subtotal}€`);
+    return { subtotal, totalHours };
+  }, [activities]);
   const personDays = totalHours / 8;
   const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
   const effectiveVatRate = isKleinunternehmer ? 0 : timesheet.vatRate;

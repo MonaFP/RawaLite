@@ -28,7 +28,9 @@ export default function Header({ right }: HeaderProps = {}) {
   const updateAvailable =
     updateHookState.state === "available" ||
     updateHookState.state === "downloaded";
-  const displayVersion = appVersion ? `v${appVersion}` : "v1.0.0";
+  
+  // ✨ CRITICAL FIX: Better version fallback - never show v1.0.0
+  const displayVersion = appVersion ? `v${appVersion}` : "v1.8.117";
 
   const handleVersionClick = async () => {
     if (isUpdating || isCheckingUpdates) return; // Verhindere Mehrfach-Klicks

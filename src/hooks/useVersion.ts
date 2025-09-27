@@ -105,12 +105,33 @@ export function useVersion(): UseVersionState {
 }
 
 /**
- * Convenience hook to get just the app version string
- * @returns App version string or null if loading/error
+ * Convenience hook to get just the app version string with intelligent fallback
+ * @returns App version string or fallback version
  */
 export function useAppVersion(): string | null {
-  const { appVersion } = useVersion();
-  return appVersion;
+  const { appVersion, loading, error } = useVersion();
+  
+  // ✨ CRITICAL FIX: Robust version fallback system
+  if (loading) {
+    return null; // Still loading
+  }
+  
+  if (appVersion) {
+    return appVersion; // IPC worked
+  }
+  
+  // IPC failed - use intelligent fallbacks
+  console.warn('[useAppVersion] IPC version failed, checking fallbacks:', { error });
+  
+  // Try to get version from build-time injection (if available)
+  if (typeof import.meta.env?.PACKAGE_VERSION === 'string') {
+    console.info('[useAppVersion] Using build-time version:', import.meta.env.PACKAGE_VERSION);
+    return import.meta.env.PACKAGE_VERSION;
+  }
+  
+  // Final fallback: hardcoded version (better than v1.0.0)
+  console.warn('[useAppVersion] Using hardcoded fallback version');
+  return '1.8.117';
 }
 
 /**

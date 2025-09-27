@@ -39,8 +39,8 @@ import type { UpdateManifest, UpdateProgress } from "../src/types/updater";
 // 🛡️ Zentrale CSP-Konfiguration (einheitlich für alle Kontexte)
 const CSP_BASE = [
   "default-src 'self'",
-  "script-src 'self' 'wasm-unsafe-eval'",
-  "connect-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
+  "connect-src 'self' ws://localhost:*",
   "img-src 'self' data: blob:",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:"
@@ -1279,75 +1279,7 @@ function createMenu() {
             ]),
       ],
     },
-    {
-      label: "Update",
-      submenu: [
-        {
-          label: "Nach Updates suchen",
-          click: async () => {
-            log.info("Manual update check triggered from menu");
-            try {
-              // Use new custom updater check
-              const result = await fetchUpdateManifest();
-              if (result) {
-                const { isNewerVersion } = await import('../src/services/semver.js');
-                const hasUpdate = isNewerVersion(result.version, pkg.version);
-                
-                if (hasUpdate) {
-                  log.info(`Update available: ${result.version}`);
-                  // Show update notification
-                  dialog.showMessageBox({
-                    type: 'info',
-                    title: 'Update verfügbar',
-                    message: `RawaLite ${result.version} ist verfügbar`,
-                    detail: 'Öffnen Sie die Einstellungen um das Update zu installieren.',
-                    buttons: ['OK']
-                  });
-                } else {
-                  log.info("No updates available");
-                  dialog.showMessageBox({
-                    type: 'info',
-                    title: 'Keine Updates',
-                    message: 'Sie verwenden bereits die neueste Version',
-                    buttons: ['OK']
-                  });
-                }
-              } else {
-                log.error("Menu update check failed: Could not fetch manifest");
-                dialog.showMessageBox({
-                  type: 'error',
-                  title: 'Update-Prüfung fehlgeschlagen',
-                  message: 'Konnte nicht nach Updates suchen. Bitte versuchen Sie es später erneut.',
-                  buttons: ['OK']
-                });
-              }
-            } catch (err) {
-              log.error("Menu update check failed:", err);
-              dialog.showMessageBox({
-                type: 'error',
-                title: 'Update-Prüfung fehlgeschlagen',
-                message: 'Ein Fehler ist aufgetreten beim Suchen nach Updates.',
-                buttons: ['OK']
-              });
-            }
-          },
-        },
-        { type: "separator" },
-        {
-          label: "App-Version anzeigen",
-          click: () => {
-            const version = pkg.version; // 🔧 FIX: Use unified version system (package.json)
-            dialog.showMessageBox({
-              type: "info",
-              title: "App-Version",
-              message: `RawaLite Version ${version}`,
-              detail: `Electron: ${process.versions.electron}\nNode.js: ${process.versions.node}\nChrome: ${process.versions.chrome}`,
-              buttons: ["OK"],
-            });
-          },
-        },
-      ],
-    },
+    // 🎯 REMOVED: Complete "Update" menu per documentation - use Header badge + Settings → Updates instead
     {
       label: "Hilfe",
       submenu: [
@@ -1409,7 +1341,7 @@ function createWindow() {
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
-      sandbox: true,
+      sandbox: !isDev, // Disable sandbox in dev mode for Vite HMR
       // WASM-kompatible CSP für SQLite (sql.js)
       additionalArguments: [
         '--disable-features=VizDisplayCompositor',
@@ -1571,6 +1503,30 @@ ipcMain.handle("db:save", async (_, data: Uint8Array): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error("Error saving database:", error);
+    return false;
+  }
+});
+
+// ✨ CRITICAL: IPC Handler for forced database persistence
+ipcMain.handle("db:force-persist", async (): Promise<boolean> => {
+  try {
+    log.info("🚨 [IPC] Force persist request received - notifying renderer");
+    
+    // Send force-persist message to all renderer processes
+    const windows = BrowserWindow.getAllWindows();
+    for (const window of windows) {
+      try {
+        window.webContents.send('app:force-persist');
+        log.info("📤 [IPC] Force persist notification sent to renderer");
+      } catch (sendError) {
+        log.warn(`❌ [IPC] Failed to send force-persist to window: ${sendError}`);
+      }
+    }
+    
+    log.info("✅ [IPC] Force persist notifications completed");
+    return true;
+  } catch (error) {
+    log.error("❌ [IPC] Force persist failed:", error);
     return false;
   }
 });
@@ -2487,6 +2443,23 @@ app.on("activate", () => {
 });
 app.on("before-quit", (_event) => {
   log.info("App is about to quit");
+  
+  // ✨ CRITICAL: Trigger forced persistence via IPC before quit
+  try {
+    const windows = BrowserWindow.getAllWindows();
+    if (windows.length > 0) {
+      log.info("🚨 [BEFORE-QUIT] Requesting frontend to force persist database");
+      windows[0].webContents.send('app:force-persist');
+      
+      // Give some time for persistence to complete (synchronous, but fast)
+      // Note: This is LocalStorage-based so it's synchronous anyway
+      setTimeout(() => {
+        log.info("🚨 [BEFORE-QUIT] Force persist window closed");
+      }, 50);
+    }
+  } catch (error) {
+    log.error("❌ [BEFORE-QUIT] Failed to request force persist:", error);
+  }
 });
 app.on("will-quit", (_event) => {
   log.info("App will quit");

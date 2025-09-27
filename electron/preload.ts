@@ -70,7 +70,8 @@ const app = {
 // Database API
 const db = {
   load: () => ipcRenderer.invoke("db:load"),
-  save: (data: Uint8Array) => ipcRenderer.invoke("db:save", data)
+  save: (data: Uint8Array) => ipcRenderer.invoke("db:save", data),
+  forcePersist: () => ipcRenderer.invoke("db:force-persist")
 };
 
 // PDF API
@@ -93,6 +94,13 @@ const logo = {
   getUrl: (filePath: string) => ipcRenderer.invoke("logo:getUrl", filePath),
   delete: (filePath: string) => ipcRenderer.invoke("logo:delete", filePath)
 };
+
+// ✨ Listen for force persist requests from main process
+ipcRenderer.on('app:force-persist', () => {
+  console.log('🚨 [IPC] Received force-persist request from main process');
+  // Trigger global force persist - the updated getDB() will handle this via beforeunload
+  window.dispatchEvent(new Event('beforeunload'));
+});
 
 // Expose unified API to renderer
 contextBridge.exposeInMainWorld("rawalite", {

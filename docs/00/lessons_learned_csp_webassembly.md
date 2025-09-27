@@ -44,6 +44,14 @@ CompileError: WebAssembly.instantiate(): Refused to compile or instantiate WebAs
 - **Ergebnis:** ✅ ROOT CAUSE GEFUNDEN - index.html hatte `script-src 'self'` ohne WebAssembly-Support
 - **Quelle:** index.html Line 7-14, CSP Meta-Tag `script-src 'self';` ohne `'wasm-unsafe-eval'`
 
+### Versuch 4 (WIEDERHOLT PROBLEM)
+- **Datum:** 2025-09-27  
+- **Durchgeführt von:** KI (GitHub Copilot) - DERSELBE KI-ASSISTENT!
+- **Beschreibung:** **FEHLER:** Exakt dasselbe CSP-Problem nochmals "entdeckt" und "gefixt" obwohl es bereits in Lessons Learned dokumentiert war
+- **Hypothese:** CSP-Problem ist neu entdeckt - index.html braucht 'unsafe-inline' 
+- **Ergebnis:** ❌ **DOPPELARBEIT** - Problem war bereits gelöst, aber KI hat eigene Lessons Learned nicht beachtet!
+- **Quelle:** Chat Session 2025-09-27 (aktueller Debugging-Workflow), index.html bereits korrekt
+
 ---
 
 ## 🔍 Technische Details

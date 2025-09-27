@@ -56,9 +56,13 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
 
   // Update form data when settings change
   useEffect(() => {
-    console.log('🔍 Settings loaded - Logo length:', settings.companyData.logo?.length || 0);
-    setCompanyFormData(settings.companyData);
-    setNumberingFormData(settings.numberingCircles);
+    console.log('🔍 Settings loaded - Logo length:', settings.companyData?.logo?.length || 0);
+    if (settings.companyData) {
+      setCompanyFormData(settings.companyData);
+    }
+    if (settings.numberingCircles) {
+      setNumberingFormData(settings.numberingCircles);
+    }
   }, [settings]);
 
   // Update custom colors when current settings change
