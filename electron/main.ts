@@ -1400,7 +1400,32 @@ function createWindow() {
       preload: preloadPath,
       contextIsolation: true,
       sandbox: true,
+      // WASM-kompatible CSP für SQLite (sql.js)
+      additionalArguments: [
+        '--disable-features=VizDisplayCompositor',
+      ],
     },
+  });
+
+  // CSP-Header für WebAssembly-Unterstützung setzen
+  win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self'; " +
+          "script-src 'self' 'wasm-unsafe-eval'; " +  // WASM-Unterstützung
+          "style-src 'self' 'unsafe-inline'; " +      // CSS-Unterstützung
+          "img-src 'self' data: blob:; " +             // Bilder & Daten-URLs
+          "font-src 'self' data:; " +                  // Web-Fonts
+          "connect-src 'self' blob:; " +               // Fetch/XHR
+          "worker-src 'self' blob:; " +                // Web Workers
+          "child-src 'self'; " +                       // Frames
+          "object-src 'none'; " +                      // Plugins blockieren
+          "base-uri 'self';"                           // Base-URI beschränken
+        ]
+      }
+    });
   });
 
   if (isDev) {
@@ -1824,7 +1849,32 @@ ipcMain.handle(
         webPreferences: {
           contextIsolation: true,
           sandbox: true,
+          // WASM-kompatible CSP für SQLite (sql.js)
+          additionalArguments: [
+            '--disable-features=VizDisplayCompositor',
+          ],
         },
+      });
+
+      // CSP-Header für WebAssembly-Unterstützung setzen
+      pdfWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+        callback({
+          responseHeaders: {
+            ...details.responseHeaders,
+            'Content-Security-Policy': [
+              "default-src 'self'; " +
+              "script-src 'self' 'wasm-unsafe-eval'; " +  // WASM-Unterstützung
+              "style-src 'self' 'unsafe-inline'; " +      // CSS-Unterstützung
+              "img-src 'self' data: blob:; " +             // Bilder & Daten-URLs
+              "font-src 'self' data:; " +                  // Web-Fonts
+              "connect-src 'self' blob:; " +               // Fetch/XHR
+              "worker-src 'self' blob:; " +                // Web Workers
+              "child-src 'self'; " +                       // Frames
+              "object-src 'none'; " +                      // Plugins blockieren
+              "base-uri 'self';"                           // Base-URI beschränken
+            ]
+          }
+        });
       });
 
       try {
