@@ -41,6 +41,10 @@ Immer strikt befolgen, keine Abweichungen.
   - Theme persistiert über SQLite (Dexie Dev-Fallback).  
   - Sidebar 240 px, kein FOUC.  
   - Farbpalette fix, darf nie geändert werden.
+- **Lokale Installation**:
+  - **Immer vor Installation neuen Build erstellen**: `pnpm build && pnpm dist`
+  - Dann erst `.\install-local.cmd` ausführen
+  - Sicherstellt aktuelle Code-Änderungen in der Installation
  **Testergebnisse (`test-results`) liegen in `/tests/`**, nicht im Projekt-Root. In der Dokumentation dürfen sie nur referenziert werden, nicht dupliziert.
  - Debugging erfolgt ausschließlich nach dem 
   [Systematischen Problemlösungsprozess (Safe Edition)](../development/DEBUGGING_STANDARDS.md).
@@ -55,6 +59,7 @@ Immer strikt befolgen, keine Abweichungen.
 - Direktimporte von `SQLiteAdapter` oder `DexieAdapter`.  
 - Dynamische IPC-Kanäle.  
 - Node-APIs direkt im Renderer.
+- Lokale Installation ohne vorherigen Build (`.\install-local.cmd` ohne `pnpm build && pnpm dist`).
 
 ---
 

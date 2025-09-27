@@ -1,4 +1,4 @@
-# RawaLite – Konsolidierte Instructions (Safe Edition)# RawaLite – Konsolidierte Instructions (Safe Edition)# RawaLite – Konsolidierte Instructions (Safe Edition)
+# RawaLite – Konsolidierte Instructions (Safe Edition)# RawaLite – Konsolidierte Instructions (Safe Edition)# RawaLite – Konsolidierte Instructions (Safe Edition)# RawaLite – Konsolidierte Instructions (Safe Edition)
 
 
 
@@ -6,15 +6,15 @@ Diese Datei ist die **einzige gültige Spezifikation** für RawaLite. Deren Doku
 
 
 
-👉 Bei komplexeren Problemen ist der dokumentierteDiese Datei ist die **einzige gültige Spezifikation** für RawaLite. Deren Dokumente (inkl. ältere Anleitungen) gelten nur noch ergänzend als Historie.Diese Datei ist die **einzige gültige Spezifikation** für RawaLite.👉 Bei komplexeren Problemen ist der dokumentierte
+👉 Bei komplexeren Problemen ist der dokumentierteDiese Datei ist die **einzige gültige Spezifikation** für RawaLite. Deren Dokumente (inkl. ältere Anleitungen) gelten nur noch ergänzend als Historie.
 
 [Systematische Debugging-Standard](../docs/00/DEBUGGING_STANDARDS.md)
 
-zwingend einzuhalten.[Systematische Debugging-Standard](../docs/development/DEBUGGING_STANDARDS.md)
+zwingend einzuhalten.
 
 
 
----👉 Bei komplexeren Problemen ist der dokumentiertezwingend einzuhalten.
+---👉 Bei komplexeren Problemen ist der dokumentierteDiese Datei ist die **einzige gültige Spezifikation** für RawaLite. Deren Dokumente (inkl. ältere Anleitungen) gelten nur noch ergänzend als Historie.Diese Datei ist die **einzige gültige Spezifikation** für RawaLite.👉 Bei komplexeren Problemen ist der dokumentierte
 
 
 
@@ -22,7 +22,7 @@ zwingend einzuhalten.[Systematische Debugging-Standard](../docs/development/DEBU
 
 
 
-### Package Managerzwingend einzuhalten.---
+### Package Managerzwingend einzuhalten.[Systematische Debugging-Standard](../docs/development/DEBUGGING_STANDARDS.md)
 
 - **PNPM-only** – keine Nutzung von `npm` oder `yarn`.  
 
@@ -30,7 +30,7 @@ zwingend einzuhalten.[Systematische Debugging-Standard](../docs/development/DEBU
 
 
 
-### In-App Prinzip---## 🚀 Release-Workflow (Safe Edition, Zero-Interaction)deren Dokumente (inkl. ältere Anleitungen) gelten nur noch ergänzend als Historie.
+### In-App Prinzip---👉 Bei komplexeren Problemen ist der dokumentiertezwingend einzuhalten.
 
 - **Alles in-App**: keine externen Links, kein `shell.openExternal`, kein `window.open`, kein `target="_blank"`.  
 
@@ -38,7 +38,7 @@ zwingend einzuhalten.[Systematische Debugging-Standard](../docs/development/DEBU
 
 
 
-### Update-System## 🛡️ Goldene Regeln---
+### Update-System## 🛡️ Goldene Regeln[Systematische Debugging-Standard](../docs/00/DEBUGGING_STANDARDS.md)
 
 - **Automatische Prüfung**: nur einmal beim App-Start.  
 
@@ -46,7 +46,7 @@ zwingend einzuhalten.[Systematische Debugging-Standard](../docs/development/DEBU
 
 - `autoDownload: false`.  
 
-- Download & Install starten nur nach User-Aktion.  ### Package Manager## 🛡️ Goldene Regeln
+- Download & Install starten nur nach User-Aktion.  ### Package Managerzwingend einzuhalten.---
 
 - Pending-Pfad basiert auf `PATHS.userData()`.  
 
@@ -54,15 +54,15 @@ zwingend einzuhalten.[Systematische Debugging-Standard](../docs/development/DEBU
 
 
 
-### Pfad-Management- Hinweis: `npm` ist technisch installiert, wird aber **nicht verwendet**.### Package Manager
+### Pfad-Management- Hinweis: `npm` ist technisch installiert, wird aber **nicht verwendet**.
 
 - **Single Source of Truth:** `src/lib/paths.ts` (`PATHS`).  
 
-- Für Standalone/CLI: `src/lib/path-utils.ts`.  - **PNPM-only** – keine Nutzung von `npm` oder `yarn`.  
+- Für Standalone/CLI: `src/lib/path-utils.ts`.  
 
 - **Verboten:** direkter Aufruf von `app.getPath()` außerhalb `paths.ts`.  
 
-- **Feste Ordnerstruktur:**  ### In-App Prinzip- Hinweis: `npm` ist technisch installiert, wird aber **nicht verwendet**.
+- **Feste Ordnerstruktur:**  ### In-App Prinzip---## 🚀 Release-Workflow (Safe Edition, Zero-Interaction)deren Dokumente (inkl. ältere Anleitungen) gelten nur noch ergänzend als Historie.
 
   - downloads  
 
@@ -70,15 +70,15 @@ zwingend einzuhalten.[Systematische Debugging-Standard](../docs/development/DEBU
 
   - cache  
 
-  - temp  - Alle Abläufe laufen vollständig in der Anwendung.### In-App Prinzip
+  - temp  - Alle Abläufe laufen vollständig in der Anwendung.
 
   - templates  
 
-  - backups  - **Alles in-App**: keine externen Links, kein `shell.openExternal`, kein `window.open`, kein `target="_blank"`.  
+  - backups  
 
   - userdata  
 
-  - documents  ### Update-System- Alle Abläufe laufen vollständig in der Anwendung.
+  - documents  ### Update-System## 🛡️ Goldene Regeln---
 
   - desktop  
 
@@ -86,31 +86,31 @@ zwingend einzuhalten.[Systematische Debugging-Standard](../docs/development/DEBU
 
 ### PDF-System
 
-- **Workflow:** `PDFService → PDFPostProcessor → templates`.  - **Manuelle Prüfung**: über Header (Versionsnummer) oder Einstellungen → Updates.  ### Update-System
+- **Workflow:** `PDFService → PDFPostProcessor → templates`.  - **Manuelle Prüfung**: über Header (Versionsnummer) oder Einstellungen → Updates.  
 
 - Alle Assets & Fonts **lokal gebundled**.  
 
-- Nur Fonts mit **rechtlich zulässiger Einbettung** (SIL OFL, kommerzielle Lizenzen mit Einbettungsrecht).  - `autoDownload: false`.  - **Automatische Prüfung**: nur einmal beim App-Start.  
+- Nur Fonts mit **rechtlich zulässiger Einbettung** (SIL OFL, kommerzielle Lizenzen mit Einbettungsrecht).  - `autoDownload: false`.  
 
 - **Verboten:** externe Ressourcen, CDNs, Online-Nachladung.  
 
-- Tests: deterministisch & offline.- Download & Install starten nur nach User-Aktion.  - **Manuelle Prüfung**: über Header (Versionsnummer) oder Einstellungen → Updates.  
+- Tests: deterministisch & offline.- Download & Install starten nur nach User-Aktion.  ### Package Manager## 🛡️ Goldene Regeln
 
 
 
-### Persistenz- Pending-Pfad basiert auf `PATHS.userData()`.  - `autoDownload: false`.  
+### Persistenz- Pending-Pfad basiert auf `PATHS.userData()`.  
 
 - **Primary:** SQLite (sql.js).  
 
-- **Dev-Fallback:** Dexie (IndexedDB).  - **Verboten:** Browser-Fallbacks oder Redirects.- Download & Install starten nur nach User-Aktion.  
+- **Dev-Fallback:** Dexie (IndexedDB).  - **Verboten:** Browser-Fallbacks oder Redirects.- **PNPM-only** – keine Nutzung von `npm` oder `yarn`.  
 
 - Einstiegspunkt: `src/persistence/index.ts` (einziger Import).  
 
-- **Adapter-Parität:** SQLite & Dexie implementieren identische Schnittstellen.  - Pending-Pfad basiert auf `PATHS.userData()`.  
+- **Adapter-Parität:** SQLite & Dexie implementieren identische Schnittstellen.  
 
 - **Migration:** additiv, idempotent, ein gemeinsamer Migrations-Ordner.  
 
-- **Verboten:** direkte Importe von `SQLiteAdapter` oder `DexieAdapter`.  ### Pfad-Management- **Verboten:** Browser-Fallbacks oder Redirects.
+- **Verboten:** direkte Importe von `SQLiteAdapter` oder `DexieAdapter`.  ### Pfad-Management- Hinweis: `npm` ist technisch installiert, wird aber **nicht verwendet**.### Package Manager
 
 - **Nicht erlaubt:** LocalStorage (nur noch historische Migration).
 
@@ -118,101 +118,315 @@ zwingend einzuhalten.[Systematische Debugging-Standard](../docs/development/DEBU
 
 ### Security & IPC
 
-- **Prod verpflichtend:**  - Für Standalone/CLI: `src/lib/path-utils.ts`.  ### Pfad-Management
+- **Prod verpflichtend:**  - Für Standalone/CLI: `src/lib/path-utils.ts`.  - **PNPM-only** – keine Nutzung von `npm` oder `yarn`.  
 
   - `sandbox:true`  
 
-  - `contextIsolation:true`  - **Verboten:** direkter Aufruf von `app.getPath()` außerhalb `paths.ts`.  - **Single Source of Truth:** `src/lib/paths.ts` (`PATHS`).  
+  - `contextIsolation:true`  - **Verboten:** direkter Aufruf von `app.getPath()` außerhalb `paths.ts`.  
 
 - IPC ausschließlich typisiert via `preload` (ContextBridge).  
 
-- **Verboten:** dynamische Kanäle, Node im Renderer.  - **Feste Ordnerstruktur:**  - Für Standalone/CLI: `src/lib/path-utils.ts`.  
+- **Verboten:** dynamische Kanäle, Node im Renderer.  - **Feste Ordnerstruktur:**  ### In-App Prinzip- Hinweis: `npm` ist technisch installiert, wird aber **nicht verwendet**.
 
 - **Dev vs. Prod:** Unterschiede dokumentieren, Prod-Regeln nicht aufweichen.
 
-  - downloads  - **Verboten:** direkter Aufruf von `app.getPath()` außerhalb `paths.ts`.  
+  - downloads  
 
 ### Nummernkreise
 
-- Pro Dokumenttyp konfigurierbar:    - logs  - **Feste Ordnerstruktur:**  
+- Pro Dokumenttyp konfigurierbar:    - logs  - **Alles in-App**: keine externen Links, kein `shell.openExternal`, kein `window.open`, kein `target="_blank"`.  
 
   - Präfix  
 
-  - Stellen    - cache    - downloads  
+  - Stellen    - cache  
 
   - Aktueller Zähler  
 
-  - Reset (Nie / Jährlich / Monatlich)    - temp    - logs  
+  - Reset (Nie / Jährlich / Monatlich)    - temp  - Alle Abläufe laufen vollständig in der Anwendung.### In-App Prinzip
 
 - Atomarität garantiert.  
 
-- Jahres-Reset optional.    - templates    - cache  
+- Jahres-Reset optional.    - templates  
 
 - Tests: Parallelität & Vorschau „nächste Nummer".
 
-  - backups    - temp  
+  - backups  - **Alles in-App**: keine externen Links, kein `shell.openExternal`, kein `window.open`, kein `target="_blank"`.  
 
 ### UI, Theme & Navigation
 
-- Persistenz über SQLite (Dexie nur Dev-Fallback).    - userdata    - templates  
+- Persistenz über SQLite (Dexie nur Dev-Fallback).    - userdata  
 
 - **Kein FOUC**.  
 
-- Sidebar hat feste Breite (240 px).    - documents    - backups  
+- Sidebar hat feste Breite (240 px).    - documents  ### Update-System- Alle Abläufe laufen vollständig in der Anwendung.
 
 - Konsistente Typografie.  
 
-- **Farbpalette:** Pastellfarben sind final & dürfen nicht verändert werden.  - desktop    - userdata  
+- **Farbpalette:** Pastellfarben sind final & dürfen nicht verändert werden.  - desktop  
 
 
 
----  - documents  
+### Lokale Installation- **Automatische Prüfung**: nur einmal beim App-Start.  
+
+- **Build-First Regel:** Vor jeder lokalen Installation muss ein frischer Build erstellt werden
+
+- **Workflow:** `pnpm build && pnpm dist` → dann erst `.\install-local.cmd`### PDF-System
+
+- **Zweck:** Sicherstellt, dass Code-Änderungen in der Installation enthalten sind
+
+- **Verboten:** Direkte Installation ohne vorherigen Build- **Workflow:** `PDFService → PDFPostProcessor → templates`.  - **Manuelle Prüfung**: über Header (Versionsnummer) oder Einstellungen → Updates.  ### Update-System
 
 
 
-## 📂 Struktur der Dokumentation### PDF-System  - desktop  
+---- Alle Assets & Fonts **lokal gebundled**.  
 
 
 
-- `00-index.md` – Übersicht & Code-Wahrheit (Referenzdateien)  - **Workflow:** `PDFService → PDFPostProcessor → templates`.  
+## 📂 Struktur der Dokumentation- Nur Fonts mit **rechtlich zulässiger Einbettung** (SIL OFL, kommerzielle Lizenzen mit Einbettungsrecht).  - `autoDownload: false`.  - **Automatische Prüfung**: nur einmal beim App-Start.  
+
+
+
+- `00-index.md` – Übersicht & Code-Wahrheit (Referenzdateien)  - **Verboten:** externe Ressourcen, CDNs, Online-Nachladung.  
 
 - `10-architecture-overview.md` – High-Level Architektur  
 
-- `20-paths.md` – Pfad-Management  - Alle Assets & Fonts **lokal gebundled**.  ### PDF-System
+- `20-paths.md` – Pfad-Management  - Tests: deterministisch & offline.- Download & Install starten nur nach User-Aktion.  - **Manuelle Prüfung**: über Header (Versionsnummer) oder Einstellungen → Updates.  
 
 - `30-updates.md` – Update-System  
 
-- `40-pdf-workflow.md` – PDF-Workflow  - Nur Fonts mit **rechtlich zulässiger Einbettung** (SIL OFL, kommerzielle Lizenzen mit Einbettungsrecht).  - **Workflow:** `PDFService → PDFPostProcessor → templates`.  
+- `40-pdf-workflow.md` – PDF-Workflow  
 
 - `50-persistence.md` – Persistenz  
 
-- `60-security-ipc.md` – Security & IPC  - **Verboten:** externe Ressourcen, CDNs, Online-Nachladung.  - Alle Assets & Fonts **lokal gebundled**.  
+- `60-security-ipc.md` – Security & IPC  ### Persistenz- Pending-Pfad basiert auf `PATHS.userData()`.  - `autoDownload: false`.  
 
 - `70-numbering.md` – Nummernkreise  
 
-- `80-ui-theme-navigation.md` – UI, Theme & Navigation  - Tests: deterministisch & offline.- Nur Fonts mit **rechtlich zulässiger Einbettung** (SIL OFL, kommerzielle Lizenzen mit Einbettungsrecht).  
+- `80-ui-theme-navigation.md` – UI, Theme & Navigation  - **Primary:** SQLite (sql.js).  
 
 - `90-deprecated-patterns.md` – Verbotene Muster  
 
-- `99-glossary.md` – Glossar  - **Verboten:** externe Ressourcen, CDNs, Online-Nachladung.  
+- `99-glossary.md` – Glossar  - **Dev-Fallback:** Dexie (IndexedDB).  - **Verboten:** Browser-Fallbacks oder Redirects.- Download & Install starten nur nach User-Aktion.  
 
 
 
----### Persistenz- Tests: deterministisch & offline.
+---- Einstiegspunkt: `src/persistence/index.ts` (einziger Import).  
 
 
 
-## 🚫 Deprecated Patterns- **Primary:** SQLite (sql.js).  
+## 🚫 Deprecated Patterns- **Adapter-Parität:** SQLite & Dexie implementieren identische Schnittstellen.  - Pending-Pfad basiert auf `PATHS.userData()`.  
 
 
 
-Die folgenden Muster sind **streng verboten**:- **Dev-Fallback:** Dexie (IndexedDB).  ### Persistenz
+Die folgenden Muster sind **streng verboten**:- **Migration:** additiv, idempotent, ein gemeinsamer Migrations-Ordner.  
 
 
 
-- `app.getPath()` außerhalb `paths.ts`.  - Einstiegspunkt: `src/persistence/index.ts` (einziger Import).  - **Primary:** SQLite (sql.js).  
+- `app.getPath()` außerhalb `paths.ts`.  - **Verboten:** direkte Importe von `SQLiteAdapter` oder `DexieAdapter`.  ### Pfad-Management- **Verboten:** Browser-Fallbacks oder Redirects.
 
 - `shell.openExternal`, externe Links, `window.open`, `target="_blank"`.  
+
+- PDF-Assets aus dem Netz.  - **Nicht erlaubt:** LocalStorage (nur noch historische Migration).
+
+- Direktimporte `SQLiteAdapter` oder `DexieAdapter`.  
+
+- Dynamische IPC-Kanäle.  - **Single Source of Truth:** `src/lib/paths.ts` (`PATHS`).  
+
+- Lokale Installation ohne Build (`.\install-local.cmd` ohne `pnpm build && pnpm dist`).
+
+### Security & IPC
+
+---
+
+- **Prod verpflichtend:**  - Für Standalone/CLI: `src/lib/path-utils.ts`.  ### Pfad-Management
+
+## ✅ Checkliste vor Änderungen
+
+  - `sandbox:true`  
+
+- [ ] Kein `npm` oder `yarn` verwendet.  
+
+- [ ] Update-Flow entspricht 100 % den In-App-Regeln.    - `contextIsolation:true`  - **Verboten:** direkter Aufruf von `app.getPath()` außerhalb `paths.ts`.  - **Single Source of Truth:** `src/lib/paths.ts` (`PATHS`).  
+
+- [ ] Pfade ausschließlich via `paths.ts` oder `path-utils.ts`.  
+
+- [ ] PDF nur via `PDFService` & `PostProcessor`, offline & deterministisch.  - IPC ausschließlich typisiert via `preload` (ContextBridge).  
+
+- [ ] Persistenz über `persistence/index.ts`, Adapter-Parität gewahrt.  
+
+- [ ] Migration additiv & idempotent.  - **Verboten:** dynamische Kanäle, Node im Renderer.  - **Feste Ordnerstruktur:**  - Für Standalone/CLI: `src/lib/path-utils.ts`.  
+
+- [ ] Security: `sandbox:true`, `contextIsolation:true`, IPC typisiert.  
+
+- [ ] Nummernkreise atomar, Reset optional, Tests vorhanden.  - **Dev vs. Prod:** Unterschiede dokumentieren, Prod-Regeln nicht aufweichen.
+
+- [ ] Theme persistiert, Sidebar 240 px, kein FOUC, Farbpalette unverändert.  
+
+- [ ] Keine verbotenen Patterns implementiert.    - downloads  - **Verboten:** direkter Aufruf von `app.getPath()` außerhalb `paths.ts`.  
+
+- [ ] Vor lokaler Installation: `pnpm build && pnpm dist` ausgeführt.
+
+### Nummernkreise
+
+👉 Bei komplexeren Problemen ist der dokumentierte
+
+[Systematische Debugging-Standard](../docs/00/DEBUGGING_STANDARDS.md)- Pro Dokumenttyp konfigurierbar:    - logs  - **Feste Ordnerstruktur:**  
+
+zwingend einzuhalten.
+
+  - Präfix  
+
+---
+
+  - Stellen    - cache    - downloads  
+
+## 🚀 Release-Workflow (Safe Edition, Zero-Interaction)
+
+  - Aktueller Zähler  
+
+Für Releases gilt ein **vollständig automatisierter, nicht-interaktiver Ablauf**.  
+
+Der KI-Assistent **führt alle Schritte selbstständig aus**, ohne Nachfragen oder To-Dos an den Benutzer.    - Reset (Nie / Jährlich / Monatlich)    - temp    - logs  
+
+
+
+### Grundprinzipien- Atomarität garantiert.  
+
+- **PNPM-only** – keine `npm`/`yarn`.  
+
+- **Zero-Interaction** – Defaults sind fix (Patch-Bump, Windows-Build).  - Jahres-Reset optional.    - templates    - cache  
+
+- **Guards & Tests** – jedes Mal zwingend, bevor Version/Build/Publish ausgeführt wird.  
+
+- **GitHub Release** – KI erstellt automatisch Release mit allen Assets.  - Tests: Parallelität & Vorschau „nächste Nummer".
+
+- **Safe Edition** – keine Abkürzungen, kein Überspringen von Schritten.  
+
+  - backups    - temp  
+
+### Standard-Ablauf (immer befolgen)
+
+### UI, Theme & Navigation
+
+1. **Install (frozen):**
+
+   ```powershell- Persistenz über SQLite (Dexie nur Dev-Fallback).    - userdata    - templates  
+
+   pnpm install --frozen-lockfile
+
+   ```- **Kein FOUC**.  
+
+
+
+2. **Caches & Artefakte leeren:**- Sidebar hat feste Breite (240 px).    - documents    - backups  
+
+   ```powershell
+
+   @("dist","out","build","release","coverage",".vite","node_modules\.vite",".cache",".electron-builder","tests\test-results") | % { if (Test-Path $_) { Remove-Item -Recurse -Force $_ } }- Konsistente Typografie.  
+
+   ```
+
+- **Farbpalette:** Pastellfarben sind final & dürfen nicht verändert werden.  - desktop    - userdata  
+
+3. **Guards & Tests (Zero-Tolerance):**
+
+   ```powershell
+
+   pnpm typecheck
+
+   pnpm lint---  - documents  
+
+   pnpm guard:external
+
+   pnpm guard:pdf
+
+   pnpm test --run
+
+   ```## 📂 Struktur der Dokumentation### PDF-System  - desktop  
+
+
+
+4. **Version bump (Patch default):**
+
+   ```powershell
+
+   pnpm version patch -m "chore(release): v%s"- `00-index.md` – Übersicht & Code-Wahrheit (Referenzdateien)  - **Workflow:** `PDFService → PDFPostProcessor → templates`.  
+
+   git push
+
+   git push --follow-tags- `10-architecture-overview.md` – High-Level Architektur  
+
+   ```
+
+- `20-paths.md` – Pfad-Management  - Alle Assets & Fonts **lokal gebundled**.  ### PDF-System
+
+5. **Build & Publish (Windows):**
+
+   ```powershell- `30-updates.md` – Update-System  
+
+   pnpm build
+
+   pnpm exec electron-builder --win --publish never- `40-pdf-workflow.md` – PDF-Workflow  - Nur Fonts mit **rechtlich zulässiger Einbettung** (SIL OFL, kommerzielle Lizenzen mit Einbettungsrecht).  - **Workflow:** `PDFService → PDFPostProcessor → templates`.  
+
+   pnpm generate:update-json
+
+   ```- `50-persistence.md` – Persistenz  
+
+
+
+6. **Asset-Guards:**- `60-security-ipc.md` – Security & IPC  - **Verboten:** externe Ressourcen, CDNs, Online-Nachladung.  - Alle Assets & Fonts **lokal gebundled**.  
+
+   ```powershell
+
+   pnpm guard:release:assets- `70-numbering.md` – Nummernkreise  
+
+   ```
+
+- `80-ui-theme-navigation.md` – UI, Theme & Navigation  - Tests: deterministisch & offline.- Nur Fonts mit **rechtlich zulässiger Einbettung** (SIL OFL, kommerzielle Lizenzen mit Einbettungsrecht).  
+
+7. **GitHub Release erstellen & Assets hochladen:**
+
+   ```powershell- `90-deprecated-patterns.md` – Verbotene Muster  
+
+   $version = node -e "console.log(require('./package.json').version)"
+
+   gh release create v$version --title "RawaLite v$version - [Auto-Generated Release]" --notes "[Auto-Generated Release Notes]"- `99-glossary.md` – Glossar  - **Verboten:** externe Ressourcen, CDNs, Online-Nachladung.  
+
+   gh release upload v$version "release\rawalite-Setup-$version.exe"
+
+   gh release upload v$version "release\update.json"
+
+   gh release upload v$version "release\latest.json"
+
+   gh release upload v$version "release\rawalite-Setup-$version.exe.blockmap"---### Persistenz- Tests: deterministisch & offline.
+
+   ```
+
+
+
+8. **Release-Verifikation:**
+
+   ```powershell## 🚫 Deprecated Patterns- **Primary:** SQLite (sql.js).  
+
+   gh release view v$version --json name,tagName,assets
+
+   ```
+
+
+
+### ErgebnisDie folgenden Muster sind **streng verboten**:- **Dev-Fallback:** Dexie (IndexedDB).  ### Persistenz
+
+
+
+* KI **erstellt automatisch GitHub Release** mit allen erforderlichen Assets
+
+* KI gibt am Ende **Version, Tag, Release-Status und Download-URLs** aus
+
+* Falls ein Schritt fehlschlägt → **Abbruch + Diagnose** (keine Nachfragen)- `app.getPath()` außerhalb `paths.ts`.  - Einstiegspunkt: `src/persistence/index.ts` (einziger Import).  - **Primary:** SQLite (sql.js).  
+
+* **Immer strikt nach Doku**, keine eigenen Workflows
+
+* **Vollständig automatisiert** - keine manuellen GitHub-Aktionen erforderlich- `shell.openExternal`, externe Links, `window.open`, `target="_blank"`.  
 
 - PDF-Assets aus dem Netz.  - **Adapter-Parität:** SQLite & Dexie implementieren identische Schnittstellen.  - **Dev-Fallback:** Dexie (IndexedDB).  
 
