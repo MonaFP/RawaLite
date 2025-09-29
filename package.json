@@ -19,7 +19,10 @@
     "test": "vitest",
     "e2e": "@playwright/test",
     "dist": "electron-builder",
-    "postinstall": "node -e \"require('fs').mkdirSync('public',{recursive:true});require('fs').cpSync(require.resolve('sql.js/dist/sql-wasm.wasm'),'public/sql-wasm.wasm',{force:true})\""
+    "postinstall": "node -e \"require('fs').mkdirSync('public',{recursive:true});require('fs').cpSync(require.resolve('sql.js/dist/sql-wasm.wasm'),'public/sql-wasm.wasm',{force:true})\"",
+    "sync-version": "tsx scripts/sync-version.ts",
+    "version:report": "tsx scripts/sync-version.ts report",
+    "version:check": "tsx scripts/sync-version.ts scan"
   },
   "dependencies": {
     "@types/jszip": "^3.4.1",

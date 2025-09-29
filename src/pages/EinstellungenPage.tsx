@@ -190,6 +190,10 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
         adapter.listPackages()
       ]);
 
+      // ✅ Verwende VersionService für konsistente Versionsinformation (Phase 2)
+      const { VersionService } = await import('../services/VersionService');
+      const versionInfo = VersionService.getBackupVersionInfo();
+      
       const backupData = {
         companyData: settings.companyData,
         numberingCircles: settings.numberingCircles,
@@ -197,8 +201,9 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
         invoices,
         offers,
         packages,
-        exportDate: new Date().toISOString(),
-        version: '1.0.0'
+        exportDate: versionInfo.timestamp,
+        version: versionInfo.version,
+        buildInfo: versionInfo.buildInfo
       };
 
       // Erstelle ZIP-Datei
@@ -209,6 +214,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
       zip.file('README.txt', `RawaLite Backup
 Erstellt am: ${new Date().toLocaleDateString('de-DE')}
 Version: ${backupData.version}
+Build: ${backupData.buildInfo}
 
 Diese Datei enthält alle Ihre RawaLite-Daten und kann über die Datensicherungs-Funktion importiert werden.
 

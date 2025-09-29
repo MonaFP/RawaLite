@@ -1,19 +1,22 @@
 appId: com.rawalite.app
 productName: RawaLite
 directories:
-  output: dist
+  output: release
 files:
   - dist-electron
-  - dist
-  - public
+  - dist/**/*
+  - public/**/*
   - package.json
+extraResources:
+  - from: index.html
+    to: index.html
 icon: assets/icon.png
 win:
   target:
     - target: nsis
       arch:
         - x64
-  icon: assets/icon.ico
+  # icon: assets/icon.ico  # Temporär deaktiviert wegen Icon-Problem
 mac:
   target:
     - target: dmg
