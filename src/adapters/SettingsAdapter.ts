@@ -1,6 +1,7 @@
 import { getDB, all, run, withTx } from '../persistence/sqlite/db';
 import type { Settings, CompanyData, NumberingCircle } from '../lib/settings';
 import { defaultSettings } from '../lib/settings';
+import PATHS from '../lib/paths';
 
 export class SettingsAdapter {
   // Convert SQLite row to CompanyData format
@@ -57,18 +58,52 @@ export class SettingsAdapter {
       companyData = defaultSettings.companyData;
     }
 
-    // Get numbering circles from localStorage (for now, until we migrate to SQLite)
+    // ✅ Get numbering circles from SQLite (Phase 2)
     let numberingCircles: NumberingCircle[];
     try {
-      const stored = localStorage.getItem('rawalite-numbering');
-      if (stored) {
-        numberingCircles = JSON.parse(stored);
+      const circles = all<{
+        id: string;
+        name: string;
+        prefix: string;
+        digits: number;
+        current: number;
+        resetMode: 'never' | 'yearly';
+        lastResetYear: number | null;
+      }>(`
+        SELECT id, name, prefix, digits, current, resetMode, lastResetYear
+        FROM numbering_circles
+        ORDER BY name
+      `);
+      
+      if (circles.length > 0) {
+        numberingCircles = circles.map(c => ({
+          id: c.id,
+          name: c.name,
+          prefix: c.prefix,
+          digits: c.digits,
+          current: c.current,
+          resetMode: c.resetMode,
+          lastResetYear: c.lastResetYear ?? undefined
+        }));
       } else {
+        // Fallback zu Default-Werten falls keine Kreise in DB
         numberingCircles = defaultSettings.numberingCircles;
       }
     } catch (error) {
-      console.warn('Error loading numbering circles from localStorage:', error);
-      numberingCircles = defaultSettings.numberingCircles;
+      console.warn('Error loading numbering circles from SQLite, trying localStorage fallback:', error);
+      
+      // 🔄 Fallback zu localStorage für Migration
+      try {
+        const stored = localStorage.getItem('rawalite-numbering');
+        if (stored) {
+          numberingCircles = JSON.parse(stored);
+        } else {
+          numberingCircles = defaultSettings.numberingCircles;
+        }
+      } catch (localStorageError) {
+        console.warn('LocalStorage fallback failed:', localStorageError);
+        numberingCircles = defaultSettings.numberingCircles;
+      }
     }
 
     return {
@@ -112,41 +147,48 @@ export class SettingsAdapter {
   }
 
   async updateNumberingCircles(numberingCircles: NumberingCircle[]): Promise<void> {
-    // Store in localStorage for now (we'll migrate to SQLite later)
+    // ✅ Store in SQLite (Phase 2)
     try {
-      localStorage.setItem('rawalite-numbering', JSON.stringify(numberingCircles));
+      await withTx(async () => {
+        for (const circle of numberingCircles) {
+          run(`
+            INSERT OR REPLACE INTO numbering_circles 
+            (id, name, prefix, digits, current, resetMode, lastResetYear, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 
+              COALESCE((SELECT createdAt FROM numbering_circles WHERE id = ?), datetime('now')),
+              datetime('now')
+            )
+          `, [
+            circle.id,
+            circle.name,
+            circle.prefix,
+            circle.digits,
+            circle.current,
+            circle.resetMode,
+            circle.lastResetYear ?? null,
+            circle.id // für COALESCE
+          ]);
+        }
+      });
+      
+      console.log('✅ Nummernkreise in SQLite gespeichert');
     } catch (error) {
-      console.error('Error saving numbering circles:', error);
-      throw error;
+      console.error('Error saving numbering circles to SQLite:', error);
+      
+      // 🔄 Fallback zu localStorage
+      try {
+        localStorage.setItem('rawalite-numbering', JSON.stringify(numberingCircles));
+        console.warn('⚠️ Fallback: Nummernkreise in localStorage gespeichert');
+      } catch (localStorageError) {
+        console.error('LocalStorage fallback failed:', localStorageError);
+        throw error;
+      }
     }
   }
 
   async getNextNumber(circleId: string): Promise<string> {
-    const settings = await this.getSettings();
-    const circle = settings.numberingCircles.find(c => c.id === circleId);
-    
-    if (!circle) {
-      throw new Error(`Nummernkreis '${circleId}' nicht gefunden`);
-    }
-
-    const currentYear = new Date().getFullYear();
-    let newCurrent = circle.current + 1;
-
-    // Check if we need to reset for yearly numbering
-    if (circle.resetMode === 'yearly' && circle.lastResetYear !== currentYear) {
-      newCurrent = 1;
-    }
-
-    // Update the circle
-    const updatedCircles = settings.numberingCircles.map(c => 
-      c.id === circleId 
-        ? { ...c, current: newCurrent, lastResetYear: currentYear }
-        : c
-    );
-
-    // Save immediately
-    await this.updateNumberingCircles(updatedCircles);
-
-    return `${circle.prefix}${newCurrent.toString().padStart(circle.digits, '0')}`;
+    // ✅ Verwende robustes NummernkreisService (Phase 2) 
+    const { NummernkreisService } = await import('../services/NummernkreisService');
+    return await NummernkreisService.getNextNumber(circleId);
   }
 }

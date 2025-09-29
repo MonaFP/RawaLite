@@ -28,8 +28,9 @@ function createWindow() {
     win.loadURL('http://localhost:5173')
     // win.webContents.openDevTools({ mode: 'detach' })
   } else {
-    // Statisches HTML aus dem **Projekt-Root**
-    win.loadFile(path.join(rootPath, 'index.html'))
+    // Produktive Version: HTML liegt als extraResource neben dem resources Ordner
+    const htmlPath = path.join(process.resourcesPath, 'index.html')
+    win.loadFile(htmlPath)
   }
 
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -37,6 +38,27 @@ function createWindow() {
     return { action: 'deny' }
   })
 }
+
+// 🗂️ IPC Handler für Pfad-Management (Phase 2)
+import { ipcMain } from 'electron'
+
+ipcMain.handle('paths:get', async (event, pathType: 'userData' | 'documents' | 'downloads') => {
+  try {
+    switch (pathType) {
+      case 'userData':
+        return app.getPath('userData')
+      case 'documents':
+        return app.getPath('documents')
+      case 'downloads':
+        return app.getPath('downloads')
+      default:
+        throw new Error(`Unknown path type: ${pathType}`)
+    }
+  } catch (error) {
+    console.error(`Failed to get path ${pathType}:`, error)
+    throw error
+  }
+})
 
 app.whenReady().then(createWindow)
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })

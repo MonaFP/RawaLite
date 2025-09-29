@@ -46,9 +46,30 @@ function createSchemaIfNeeded() {
       createdAt TEXT, updatedAt TEXT
     );
 
+    -- 🔢 Robustes Nummernkreis-System (Phase 2)
+    CREATE TABLE IF NOT EXISTS numbering_circles (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      prefix TEXT NOT NULL,
+      digits INTEGER NOT NULL DEFAULT 4,
+      current INTEGER NOT NULL DEFAULT 0,
+      resetMode TEXT NOT NULL DEFAULT 'never' CHECK (resetMode IN ('never', 'yearly')),
+      lastResetYear INTEGER,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+
     INSERT INTO settings (id, createdAt, updatedAt)
     SELECT 1, datetime('now'), datetime('now')
     WHERE NOT EXISTS (SELECT 1 FROM settings WHERE id = 1);
+
+    -- ✅ Standard-Nummernkreise (Phase 2) 
+    INSERT OR IGNORE INTO numbering_circles (id, name, prefix, digits, current, resetMode, createdAt, updatedAt)
+    VALUES 
+      ('customers', 'Kunden', 'K-', 4, 0, 'never', datetime('now'), datetime('now')),
+      ('offers', 'Angebote', 'AN-', 4, 0, 'yearly', datetime('now'), datetime('now')),
+      ('invoices', 'Rechnungen', 'RE-', 4, 0, 'yearly', datetime('now'), datetime('now')),
+      ('packages', 'Pakete', 'PAK-', 3, 0, 'never', datetime('now'), datetime('now'));
 
     CREATE TABLE IF NOT EXISTS customers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

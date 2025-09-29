@@ -1,4 +1,5 @@
 import type { Customer } from "../persistence/adapter";
+import PATHS from "../lib/paths";
 
 export class ExportService {
   
@@ -642,15 +643,28 @@ Möchten Sie:
     document.body.appendChild(overlay);
   }
 
-  private static downloadFile(content: string, filename: string, mimeType: string): void {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  private static async downloadFile(content: string, filename: string, mimeType: string): Promise<void> {
+    try {
+      // 🗂️ Verwende zentrale Pfadabstraktion (Phase 2)
+      const exportsDir = await PATHS.EXPORTS_DIR();
+      await PATHS.ensureDir(exportsDir);
+      
+      // TODO: Implement file writing when Electron file API is available
+      // For now, use browser download as fallback
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      console.log(`✅ File exported: ${filename} (fallback browser download)`);
+    } catch (error) {
+      console.error('Failed to export file:', error);
+      throw error;
+    }
   }
 }
