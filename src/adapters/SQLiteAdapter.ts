@@ -19,7 +19,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   // SETTINGS
   async getSettings(): Promise<Settings> {
-    const rows = await this.client.query<Settings>("SELECT * FROM settings WHERE id = 1");
+    const query = convertSQLQuery("SELECT * FROM settings WHERE id = 1");
+    const rows = await this.client.query<Settings>(query);
     return rows[0] as Settings;
   }
 
@@ -67,7 +68,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
   }
 
   async getCustomer(id: number): Promise<Customer | null> {
-    const rows = await this.client.query<any>(`SELECT * FROM customers WHERE id = ?`, [id]);
+    const query = convertSQLQuery("SELECT * FROM customers WHERE id = ?");
+    const rows = await this.client.query<any>(query, [id]);
     if (rows.length === 0) return null;
     return mapFromSQL(rows[0]) as Customer;
   }
@@ -148,7 +150,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   // PACKAGES
   async listPackages(): Promise<Package[]> {
-    const sqlRows = await this.client.query<any>(`SELECT * FROM packages ORDER BY created_at DESC`);
+    const query = convertSQLQuery("SELECT * FROM packages ORDER BY createdAt DESC");
+    const sqlRows = await this.client.query<any>(query);
     const packages = mapFromSQLArray(sqlRows) as Omit<Package, "lineItems">[];
     
     // Load line items for each package
@@ -173,7 +176,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
   }
 
   async getPackage(id: number): Promise<Package | null> {
-    const sqlRows = await this.client.query<any>(`SELECT * FROM packages WHERE id = ?`, [id]);
+    const query = convertSQLQuery("SELECT * FROM packages WHERE id = ?");
+    const sqlRows = await this.client.query<any>(query, [id]);
     if (sqlRows.length === 0) return null;
     
     const pkg = mapFromSQL(sqlRows[0]) as Omit<Package, "lineItems">;
@@ -334,7 +338,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
   }
 
   async getOffer(id: number): Promise<Offer | null> {
-    const rows = await this.client.query<Omit<Offer, "lineItems">>(`SELECT * FROM offers WHERE id = ?`, [id]);
+    const query = convertSQLQuery("SELECT * FROM offers WHERE id = ?");
+    const rows = await this.client.query<Omit<Offer, "lineItems">>(query, [id]);
     if (!rows[0]) return null;
     
     const offer = mapFromSQL(rows[0]) as Omit<Offer, "lineItems">;
@@ -502,7 +507,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
   }
 
   async getInvoice(id: number): Promise<Invoice | null> {
-    const rows = await this.client.query<Omit<Invoice, "lineItems">>(`SELECT * FROM invoices WHERE id = ?`, [id]);
+    const query = convertSQLQuery("SELECT * FROM invoices WHERE id = ?");
+    const rows = await this.client.query<Omit<Invoice, "lineItems">>(query, [id]);
     if (!rows[0]) return null;
     
     const invoice = mapFromSQL(rows[0]) as Omit<Invoice, "lineItems">;
