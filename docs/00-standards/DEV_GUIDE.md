@@ -24,9 +24,9 @@
 
 Für detaillierte Informationen siehe:
 - **[standards.md](standards.md)** - Vollständige Coding Standards
-- **[WORKFLOWS.md](WORKFLOWS.md)** - Git-Workflow und Prozesse
-- **[debugging.md](debugging.md)** - Debugging-Strategien
-- **[ARCHITEKTUR.md](ARCHITEKTUR.md)** - Technische Architektur
+- **[workflows/WORKFLOWS.md](workflows/WORKFLOWS.md)** - Git-Workflow und Prozesse
+- **[debugging/debugging.md](debugging/debugging.md)** - Debugging-Strategien
+- **[../10-architecture/ARCHITEKTUR.md](../10-architecture/ARCHITEKTUR.md)** - Technische Architektur
 
 ---
 

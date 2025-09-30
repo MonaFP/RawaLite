@@ -20,9 +20,9 @@ if errorlevel 1 (
 )
 
 echo [3/4] Lokale ausführbare Version bereitstellen...
-if exist "dist\win-unpacked" (
+if exist "release\win-unpacked" (
     echo Vorherige Installation gefunden - wird gelöscht...
-    rmdir /s /q "dist\win-unpacked" 2>nul
+    rmdir /s /q "release\win-unpacked" 2>nul
     timeout /t 2 /nobreak >nul
 )
 
@@ -32,7 +32,14 @@ if errorlevel 1 (
 )
 
 echo [4/4] RawaLite starten...
-if exist "dist\win-unpacked\RawaLite.exe" (
+if exist "release\win-unpacked\RawaLite.exe" (
+    echo.
+    echo ✅ Production-Installation erfolgreich!
+    echo RawaLite wird gestartet...
+    echo.
+    start "" "release\win-unpacked\RawaLite.exe"
+    echo App gestartet. Sie können dieses Fenster schließen.
+) else if exist "dist\win-unpacked\RawaLite.exe" (
     echo.
     echo ✅ Production-Installation erfolgreich!
     echo RawaLite wird gestartet...

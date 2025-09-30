@@ -84,7 +84,7 @@ export class VersionService {
       dependencies: {
         react: packageJson.dependencies?.react || 'unknown',
         electron: packageJson.devDependencies?.electron || 'unknown',
-        'sql.js': packageJson.dependencies?.['sql.js'] || 'unknown',
+        'better-sqlite3': packageJson.dependencies?.['better-sqlite3'] || 'unknown',
         vite: packageJson.devDependencies?.vite || 'unknown'
       }
     };

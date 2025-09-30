@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
+import rawaliteLogo from '../assets/rawalite-logo.png';
 
 export default function Sidebar(){
   const { settings, loading, error } = useSettings();
@@ -46,7 +47,7 @@ export default function Sidebar(){
           marginBottom: "16px"
         }}>
           <img 
-            src="/rawalite-logo.png" 
+            src={rawaliteLogo} 
             alt="RawaLite" 
             style={{ 
               width: "100%", 

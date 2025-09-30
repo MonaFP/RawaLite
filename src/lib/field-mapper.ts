@@ -1,0 +1,175 @@
+// src/lib/field-mapper.ts
+/**
+ * Robust Field Mapping zwischen JavaScript camelCase und SQL snake_case
+ * 
+ * Mappings basieren auf dem aktuellen SQLite-Schema:
+ * - customers: company_name, contact_person, address_street, address_city, address_zip, address_country, tax_number, created_at, updated_at
+ * - offers: customer_id, total_amount, tax_rate, valid_until, created_at, updated_at  
+ * - invoices: customer_id, offer_id, total_amount, tax_rate, due_date, paid_at, created_at, updated_at
+ * - packages: created_at, updated_at
+ * - numbering_circles: last_number, created_at, updated_at
+ * - settings: updated_at
+ */
+
+export class FieldMapper {
+  /**
+   * Mapping: JavaScript camelCase → SQL snake_case
+   */
+  private static readonly JS_TO_SQL_MAPPINGS: Record<string, string> = {
+    // Zeitstempel (überall verwendet)
+    'createdAt': 'created_at',
+    'updatedAt': 'updated_at',
+    
+    // Customer Felder
+    'companyName': 'company_name',
+    'contactPerson': 'contact_person',
+    'addressStreet': 'address_street',
+    'addressCity': 'address_city',
+    'addressZip': 'address_zip',
+    'addressCountry': 'address_country',
+    'taxNumber': 'tax_number',
+    
+    // Offer/Invoice Felder
+    'customerId': 'customer_id',
+    'offerId': 'offer_id',
+    'totalAmount': 'total_amount',
+    'taxRate': 'tax_rate',
+    'validUntil': 'valid_until',
+    'dueDate': 'due_date',
+    'paidAt': 'paid_at',
+    
+    // Numbering Circles
+    'lastNumber': 'last_number'
+  };
+
+  /**
+   * Reverse Mapping: SQL snake_case → JavaScript camelCase
+   */
+  private static readonly SQL_TO_JS_MAPPINGS: Record<string, string> = Object.fromEntries(
+    Object.entries(FieldMapper.JS_TO_SQL_MAPPINGS).map(([js, sql]) => [sql, js])
+  );
+
+  /**
+   * Konvertiert JavaScript-Objekt (camelCase) zu SQL-kompatiblem Objekt (snake_case)
+   * 
+   * @param jsObj - JavaScript-Objekt mit camelCase-Feldern
+   * @returns SQL-kompatibles Objekt mit snake_case-Feldern
+   * 
+   * @example
+   * ```typescript
+   * const input = { companyName: "Test GmbH", createdAt: "2025-09-30" };
+   * const output = FieldMapper.toSQL(input);
+   * // → { company_name: "Test GmbH", created_at: "2025-09-30" }
+   * ```
+   */
+  static toSQL<T extends Record<string, any>>(jsObj: T): Record<string, any> {
+    if (!jsObj || typeof jsObj !== 'object') {
+      return jsObj;
+    }
+
+    const sqlObj: Record<string, any> = {};
+    
+    for (const [jsKey, value] of Object.entries(jsObj)) {
+      // Mapping verwenden falls vorhanden, sonst Original-Key
+      const sqlKey = FieldMapper.JS_TO_SQL_MAPPINGS[jsKey] || jsKey;
+      sqlObj[sqlKey] = value;
+    }
+
+    return sqlObj;
+  }
+
+  /**
+   * Konvertiert SQL-Objekt (snake_case) zu JavaScript-kompatiblem Objekt (camelCase)
+   * 
+   * @param sqlObj - SQL-Objekt mit snake_case-Feldern
+   * @returns JavaScript-kompatibles Objekt mit camelCase-Feldern
+   * 
+   * @example
+   * ```typescript
+   * const input = { company_name: "Test GmbH", created_at: "2025-09-30" };
+   * const output = FieldMapper.fromSQL(input);
+   * // → { companyName: "Test GmbH", createdAt: "2025-09-30" }
+   * ```
+   */
+  static fromSQL<T extends Record<string, any>>(sqlObj: T): Record<string, any> {
+    if (!sqlObj || typeof sqlObj !== 'object') {
+      return sqlObj;
+    }
+
+    const jsObj: Record<string, any> = {};
+    
+    for (const [sqlKey, value] of Object.entries(sqlObj)) {
+      // Reverse Mapping verwenden falls vorhanden, sonst Original-Key
+      const jsKey = FieldMapper.SQL_TO_JS_MAPPINGS[sqlKey] || sqlKey;
+      jsObj[jsKey] = value;
+    }
+
+    return jsObj;
+  }
+
+  /**
+   * Konvertiert SQL-Query mit camelCase-Feldnamen zu snake_case
+   * 
+   * @param query - SQL-Query mit camelCase-Feldnamen
+   * @returns SQL-Query mit snake_case-Feldnamen
+   * 
+   * @example
+   * ```typescript
+   * const input = "SELECT id, companyName FROM customers WHERE createdAt > ?";
+   * const output = FieldMapper.convertQuery(input);
+   * // → "SELECT id, company_name FROM customers WHERE created_at > ?"
+   * ```
+   */
+  static convertQuery(query: string): string {
+    let convertedQuery = query;
+    
+    // Alle JS-Feldnamen durch SQL-Äquivalente ersetzen
+    for (const [jsField, sqlField] of Object.entries(FieldMapper.JS_TO_SQL_MAPPINGS)) {
+      // Word boundaries verwenden für exakte Matches
+      const regex = new RegExp(`\\b${jsField}\\b`, 'g');
+      convertedQuery = convertedQuery.replace(regex, sqlField);
+    }
+    
+    return convertedQuery;
+  }
+
+  /**
+   * Array von Objekten konvertieren (SQL → JS)
+   */
+  static fromSQLArray<T extends Record<string, any>>(sqlArray: T[]): Record<string, any>[] {
+    if (!Array.isArray(sqlArray)) {
+      return sqlArray;
+    }
+    
+    return sqlArray.map(item => FieldMapper.fromSQL(item));
+  }
+
+  /**
+   * Debugging: Alle verfügbaren Mappings anzeigen
+   */
+  static getMappings(): { jsToSql: Record<string, string>; sqlToJs: Record<string, string> } {
+    return {
+      jsToSql: { ...FieldMapper.JS_TO_SQL_MAPPINGS },
+      sqlToJs: { ...FieldMapper.SQL_TO_JS_MAPPINGS }
+    };
+  }
+
+  /**
+   * Validierung: Prüft ob ein Feld-Mapping existiert
+   */
+  static hasMapping(field: string, direction: 'js-to-sql' | 'sql-to-js'): boolean {
+    if (direction === 'js-to-sql') {
+      return field in FieldMapper.JS_TO_SQL_MAPPINGS;
+    } else {
+      return field in FieldMapper.SQL_TO_JS_MAPPINGS;
+    }
+  }
+}
+
+/**
+ * Convenience-Export für häufig verwendete Operationen
+ */
+export const mapToSQL = FieldMapper.toSQL;
+export const mapFromSQL = FieldMapper.fromSQL;
+export const mapFromSQLArray = FieldMapper.fromSQLArray;
+export const convertSQLQuery = FieldMapper.convertQuery;

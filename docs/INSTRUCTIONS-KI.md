@@ -27,8 +27,8 @@ Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
   - Standalone: `src/lib/path-utils.ts`.  
   - **Verboten:** direkter `app.getPath()`.  
 - **Persistenz**:  
-  - Primary: SQLite (sql.js).  
-  - Dev-Fallback: Dexie.  
+  - Primary: SQLite (better-sqlite3) - Native module für Performance.  
+  - Legacy: Dexie-Adapter verfügbar für Migration.  
   - Einstiegspunkt: `src/persistence/index.ts`.  
   - Adapter-Parität, Migration additiv & idempotent.  
   - **Verboten:** Direktimporte `SQLiteAdapter`/`DexieAdapter`.  
@@ -51,6 +51,8 @@ Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
 - `shell.openExternal`, externe Links, `window.open`, `target="_blank"`.  
 - PDF-Assets aus dem Netz.  
 - Direktimporte von `SQLiteAdapter` oder `DexieAdapter`.  
+- SQL.js oder sql-wasm Referenzen (deprecated).
+- Veraltete IPC-Channels wie `database:backup` (jetzt `backup:hot`).
 - Dynamische IPC-Kanäle.  
 - Node-APIs direkt im Renderer.
 - Lokale Installation ohne vorherigen Build (`.\install-local.cmd` ohne `pnpm build && pnpm dist`).
@@ -63,6 +65,23 @@ Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
 - Keine Duplikate oder widersprüchlichen Aussagen erzeugen.  
 - Entwickler fragen bei Unklarheiten
 ---
+
+## ✅ docs-Struktur
+- ** Änderung nur nach Abnahme und Aufforderung durch Entwickler **-
+- ** hier ergänzen/aktualisieren bei neuen Inhalten ** - 
+docs/
+├── 00-standards/           [INDEX.md + 4 Root-Files + workflows/ + debugging/]
+├── 10-architecture/        [INDEX.md + 5 Root-Files + troubleshooting/ + electron/]
+├── 20-paths/              [INDEX.md + solved/ + active/]
+├── 30-updates/            [INDEX.md + solved/ + active/]
+├── 40-pdf/                [INDEX.md + solved/ + active/]
+├── 50-persistence/        [INDEX.md + 3 Root-Files + migration/ + backup/]
+├── 60-security/           [INDEX.md + ipc/]
+├── 70-reserved/           [INDEX.md + solved/ + active/]
+├── 80-ui-theme/           [INDEX.md + solved/ + active/]
+├── 90-deprecated/         [INDEX.md + solved/ + active/]
+├── 99-glossary/           [INDEX.md + solved/ + active/]
+└── INSTRUCTIONS-KI.md     [bleibt in root]
 
 # 📄 Patch für `.github/copilot-instructions.md`
 

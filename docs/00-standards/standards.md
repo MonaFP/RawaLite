@@ -11,6 +11,22 @@
 Diese Standards gewährleisten **konsistente, wartbare und sichere** Codebasis in RawaLite. Alle Entwickler müssen diese Regeln befolgen.
 
 ---
+## ✅ docs-Struktur
+- ** Änderung nur nach Abnahme und Aufforderung durch Entwickler **-
+- ** hier ergänzen/aktualisieren bei neuen Inhalten ** - 
+docs/
+├── 00-standards/           [INDEX.md + 4 Root-Files + workflows/ + debugging/]
+├── 10-architecture/        [INDEX.md + 5 Root-Files + troubleshooting/ + electron/]
+├── 20-paths/              [INDEX.md + solved/ + active/]
+├── 30-updates/            [INDEX.md + solved/ + active/]
+├── 40-pdf/                [INDEX.md + solved/ + active/]
+├── 50-persistence/        [INDEX.md + 3 Root-Files + migration/ + backup/]
+├── 60-security/           [INDEX.md + ipc/]
+├── 70-reserved/           [INDEX.md + solved/ + active/] 
+├── 80-ui-theme/           [INDEX.md + solved/ + active/]
+├── 90-deprecated/         [INDEX.md + solved/ + active/]
+├── 99-glossary/           [INDEX.md + solved/ + active/]
+└── INSTRUCTIONS-KI.md     [bleibt in root]
 
 ## 🧠 Methodologie (Systematische Problemlösung)  
 In RawaLite wird bei Problemen eine **systematische, evidenzbasierte Vorgehensweise** erwartet. Jeder Fehler wird strukturiert analysiert, statt durch zufälliges Probieren. Wichtige Grundsätze sind: **klare Problemdefinition, reproduzierbare Tests, schrittweises Ändern einzelner Variablen** und gründliche Dokumentation jeder Analyse. Dieses methodische Vorgehen stellt sicher, dass **Ursachen statt Symptome** gefunden werden und verhindert zeitaufwändige Irrwege. *(Details zum Ablauf siehe [Debugging-Workflow](debugging.md).)*

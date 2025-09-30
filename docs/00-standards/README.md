@@ -10,9 +10,9 @@
 
 Neu bei RawaLite? Starte hier:
 
-1. **[Installation](INSTALL.md)** - Setup & Systemanforderungen
-2. **[Projekt-Übersicht](../PROJECT_OVERVIEW.md)** - Was ist RawaLite?
-3. **[Architektur](ARCHITEKTUR.md)** - Technische Grundlagen
+1. **[Installation](../50-persistence/INSTALL.md)** - Setup & Systemanforderungen
+2. **[Projekt-Übersicht](../../PROJECT_OVERVIEW.md)** - Was ist RawaLite?
+3. **[Architektur](../10-architecture/ARCHITEKTUR.md)** - Technische Grundlagen
 4. **[Entwickler-Leitfaden](DEV_GUIDE.md)** - Erste Schritte
 
 ---
@@ -49,11 +49,11 @@ Neu bei RawaLite? Starte hier:
 
 ### 👩‍💻 **Entwickler (Neu)**
 Empfohlene Reihenfolge:
-1. [INSTALL.md](INSTALL.md) - Setup der Entwicklungsumgebung
-2. [PROJECT_OVERVIEW.md](../PROJECT_OVERVIEW.md) - Projekt verstehen  
+1. [../50-persistence/INSTALL.md](../50-persistence/INSTALL.md) - Setup der Entwicklungsumgebung
+2. [../../PROJECT_OVERVIEW.md](../../PROJECT_OVERVIEW.md) - Projekt verstehen  
 3. [standards.md](standards.md) - Coding Guidelines lernen
-4. [WORKFLOWS.md](WORKFLOWS.md) - Git & PR-Prozess verstehen
-5. [debugging.md](debugging.md) - Debugging-Tools kennenlernen
+4. [workflows/WORKFLOWS.md](workflows/WORKFLOWS.md) - Git & PR-Prozess verstehen
+5. [debugging/debugging.md](debugging/debugging.md) - Debugging-Tools kennenlernen
 
 ### 👨‍💻 **Entwickler (Erfahren)**
 Schnell-Referenz:

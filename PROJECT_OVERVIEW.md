@@ -1,6 +1,14 @@
 # 🏢 RaWaLite - Project Overview
 
-> **Vollständige Anwendungsübersicht** - Letzte Aktualisierung: 10. September 2025
+> **Vollständige Anwendungsübersicht** - Letzte Aktualisierung: 30. September 2025
+
+## 📚 **Dokumentation**
+
+**Diese Datei bietet die technische Projektübersicht. Für strukturierte Entwickler-Dokumentation siehe:**
+- **[docs/](docs/)** - Vollständige Dokumentationsstruktur mit thematischen Bereichen
+- **[docs/00-standards/](docs/00-standards/)** - Entwicklungsstandards und Workflows  
+- **[docs/10-architecture/](docs/10-architecture/)** - System-Architektur und Design
+- **[docs/50-persistence/](docs/50-persistence/)** - Database-System und Installation
 
 ## 🔍 **Technologie-Stack**
 
@@ -12,9 +20,11 @@
 - **Package Manager:** pnpm
 
 ### Datenbank & Persistence
-- **Primary:** SQL.js 1.13.0 (SQLite im Browser)
-- **Secondary:** Dexie 4.0.8 (IndexedDB)
-- **Backup:** LocalStorage für Einstellungen
+- **Primary:** better-sqlite3 12.4.1 (Native SQLite mit WAL Mode)
+- **Secondary:** IndexedDB via Dexie 4.0.8 (Browser-Fallback)
+- **Backup:** Integrated Hot-Backup System
+- **Migration:** user_version-based Schema Migrations
+- **Legacy:** SQL.js 1.13.0 (Deprecated, Migration Support)
 
 ### Testing & Development
 - **Unit Tests:** Vitest 1.6.0
@@ -41,15 +51,21 @@ src/
 
 ### Datenschicht (Persistence Layer)
 ```
+src/main/db/                   # Native SQLite Database (better-sqlite3)
+├── Database.ts                # Singleton Connection + PRAGMAs
+├── MigrationService.ts        # Schema Versioning + Rollback  
+├── BackupService.ts           # Hot Backup + Integrity Checks
+└── migrations/                # Idempotent Schema Migrations
+
 src/persistence/
 ├── adapter.ts                 # Core Interfaces & Types
 └── sqlite/
-    └── db.ts                  # SQLite Connection & Schema
+    └── db.ts                  # Legacy SQL.js (Migration Support)
 
 src/adapters/
-├── SQLiteAdapter.ts           # Haupt-Datenbank-Adapter
-├── SettingsAdapter.ts         # Spezial-Adapter für Einstellungen
-└── IndexedDBAdapter.ts        # Alternative für Browser-Storage
+├── SQLiteAdapter.ts           # Main Database Adapter (better-sqlite3)
+├── SettingsAdapter.ts         # Settings-specific Adapter
+└── IndexedDBAdapter.ts        # Browser-Storage Fallback
 ```
 
 ### Business Logic (React Hooks)

@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, createHashRouter, RouterProvider } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import PersistenceProvider from "./PersistenceProvider";
@@ -19,7 +19,8 @@ import EinstellungenPage from "./pages/EinstellungenPage";
 import UpdatesPage from "./pages/UpdatesPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
-const router = createBrowserRouter([
+// Router configuration - conditional based on environment
+const routerConfig = [
   {
     path: "/",
     element: <App />,
@@ -62,7 +63,12 @@ const router = createBrowserRouter([
       },
     ],
   },
-]);
+];
+
+// Use HashRouter for production (Electron), BrowserRouter for development
+const router = import.meta.env.PROD 
+  ? createHashRouter(routerConfig)
+  : createBrowserRouter(routerConfig);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

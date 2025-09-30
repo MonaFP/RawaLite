@@ -1,4 +1,5 @@
-import PATHS from '../lib/paths';
+// TODO: Temporarily disabled - PATHS uses Node.js APIs in renderer process
+// import PATHS from '../lib/paths';
 
 export class LoggingService {
   // 📝 Robustes Logging mit zentraler Pfadabstraktion (Phase 2)
@@ -10,18 +11,12 @@ export class LoggingService {
       // Console ausgabe für Development
       console.log(logEntry);
       
-      // TODO: Implement file logging when Electron file API available
-      const logFile = await PATHS.LOG_FILE();
-      const logsDir = await PATHS.LOGS_DIR();
-      await PATHS.ensureDir(logsDir);
-      
-      // Rotiere Logs bei 1MB (TODO: Implementierung)
-      console.log(`📝 Log würde geschrieben nach: ${logFile}`);
-      
+      // TODO: File logging temporarily disabled due to PATHS renderer issue
+      // const logFile = await PATHS.LOG_FILE();
+      // const logsDir = await PATHS.LOGS_DIR();
+      // await PATHS.ensureDir(logsDir);
     } catch (error) {
-      // Fallback: nur console logging wenn Pfad-System fehlt
-      console.error('Logging service failed:', error);
-      console.log(message);
+      console.error('Logging failed:', error);
     }
   }
 
@@ -33,8 +28,9 @@ export class LoggingService {
     
     // Additional error logging to separate file
     try {
-      const errorLogFile = await PATHS.ERROR_LOG_FILE();
-      console.log(`🚨 Error würde geloggt nach: ${errorLogFile}`);
+      // TODO: File logging temporarily disabled due to PATHS renderer issue
+      // const errorLogFile = await PATHS.ERROR_LOG_FILE();
+      // console.log(`🚨 Error würde geloggt nach: ${errorLogFile}`);
     } catch (logError) {
       console.error('Error logging failed:', logError);
     }

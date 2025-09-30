@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
@@ -11,7 +10,6 @@ interface EinstellungenPageProps {
 }
 
 export default function EinstellungenPage({ title = "Einstellungen" }: EinstellungenPageProps) {
-  const navigate = useNavigate();
   const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useSettings();
   const { adapter } = usePersistence();
   const { showError, showSuccess } = useNotifications();

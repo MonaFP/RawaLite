@@ -36,13 +36,14 @@ pnpm e2e
 
 ## 📚 **Documentation**
 <!-- Check all that apply and describe changes -->
+<!-- 📍 Documentation files are located in /docs/ with thematic structure -->
 - [ ] Code is self-documenting
 - [ ] JSDoc comments added/updated for public APIs
 - [ ] README.md updated
 - [ ] docs/ files updated (specify which):
   - [ ] standards.md
-  - [ ] debugging.md
-  - [ ] WORKFLOWS.md  
+  - [ ] debugging/debugging.md
+  - [ ] workflows/WORKFLOWS.md  
   - [ ] ARCHITEKTUR.md
 - [ ] No documentation changes needed
 
@@ -80,7 +81,7 @@ pnpm e2e
 <!-- Check all items before requesting review -->
 
 ### Code Quality
-- [ ] Code follows the style guidelines (standards.md)
+- [ ] Code follows the style guidelines (/docs/00-standards/standards.md)
 - [ ] Self-review performed
 - [ ] No console.log statements left in code
 - [ ] TypeScript strict mode compliance
