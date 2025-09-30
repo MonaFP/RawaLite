@@ -1,6 +1,9 @@
 # 🏗️ Architektur - RawaLite
 
-> **Technische Architektur & Designprinzipien** der RawaLite Desktop-Anwendung  
+> **Technische Architektur & Des  │  ┌─────▼───────────────────────────┐   │
+  │  │        Persistence Layer        │   │
+  │  │  (SQLite + better-sqlite3)      │   │
+  │  └─────────────────────────────────┘   │rinzipien** der RawaLite Desktop-Anwendung  
 > **Letzte Aktualisierung:** 29. September 2025 | **Version:** 1.2.0
 
 ---
@@ -15,16 +18,18 @@ sequenceDiagram
     participant R as Renderer Process
     participant M as Main Process  
     participant FS as File System
-    participant DB as SQLite Database
+    participant DB as SQLite Database (better-sqlite3)
     
-    R->>M: ipc database:backup
-    M->>FS: read %APPDATA%/rawalite/db
-    FS-->>M: database bytes
-    M-->>R: Promise<Uint8Array>
+    R->>M: ipc('db:query', sql, params)
+    M->>DB: db.prepare(sql).all(params)
+    DB-->>M: query results
+    M-->>R: Promise<Array<Row>>
     
-    R->>DB: SQL.js operations
-    DB-->>R: query results
-    R->>R: update React state
+    R->>M: ipc('backup:hot', path)
+    M->>DB: db.backup(destination)
+    M->>FS: write backup file
+    FS-->>M: backup created
+    M-->>R: {success: true, backupPath, checksum}
 ```
 
 ### **Layer Architecture**
@@ -197,9 +202,10 @@ interface PersistenceAdapter {
   deleteCustomer(id: number): Promise<void>;
 }
 
-// Current Implementation: SQLite mit SQL.js
+// Current Implementation: SQLite mit better-sqlite3
 class SQLiteAdapter implements PersistenceAdapter {
-  // Transactional operations mit prepared statements
+  // Native SQLite operations mit prepared statements
+  // IPC-only access für security
 }
 
 // Future: Cloud Sync Implementation  
@@ -226,10 +232,19 @@ const secureDefaults = {
 };
 
 // Controlled IPC API Surface
-contextBridge.exposeInMainWorld('electronAPI', {
-  // Nur notwendige, sichere APIs exponieren
-  database: {
-    backup: () => ipcRenderer.invoke('database:backup')
+contextBridge.exposeInMainWorld('rawalite', {
+  // Sichere Database APIs (better-sqlite3)
+  db: {
+    query: (sql: string, params?: any[]) => ipcRenderer.invoke('db:query', sql, params),
+    exec: (sql: string, params?: any[]) => ipcRenderer.invoke('db:exec', sql, params),
+    transaction: (queries: Array<{sql: string; params?: any[]}>) => 
+      ipcRenderer.invoke('db:transaction', queries)
+  },
+  backup: {
+    hot: (path?: string) => ipcRenderer.invoke('backup:hot', path),
+    vacuumInto: (path: string) => ipcRenderer.invoke('backup:vacuumInto', path),
+    integrityCheck: () => ipcRenderer.invoke('backup:integrityCheck'),
+    restore: (path: string) => ipcRenderer.invoke('backup:restore', path)
   }
 });
 ```

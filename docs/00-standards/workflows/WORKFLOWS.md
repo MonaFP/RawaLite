@@ -10,6 +10,11 @@
 
 Dieser Leitfaden definiert **verbindliche Workflows** für Entwicklung, Code Reviews, Releases und Wartung der RawaLite-Anwendung.
 
+### 🔗 **Verwandte GitHub-Integration**
+- **Pull Request Template:** `/.github/PULL_REQUEST_TEMPLATE.md` - Referenziert diese Workflows
+- **Issue Templates:** `/.github/ISSUE_TEMPLATE/` - Bug Reports und Feature Requests
+- **CI/CD Workflows:** `/.github/workflows/ci.yml` - Automatisierte Tests und Builds
+
 ---
 
 ## 🌿 **Git Workflow**

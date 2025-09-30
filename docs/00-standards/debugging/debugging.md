@@ -10,6 +10,10 @@
 
 Dieser Leitfaden bietet **systematische Debugging-Prozesse** für alle Bereiche der RawaLite-Anwendung: Frontend, Backend, Datenbank, Electron und Build-Prozesse.
 
+### 🔗 **Bug-Reporting Integration**
+- **GitHub Issue Template:** `/.github/ISSUE_TEMPLATE/bug_report.md` - Strukturiertes Bug-Reporting
+- **Pull Request Template:** `/.github/PULL_REQUEST_TEMPLATE.md` - Referenziert diese Debugging-Richtlinien
+
 ---
 
 # RawaLite – Debugging-Workflow (Safe Edition)  

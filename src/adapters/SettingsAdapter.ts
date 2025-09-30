@@ -1,4 +1,4 @@
-import { getDB, all, run, withTx } from '../persistence/sqlite/db';
+import { getDB, all, run, withTx } from '../db'; // Use legacy wrapper
 import type { Settings, CompanyData, NumberingCircle } from '../lib/settings';
 import { defaultSettings } from '../lib/settings';
 import PATHS from '../lib/paths';
