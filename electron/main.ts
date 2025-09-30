@@ -183,7 +183,7 @@ import * as BackupService from '../src/main/db/BackupService.js'
 ipcMain.handle('db:query', async (event, sql: string, params?: any[]) => {
   try {
     const stmt = Database.prepare(sql)
-    return stmt.all(params)
+    return params ? stmt.all(...params) : stmt.all()
   } catch (error) {
     console.error(`Database query failed:`, error)
     throw error

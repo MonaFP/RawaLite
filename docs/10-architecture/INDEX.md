@@ -8,7 +8,7 @@ Architekturelle Entscheidungen, Electron-Konfiguration, System-Design und strukt
 ### 📁 Struktur
 
 #### 📋 Root-Dateien
-- `ARCHITEKTUR.md` - Hauptarchitektur-Dokumentation
+- ✅ `ARCHITEKTUR.md` - **Hauptarchitektur-Dokumentation (inkl. SQLiteAdapter Status)**
 - `LESSONS-LEARNED-versionssync-mechanismus.md` - Versionssynchronisation
 - `SQLITE-MIGRATION-ARCHITECTURE.md` - SQLite Migration Architektur
 - `LESSONS-LEARNED-ipc-filesystem-api.md` - IPC Filesystem API

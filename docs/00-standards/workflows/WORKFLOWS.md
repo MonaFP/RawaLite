@@ -693,6 +693,114 @@ echo "✅ Quality check complete"
 - [ ] Process improvements review
 ```
 
+### **Status-Übersicht Aktualisierung**
+
+Die zentrale Status-Datei `/docs/10-architecture/STATUS-OVERVIEW.md` muss bei jeder größeren Änderung aktuell gehalten werden.
+
+#### **Automatische Trigger für Status-Updates**
+```bash
+# Status-Update ist erforderlich bei:
+- [ ] Neuen Features (Pages, Components, Services)
+- [ ] Abgeschlossenen Implementierungen
+- [ ] Architektur-Änderungen
+- [ ] Release-Vorbereitung
+- [ ] Produktionsreife-Änderungen
+```
+
+#### **Status-Update Workflow**
+```bash
+# 1. Nach Feature-Implementierung
+# Prüfe Vollständigkeits-Status der betroffenen Komponenten
+pnpm build  # Validiere dass Build funktioniert
+
+# 2. Aktualisiere STATUS-OVERVIEW.md
+# - Vollständigkeits-Prozente anpassen
+# - Neue Komponenten hinzufügen  
+# - Gesamtstatus neu berechnen
+# - Datum aktualisieren
+
+# 3. Validierung
+# Prüfe dass alle Einträge aktuell sind:
+find src/ -name "*.ts" -o -name "*.tsx" | wc -l  # Dateien zählen
+grep -r "TODO\|FIXME\|XXX" src/  # Offene Punkte finden
+
+# 4. Commit der Status-Änderung
+git add docs/10-architecture/STATUS-OVERVIEW.md
+git commit -m "docs(status): update completion status after [feature-name]"
+```
+
+#### **Monatliche Status-Validierung**
+```bash
+# Vollständige Status-Überprüfung (monatlich)
+
+# 1. Komponenten-Inventar
+echo "=== PAGES ==="
+find src/pages -name "*.tsx" | wc -l
+find src/pages -name "*.tsx" -exec grep -l "TODO\|FIXME" {} \;
+
+echo "=== COMPONENTS ==="  
+find src/components -name "*.tsx" | wc -l
+find src/components -name "*.tsx" -exec grep -l "TODO\|FIXME" {} \;
+
+echo "=== HOOKS ==="
+find src/hooks -name "*.ts" | wc -l
+find src/hooks -name "*.ts" -exec grep -l "TODO\|FIXME" {} \;
+
+echo "=== SERVICES ==="
+find src/services -name "*.ts" | wc -l  
+find src/services -name "*.ts" -exec grep -l "TODO\|FIXME" {} \;
+
+# 2. Build-Status validieren
+pnpm build --reporter=basic
+
+# 3. Status-Datei entsprechend aktualisieren
+# /docs/10-architecture/STATUS-OVERVIEW.md
+
+# 4. Produktionsreife neu bewerten
+echo "Aktueller Build-Output:"
+ls -la dist-electron/ dist-web/
+```
+
+#### **Status-Update Checkliste**
+```markdown
+# Bei jeder Aktualisierung von STATUS-OVERVIEW.md:
+
+- [ ] **Datum aktualisiert** (Stand: DD. Monat YYYY)
+- [ ] **Version aktualisiert** (falls Release)
+- [ ] **Gesamtstatus neu berechnet** (Prozentsatz)
+- [ ] **Neue Komponenten hinzugefügt** (falls vorhanden)
+- [ ] **Vollständigkeits-Status angepasst** (pro Komponente)
+- [ ] **Produktionsreife-Bewertung überprüft**
+- [ ] **Build-Status validiert** (pnpm build erfolgreich)
+- [ ] **Verbleibende Arbeiten aktualisiert**
+- [ ] **Commit mit aussagekräftiger Message**
+```
+
+#### **Quartalsweise Vollvalidierung**
+```bash
+# Umfassende Status-Validierung (alle 3 Monate)
+
+# 1. Vollständige Code-Analyse
+find src/ -name "*.ts" -o -name "*.tsx" | xargs wc -l
+grep -r "any\|@ts-ignore\|TODO\|FIXME" src/ --include="*.ts" --include="*.tsx"
+
+# 2. Architektur-Konsistenz prüfen
+ls -la src/{pages,components,hooks,services,adapters}/
+
+# 3. Test-Coverage analysieren  
+pnpm test --coverage
+
+# 4. Performance-Baseline
+pnpm build
+ls -lah dist-electron/ dist-web/
+
+# 5. STATUS-OVERVIEW.md komplett überarbeiten
+# - Alle Komponenten neu bewerten
+# - Architektur-Änderungen dokumentieren
+# - Neue Metriken hinzufügen
+# - Roadmap-Status aktualisieren
+```
+
 ### **Dependency Management**
 ```bash
 # Safe dependency update process

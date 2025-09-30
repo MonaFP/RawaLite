@@ -1,0 +1,29 @@
+appId: com.rawalite.app
+productName: RawaLite
+directories:
+  output: dist
+files:
+  - dist-electron
+  - dist
+  - public
+  - package.json
+icon: assets/icon.png
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: assets/icon.ico
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  icon: assets/icon.png
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  icon: assets/icon.png
