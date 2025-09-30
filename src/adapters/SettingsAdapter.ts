@@ -1,49 +1,10 @@
 import { getDB, all, run, withTx } from '../db'; // Use legacy wrapper
 import type { Settings, CompanyData, NumberingCircle } from '../lib/settings';
 import { defaultSettings } from '../lib/settings';
+import { mapFromSQL, mapToSQL } from '../lib/field-mapper';
 import PATHS from '../lib/paths';
 
 export class SettingsAdapter {
-  // Convert SQLite row to CompanyData format
-  private mapSQLiteToCompanyData(row: any): CompanyData {
-    return {
-      name: row.companyName || '',
-      street: row.street || '',
-      postalCode: row.zip || '', // zip -> postalCode mapping
-      city: row.city || '',
-      phone: row.phone || '',
-      email: row.email || '',
-      website: row.website || '',
-      taxNumber: row.taxId || '', // taxId -> taxNumber mapping
-      vatId: row.vatId || '',
-      kleinunternehmer: Boolean(row.kleinunternehmer), // INTEGER -> boolean
-      bankName: row.bankName || '',
-      bankAccount: row.bankAccount || '',
-      bankBic: row.bankBic || '',
-      logo: row.logo || ''
-    };
-  }
-
-  // Convert CompanyData to SQLite format
-  private mapCompanyDataToSQLite(data: CompanyData) {
-    return {
-      companyName: data.name,
-      street: data.street,
-      zip: data.postalCode, // postalCode -> zip mapping
-      city: data.city,
-      phone: data.phone,
-      email: data.email,
-      website: data.website,
-      taxId: data.taxNumber, // taxNumber -> taxId mapping
-      vatId: data.vatId,
-      kleinunternehmer: data.kleinunternehmer ? 1 : 0, // boolean -> INTEGER
-      bankName: data.bankName,
-      bankAccount: data.bankAccount,
-      bankBic: data.bankBic,
-      logo: data.logo
-    };
-  }
-
   async getSettings(): Promise<Settings> {
     await getDB();
     
@@ -53,7 +14,24 @@ export class SettingsAdapter {
     
     let companyData: CompanyData;
     if (settingsRow) {
-      companyData = this.mapSQLiteToCompanyData(settingsRow);
+      // Use central field mapper for camelCase conversion
+      const mappedRow = mapFromSQL(settingsRow);
+      companyData = {
+        name: mappedRow.companyName || '',
+        street: mappedRow.street || '',
+        postalCode: mappedRow.zip || '', // zip -> postalCode mapping
+        city: mappedRow.city || '',
+        phone: mappedRow.phone || '',
+        email: mappedRow.email || '',
+        website: mappedRow.website || '',
+        taxNumber: mappedRow.taxId || '', // taxId -> taxNumber mapping
+        vatId: mappedRow.vatId || '',
+        kleinunternehmer: Boolean(mappedRow.kleinunternehmer), // INTEGER -> boolean
+        bankName: mappedRow.bankName || '',
+        bankAccount: mappedRow.bankAccount || '',
+        bankBic: mappedRow.bankBic || '',
+        logo: mappedRow.logo || ''
+      };
     } else {
       companyData = defaultSettings.companyData;
     }
@@ -114,32 +92,48 @@ export class SettingsAdapter {
 
   async updateCompanyData(companyData: CompanyData): Promise<void> {
     await withTx(async () => {
-      const sqliteData = this.mapCompanyDataToSQLite(companyData);
+      // Use central field mapper for snake_case conversion
+      const sqliteData = mapToSQL({
+        companyName: companyData.name,
+        street: companyData.street,
+        zip: companyData.postalCode, // postalCode -> zip mapping
+        city: companyData.city,
+        phone: companyData.phone,
+        email: companyData.email,
+        website: companyData.website,
+        taxId: companyData.taxNumber, // taxNumber -> taxId mapping
+        vatId: companyData.vatId,
+        kleinunternehmer: companyData.kleinunternehmer ? 1 : 0, // boolean -> INTEGER
+        bankName: companyData.bankName,
+        bankAccount: companyData.bankAccount,
+        bankBic: companyData.bankBic,
+        logo: companyData.logo
+      });
       const timestamp = new Date().toISOString();
 
       // Update or insert company data
       run(`
         INSERT OR REPLACE INTO settings (
-          id, companyName, street, zip, city, phone, email, website, 
-          taxId, vatId, kleinunternehmer, bankName, bankAccount, bankBic, 
-          logo, updatedAt
+          id, company_name, street, zip, city, phone, email, website, 
+          tax_id, vat_id, kleinunternehmer, bank_name, bank_account, bank_bic, 
+          logo, updated_at
         ) VALUES (
           1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
       `, [
-        sqliteData.companyName,
+        sqliteData.company_name,
         sqliteData.street,
         sqliteData.zip,
         sqliteData.city,
         sqliteData.phone,
         sqliteData.email,
         sqliteData.website,
-        sqliteData.taxId,
-        sqliteData.vatId,
+        sqliteData.tax_id,
+        sqliteData.vat_id,
         sqliteData.kleinunternehmer,
-        sqliteData.bankName,
-        sqliteData.bankAccount,
-        sqliteData.bankBic,
+        sqliteData.bank_name,
+        sqliteData.bank_account,
+        sqliteData.bank_bic,
         sqliteData.logo,
         timestamp
       ]);

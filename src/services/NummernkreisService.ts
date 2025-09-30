@@ -1,9 +1,16 @@
 import DbClient from './DbClient';
+import { convertSQLQuery, mapFromSQLArray } from '../lib/field-mapper';
 
 export class NummernkreisService {
   private static client = DbClient.getInstance();
   
   static async getNextNumber(circleId: string): Promise<string> {
+    const query = convertSQLQuery(`
+      SELECT id, prefix, digits, current, resetMode, lastResetYear 
+      FROM numbering_circles 
+      WHERE id = ?
+    `);
+    
     const circles = await this.client.query<{
       id: string;
       prefix: string;
@@ -11,11 +18,7 @@ export class NummernkreisService {
       current: number;
       resetMode: 'never' | 'yearly';
       lastResetYear: number | null;
-    }>(`
-      SELECT id, prefix, digits, current, resetMode, lastResetYear 
-      FROM numbering_circles 
-      WHERE id = ?
-    `, [circleId]);
+    }>(query, [circleId]);
 
     if (circles.length === 0) {
       throw new Error(`Nummernkreis '${circleId}' nicht gefunden`);
@@ -35,7 +38,7 @@ export class NummernkreisService {
       {
         sql: `
           UPDATE numbering_circles 
-          SET current = ?, lastResetYear = ?, updatedAt = datetime('now')
+          SET current = ?, last_reset_year = ?, updated_at = datetime('now')
           WHERE id = ?
         `,
         params: [
@@ -51,10 +54,13 @@ export class NummernkreisService {
   }
 
   static async getAllCircles() {
-    return await this.client.query(`
+    const query = convertSQLQuery(`
       SELECT id, name, prefix, digits, current, resetMode, lastResetYear 
       FROM numbering_circles 
       ORDER BY name
     `);
+    
+    const sqlRows = await this.client.query(query);
+    return mapFromSQLArray(sqlRows);
   }
 }
