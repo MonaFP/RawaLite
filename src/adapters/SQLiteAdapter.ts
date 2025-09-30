@@ -247,19 +247,22 @@ export class SQLiteAdapter implements PersistenceAdapter {
       updatedAt: nowIso(),
     };
 
+    // Map to SQL format
+    const mappedNext = mapToSQL(next);
+
     // Update package
     await this.client.exec(
       `
       UPDATE packages SET
-        internalTitle = ?, parentPackageId = ?, total = ?, addVat = ?, updatedAt = ?
+        internal_title = ?, parent_package_id = ?, total = ?, add_vat = ?, updated_at = ?
       WHERE id = ?
     `,
       [
-        next.internalTitle,
-        next.parentPackageId ?? null,
-        next.total,
-        next.addVat ? 1 : 0,
-        next.updatedAt,
+        mappedNext.internal_title,
+        mappedNext.parent_package_id ?? null,
+        mappedNext.total,
+        mappedNext.add_vat ? 1 : 0,
+        mappedNext.updated_at,
         id,
       ]
     );
@@ -267,13 +270,14 @@ export class SQLiteAdapter implements PersistenceAdapter {
     // Update line items if provided
     if (patch.lineItems) {
       // Delete old line items
-      await this.client.exec(`DELETE FROM package_line_items WHERE packageId = ?`, [id]);
+      await this.client.exec(`DELETE FROM package_line_items WHERE package_id = ?`, [id]);
       
       // Insert new line items
       for (const item of patch.lineItems) {
+        const mappedItem = mapToSQL(item);
         await this.client.exec(
-          `INSERT INTO package_line_items (packageId, title, quantity, amount, parentItemId, description) VALUES (?, ?, ?, ?, ?, ?)`,
-          [id, item.title, item.quantity, item.amount, item.parentItemId || null, item.description || null]
+          `INSERT INTO package_line_items (package_id, title, quantity, amount, parent_item_id, description) VALUES (?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.quantity, mappedItem.amount, mappedItem.parent_item_id || null, mappedItem.description || null]
         );
       }
     }
@@ -286,38 +290,44 @@ export class SQLiteAdapter implements PersistenceAdapter {
   async deletePackage(id: number): Promise<void> {
     // Delete line items first, then package
     await this.client.transaction([
-      { sql: `DELETE FROM package_line_items WHERE packageId = ?`, params: [id] },
+      { sql: `DELETE FROM package_line_items WHERE package_id = ?`, params: [id] },
       { sql: `DELETE FROM packages WHERE id = ?`, params: [id] }
     ]);
   }
 
   // OFFERS
   async listOffers(): Promise<Offer[]> {
-    const offers = await this.client.query<Omit<Offer, "lineItems">>(`SELECT * FROM offers ORDER BY createdAt DESC`);
+    const query = convertSQLQuery(`SELECT * FROM offers ORDER BY createdAt DESC`);
+    const offers = await this.client.query<Omit<Offer, "lineItems">>(query);
     
     const result: Offer[] = [];
     for (const offer of offers) {
+      const mappedOffer = mapFromSQL(offer) as Omit<Offer, "lineItems">;
+      const lineItemQuery = `SELECT id, title, description, quantity, unit_price, total, parent_item_id FROM offer_line_items WHERE offer_id = ? ORDER BY id`;
       const lineItems = await this.client.query<{
         id: number;
         title: string;
         description: string | null;
         quantity: number;
-        unitPrice: number;
+        unit_price: number;
         total: number;
-        parentItemId: number | null;
-      }>(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM offer_line_items WHERE offerId = ? ORDER BY id`, [offer.id]);
+        parent_item_id: number | null;
+      }>(lineItemQuery, [offer.id]);
       
       result.push({
-        ...offer,
-        lineItems: lineItems.map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description || undefined,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          total: item.total,
-          parentItemId: item.parentItemId || undefined
-        }))
+        ...mappedOffer,
+        lineItems: lineItems.map(item => {
+          const mappedItem = mapFromSQL(item);
+          return {
+            id: mappedItem.id,
+            title: mappedItem.title,
+            description: mappedItem.description || undefined,
+            quantity: mappedItem.quantity,
+            unitPrice: mappedItem.unitPrice,
+            total: mappedItem.total,
+            parentItemId: mappedItem.parentItemId || undefined
+          };
+        })
       });
     }
     return result;
@@ -327,61 +337,69 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const rows = await this.client.query<Omit<Offer, "lineItems">>(`SELECT * FROM offers WHERE id = ?`, [id]);
     if (!rows[0]) return null;
     
-    const offer = rows[0];
+    const offer = mapFromSQL(rows[0]) as Omit<Offer, "lineItems">;
+    const lineItemQuery = `SELECT id, title, description, quantity, unit_price, total, parent_item_id FROM offer_line_items WHERE offer_id = ? ORDER BY id`;
     const lineItems = await this.client.query<{
       id: number;
       title: string;
       description: string | null;
       quantity: number;
-      unitPrice: number;
+      unit_price: number;
       total: number;
-      parentItemId: number | null;
-    }>(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM offer_line_items WHERE offerId = ? ORDER BY id`, [id]);
+      parent_item_id: number | null;
+    }>(lineItemQuery, [id]);
     
     return {
       ...offer,
-      lineItems: lineItems.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description || undefined,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        total: item.total,
-        parentItemId: item.parentItemId || undefined
-      }))
+      lineItems: lineItems.map(item => {
+        const mappedItem = mapFromSQL(item);
+        return {
+          id: mappedItem.id,
+          title: mappedItem.title,
+          description: mappedItem.description || undefined,
+          quantity: mappedItem.quantity,
+          unitPrice: mappedItem.unitPrice,
+          total: mappedItem.total,
+          parentItemId: mappedItem.parentItemId || undefined
+        };
+      })
     };
   }
 
   async createOffer(data: Omit<Offer, "id" | "createdAt" | "updatedAt">): Promise<Offer> {
     const ts = nowIso();
     
+    // Map offer data to SQL format
+    const mappedOfferData = mapToSQL({ ...data, createdAt: ts, updatedAt: ts });
+    
     const result = await this.client.exec(
       `
-      INSERT INTO offers (offerNumber, customerId, title, status, validUntil, subtotal, vatRate, vatAmount, total, notes, createdAt, updatedAt)
+      INSERT INTO offers (offer_number, customer_id, title, status, valid_until, subtotal, vat_rate, vat_amount, total, notes, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
       [
-        data.offerNumber,
-        data.customerId,
-        data.title,
-        data.status,
-        data.validUntil,
-        data.subtotal,
-        data.vatRate,
-        data.vatAmount,
-        data.total,
-        data.notes || null,
-        ts,
-        ts,
+        mappedOfferData.offer_number,
+        mappedOfferData.customer_id,
+        mappedOfferData.title,
+        mappedOfferData.status,
+        mappedOfferData.valid_until,
+        mappedOfferData.subtotal,
+        mappedOfferData.vat_rate,
+        mappedOfferData.vat_amount,
+        mappedOfferData.total,
+        mappedOfferData.notes || null,
+        mappedOfferData.created_at,
+        mappedOfferData.updated_at,
       ]
     );
     
     const offerId = result.lastInsertRowid;
     
     for (const item of data.lineItems) {
+      const mappedItem = mapToSQL(item);
       await this.client.exec(
-        `INSERT INTO offer_line_items (offerId, title, description, quantity, unitPrice, total, parentItemId) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [offerId, item.title, item.description || null, item.quantity, item.unitPrice, item.total, item.parentItemId || null]
+        `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, mappedItem.parent_item_id || null]
       );
     }
     
@@ -396,35 +414,39 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
     const next = { ...current, ...patch, updatedAt: nowIso() };
 
+    // Map to SQL format
+    const mappedNext = mapToSQL(next);
+
     await this.client.exec(
       `
       UPDATE offers SET
-        offerNumber = ?, customerId = ?, title = ?, status = ?, validUntil = ?, 
-        subtotal = ?, vatRate = ?, vatAmount = ?, total = ?, notes = ?, updatedAt = ?
+        offer_number = ?, customer_id = ?, title = ?, status = ?, valid_until = ?, 
+        subtotal = ?, vat_rate = ?, vat_amount = ?, total = ?, notes = ?, updated_at = ?
       WHERE id = ?
     `,
       [
-        next.offerNumber,
-        next.customerId,
-        next.title,
-        next.status,
-        next.validUntil,
-        next.subtotal,
-        next.vatRate,
-        next.vatAmount,
-        next.total,
-        next.notes || null,
-        next.updatedAt,
+        mappedNext.offer_number,
+        mappedNext.customer_id,
+        mappedNext.title,
+        mappedNext.status,
+        mappedNext.valid_until,
+        mappedNext.subtotal,
+        mappedNext.vat_rate,
+        mappedNext.vat_amount,
+        mappedNext.total,
+        mappedNext.notes || null,
+        mappedNext.updated_at,
         id,
       ]
     );
 
     if (patch.lineItems) {
-      await this.client.exec(`DELETE FROM offer_line_items WHERE offerId = ?`, [id]);
+      await this.client.exec(`DELETE FROM offer_line_items WHERE offer_id = ?`, [id]);
       for (const item of patch.lineItems) {
+        const mappedItem = mapToSQL(item);
         await this.client.exec(
-          `INSERT INTO offer_line_items (offerId, title, description, quantity, unitPrice, total, parentItemId) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [id, item.title, item.description || null, item.quantity, item.unitPrice, item.total, item.parentItemId || null]
+          `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, mappedItem.parent_item_id || null]
         );
       }
     }
@@ -436,38 +458,44 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   async deleteOffer(id: number): Promise<void> {
     await this.client.transaction([
-      { sql: `DELETE FROM offer_line_items WHERE offerId = ?`, params: [id] },
+      { sql: `DELETE FROM offer_line_items WHERE offer_id = ?`, params: [id] },
       { sql: `DELETE FROM offers WHERE id = ?`, params: [id] }
     ]);
   }
 
   // INVOICES
   async listInvoices(): Promise<Invoice[]> {
-    const invoices = await this.client.query<Omit<Invoice, "lineItems">>(`SELECT * FROM invoices ORDER BY createdAt DESC`);
+    const query = convertSQLQuery(`SELECT * FROM invoices ORDER BY createdAt DESC`);
+    const invoices = await this.client.query<Omit<Invoice, "lineItems">>(query);
     
     const result: Invoice[] = [];
     for (const invoice of invoices) {
+      const mappedInvoice = mapFromSQL(invoice) as Omit<Invoice, "lineItems">;
+      const lineItemQuery = `SELECT id, title, description, quantity, unit_price, total, parent_item_id FROM invoice_line_items WHERE invoice_id = ? ORDER BY id`;
       const lineItems = await this.client.query<{
         id: number;
         title: string;
         description: string | null;
         quantity: number;
-        unitPrice: number;
+        unit_price: number;
         total: number;
-        parentItemId: number | null;
-      }>(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoice_line_items WHERE invoiceId = ? ORDER BY id`, [invoice.id]);
+        parent_item_id: number | null;
+      }>(lineItemQuery, [invoice.id]);
       
       result.push({
-        ...invoice,
-        lineItems: lineItems.map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description || undefined,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          total: item.total,
-          parentItemId: item.parentItemId || undefined
-        }))
+        ...mappedInvoice,
+        lineItems: lineItems.map(item => {
+          const mappedItem = mapFromSQL(item);
+          return {
+            id: mappedItem.id,
+            title: mappedItem.title,
+            description: mappedItem.description || undefined,
+            quantity: mappedItem.quantity,
+            unitPrice: mappedItem.unitPrice,
+            total: mappedItem.total,
+            parentItemId: mappedItem.parentItemId || undefined
+          };
+        })
       });
     }
     return result;
@@ -477,62 +505,70 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const rows = await this.client.query<Omit<Invoice, "lineItems">>(`SELECT * FROM invoices WHERE id = ?`, [id]);
     if (!rows[0]) return null;
     
-    const invoice = rows[0];
+    const invoice = mapFromSQL(rows[0]) as Omit<Invoice, "lineItems">;
+    const lineItemQuery = `SELECT id, title, description, quantity, unit_price, total, parent_item_id FROM invoice_line_items WHERE invoice_id = ? ORDER BY id`;
     const lineItems = await this.client.query<{
       id: number;
       title: string;
       description: string | null;
       quantity: number;
-      unitPrice: number;
+      unit_price: number;
       total: number;
-      parentItemId: number | null;
-    }>(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoice_line_items WHERE invoiceId = ? ORDER BY id`, [id]);
+      parent_item_id: number | null;
+    }>(lineItemQuery, [id]);
     
     return {
       ...invoice,
-      lineItems: lineItems.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description || undefined,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        total: item.total,
-        parentItemId: item.parentItemId || undefined
-      }))
+      lineItems: lineItems.map(item => {
+        const mappedItem = mapFromSQL(item);
+        return {
+          id: mappedItem.id,
+          title: mappedItem.title,
+          description: mappedItem.description || undefined,
+          quantity: mappedItem.quantity,
+          unitPrice: mappedItem.unitPrice,
+          total: mappedItem.total,
+          parentItemId: mappedItem.parentItemId || undefined
+        };
+      })
     };
   }
 
   async createInvoice(data: Omit<Invoice, "id" | "createdAt" | "updatedAt">): Promise<Invoice> {
     const ts = nowIso();
     
+    // Map invoice data to SQL format
+    const mappedInvoiceData = mapToSQL({ ...data, createdAt: ts, updatedAt: ts });
+    
     const result = await this.client.exec(
       `
-      INSERT INTO invoices (invoiceNumber, customerId, offerId, title, status, dueDate, subtotal, vatRate, vatAmount, total, notes, createdAt, updatedAt)
+      INSERT INTO invoices (invoice_number, customer_id, offer_id, title, status, due_date, subtotal, vat_rate, vat_amount, total, notes, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
       [
-        data.invoiceNumber,
-        data.customerId,
-        data.offerId || null,
-        data.title,
-        data.status,
-        data.dueDate,
-        data.subtotal,
-        data.vatRate,
-        data.vatAmount,
-        data.total,
-        data.notes || null,
-        ts,
-        ts,
+        mappedInvoiceData.invoice_number,
+        mappedInvoiceData.customer_id,
+        mappedInvoiceData.offer_id || null,
+        mappedInvoiceData.title,
+        mappedInvoiceData.status,
+        mappedInvoiceData.due_date,
+        mappedInvoiceData.subtotal,
+        mappedInvoiceData.vat_rate,
+        mappedInvoiceData.vat_amount,
+        mappedInvoiceData.total,
+        mappedInvoiceData.notes || null,
+        mappedInvoiceData.created_at,
+        mappedInvoiceData.updated_at,
       ]
     );
     
     const invoiceId = result.lastInsertRowid;
     
     for (const item of data.lineItems) {
+      const mappedItem = mapToSQL(item);
       await this.client.exec(
-        `INSERT INTO invoice_line_items (invoiceId, title, description, quantity, unitPrice, total, parentItemId) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [invoiceId, item.title, item.description || null, item.quantity, item.unitPrice, item.total, item.parentItemId || null]
+        `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [invoiceId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, mappedItem.parent_item_id || null]
       );
     }
     
@@ -547,36 +583,40 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
     const next = { ...current, ...patch, updatedAt: nowIso() };
 
+    // Map to SQL format
+    const mappedNext = mapToSQL(next);
+
     await this.client.exec(
       `
       UPDATE invoices SET
-        invoiceNumber = ?, customerId = ?, offerId = ?, title = ?, status = ?, dueDate = ?, 
-        subtotal = ?, vatRate = ?, vatAmount = ?, total = ?, notes = ?, updatedAt = ?
+        invoice_number = ?, customer_id = ?, offer_id = ?, title = ?, status = ?, due_date = ?, 
+        subtotal = ?, vat_rate = ?, vat_amount = ?, total = ?, notes = ?, updated_at = ?
       WHERE id = ?
     `,
       [
-        next.invoiceNumber,
-        next.customerId,
-        next.offerId || null,
-        next.title,
-        next.status,
-        next.dueDate,
-        next.subtotal,
-        next.vatRate,
-        next.vatAmount,
-        next.total,
-        next.notes || null,
-        next.updatedAt,
+        mappedNext.invoice_number,
+        mappedNext.customer_id,
+        mappedNext.offer_id || null,
+        mappedNext.title,
+        mappedNext.status,
+        mappedNext.due_date,
+        mappedNext.subtotal,
+        mappedNext.vat_rate,
+        mappedNext.vat_amount,
+        mappedNext.total,
+        mappedNext.notes || null,
+        mappedNext.updated_at,
         id,
       ]
     );
 
     if (patch.lineItems) {
-      await this.client.exec(`DELETE FROM invoice_line_items WHERE invoiceId = ?`, [id]);
+      await this.client.exec(`DELETE FROM invoice_line_items WHERE invoice_id = ?`, [id]);
       for (const item of patch.lineItems) {
+        const mappedItem = mapToSQL(item);
         await this.client.exec(
-          `INSERT INTO invoice_line_items (invoiceId, title, description, quantity, unitPrice, total, parentItemId) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [id, item.title, item.description || null, item.quantity, item.unitPrice, item.total, item.parentItemId || null]
+          `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, mappedItem.parent_item_id || null]
         );
       }
     }
@@ -588,7 +628,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   async deleteInvoice(id: number): Promise<void> {
     await this.client.transaction([
-      { sql: `DELETE FROM invoice_line_items WHERE invoiceId = ?`, params: [id] },
+      { sql: `DELETE FROM invoice_line_items WHERE invoice_id = ?`, params: [id] },
       { sql: `DELETE FROM invoices WHERE id = ?`, params: [id] }
     ]);
   }
