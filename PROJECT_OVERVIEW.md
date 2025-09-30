@@ -24,6 +24,7 @@
 - **Secondary:** IndexedDB via Dexie 4.0.8 (Browser-Fallback)
 - **Backup:** Integrated Hot-Backup System
 - **Migration:** user_version-based Schema Migrations
+- **Field Mapping:** Dual-layer camelCase↔snake_case Architecture (Production Ready)
 - **Legacy:** SQL.js 1.13.0 (Deprecated, Migration Support)
 
 ### Testing & Development
