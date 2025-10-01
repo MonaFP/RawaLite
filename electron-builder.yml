@@ -3,17 +3,24 @@ productName: RawaLite
 directories:
   output: release
 files:
-  - dist-electron
   - package.json
+  - dist-electron/
+extraFiles:
+  - node_modules/better-sqlite3/**/*
 extraResources:
   - from: dist-web
     to: .
+includeSubNodeModules: true
+buildDependenciesFromSource: false
+asarUnpack:
+  - node_modules/better-sqlite3/**/*
 icon: assets/icon.png
 win:
   target:
     - target: nsis
       arch:
         - x64
+  requestedExecutionLevel: asInvoker  # Verhindert UAC-Probleme
   # icon: assets/icon.ico  # Temporär deaktiviert wegen Icon-Problem
 mac:
   target:
