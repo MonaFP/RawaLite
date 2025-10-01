@@ -19,6 +19,7 @@ Entwicklungsstandards, Workflows, Debugging-Richtlinien und Best Practices für 
 #### 🐛 debugging/
 - **solved/**: Gelöste Debugging-Probleme
   - `LESSONS-LEARNED-typescript-unused-imports.md` - TypeScript Import-Probleme
+  - `CROSS-REF-settings-schema-migration.md` - Cross-Reference zu Settings Schema Migration
 - **active/**: Bekannte offene Debug-Probleme
 
 ### 🚀 KI-Hinweise
