@@ -5,15 +5,15 @@ directories:
 files:
   - package.json
   - dist-electron/
-extraFiles:
-  - node_modules/better-sqlite3/**/*
 extraResources:
   - from: dist-web
     to: .
-includeSubNodeModules: true
 buildDependenciesFromSource: false
 asarUnpack:
   - node_modules/better-sqlite3/**/*
+  - node_modules/bindings/**/*
+  - node_modules/file-uri-to-path/**/*
+  - "**/*.node"
 icon: assets/icon.png
 win:
   target:
@@ -22,6 +22,10 @@ win:
         - x64
   requestedExecutionLevel: asInvoker  # Verhindert UAC-Probleme
   # icon: assets/icon.ico  # Temporär deaktiviert wegen Icon-Problem
+nsis:
+  oneClick: false  # Manueller Installer-Modus statt OneClick
+  allowToChangeInstallationDirectory: true
+  perMachine: false  # Pro-User Installation
 mac:
   target:
     - target: dmg
