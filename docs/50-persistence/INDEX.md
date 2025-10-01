@@ -17,6 +17,7 @@ SQLite Database, Migrations, Backup-System und Daten-Persistierung.
 #### 🔄 migration/
 - **solved/**: Gelöste Migration-Probleme
   - `LESSONS-LEARNED-sqlite-nummernkreis-system.md` - Nummernkreis Migration
+  - `LESSONS-LEARNED-settings-schema-migration.md` - Settings Schema key-value → structured Migration
 - **active/**: Bekannte offene Migration-Probleme
 
 #### 💾 backup/
