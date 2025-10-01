@@ -1,10 +1,7 @@
 # 🏗️ Architektur - RawaLite
 
-> **Technische Architektur & Des  │  ┌─────▼───────────────────────────┐   │
-  │  │        Persistence Layer        │   │
-  │  │  (SQLite + better-sqlite3)      │   │
-  │  └─────────────────────────────────┘   │rinzipien** der RawaLite Desktop-Anwendung  
-> **Letzte Aktualisierung:** 29. September 2025 | **Version:** 1.2.0
+> **Technische Architektur & Designprinzipien** der RawaLite Desktop-Anwendung  
+> **Letzte Aktualisierung:** 01. Oktober 2025 | **Version:** 1.3.0
 
 ---
 
@@ -65,7 +62,7 @@ sequenceDiagram
 │        │                               │
 │  ┌─────▼───────────────────────────┐   │
 │  │        Persistence Layer        │   │
-│  │    (SQLite + LocalStorage)      │   │
+│  │  (SQLite + better-sqlite3)      │   │
 │  └─────────────────────────────────┘   │
 └─────────────────────────────────────────┘
 ```
@@ -230,12 +227,14 @@ interface PersistenceAdapter {
 
 // ✅ Current Implementation: SQLite mit Field-Mapper (100% komplett)
 class SQLiteAdapter implements PersistenceAdapter {
-  // ✅ Alle 21 Interface-Methoden implementiert (Stand: 30.09.2025)
+  // ✅ Alle 24 Interface-Methoden implementiert (Stand: 01.10.2025)
   // ✅ CamelCase ↔ Snake_Case Mapping via field-mapper.ts
   // ✅ IPC-only access für security (via DbClient)
   // ✅ LineItem Management für komplexe Entitäten (Offers/Invoices/Packages)
   // ✅ Type Safety mit korrekten number IDs
   // ✅ Query Optimierung mit convertSQLQuery()
+  // ✅ Hot Backup System mit integrity checks
+  // ✅ Transaction support für atomare Operationen
   
   private client = new DbClient(); // IPC-based database operations
   
@@ -639,10 +638,57 @@ test('Customer Management Workflow', async ({ page }) => {
 ┌─────────────────────────────────────────┐
 │ Electron Builder                        │
 │ ├── Platform-specific Packaging         │
+│ ├── Native Module asarUnpack (SQLite)   │
 │ ├── Code Signing (optional)             │
-│ ├── Installer Generation (NSIS)         │
+│ ├── NSIS Installer Generation           │
 │ └── Update Manifest Creation             │
 └─────────────────────────────────────────┘
+```
+
+### **Native Dependencies Packaging Strategy**
+```yaml
+# electron-builder.yml - Aktuelle Konfiguration
+files:
+  - package.json
+  - dist-electron/
+extraFiles:
+  - node_modules/better-sqlite3/**/*
+extraResources:
+  - from: dist-web
+    to: .
+asarUnpack:
+  - node_modules/better-sqlite3/**/*  # ← Kritisch für native .node files
+includeSubNodeModules: true
+buildDependenciesFromSource: false
+```
+
+### **NSIS Installer Architecture**
+```
+NSIS Installer Process:
+┌─────────────────────────────────────────┐
+│ 1. UAC Handling (requestedExecutionLevel) │
+│    ├── asInvoker (recommended)         │
+│    └── Prevents UAC popup              │
+└─────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ 2. File Extraction & Validation        │
+│    ├── Main App Files (RawaLite.exe)   │
+│    ├── Resources (HTML, CSS, JS)       │
+│    ├── Native Modules (.node files)    │
+│    └── Integrity Checks                │
+└─────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ 3. Registry & Shortcuts Creation       │
+│    ├── App Registration                │
+│    ├── Uninstaller Registration        │
+│    └── Desktop/Start Menu Shortcuts    │
+└─────────────────────────────────────────┘
+
+Known Issues & Solutions:
+- Native Dependencies: Use asarUnpack for .node files
+- UAC Problems: Set requestedExecutionLevel: asInvoker
+- File Access: Ensure proper permissions in target directory
+- Cache Issues: Clear NSIS cache when plugins fail
 ```
 
 ### **Environment-specific Configuration**
@@ -666,6 +712,9 @@ if (!isDev) {
   
   // Error reporting setup
   process.on('uncaughtException', handleProductionError);
+  
+  // Native module path resolution
+  // better-sqlite3 in app.asar.unpacked/ directory
 }
 
 // Test Configuration
@@ -674,6 +723,35 @@ if (isTest) {
   // Mocked external services
   // Faster startup configuration
 }
+```
+
+### **Critical Path Dependencies**
+```
+Application Startup Flow:
+┌─────────────────────────────────────────┐
+│ 1. Electron Main Process Init          │
+│    ├── better-sqlite3 native module    │
+│    ├── Database connection             │
+│    └── IPC channels registration       │
+└─────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ 2. Renderer Process Init               │
+│    ├── React application mount         │
+│    ├── Context providers setup         │
+│    └── Initial data loading            │
+└─────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ 3. Application Ready State             │
+│    ├── Database schema validation      │
+│    ├── Settings loading                │
+│    └── UI rendering complete           │
+└─────────────────────────────────────────┘
+
+Critical Dependencies:
+- better-sqlite3.node must be in app.asar.unpacked/
+- Database file in %APPDATA%/rawalite/database/
+- Native modules require proper architecture (x64)
+- Windows: VC++ 2022 Redistributables required
 ```
 
 ---
@@ -751,4 +829,27 @@ class HealthMonitor {
 
 ---
 
-*Letzte Aktualisierung: 29. September 2025 | Nächste Review: Dezember 2025*
+*Letzte Aktualisierung: 01. Oktober 2025 | Nächste Review: Januar 2026*
+
+---
+
+## 📋 **Aktuelle Architektur-Status (Stand: 01.10.2025)**
+
+### **✅ Komplett implementiert:**
+- **SQLite Database Layer**: 100% - better-sqlite3 mit Field-Mapping
+- **IPC Security Architecture**: 100% - Sichere Process-Trennung
+- **React Frontend**: 100% - Alle Business-Entitäten implementiert
+- **PDF Export System**: 100% - Multi-format Export ohne Popup
+- **Hot Backup System**: 100% - Atomare Backups mit Integrity Checks
+- **NSIS Installer**: 95% - Native Dependencies Packaging gelöst
+
+### **🔧 In Optimierung:**
+- **NSIS Installer Stabilität**: Debugging von Installation-Crashes
+- **Performance Optimierungen**: Index-Strategien und Query-Optimierung
+- **Error Handling**: Umfassende Error-Kategorisierung
+
+### **🎯 Geplante Erweiterungen:**
+- **Cloud Sync Adapter**: Hybride Online/Offline Synchronisation
+- **Advanced PDF Templates**: Custom Template Engine
+- **Encryption Service**: Optionale Datenverschlüsselung
+- **Performance Monitoring**: Application Health Dashboard
