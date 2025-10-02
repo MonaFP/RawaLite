@@ -15,7 +15,7 @@ import { join, dirname } from 'path';
 import { spawn } from 'child_process';
 import { app } from 'electron';
 
-import { githubCliService } from './GitHubCliService';
+import { githubApiService } from './GitHubApiService';
 import type {
   UpdateCheckResult,
   UpdateInfo,
@@ -144,22 +144,16 @@ export class UpdateManagerService {
       this.setState({ checking: true, currentPhase: 'checking' });
       this.emit({ type: 'check-started' });
 
-      // Verify GitHub CLI availability
-      const availability = await githubCliService.checkAvailability();
-      if (!availability.available || !availability.authenticated) {
-        throw new Error(`GitHub CLI not ready: ${availability.error}`);
-      }
-
       // Get current version
       const currentVersion = await this.getCurrentVersion();
 
-      // Check for updates
-      const updateCheck = await githubCliService.checkForUpdate(currentVersion);
+      // Check for updates using new GitHub API service
+      const updateCheck = await githubApiService.checkForUpdate(currentVersion);
 
       const result: UpdateCheckResult = {
         hasUpdate: updateCheck.hasUpdate,
-        currentVersion,
-        latestVersion: updateCheck.latestRelease?.tag_name.replace(/^v/, ''),
+        currentVersion: updateCheck.currentVersion,
+        latestVersion: updateCheck.latestVersion,
         latestRelease: updateCheck.latestRelease
       };
 
@@ -223,16 +217,17 @@ export class UpdateManagerService {
       // Create abort controller for cancellation
       this.currentDownloadController = new AbortController();
 
-      // Get latest release and find asset
-      const latestRelease = await githubCliService.getLatestRelease();
-      const asset = latestRelease.assets.find(a => a.name === updateInfo.assetName);
-
-      if (!asset) {
-        throw new Error(`Asset ${updateInfo.assetName} not found in release`);
-      }
+      // Find the setup asset from updateInfo
+      const setupAsset = {
+        name: updateInfo.assetName,
+        browser_download_url: updateInfo.downloadUrl,
+        size: updateInfo.fileSize,
+        content_type: 'application/octet-stream',
+        download_count: 0
+      };
 
       // Download with progress tracking
-      await githubCliService.downloadAsset(asset, targetPath, (progress) => {
+      await githubApiService.downloadAsset(setupAsset, targetPath, (progress) => {
         this.emit({ type: 'download-progress', progress });
       });
 
@@ -240,7 +235,7 @@ export class UpdateManagerService {
       this.setState({ currentPhase: 'verifying' });
       this.emit({ type: 'verification-started' });
 
-      const verification = await this.verifyDownload(targetPath, asset.size);
+      const verification = await this.verifyDownload(targetPath, setupAsset.size);
       if (!verification.valid) {
         throw new Error(`Download verification failed: ${verification.error}`);
       }

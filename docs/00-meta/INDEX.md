@@ -22,6 +22,12 @@ KI-Instruktionen, Entwicklungsstandards, Workflows und Richtlinien für RawaLite
 - **[WORKFLOWS.md](WORKFLOWS.md)** - Git, Build und Development Workflows
 - **[debugging.md](debugging.md)** - Systematische Debugging-Richtlinien
 
+#### 🔄 Migrations & Plans
+- **[GITHUB_API_MIGRATION.md](GITHUB_API_MIGRATION.md)** - ✅ **GitHub CLI → API Migration Plan**
+  - Vollständiger 11-Stunden Migrationsplan von GitHub CLI zu direkter HTTP API
+  - 4-Phasen Implementierung: Service Foundation → Integration → Testing → Cleanup
+  - Zero External Dependencies + Simplified User Experience
+
 #### 📊 Qualitäts-Tracking
 - **[DOCUMENTATION-QUALITY-TRACKING.md](DOCUMENTATION-QUALITY-TRACKING.md)** - Dokumentationsqualität
 - **[lessons_learned_TEMPLATE.md](lessons_learned_TEMPLATE.md)** - Template für Lessons Learned

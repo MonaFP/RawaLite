@@ -217,7 +217,11 @@ git checkout main
 git pull origin main
 git checkout -b release/1.1.0
 
-# 2. Update version numbers
+# 2. Clean build caches for accurate build time measurement
+Remove-Item -Path "dist-release", "dist-web", "dist-electron" -Recurse -Force -ErrorAction SilentlyContinue
+pnpm store prune
+
+# 3. Update version numbers
 # package.json
 {
   "version": "1.1.0"
@@ -495,6 +499,58 @@ Area:
 ⚡ area/performance    # Performance improvements
 🔒 area/security       # Security-related issues
 📦 area/build         # Build and deployment issues
+```
+
+---
+
+## 🔧 **Build Performance Optimization**
+
+### **Cache Management**
+```bash
+# Cache cleanup for accurate builds and troubleshooting
+
+# 1. Full cache cleanup (when build issues occur)
+Remove-Item -Path "dist-release", "dist-web", "dist-electron" -Recurse -Force -ErrorAction SilentlyContinue
+pnpm store prune
+
+# 2. Measure clean build time
+Measure-Command { pnpm dist }
+
+# 3. Partial cache cleanup (for faster iterations) 
+Remove-Item -Path "dist-web", "dist-electron" -Recurse -Force -ErrorAction SilentlyContinue
+pnpm build
+
+# 4. PNPM store optimization (monthly)
+pnpm store prune
+```
+
+### **Build Time Benchmarks**
+```bash
+# Expected build times (after cache cleanup):
+# - Clean build: ~40s (TypeScript + Vite + ESBuild + Code Signing)  
+# - Incremental build: ~10s (cached dependencies)
+# - Development build: ~5s (no signing, cached)
+
+# Performance factors:
+# - Code signing: +20s (Windows certificate validation)
+# - ASAR integrity: +5s (Electron security check)
+# - better-sqlite3 rebuild: +10s (native module compilation)
+```
+
+### **Cache Troubleshooting**
+```bash
+# When experiencing build issues:
+
+# 1. Check cache corruption
+pnpm store problems
+
+# 2. Nuclear option (complete reset)
+Remove-Item -Path "node_modules", "pnpm-lock.yaml", "dist-*" -Recurse -Force
+pnpm install --frozen-lockfile
+pnpm build
+
+# 3. Verify clean slate
+pnpm typecheck && pnpm lint && pnpm test && pnpm build
 ```
 
 ---
