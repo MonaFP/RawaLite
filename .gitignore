@@ -12,7 +12,11 @@ dist-manual/
 dist/
 dist-electron/
 build/
-release/
+dist-release/
 *.log
 *.zip
 *.exe
+# Code-Signing Zertifikate (NIEMALS committen!)
+*.pfx
+*.p12
+*.cer

@@ -1,1 +1,8 @@
-export const useUnifiedSettings = () => ({ settings: {}, loading: false });
+export const useUnifiedSettings = () => ({ 
+  settings: {
+    companyData: {
+      kleinunternehmer: false
+    }
+  }, 
+  loading: false 
+});

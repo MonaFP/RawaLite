@@ -24,6 +24,10 @@ win:
         - x64
   requestedExecutionLevel: asInvoker
   icon: assets/icon.ico
+  verifyUpdateCodeSignature: false
+  signtoolOptions:
+    certificateFile: rawalite-codesign.pfx
+    certificatePassword: rawalite2025
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true

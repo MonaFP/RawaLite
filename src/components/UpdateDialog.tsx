@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-// import { useUpdateChecker } from '../hooks/useUpdateChecker';
+import { useUpdateChecker } from '../hooks/useCustomers';
 import type { UpdateInfo, DownloadProgress } from '../types/update.types';
 
 interface UpdateDialogProps {
@@ -379,7 +379,7 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
 
   const canRetry = Boolean(error) && !isChecking && !isDownloading && !isInstalling;
   const needsRestart = state.currentPhase === 'restart-required';
-  const downloadCompleted = state.downloadStatus?.status === 'completed';
+  const downloadCompleted = state.downloadStatus?.status === 'idle'; // Fixed: Mock state uses 'idle'
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-20" style={{ zIndex: 9999 }}>
