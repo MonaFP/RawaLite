@@ -1,6 +1,6 @@
 {
-  "_jspdf.es.min-mv7XxSKH.js": {
-    "file": "assets/jspdf.es.min-mv7XxSKH.js",
+  "_jspdf.es.min-C0r9Ze05.js": {
+    "file": "assets/jspdf.es.min-C0r9Ze05.js",
     "name": "jspdf.es.min",
     "isDynamicEntry": true,
     "imports": [
@@ -12,8 +12,8 @@
       "node_modules/.pnpm/canvg@3.0.11/node_modules/canvg/lib/index.es.js"
     ]
   },
-  "_jszip.min-BcFSEXcC.js": {
-    "file": "assets/jszip.min-BcFSEXcC.js",
+  "_jszip.min-HecI6z3x.js": {
+    "file": "assets/jszip.min-HecI6z3x.js",
     "name": "jszip.min",
     "isDynamicEntry": true,
     "imports": [
@@ -21,16 +21,16 @@
     ]
   },
   "index.html": {
-    "file": "assets/index-BOU3zKTZ.js",
+    "file": "assets/index-DrMHEI_o.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
     "dynamicImports": [
       "src/services/NummernkreisService.ts",
-      "_jspdf.es.min-mv7XxSKH.js",
+      "_jspdf.es.min-C0r9Ze05.js",
       "node_modules/.pnpm/html2canvas@1.4.1/node_modules/html2canvas/dist/html2canvas.esm.js",
-      "_jszip.min-BcFSEXcC.js",
-      "_jszip.min-BcFSEXcC.js"
+      "_jszip.min-HecI6z3x.js",
+      "_jszip.min-HecI6z3x.js"
     ],
     "css": [
       "assets/index-CmCq2k4O.css"
@@ -40,13 +40,13 @@
     ]
   },
   "node_modules/.pnpm/canvg@3.0.11/node_modules/canvg/lib/index.es.js": {
-    "file": "assets/index.es-BgLDUKaW.js",
+    "file": "assets/index.es-B2GvN8iu.js",
     "name": "index.es",
     "src": "node_modules/.pnpm/canvg@3.0.11/node_modules/canvg/lib/index.es.js",
     "isDynamicEntry": true,
     "imports": [
       "index.html",
-      "_jspdf.es.min-mv7XxSKH.js"
+      "_jspdf.es.min-C0r9Ze05.js"
     ]
   },
   "node_modules/.pnpm/dompurify@3.2.7/node_modules/dompurify/dist/purify.es.mjs": {
@@ -66,7 +66,7 @@
     "src": "src/assets/rawalite-logo.png"
   },
   "src/services/NummernkreisService.ts": {
-    "file": "assets/NummernkreisService-C6NRRTMJ.js",
+    "file": "assets/NummernkreisService-Bh_ztGNh.js",
     "name": "NummernkreisService",
     "src": "src/services/NummernkreisService.ts",
     "isDynamicEntry": true,
