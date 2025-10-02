@@ -7,6 +7,7 @@ import PersistenceProvider from "./PersistenceProvider";
 import { LoadingProvider, LoadingOverlay } from "./contexts/LoadingContext";
 import { NotificationProvider, NotificationContainer } from "./contexts/NotificationContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
+import { NumberingProvider } from "./contexts/NumberingContext";
 
 // Import pages
 import DashboardPage from "./pages/DashboardPage";
@@ -16,7 +17,6 @@ import AngebotDetailPage from "./pages/AngebotDetailPage";
 import PaketePage from "./pages/PaketePage";
 import RechnungenPage from "./pages/RechnungenPage";
 import EinstellungenPage from "./pages/EinstellungenPage";
-import UpdatesPage from "./pages/UpdatesPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Router configuration - conditional based on environment
@@ -54,10 +54,6 @@ const routerConfig = [
         element: <EinstellungenPage />,
       },
       {
-        path: "updates",
-        element: <UpdatesPage />,
-      },
-      {
         path: "*",
         element: <NotFoundPage />,
       },
@@ -76,9 +72,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <NotificationProvider>
         <PersistenceProvider mode="sqlite">
           <SettingsProvider>
-            <RouterProvider router={router} />
-            <LoadingOverlay />
-            <NotificationContainer />
+            <NumberingProvider>
+              <RouterProvider router={router} />
+              <LoadingOverlay />
+              <NotificationContainer />
+            </NumberingProvider>
           </SettingsProvider>
         </PersistenceProvider>
       </NotificationProvider>

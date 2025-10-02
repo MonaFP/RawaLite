@@ -1,32 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useSettings } from "../contexts/SettingsContext";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
+import { useNumbering } from "../contexts/NumberingContext";
 import type { CompanyData, NumberingCircle } from "../lib/settings";
 import { defaultSettings } from "../lib/settings";
+import { UpdateDialog } from "../components/UpdateDialog";
+import { UpdateStatus } from "../components/UpdateStatus";
 
 interface EinstellungenPageProps {
   title?: string;
 }
 
 export default function EinstellungenPage({ title = "Einstellungen" }: EinstellungenPageProps) {
-  const { settings, loading, error, updateCompanyData, updateNumberingCircles, getNextNumber } = useSettings();
+  const { settings, loading, error, updateCompanyData } = useSettings();
+  const { circles: numberingCircles, loading: numberingLoading, error: numberingError, updateCircle, getNextNumber } = useNumbering();
   const { adapter } = usePersistence();
   const { showError, showSuccess } = useNotifications();
-  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'maintenance'>('company');
+  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'updates' | 'maintenance'>('company');
   const [companyFormData, setCompanyFormData] = useState<CompanyData>(settings.companyData);
-  const [numberingFormData, setNumberingFormData] = useState<NumberingCircle[]>(settings.numberingCircles);
+  const [numberingFormData, setNumberingFormData] = useState<NumberingCircle[]>(numberingCircles);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [importType, setImportType] = useState<'customers' | 'invoices' | 'offers'>('customers');
   const [selectedCSVFile, setSelectedCSVFile] = useState<File | null>(null);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+
+  // A2: Stable Close Callback - verhindert Dialog Re-Renders durch Function Reference Changes
+  const handleCloseUpdateDialog = useCallback(() => setUpdateDialogOpen(false), []);
 
   // Update form data when settings change
   React.useEffect(() => {
     console.log('🔍 Settings loaded - Logo length:', settings.companyData.logo?.length || 0);
     setCompanyFormData(settings.companyData);
-    setNumberingFormData(settings.numberingCircles);
   }, [settings]);
+
+  React.useEffect(() => {
+    console.log('🔍 [DEBUG] UI - Received numberingCircles:', numberingCircles.length, 'circles');
+    console.log('🔍 [DEBUG] UI - Circle data:', numberingCircles);
+    setNumberingFormData(numberingCircles);
+  }, [numberingCircles]);
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -155,7 +168,10 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     e.preventDefault();
     try {
       setSaving(true);
-      await updateNumberingCircles(numberingFormData);
+      // Update each circle individually
+      for (const circle of numberingFormData) {
+        await updateCircle(circle.id, circle);
+      }
       showSuccess('Nummernkreise gespeichert!');
     } catch (error) {
       showError('Fehler beim Speichern der Nummernkreise');
@@ -554,12 +570,17 @@ Möchten Sie wirklich fortfahren?`;
           });
           
           console.log('🔢 Importing intelligent numbering circles...');
-          await updateNumberingCircles(intelligentNumberingCircles);
+          // Update each circle individually  
+          for (const circle of intelligentNumberingCircles) {
+            await updateCircle(circle.id, circle);
+          }
           console.log('✅ Intelligent numbering circles imported successfully');
         } catch (error) {
           console.warn('Error importing intelligent numbering circles:', error);
           // Fallback zu normalen Nummernkreisen
-          await updateNumberingCircles(backupData.numberingCircles);
+          for (const circle of backupData.numberingCircles) {
+            await updateCircle(circle.id, circle);
+          }
         }
       }
 
@@ -910,7 +931,9 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
         }));
         
         console.log('📝 Setting numbering circles to:', resetCircles);
-        await updateNumberingCircles(resetCircles);
+        for (const circle of resetCircles) {
+          await updateCircle(circle.id, circle);
+        }
         console.log('✅ Numbering circles reset successfully');
       } catch (e) {
         console.warn('Error resetting numbering circles:', e);
@@ -1038,6 +1061,22 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
           }}
         >
           Nummernkreise
+        </button>
+        <button
+          onClick={() => setActiveTab('updates')}
+          style={{
+            backgroundColor: activeTab === 'updates' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
+            color: activeTab === 'updates' ? "white" : "#374151",
+            border: activeTab === 'updates' ? "1px solid #1e3a2e" : "1px solid rgba(0,0,0,.2)",
+            padding: "8px 16px",
+            borderRadius: "8px 8px 0 0",
+            cursor: "pointer",
+            borderBottom: activeTab === 'updates' ? "2px solid #1e3a2e" : "2px solid transparent",
+            transition: "all 0.2s ease",
+            fontWeight: activeTab === 'updates' ? "600" : "500"
+          }}
+        >
+          Updates
         </button>
         <button
           onClick={() => setActiveTab('maintenance')}
@@ -1500,7 +1539,9 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               Verwalte die automatische Nummerierung für verschiedene Dokumenttypen.
             </p>
 
-            {numberingFormData.map((circle, index) => (
+            {numberingFormData.map((circle, index) => {
+              console.log('🔍 [DEBUG] UI - Rendering circle:', circle.id, circle.name);
+              return (
               <div key={circle.id} style={{ 
                 marginBottom: "24px", 
                 padding: "16px", 
@@ -1599,7 +1640,8 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                   <strong>Vorschau nächste Nummer:</strong> {circle.prefix}{(circle.current + 1).toString().padStart(circle.digits, '0')}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           <div style={{ marginTop: "24px" }}>
@@ -1621,6 +1663,74 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
             </button>
           </div>
         </form>
+      )}
+
+      {/* Updates Tab */}
+      {activeTab === 'updates' && (
+        <div>
+          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Software Updates</h3>
+          <p style={{ opacity: 0.7, marginBottom: "24px" }}>
+            Halten Sie RawaLite auf dem neuesten Stand und profitieren Sie von neuen Features, Bugfixes und Sicherheitsupdates.
+          </p>
+
+          {/* Update Check Section */}
+          <div style={{ marginBottom: "32px" }}>
+            <h4 style={{ margin: "0 0 12px 0", color: "#374151" }}>Update-Prüfung</h4>
+            <p style={{ margin: "0 0 16px 0", color: "#6b7280", fontSize: "14px" }}>
+              Suchen Sie nach verfügbaren Updates für RawaLite und installieren Sie diese direkt aus der Anwendung.
+            </p>
+            <UpdateStatus 
+              onUpdateAvailable={() => setUpdateDialogOpen(true)}
+            />
+          </div>
+
+          {/* Update Info Section */}
+          <div style={{ marginBottom: "32px" }}>
+            <h4 style={{ margin: "0 0 12px 0", color: "#374151" }}>Aktuelle Version</h4>
+            <div style={{ 
+              padding: "16px", 
+              backgroundColor: "rgba(255,255,255,0.05)",
+              borderRadius: "8px",
+              border: "1px solid rgba(255,255,255,0.1)"
+            }}>
+              <p style={{ margin: "0 0 8px 0", fontWeight: "500" }}>RawaLite Version 1.0.0</p>
+              <p style={{ margin: "0", fontSize: "14px", opacity: 0.7 }}>
+                Letzte Überprüfung: Beim nächsten Update-Check
+              </p>
+            </div>
+          </div>
+
+          {/* Update Settings Section */}
+          <div style={{ marginBottom: "32px" }}>
+            <h4 style={{ margin: "0 0 12px 0", color: "#374151" }}>Update-Einstellungen</h4>
+            <p style={{ margin: "0 0 16px 0", color: "#6b7280", fontSize: "14px" }}>
+              Konfigurieren Sie, wie RawaLite mit Updates umgehen soll.
+            </p>
+            <div style={{ 
+              padding: "16px", 
+              backgroundColor: "rgba(255,255,255,0.05)",
+              borderRadius: "8px",
+              border: "1px solid rgba(255,255,255,0.1)"
+            }}>
+              <label style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
+                <input 
+                  type="checkbox" 
+                  disabled
+                  style={{ marginRight: "8px" }} 
+                />
+                <span style={{ fontSize: "14px" }}>Automatisch nach Updates suchen (Coming Soon)</span>
+              </label>
+              <label style={{ display: "flex", alignItems: "center" }}>
+                <input 
+                  type="checkbox" 
+                  disabled
+                  style={{ marginRight: "8px" }} 
+                />
+                <span style={{ fontSize: "14px" }}>Beta-Versionen einbeziehen (Coming Soon)</span>
+              </label>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Maintenance Tab - Datensicherung */}
@@ -1867,6 +1977,13 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
           </div>
         </div>
       )}
+
+      {/* Update Dialog - außerhalb der Tab-Bereiche */}
+      <UpdateDialog 
+        isOpen={updateDialogOpen}
+        onClose={handleCloseUpdateDialog}
+        autoCheckOnOpen={true}
+      />
     </div>
   );
 }

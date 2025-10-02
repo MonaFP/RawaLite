@@ -1,5 +1,6 @@
 import DbClient from './DbClient';
 import { convertSQLQuery, mapFromSQLArray } from '../lib/field-mapper';
+import type { NumberingCircle } from '../lib/settings';
 
 export class NummernkreisService {
   private static client = DbClient.getInstance();
@@ -36,11 +37,11 @@ export class NummernkreisService {
 
     await this.client.transaction([
       {
-        sql: `
-          UPDATE numbering_circles 
-          SET current = ?, last_reset_year = ?, updated_at = datetime('now')
+        sql: convertSQLQuery(`
+          UPDATE numberingCircles 
+          SET current = ?, lastResetYear = ?, updatedAt = datetime('now')
           WHERE id = ?
-        `,
+        `),
         params: [
           nextNumber,
           circle.resetMode === 'yearly' ? currentYear : circle.lastResetYear,
@@ -62,5 +63,32 @@ export class NummernkreisService {
     
     const sqlRows = await this.client.query(query);
     return mapFromSQLArray(sqlRows);
+  }
+
+  // Instance methods for IPC integration
+  async getAll(): Promise<NumberingCircle[]> {
+    const sqlRows = await NummernkreisService.getAllCircles();
+    return sqlRows as NumberingCircle[];
+  }
+
+  async getNext(circleId: string): Promise<string> {
+    return NummernkreisService.getNextNumber(circleId);
+  }
+
+  async update(id: string, circle: NumberingCircle): Promise<void> {
+    const query = convertSQLQuery(`
+      UPDATE numberingCircles 
+      SET name = ?, prefix = ?, digits = ?, current = ?, resetMode = ?, updatedAt = datetime('now')
+      WHERE id = ?
+    `);
+    
+    await NummernkreisService.client.exec(query, [
+      circle.name,
+      circle.prefix,
+      circle.digits,
+      circle.current,
+      circle.resetMode,
+      id
+    ]);
   }
 }

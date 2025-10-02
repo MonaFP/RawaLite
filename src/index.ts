@@ -1,5 +1,5 @@
 export * from './persistence/adapter';
-export * from './services/NummernkreisService';
+// export * from './services/NummernkreisService'; // DISABLED: Causes window error in main process
 
 // Page exports
 export { default as AngebotDetailPage } from './pages/AngebotDetailPage';

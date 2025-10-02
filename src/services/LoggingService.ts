@@ -1,5 +1,4 @@
-// TODO: Temporarily disabled - PATHS uses Node.js APIs in renderer process
-// import PATHS from '../lib/paths';
+import PATHS from '../lib/paths';
 
 export class LoggingService {
   // 📝 Robustes Logging mit zentraler Pfadabstraktion (Phase 2)
@@ -11,10 +10,17 @@ export class LoggingService {
       // Console ausgabe für Development
       console.log(logEntry);
       
-      // TODO: File logging temporarily disabled due to PATHS renderer issue
-      // const logFile = await PATHS.LOG_FILE();
-      // const logsDir = await PATHS.LOGS_DIR();
-      // await PATHS.ensureDir(logsDir);
+      // File logging über IPC
+      try {
+        const logFile = await PATHS.LOG_FILE();
+        const logsDir = await PATHS.LOGS_DIR();
+        await PATHS.ensureDir(logsDir);
+        
+        // Write log entry via IPC
+        await (window as any).rawalite.fs.appendFile(logFile, logEntry + '\n');
+      } catch (fileError) {
+        console.warn('File logging failed, console only:', fileError);
+      }
     } catch (error) {
       console.error('Logging failed:', error);
     }
@@ -28,9 +34,14 @@ export class LoggingService {
     
     // Additional error logging to separate file
     try {
-      // TODO: File logging temporarily disabled due to PATHS renderer issue
-      // const errorLogFile = await PATHS.ERROR_LOG_FILE();
-      // console.log(`🚨 Error würde geloggt nach: ${errorLogFile}`);
+      const errorLogFile = await PATHS.ERROR_LOG_FILE();
+      const logsDir = await PATHS.LOGS_DIR();
+      await PATHS.ensureDir(logsDir);
+      
+      const timestamp = new Date().toISOString();
+      const errorEntry = `[${timestamp}] ERROR: ${fullMessage}\n`;
+      
+      await (window as any).rawalite.fs.appendFile(errorLogFile, errorEntry);
     } catch (logError) {
       console.error('Error logging failed:', logError);
     }

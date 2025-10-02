@@ -1,31 +1,33 @@
 appId: com.rawalite.app
 productName: RawaLite
 directories:
-  output: release
+  output: dist-release
 files:
   - package.json
   - dist-electron/
+  - dist-web/
 extraResources:
   - from: dist-web
     to: .
 buildDependenciesFromSource: false
+nodeGypRebuild: false
 asarUnpack:
-  - node_modules/better-sqlite3/**/*
-  - node_modules/bindings/**/*
-  - node_modules/file-uri-to-path/**/*
+  - "node_modules/better-sqlite3/**/*"
+  - "node_modules/bindings/**/*"
   - "**/*.node"
+electronVersion: "31.7.7"
 icon: assets/icon.png
 win:
   target:
     - target: nsis
       arch:
         - x64
-  requestedExecutionLevel: asInvoker  # Verhindert UAC-Probleme
-  # icon: assets/icon.ico  # Temporär deaktiviert wegen Icon-Problem
+  requestedExecutionLevel: asInvoker
+  icon: assets/icon.ico
 nsis:
-  oneClick: false  # Manueller Installer-Modus statt OneClick
+  oneClick: false
   allowToChangeInstallationDirectory: true
-  perMachine: false  # Pro-User Installation
+  perMachine: false
 mac:
   target:
     - target: dmg

@@ -1,0 +1,77 @@
+{
+  "_jspdf.es.min-Tj56KNuF.js": {
+    "file": "assets/jspdf.es.min-Tj56KNuF.js",
+    "name": "jspdf.es.min",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html"
+    ],
+    "dynamicImports": [
+      "node_modules/.pnpm/html2canvas@1.4.1/node_modules/html2canvas/dist/html2canvas.esm.js",
+      "node_modules/.pnpm/dompurify@3.2.6/node_modules/dompurify/dist/purify.es.mjs",
+      "node_modules/.pnpm/canvg@3.0.11/node_modules/canvg/lib/index.es.js"
+    ]
+  },
+  "_jszip.min-0icUJXVE.js": {
+    "file": "assets/jszip.min-0icUJXVE.js",
+    "name": "jszip.min",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html"
+    ]
+  },
+  "index.html": {
+    "file": "assets/index-CY0Cuikr.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "dynamicImports": [
+      "src/services/NummernkreisService.ts",
+      "_jspdf.es.min-Tj56KNuF.js",
+      "node_modules/.pnpm/html2canvas@1.4.1/node_modules/html2canvas/dist/html2canvas.esm.js",
+      "_jszip.min-0icUJXVE.js",
+      "_jszip.min-0icUJXVE.js"
+    ],
+    "css": [
+      "assets/index-CmCq2k4O.css"
+    ],
+    "assets": [
+      "assets/rawalite-logo-D3IvfwpA.png"
+    ]
+  },
+  "node_modules/.pnpm/canvg@3.0.11/node_modules/canvg/lib/index.es.js": {
+    "file": "assets/index.es-CWAtQxt6.js",
+    "name": "index.es",
+    "src": "node_modules/.pnpm/canvg@3.0.11/node_modules/canvg/lib/index.es.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html",
+      "_jspdf.es.min-Tj56KNuF.js"
+    ]
+  },
+  "node_modules/.pnpm/dompurify@3.2.6/node_modules/dompurify/dist/purify.es.mjs": {
+    "file": "assets/purify.es-CQJ0hv7W.js",
+    "name": "purify.es",
+    "src": "node_modules/.pnpm/dompurify@3.2.6/node_modules/dompurify/dist/purify.es.mjs",
+    "isDynamicEntry": true
+  },
+  "node_modules/.pnpm/html2canvas@1.4.1/node_modules/html2canvas/dist/html2canvas.esm.js": {
+    "file": "assets/html2canvas.esm-CBrSDip1.js",
+    "name": "html2canvas.esm",
+    "src": "node_modules/.pnpm/html2canvas@1.4.1/node_modules/html2canvas/dist/html2canvas.esm.js",
+    "isDynamicEntry": true
+  },
+  "src/assets/rawalite-logo.png": {
+    "file": "assets/rawalite-logo-D3IvfwpA.png",
+    "src": "src/assets/rawalite-logo.png"
+  },
+  "src/services/NummernkreisService.ts": {
+    "file": "assets/NummernkreisService-GxTJ69c6.js",
+    "name": "NummernkreisService",
+    "src": "src/services/NummernkreisService.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html"
+    ]
+  }
+}

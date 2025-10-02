@@ -32,30 +32,38 @@ if errorlevel 1 (
 )
 
 echo [4/4] RawaLite starten...
+echo.
 if exist "release\win-unpacked\RawaLite.exe" (
-    echo.
     echo ✅ Production-Installation erfolgreich!
     echo RawaLite wird gestartet...
     echo.
+    echo DEBUG: App-Pfad: release\win-unpacked\RawaLite.exe
     start "" "release\win-unpacked\RawaLite.exe"
-    echo App gestartet. Sie können dieses Fenster schließen.
-) else if exist "dist\win-unpacked\RawaLite.exe" (
     echo.
-    echo ✅ Production-Installation erfolgreich!
-    echo RawaLite wird gestartet...
+    echo 🚀 App gestartet! Installation abgeschlossen.
+    echo ℹ️  Die App läuft jetzt im Hintergrund.
+    echo ℹ️  Dieses Terminal kann geschlossen werden.
     echo.
-    start "" "dist\win-unpacked\RawaLite.exe"
-    echo App gestartet. Sie können dieses Fenster schließen.
+    timeout /t 3 /nobreak >nul
+    echo Fertig! 🎉
 ) else (
+    echo ❌ FEHLER: RawaLite.exe nicht gefunden!
+    echo Expected: release\win-unpacked\RawaLite.exe
+    dir "release\win-unpacked\" 2>nul | findstr "RawaLite"
     echo.
-    echo ✅ Entwicklungsversion bereit!
-    echo RawaLite wird im Development-Modus gestartet...
-    echo (Hot-Reload aktiviert für Live-Entwicklung)
-    echo.
-    start "" cmd /c "pnpm dev"
-    echo App gestartet. Development-Server läuft.
-    echo Schließen Sie das Development-Terminal zum Beenden.
+    echo Fallback: Versuche direkten Installer...
+    if exist "release\RawaLite Setup 1.0.0.exe" (
+        echo ✅ Installer gefunden - wird ausgeführt...
+        start "" "release\RawaLite Setup 1.0.0.exe"
+        echo Installer gestartet. Folgen Sie den Anweisungen.
+        pause
+    ) else (
+        echo ❌ Weder ausführbare App noch Installer gefunden!
+        echo Starte Development-Modus...
+        start "" cmd /c "pnpm dev"
+        echo Development-Server gestartet.
+        pause
+    )
 )
 
 echo.
-pause

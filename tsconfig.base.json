@@ -6,6 +6,8 @@
     "noEmit": true,
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
-    "types": []
+    "types": [],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   }
 }
