@@ -4,9 +4,12 @@
  * 
  * Mappings basieren auf dem aktuellen SQLite-Schema:
  * - customers: company_name, contact_person, address_street, address_city, address_zip, address_country, tax_number, created_at, updated_at
- * - offers: customer_id, total_amount, tax_rate, valid_until, created_at, updated_at  
- * - invoices: customer_id, offer_id, total_amount, tax_rate, due_date, paid_at, created_at, updated_at
+ * - offers: customer_id, total_amount, tax_rate, valid_until, offer_number, created_at, updated_at  
+ * - invoices: customer_id, offer_id, total_amount, tax_rate, due_date, paid_at, invoice_number, created_at, updated_at
  * - packages: created_at, updated_at
+ * - offer_line_items: offer_id, parent_item_id, unit_price, vat_rate, vat_amount, created_at, updated_at
+ * - package_line_items: package_id, parent_item_id, unit_price, vat_rate, vat_amount, created_at, updated_at
+ * - invoice_line_items: invoice_id, parent_item_id, unit_price, vat_rate, vat_amount, created_at, updated_at
  * - numbering_circles: last_number, created_at, updated_at
  * - settings: updated_at
  */
@@ -29,6 +32,11 @@ export class FieldMapper {
     'addressCountry': 'address_country',
     'taxNumber': 'tax_number',
     
+    // Package Felder (KRITISCH - waren vorher nicht definiert!)
+    'internalTitle': 'internal_title',
+    'parentPackageId': 'parent_package_id',
+    'addVat': 'add_vat',
+    
     // Offer/Invoice Felder
     'customerId': 'customer_id',
     'offerId': 'offer_id',
@@ -38,8 +46,24 @@ export class FieldMapper {
     'dueDate': 'due_date',
     'paidAt': 'paid_at',
     
-    // Numbering Circles
-    'lastNumber': 'last_number'
+    // LineItem Felder (KRITISCH für Packages/Offers/Invoices)
+    'unitPrice': 'unit_price',
+    'parentItemId': 'parent_item_id',
+    'packageId': 'package_id',
+    'invoiceId': 'invoice_id',
+    'vatRate': 'vat_rate',
+    'vatAmount': 'vat_amount',
+    
+    // Numbering Circles & Numbers
+    'lastNumber': 'last_number',
+    'offerNumber': 'offer_number',
+    'invoiceNumber': 'invoice_number',
+    
+    // Tabellennamen (für SQL-Queries)
+    'packageLineItems': 'package_line_items',
+    'offerLineItems': 'offer_line_items',
+    'invoiceLineItems': 'invoice_line_items',
+    'numberingCircles': 'numbering_circles'
   };
 
   /**

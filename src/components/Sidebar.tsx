@@ -33,7 +33,6 @@ export default function Sidebar(){
     { to: "/pakete", label: "Pakete" },
     { to: "/angebote", label: "Angebote" },
     { to: "/rechnungen", label: "Rechnungen" },
-    { to: "/updates", label: "Updates" },
     { to: "/einstellungen", label: "Einstellungen" }
   ];
   return (

@@ -84,4 +84,69 @@ contextBridge.exposeInMainWorld('rawalite', {
     writeFile: (filePath: string, data: string | Uint8Array, encoding?: string) => 
       ipcRenderer.invoke('fs:writeFile', filePath, data, encoding) as Promise<boolean>,
   },
+  // � Numbering Circles API
+  nummernkreis: {
+    getAll: () => 
+      ipcRenderer.invoke('nummernkreis:getAll') as Promise<{
+        success: boolean;
+        data?: any[];
+        error?: string;
+      }>,
+    update: (id: string, circle: any) => 
+      ipcRenderer.invoke('nummernkreis:update', id, circle) as Promise<{
+        success: boolean;
+        error?: string;
+      }>,
+    getNext: (circleId: string) => 
+      ipcRenderer.invoke('nummernkreis:getNext', circleId) as Promise<{
+        success: boolean;
+        data?: string;
+        error?: string;
+      }>,
+  },
+  // �🔄 Update API (Custom Updater)
+  updates: {
+    // Check operations
+    checkForUpdates: () => 
+      ipcRenderer.invoke('updates:check') as Promise<{
+        hasUpdate: boolean;
+        currentVersion: string;
+        latestVersion?: string;
+        latestRelease?: any;
+        error?: string;
+      }>,
+    getCurrentVersion: () => 
+      ipcRenderer.invoke('updates:getCurrentVersion') as Promise<string>,
+    
+    // Download operations
+    startDownload: (updateInfo: any) => 
+      ipcRenderer.invoke('updates:startDownload', updateInfo) as Promise<void>,
+    cancelDownload: () => 
+      ipcRenderer.invoke('updates:cancelDownload') as Promise<void>,
+    
+    // Installation operations
+    installUpdate: (filePath: string) => 
+      ipcRenderer.invoke('updates:installUpdate', filePath) as Promise<void>,
+    restartApp: () => 
+      ipcRenderer.invoke('updates:restartApp') as Promise<void>,
+    
+    // Configuration
+    getUpdateConfig: () => 
+      ipcRenderer.invoke('updates:getConfig') as Promise<any>,
+    setUpdateConfig: (config: any) => 
+      ipcRenderer.invoke('updates:setConfig', config) as Promise<void>,
+    
+    // Event subscription
+    onUpdateEvent: (listener: (event: any) => void) => {
+      const wrappedListener = (_event: any, ...args: any[]) => listener(args[0]);
+      ipcRenderer.on('updates:event', wrappedListener);
+      return () => ipcRenderer.removeListener('updates:event', wrappedListener);
+    },
+    
+    // Utility
+    openDownloadFolder: () => 
+      ipcRenderer.invoke('updates:openDownloadFolder') as Promise<void>,
+    verifyUpdateFile: (filePath: string) => 
+      ipcRenderer.invoke('updates:verifyFile', filePath) as Promise<boolean>,
+  },
 });

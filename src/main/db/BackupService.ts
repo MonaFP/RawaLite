@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { app } from 'electron';
-import { getDb, closeDb } from './Database.js';
+import { getDb, closeDb } from './Database';
 
 /**
  * Get backup directory path

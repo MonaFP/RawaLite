@@ -1,0 +1,418 @@
+{
+  "inputs": {
+    "src/main/services/GitHubCliService.ts": {
+      "bytes": 10282,
+      "imports": [
+        {
+          "path": "child_process",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "fs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "stream/promises",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/types/update.types.ts": {
+      "bytes": 8411,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/services/UpdateManagerService.ts": {
+      "bytes": 15609,
+      "imports": [
+        {
+          "path": "crypto",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "fs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "child_process",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/main/services/GitHubCliService.ts",
+          "kind": "import-statement",
+          "original": "./GitHubCliService"
+        },
+        {
+          "path": "src/types/update.types.ts",
+          "kind": "import-statement",
+          "original": "../../types/update.types"
+        },
+        {
+          "path": "fs",
+          "kind": "require-call",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/main/db/Database.ts": {
+      "bytes": 3253,
+      "imports": [
+        {
+          "path": "better-sqlite3",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:fs",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/main/db/migrations/000_init.ts": {
+      "bytes": 4603,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/001_settings_restructure.ts": {
+      "bytes": 6790,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/index.ts": {
+      "bytes": 844,
+      "imports": [
+        {
+          "path": "src/main/db/migrations/000_init.ts",
+          "kind": "import-statement",
+          "original": "./000_init"
+        },
+        {
+          "path": "src/main/db/migrations/001_settings_restructure.ts",
+          "kind": "import-statement",
+          "original": "./001_settings_restructure"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/main/db/MigrationService.ts": {
+      "bytes": 6906,
+      "imports": [
+        {
+          "path": "src/main/db/Database.ts",
+          "kind": "import-statement",
+          "original": "./Database"
+        },
+        {
+          "path": "src/main/db/migrations/index.ts",
+          "kind": "import-statement",
+          "original": "./migrations/index"
+        },
+        {
+          "path": "node:fs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/main/db/BackupService.ts": {
+      "bytes": 9950,
+      "imports": [
+        {
+          "path": "node:fs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/main/db/Database.ts",
+          "kind": "import-statement",
+          "original": "./Database"
+        }
+      ],
+      "format": "esm"
+    },
+    "electron/main.ts": {
+      "bytes": 9635,
+      "imports": [
+        {
+          "path": "electron",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:fs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/main/services/UpdateManagerService.ts",
+          "kind": "import-statement",
+          "original": "../src/main/services/UpdateManagerService"
+        },
+        {
+          "path": "electron",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:fs/promises",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/main/db/Database.ts",
+          "kind": "import-statement",
+          "original": "../src/main/db/Database"
+        },
+        {
+          "path": "src/main/db/MigrationService.ts",
+          "kind": "import-statement",
+          "original": "../src/main/db/MigrationService"
+        },
+        {
+          "path": "src/main/db/BackupService.ts",
+          "kind": "import-statement",
+          "original": "../src/main/db/BackupService"
+        },
+        {
+          "path": "fs",
+          "kind": "require-call",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist-electron/main.cjs.map": {
+      "imports": [],
+      "exports": [],
+      "inputs": {},
+      "bytes": 114516
+    },
+    "dist-electron/main.cjs": {
+      "imports": [
+        {
+          "path": "electron",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:path",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:fs",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "crypto",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "fs",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "path",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "child_process",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "child_process",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "fs",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "path",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "fs",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:fs/promises",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "better-sqlite3",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:path",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:fs",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:fs",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:path",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:fs",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:path",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "fs",
+          "kind": "require-call",
+          "external": true
+        }
+      ],
+      "exports": [],
+      "entryPoint": "electron/main.ts",
+      "inputs": {
+        "electron/main.ts": {
+          "bytesInOutput": 8828
+        },
+        "src/main/services/UpdateManagerService.ts": {
+          "bytesInOutput": 12730
+        },
+        "src/main/services/GitHubCliService.ts": {
+          "bytesInOutput": 7513
+        },
+        "src/types/update.types.ts": {
+          "bytesInOutput": 570
+        },
+        "src/main/db/Database.ts": {
+          "bytesInOutput": 2551
+        },
+        "src/main/db/migrations/000_init.ts": {
+          "bytesInOutput": 4109
+        },
+        "src/main/db/migrations/001_settings_restructure.ts": {
+          "bytesInOutput": 5421
+        },
+        "src/main/db/migrations/index.ts": {
+          "bytesInOutput": 341
+        },
+        "src/main/db/MigrationService.ts": {
+          "bytesInOutput": 3090
+        },
+        "src/main/db/BackupService.ts": {
+          "bytesInOutput": 8339
+        }
+      },
+      "bytes": 55156
+    }
+  }
+}

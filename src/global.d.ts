@@ -1,21 +1,8 @@
 declare interface Window {
-  rawa?: {
-    listCustomers: () => Promise<any[]>;
-    addCustomer: (data: { Name: string; Adresse?: string }) => Promise<any>;
-    deleteCustomer: (id: string) => Promise<void>;
-    getCounters: () => Promise<any>;
-    getNextId: (entity: 'customers'|'invoices'|'offers'|'packages') => Promise<string>;
-    getSettings: () => Promise<any>;
-    setKleinunternehmer: (val: boolean) => Promise<void>;
-  };
-
   // 🗂️ Modern RawaLite API (Phase 2 + Phase 4)
   rawalite: {
-    // Legacy Dexie DB API (Phase 2)
+    // SQLite Database API (Phase 4)
     db: {
-      load(): Promise<Uint8Array | null>;
-      save(data: Uint8Array): Promise<boolean>;
-      // SQLite Database API (Phase 4)
       query: (sql: string, params?: any[]) => Promise<any[]>;
       exec: (sql: string, params?: any[]) => Promise<any>;
       transaction: (queries: Array<{ sql: string; params?: any[] }>) => Promise<any[]>;
@@ -52,8 +39,76 @@ declare interface Window {
         deletedFiles: string[];
       }>;
     };
+    // Filesystem API für PATHS Support
+    fs: {
+      ensureDir: (dirPath: string) => Promise<boolean>;
+      getCwd: () => Promise<string>;
+      readDir: (dirPath: string) => Promise<string[]>;
+      stat: (filePath: string) => Promise<{
+        isFile: boolean;
+        isDirectory: boolean;
+        size: number;
+        mtime: number;
+        atime: number;
+        ctime: number;
+      }>;
+      unlink: (filePath: string) => Promise<boolean>;
+      exists: (filePath: string) => Promise<boolean>;
+      copy: (src: string, dest: string) => Promise<boolean>;
+      readFile: (filePath: string, encoding?: string) => Promise<string | Uint8Array>;
+      writeFile: (filePath: string, data: string | Uint8Array, encoding?: string) => Promise<boolean>;
+    };
+    // Pfad-Management API (Phase 2)
     paths: {
       get(pathType: 'userData' | 'documents' | 'downloads'): Promise<string>;
+    };
+    // 🔢 Numbering Circles API
+    nummernkreis: {
+      getAll(): Promise<{
+        success: boolean;
+        data?: any[];
+        error?: string;
+      }>;
+      update(id: string, circle: any): Promise<{
+        success: boolean;
+        error?: string;
+      }>;
+      getNext(circleId: string): Promise<{
+        success: boolean;
+        data?: string;
+        error?: string;
+      }>;
+    };
+    // Update API (Custom Updater)
+    updates: {
+      // Check operations
+      checkForUpdates(): Promise<{
+        hasUpdate: boolean;
+        currentVersion: string;
+        latestVersion?: string;
+        latestRelease?: any;
+        error?: string;
+      }>;
+      getCurrentVersion(): Promise<string>;
+      
+      // Download operations
+      startDownload(updateInfo: any): Promise<void>;
+      cancelDownload(): Promise<void>;
+      
+      // Installation operations
+      installUpdate(filePath: string): Promise<void>;
+      restartApp(): Promise<void>;
+      
+      // Configuration
+      getUpdateConfig(): Promise<any>;
+      setUpdateConfig(config: any): Promise<void>;
+      
+      // Event subscription
+      onUpdateEvent(listener: (event: any) => void): () => void;
+      
+      // Utility
+      openDownloadFolder(): Promise<void>;
+      verifyUpdateFile(filePath: string): Promise<boolean>;
     };
   };
 }

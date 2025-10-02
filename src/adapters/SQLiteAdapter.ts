@@ -157,7 +157,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
     // Load line items for each package
     const result: Package[] = [];
     for (const pkg of packages) {
-      const lineItemRows = await this.client.query<any>(`SELECT id, title, quantity, amount, parent_item_id, description FROM package_line_items WHERE package_id = ? ORDER BY id`, [pkg.id]);
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, quantity, amount, parentItemId, description FROM packageLineItems WHERE packageId = ? ORDER BY id`);
+      const lineItemRows = await this.client.query<any>(lineItemQuery, [pkg.id]);
       const lineItems = mapFromSQLArray(lineItemRows).map(item => ({
         id: item.id,
         title: item.title,
@@ -181,7 +182,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (sqlRows.length === 0) return null;
     
     const pkg = mapFromSQL(sqlRows[0]) as Omit<Package, "lineItems">;
-    const lineItemRows = await this.client.query<any>(`SELECT id, title, quantity, amount, parent_item_id, description FROM package_line_items WHERE package_id = ? ORDER BY id`, [id]);
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, quantity, amount, parentItemId, description FROM packageLineItems WHERE packageId = ? ORDER BY id`);
+    const lineItemRows = await this.client.query<any>(lineItemQuery, [id]);
     const lineItems = mapFromSQLArray(lineItemRows).map(item => ({
       id: item.id,
       title: item.title,
@@ -307,7 +309,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const result: Offer[] = [];
     for (const offer of offers) {
       const mappedOffer = mapFromSQL(offer) as Omit<Offer, "lineItems">;
-      const lineItemQuery = `SELECT id, title, description, quantity, unit_price, total, parent_item_id FROM offer_line_items WHERE offer_id = ? ORDER BY id`;
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM offerLineItems WHERE offerId = ? ORDER BY id`);
       const lineItems = await this.client.query<{
         id: number;
         title: string;
@@ -343,7 +345,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (!rows[0]) return null;
     
     const offer = mapFromSQL(rows[0]) as Omit<Offer, "lineItems">;
-    const lineItemQuery = `SELECT id, title, description, quantity, unit_price, total, parent_item_id FROM offer_line_items WHERE offer_id = ? ORDER BY id`;
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM offerLineItems WHERE offerId = ? ORDER BY id`);
     const lineItems = await this.client.query<{
       id: number;
       title: string;
@@ -476,7 +478,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const result: Invoice[] = [];
     for (const invoice of invoices) {
       const mappedInvoice = mapFromSQL(invoice) as Omit<Invoice, "lineItems">;
-      const lineItemQuery = `SELECT id, title, description, quantity, unit_price, total, parent_item_id FROM invoice_line_items WHERE invoice_id = ? ORDER BY id`;
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoiceLineItems WHERE invoiceId = ? ORDER BY id`);
       const lineItems = await this.client.query<{
         id: number;
         title: string;
@@ -512,7 +514,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (!rows[0]) return null;
     
     const invoice = mapFromSQL(rows[0]) as Omit<Invoice, "lineItems">;
-    const lineItemQuery = `SELECT id, title, description, quantity, unit_price, total, parent_item_id FROM invoice_line_items WHERE invoice_id = ? ORDER BY id`;
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoiceLineItems WHERE invoiceId = ? ORDER BY id`);
     const lineItems = await this.client.query<{
       id: number;
       title: string;

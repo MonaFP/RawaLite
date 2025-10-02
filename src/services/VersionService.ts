@@ -32,8 +32,9 @@ export class VersionService {
    * 📦 App-Versionsinformationen abrufen
    */
   static getAppVersion(): AppVersion {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    const isTest = process.env.NODE_ENV === 'test';
+    // Use Vite environment variables instead of process.env
+    const isDevelopment = import.meta.env.DEV;
+    const isTest = import.meta.env.MODE === 'test';
     
     let buildEnvironment: AppVersion['buildEnvironment'] = 'production';
     if (isDevelopment) buildEnvironment = 'development';
@@ -45,8 +46,8 @@ export class VersionService {
       buildDate: new Date().toISOString(),
       buildEnvironment,
       // TODO: Git-Informationen aus Build-Process hinzufügen
-      gitCommit: process.env.VITE_GIT_COMMIT || undefined,
-      gitBranch: process.env.VITE_GIT_BRANCH || undefined
+      gitCommit: import.meta.env.VITE_GIT_COMMIT || undefined,
+      gitBranch: import.meta.env.VITE_GIT_BRANCH || undefined
     };
   }
   
@@ -59,14 +60,15 @@ export class VersionService {
     // Electron-spezifische Informationen extrahieren
     const electronMatch = userAgent.match(/Electron\/([^\s]+)/);
     const chromeMatch = userAgent.match(/Chrome\/([^\s]+)/);
-    const nodeMatch = process.versions?.node;
+    // Node version is not directly accessible in renderer, extract from userAgent if possible
+    const nodeMatch = userAgent.match(/Node\/([^\s]+)/);
     
     return {
       platform: navigator.platform,
       userAgent: userAgent,
       electronVersion: electronMatch?.[1],
       chromeVersion: chromeMatch?.[1], 
-      nodeVersion: nodeMatch
+      nodeVersion: nodeMatch?.[1] || 'unknown'
     };
   }
   

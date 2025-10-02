@@ -1,7 +1,7 @@
 // src/main/db/MigrationService.ts
-import { getDb, getUserVersion, setUserVersion, tx, closeDb } from './Database.js';
-import { migrations } from './migrations/index.js';
-import type { Migration } from './migrations/index.js';
+import { getDb, getUserVersion, setUserVersion, tx, closeDb } from './Database';
+import { migrations } from './migrations/index';
+import type { Migration } from './migrations/index';
 import fs from 'node:fs';
 import path from 'node:path';
 import { app } from 'electron';
