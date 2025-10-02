@@ -479,6 +479,14 @@ RawaLite/
   - ✅ Konsistente Datenanbindung - Verwendet useOffers() und useInvoices() Hooks
   - ✅ Responsive Mini-Widgets - Kompakte Darstellung für Sidebar-Breite
 
+- ✅ **Database Schema Migration Issues** (02.10.2025) 
+  - ✅ Migration 007 & 008 implementiert - Packages & Invoices & Offers Schema-Modernisierung
+  - ✅ Field-Mapper kritischer Fix - internalTitle → internal_title Mapping hinzugefügt
+  - ✅ NOT NULL Constraint behoben - packages.internal_title Fehler vollständig gelöst  
+  - ✅ Line Items Tabellen vervollständigt - package_line_items, invoice_line_items, offer_line_items
+  - ✅ Schema Version 8 erreicht - Alle Entitäten mit moderner Struktur (offer_number, invoice_number, etc.)
+  - ✅ Production Database stabil - Automatische Backups, robuste Transaktions-basierte Migrationen
+
 - ✅ **Update System Funktionalitätsfehler** (02.10.2025)
   - ✅ Update-Button Problem diagnostiziert - Async State Race Condition als Root Cause
   - ✅ UpdateStatus Component refactored - Direkter IPC-Aufruf statt komplexer Hook-Dependencies  
@@ -488,5 +496,6 @@ RawaLite/
 
 ---
 
-*Letzte Aktualisierung: 2. Oktober 2025*
-*Version: 1.0.0 - Official Release 🎉*
+*Letzte Aktualisierung: 2. Oktober 2025*  
+*Version: 1.0.1 - Critical Database Schema Fixes 🔧*  
+*GitHub Release: https://github.com/MonaFP/RawaLite/releases/tag/v1.0.1*
