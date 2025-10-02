@@ -10,7 +10,6 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useUpdateChecker } from '../hooks/useCustomers';
 import type { UpdateInfo, DownloadProgress } from '../types/update.types';
 
 interface UpdateDialogProps {
@@ -295,40 +294,124 @@ function ErrorComponent({ error, onRetry, onClose, canRetry }: ErrorComponentPro
 export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: UpdateDialogProps) {
   const [hasAutoChecked, setHasAutoChecked] = useState(false);
   const [showCheckResult, setShowCheckResult] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState(0);
-  const dialogRef = useRef<HTMLDivElement>(null);
-
-  // Temporarily disabled hook to fix build issue
-  // TODO: Re-enable after useUpdateChecker hook is fixed
-
-  // Temporary mock state while useUpdateChecker is being fixed
-  const state = { currentPhase: 'idle', downloadStatus: { status: 'idle' as const } };
-  const isChecking = false;
-  const isDownloading = false;
-  const isInstalling = false;
-  const hasUpdate = false;
-  const currentVersion = '1.0.0';
-  const latestVersion = undefined;
-  const updateInfo = undefined;
-  const error = null;
-  const hookDownloadProgress = { 
-    percentage: 0, 
-    bytesDownloaded: 0, 
-    totalBytes: 1000, 
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress>({
     downloaded: 0,
     total: 1000,
+    percentage: 0,
     speed: 0,
     eta: 0
+  });
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // State management
+  const [isChecking, setIsChecking] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
+  const [hasUpdate, setHasUpdate] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState('1.0.0');
+  const [latestVersion, setLatestVersion] = useState<string | undefined>();
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | undefined>();
+  const [error, setError] = useState<string | null>(null);
+
+  // Update functions using window.rawalite.updates API
+  const checkForUpdates = async () => {
+    if (!window.rawalite?.updates) {
+      setError('Update API nicht verfügbar');
+      return;
+    }
+    
+    setIsChecking(true);
+    setError(null);
+    
+    try {
+      const result = await window.rawalite.updates.checkForUpdates();
+      
+      if (result.hasUpdate && result.latestVersion) {
+        setHasUpdate(true);
+        setLatestVersion(result.latestVersion);
+        // Use latestRelease data for updateInfo
+        if (result.latestRelease) {
+          setUpdateInfo({
+            version: result.latestVersion,
+            name: result.latestRelease.name || `RawaLite v${result.latestVersion}`,
+            releaseNotes: result.latestRelease.body || '',
+            publishedAt: result.latestRelease.published_at || new Date().toISOString(),
+            downloadUrl: result.latestRelease.assets?.[0]?.browser_download_url || '',
+            assetName: result.latestRelease.assets?.[0]?.name || 'RawaLite.Setup.exe',
+            fileSize: result.latestRelease.assets?.[0]?.size || 0,
+            isPrerelease: result.latestRelease.prerelease || false
+          });
+        }
+      } else {
+        setHasUpdate(false);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Update-Prüfung fehlgeschlagen');
+    } finally {
+      setIsChecking(false);
+    }
   };
-  
-  const checkForUpdates = async () => console.log('UpdateDialog: checkForUpdates temporarily disabled');
-  const startDownload = async () => console.log('UpdateDialog: startDownload temporarily disabled');
-  const cancelDownload = async () => console.log('UpdateDialog: cancelDownload temporarily disabled');
-  const installUpdate = async () => console.log('UpdateDialog: installUpdate temporarily disabled');
-  const restartApp = async () => console.log('UpdateDialog: restartApp temporarily disabled');
-  const grantConsent = () => console.log('UpdateDialog: grantConsent temporarily disabled');
-  const denyConsent = () => console.log('UpdateDialog: denyConsent temporarily disabled');
-  const clearError = () => console.log('UpdateDialog: clearError temporarily disabled');
+
+  const startDownload = async () => {
+    if (!window.rawalite?.updates || !updateInfo) {
+      setError('Download nicht möglich');
+      return;
+    }
+    
+    setIsDownloading(true);
+    setError(null);
+    
+    try {
+      await window.rawalite.updates.startDownload(updateInfo);
+      setIsDownloading(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Download fehlgeschlagen');
+      setIsDownloading(false);
+    }
+  };
+
+  const installUpdate = async () => {
+    if (!window.rawalite?.updates) {
+      setError('Installation nicht möglich');
+      return;
+    }
+    
+    setIsInstalling(true);
+    
+    try {
+      await window.rawalite.updates.installUpdate('./temp/update.exe');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Installation fehlgeschlagen');
+      setIsInstalling(false);
+    }
+  };
+
+  const cancelDownload = async () => {
+    if (window.rawalite?.updates) {
+      await window.rawalite.updates.cancelDownload();
+    }
+    setIsDownloading(false);
+  };
+
+  const restartApp = async () => {
+    if (window.rawalite?.updates) {
+      await window.rawalite.updates.restartApp();
+    }
+  };
+
+  const grantConsent = () => {
+    startDownload();
+  };
+
+  const denyConsent = () => {
+    setHasUpdate(false);
+    setUpdateInfo(undefined);
+    onClose();
+  };
+
+  const clearError = () => {
+    setError(null);
+  };
 
   // Track if we've already triggered auto-check for this dialog session
   const hasTriggeredAutoCheckRef = useRef(false);
@@ -363,7 +446,7 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
     isChecking,
     hasUpdate,
     error: !!error,
-    currentPhase: state.currentPhase,
+    currentPhase: isChecking ? 'checking' : isDownloading ? 'downloading' : isInstalling ? 'installing' : 'idle',
     autoCheckOnOpen
   });
 
@@ -378,8 +461,8 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
   };
 
   const canRetry = Boolean(error) && !isChecking && !isDownloading && !isInstalling;
-  const needsRestart = state.currentPhase === 'restart-required';
-  const downloadCompleted = state.downloadStatus?.status === 'idle'; // Fixed: Mock state uses 'idle'
+  const needsRestart = isInstalling;
+  const downloadCompleted = !isDownloading && hasUpdate;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-20" style={{ zIndex: 9999 }}>
@@ -444,7 +527,7 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
             if (isDownloading && downloadProgress) {
               return (
                 <DownloadProgressComponent
-                  progress={hookDownloadProgress}
+                  progress={downloadProgress}
                   onCancel={cancelDownload}
                 />
               );
@@ -475,7 +558,7 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
             }
 
             // Priority 7: Update Available - User Consent
-            if (hasUpdate && updateInfo && state.currentPhase === 'user-consent') {
+            if (hasUpdate && updateInfo && !isDownloading && !isInstalling) {
               return (
                 <UpdateInfoComponent
                   updateInfo={updateInfo}
@@ -491,7 +574,7 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
             // if (!hasUpdate && state.currentPhase === 'completed') { ... }
 
             // Priority 9: Initial State (lowest priority - only when no auto-check)
-            if (state.currentPhase === 'idle' && !autoCheckOnOpen && !hasTriggeredAutoCheckRef.current) {
+            if (!isChecking && !hasUpdate && !autoCheckOnOpen && !hasAutoChecked) {
               return (
                 <div className="text-center py-8">
                   <h3 className="text-lg font-semibold">Update-Prüfung</h3>

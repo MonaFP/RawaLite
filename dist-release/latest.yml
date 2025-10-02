@@ -1,8 +1,8 @@
-version: 1.0.6
+version: 1.0.7
 files:
-  - url: RawaLite-Setup-1.0.6.exe
-    sha512: hR8BegaPbHZhOZZjnrh07EUdg9VDfnuFV9FXh1780KMO2IbeA+n0VfgHGIzbSnk3ePefgs2J7NuvWLBRcm0y+w==
-    size: 90364248
-path: RawaLite-Setup-1.0.6.exe
-sha512: hR8BegaPbHZhOZZjnrh07EUdg9VDfnuFV9FXh1780KMO2IbeA+n0VfgHGIzbSnk3ePefgs2J7NuvWLBRcm0y+w==
-releaseDate: '2025-10-02T16:22:20.238Z'
+  - url: RawaLite-Setup-1.0.7.exe
+    sha512: ez2WGqzUEdonvhJHLmlnz6HhftBDONQ/0iPckX4F18khuAN+r/pgf63gREPMWqzP9nao+vsnYgVHezbqQczhuA==
+    size: 90367280
+path: RawaLite-Setup-1.0.7.exe
+sha512: ez2WGqzUEdonvhJHLmlnz6HhftBDONQ/0iPckX4F18khuAN+r/pgf63gREPMWqzP9nao+vsnYgVHezbqQczhuA==
+releaseDate: '2025-10-02T17:01:01.496Z'
