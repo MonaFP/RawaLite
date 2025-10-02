@@ -1,15 +1,15 @@
 x64:
   firstOrDefaultFilePatterns:
-    - '!**/node_modules'
+    - '!**/node_modules/**'
     - '!build{,/**/*}'
     - '!dist-release{,/**/*}'
     - package.json
     - dist-electron/
     - dist-web/
-    - '!**/*.{iml,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,suo,xproj,cc,d.ts,mk,a,o,forge-meta,pdb}'
+    - '!**/*.{iml,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,suo,xproj,cc,d.ts,mk,a,o,obj,forge-meta,pdb}'
     - '!**/._*'
     - '!**/electron-builder.{yaml,yml,json,json5,toml,ts}'
-    - '!**/{.git,.hg,.svn,CVS,RCS,SCCS,__pycache__,.DS_Store,thumbs.db,.gitignore,.gitkeep,.gitattributes,.npmignore,.idea,.vs,.flowconfig,.jshintrc,.eslintrc,.circleci,.yarn-integrity,.yarn-metadata.json,yarn-error.log,yarn.lock,package-lock.json,npm-debug.log,appveyor.yml,.travis.yml,circle.yml,.nyc_output,.husky,.github,electron-builder.env}'
+    - '!**/{.git,.hg,.svn,CVS,RCS,SCCS,__pycache__,.DS_Store,thumbs.db,.gitignore,.gitkeep,.gitattributes,.npmignore,.idea,.vs,.flowconfig,.jshintrc,.eslintrc,.circleci,.yarn-integrity,.yarn-metadata.json,yarn-error.log,yarn.lock,package-lock.json,npm-debug.log,pnpm-lock.yaml,appveyor.yml,.travis.yml,circle.yml,.nyc_output,.husky,.github,electron-builder.env}'
     - '!.yarn{,/**/*}'
     - '!.editorconfig'
     - '!.yarnrc.yml'
@@ -20,8 +20,8 @@ x64:
     - dist-web/
 nsis:
   script: |-
-    !include "C:\Users\ramon\Desktop\RawaLite\node_modules\.pnpm\app-builder-lib@25.1.8_dmg-_65ea2c1c59043c114a9f51fb963f8630\node_modules\app-builder-lib\templates\nsis\include\StdUtils.nsh"
-    !addincludedir "C:\Users\ramon\Desktop\RawaLite\node_modules\.pnpm\app-builder-lib@25.1.8_dmg-_65ea2c1c59043c114a9f51fb963f8630\node_modules\app-builder-lib\templates\nsis\include"
+    !include "C:\Users\ramon\AppData\Roaming\npm\node_modules\electron-builder\node_modules\app-builder-lib\templates\nsis\include\StdUtils.nsh"
+    !addincludedir "C:\Users\ramon\AppData\Roaming\npm\node_modules\electron-builder\node_modules\app-builder-lib\templates\nsis\include"
     !macro _isUpdated _a _b _t _f
       ${StdUtils.TestParameter} $R9 "updated"
       StrCmp "$R9" "true" `${_t}` `${_f}`
@@ -94,8 +94,8 @@ nsis:
     !macroend
 
     !addplugindir /x86-unicode "C:\Users\ramon\AppData\Local\electron-builder\Cache\nsis\nsis-resources-3.4.1\plugins\x86-unicode"
-    !include "C:\Users\ramon\AppData\Local\Temp\t-DtOjzY\0-messages.nsh"
-    !include "C:\Users\ramon\AppData\Local\Temp\t-DtOjzY\1-messages.nsh"
+    !include "C:\Users\ramon\AppData\Local\Temp\t-BP9yeN\2-messages.nsh"
+    !include "C:\Users\ramon\AppData\Local\Temp\t-BP9yeN\3-messages.nsh"
 
     Var newStartMenuLink
     Var oldStartMenuLink
