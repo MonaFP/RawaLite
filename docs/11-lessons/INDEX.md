@@ -5,6 +5,7 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 ## 📋 Übersicht der dokumentierten Lessons
 
 ### Database & Schema
+- **[DATABASE-SCHEMA-MIGRATION-FIX.md](./solved/LESSONS-LEARNED-database-schema-migration-fix.md)** - ✅ **SOLVED:** Critical fixes for NOT NULL constraint errors, schema mismatches, and missing table migrations (v1.0.1)
 - **[SCHEMA-CONSISTENCY-LESSONS.md](./solved/SCHEMA-CONSISTENCY-LESSONS.md)** - Umfassende Schema-Konsistenz-Reparatur zwischen camelCase und snake_case
 - **[NUMMERNKREISE-PRODUCTION-BUG.md](./solved/NUMMERNKREISE-PRODUCTION-BUG.md)** - ✅ **SOLVED:** Production Bug: Fehlende Nummernkreise durch unvollständige Migration
 
@@ -59,6 +60,7 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 
 | Problem | Bereich | Lösung | Datei |
 |---------|---------|--------|--------|
+| Database Schema Migration Issues | Database | ✅ Migration 007+008 + Field-Mapper Fix | DATABASE-SCHEMA-MIGRATION-FIX.md |
 | Schema Mismatch | Database | Field-Mapper System | SCHEMA-CONSISTENCY-LESSONS.md |
 | Fehlende Nummernkreise | Production | ✅ Migration 006 | NUMMERNKREISE-PRODUCTION-BUG.md |
 | IPC Chaos | Architecture | Unified window.rawalite | IPC-ARCHITECTURE-LESSONS.md |
