@@ -382,9 +382,9 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
   const downloadCompleted = state.downloadStatus?.status === 'completed';
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style={{ zIndex: 9999 }}>
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto shadow-2xl"
-           style={{ maxWidth: '500px', maxHeight: '80vh' }}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-20" style={{ zIndex: 9999 }}>
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[70vh] overflow-y-auto shadow-2xl"
+           style={{ maxWidth: '500px', maxHeight: '70vh' }}>
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">RawaLite Update</h2>
@@ -416,8 +416,12 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
             if (isChecking) {
               return (
                 <div className="text-center py-8">
-                  <div className="animate-spin text-blue-500 text-2xl mb-4">⟳</div>
-                  <p>Suche nach Updates...</p>
+                  <div className="animate-spin text-blue-500 text-3xl mb-4">⟳</div>
+                  <h3 className="text-lg font-semibold mb-2">Nach Updates suchen...</h3>
+                  <p className="text-gray-600 text-sm">Prüfe GitHub für neue Versionen</p>
+                  <div className="mt-4">
+                    <ProgressBar progress={50} color="#3b82f6" height={4} />
+                  </div>
                 </div>
               );
             }
@@ -426,8 +430,12 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
             if (isInstalling) {
               return (
                 <div className="text-center py-8">
-                  <div className="animate-spin text-green-500 text-2xl mb-4">⟳</div>
-                  <p>Update wird installiert...</p>
+                  <div className="animate-spin text-green-500 text-3xl mb-4">⟳</div>
+                  <h3 className="text-lg font-semibold mb-2">Update wird installiert...</h3>
+                  <p className="text-gray-600 text-sm">Bitte warten Sie einen Moment</p>
+                  <div className="mt-4">
+                    <ProgressBar progress={75} color="#10b981" height={4} />
+                  </div>
                 </div>
               );
             }
@@ -501,10 +509,15 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
               );
             }
 
-            // Fallback: Empty state (should not happen)
+            // Fallback: Loading state with better feedback
             return (
               <div className="text-center py-8">
-                <p className="text-gray-500">Laden...</p>
+                <div className="animate-pulse text-blue-400 text-3xl mb-4">🔄</div>
+                <h3 className="text-lg font-semibold mb-2">Update-System wird initialisiert...</h3>
+                <p className="text-gray-600 text-sm">Verbindung wird hergestellt</p>
+                <div className="mt-4">
+                  <ProgressBar progress={25} color="#6b7280" height={4} />
+                </div>
               </div>
             );
           })()}
