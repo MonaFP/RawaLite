@@ -312,6 +312,7 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
   const [latestVersion, setLatestVersion] = useState<string | undefined>();
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | undefined>();
   const [error, setError] = useState<string | null>(null);
+  const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
 
   // Update functions using window.rawalite.updates API
   const checkForUpdates = async () => {
@@ -362,7 +363,11 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
     setError(null);
     
     try {
-      await window.rawalite.updates.startDownload(updateInfo);
+      // Das UpdateManagerService sollte den filePath zurückgeben
+      const filePath = await window.rawalite.updates.startDownload(updateInfo);
+      if (typeof filePath === 'string') {
+        setDownloadedFilePath(filePath);
+      }
       setIsDownloading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Download fehlgeschlagen');
@@ -371,15 +376,15 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
   };
 
   const installUpdate = async () => {
-    if (!window.rawalite?.updates) {
-      setError('Installation nicht möglich');
+    if (!window.rawalite?.updates || !downloadedFilePath) {
+      setError('Installation nicht möglich - Keine Datei heruntergeladen');
       return;
     }
     
     setIsInstalling(true);
     
     try {
-      await window.rawalite.updates.installUpdate('./temp/update.exe');
+      await window.rawalite.updates.installUpdate(downloadedFilePath);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Installation fehlgeschlagen');
       setIsInstalling(false);
@@ -400,7 +405,9 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
   };
 
   const grantConsent = () => {
-    startDownload();
+    if (updateInfo) {
+      startDownload(); // Explizit Download starten wenn User zustimmt
+    }
   };
 
   const denyConsent = () => {
@@ -462,7 +469,7 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
 
   const canRetry = Boolean(error) && !isChecking && !isDownloading && !isInstalling;
   const needsRestart = isInstalling;
-  const downloadCompleted = !isDownloading && hasUpdate;
+  const downloadCompleted = Boolean(downloadedFilePath) && !isDownloading && hasUpdate;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-20" style={{ zIndex: 9999 }}>
