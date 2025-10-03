@@ -17,5 +17,5 @@ export default defineConfig({
     assetsDir: 'assets',
     manifest: true
   },
-  server: { port: 5173 },
+  server: { port: 5174 },
 })

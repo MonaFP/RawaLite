@@ -7,10 +7,12 @@
  * - User Consent Dialog
  * - Installation Progress
  * - Error Handling mit Retry
+ * - Comprehensive Debug Logging
  */
 
 import React, { useState, useEffect, useRef } from 'react';
 import type { UpdateInfo, DownloadProgress } from '../types/update.types';
+import { debugLogger, logClick, logApiCall, logApiResponse, logStateChange, logError } from '../services/DebugLogger';
 
 interface UpdateDialogProps {
   isOpen: boolean;
@@ -85,7 +87,10 @@ function DownloadProgressComponent({ progress, onCancel }: DownloadProgressProps
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Update wird heruntergeladen...</h3>
         <button
-          onClick={onCancel}
+          onClick={() => {
+            logClick('DownloadProgressComponent', 'cancelButton', { progress });
+            onCancel();
+          }}
           className="text-gray-500 hover:text-gray-700 px-2 py-1 text-sm"
         >
           Abbrechen
@@ -168,7 +173,10 @@ function UpdateInfoComponent({ updateInfo, onDownload, onSkip, isDownloading }: 
 
       <div className="flex space-x-3 pt-4">
         <button
-          onClick={onDownload}
+          onClick={() => {
+            logClick('UpdateInfoComponent', 'downloadButton', { updateInfo });
+            onDownload();
+          }}
           disabled={isDownloading}
           className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -176,7 +184,10 @@ function UpdateInfoComponent({ updateInfo, onDownload, onSkip, isDownloading }: 
         </button>
         
         <button
-          onClick={onSkip}
+          onClick={() => {
+            logClick('UpdateInfoComponent', 'skipButton', { updateInfo });
+            onSkip();
+          }}
           className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg"
         >
           Überspringen
@@ -270,7 +281,10 @@ function ErrorComponent({ error, onRetry, onClose, canRetry }: ErrorComponentPro
       <div className="flex space-x-3">
         {canRetry && (
           <button
-            onClick={onRetry}
+            onClick={() => {
+              logClick('ErrorComponent', 'retryButton', { error, canRetry });
+              onRetry();
+            }}
             className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700"
           >
             Erneut versuchen
@@ -278,7 +292,10 @@ function ErrorComponent({ error, onRetry, onClose, canRetry }: ErrorComponentPro
         )}
         
         <button
-          onClick={onClose}
+          onClick={() => {
+            logClick('ErrorComponent', 'closeButton', { error });
+            onClose();
+          }}
           className="flex-1 px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg"
         >
           Schließen
@@ -316,23 +333,33 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
 
   // Update functions using window.rawalite.updates API
   const checkForUpdates = async () => {
+    logClick('UpdateDialog', 'checkForUpdates', { trigger: 'manual' });
+    
     if (!window.rawalite?.updates) {
-      setError('Update API nicht verfügbar');
+      const errorMsg = 'Update API nicht verfügbar';
+      logError('UpdateDialog', 'checkForUpdates', errorMsg, { apiAvailable: false });
+      setError(errorMsg);
       return;
     }
     
+    const oldState = { isChecking, hasUpdate, error };
     setIsChecking(true);
     setError(null);
+    logStateChange('UpdateDialog', oldState, { isChecking: true, hasUpdate, error: null }, 'checkForUpdates_start');
     
     try {
+      logApiCall('UpdateDialog', 'checkForUpdates');
       const result = await window.rawalite.updates.checkForUpdates();
+      logApiResponse('UpdateDialog', 'checkForUpdates', result);
       
       if (result.hasUpdate && result.latestVersion) {
         setHasUpdate(true);
         setLatestVersion(result.latestVersion);
+        logStateChange('UpdateDialog', { hasUpdate: false }, { hasUpdate: true, latestVersion: result.latestVersion }, 'update_found');
+        
         // Use latestRelease data for updateInfo
         if (result.latestRelease) {
-          setUpdateInfo({
+          const updateInfoData = {
             version: result.latestVersion,
             name: result.latestRelease.name || `RawaLite v${result.latestVersion}`,
             releaseNotes: result.latestRelease.body || '',
@@ -341,82 +368,132 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
             assetName: result.latestRelease.assets?.[0]?.name || 'RawaLite.Setup.exe',
             fileSize: result.latestRelease.assets?.[0]?.size || 0,
             isPrerelease: result.latestRelease.prerelease || false
-          });
+          };
+          setUpdateInfo(updateInfoData);
+          logStateChange('UpdateDialog', { updateInfo: undefined }, { updateInfo: updateInfoData }, 'updateInfo_set');
         }
       } else {
         setHasUpdate(false);
+        logStateChange('UpdateDialog', { hasUpdate: true }, { hasUpdate: false }, 'no_update_found');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Update-Prüfung fehlgeschlagen');
+      const errorMsg = err instanceof Error ? err.message : 'Update-Prüfung fehlgeschlagen';
+      logError('UpdateDialog', 'checkForUpdates', err as Error, { step: 'api_call' });
+      setError(errorMsg);
     } finally {
       setIsChecking(false);
+      logStateChange('UpdateDialog', { isChecking: true }, { isChecking: false }, 'checkForUpdates_end');
     }
   };
 
   const startDownload = async () => {
+    logClick('UpdateDialog', 'startDownload', { updateInfo });
+    
     if (!window.rawalite?.updates || !updateInfo) {
-      setError('Download nicht möglich');
+      const errorMsg = 'Download nicht möglich';
+      logError('UpdateDialog', 'startDownload', errorMsg, { apiAvailable: !!window.rawalite?.updates, updateInfo: !!updateInfo });
+      setError(errorMsg);
       return;
     }
     
+    const oldState = { isDownloading, error };
     setIsDownloading(true);
     setError(null);
+    logStateChange('UpdateDialog', oldState, { isDownloading: true, error: null }, 'startDownload_begin');
     
     try {
+      logApiCall('UpdateDialog', 'startDownload', { updateInfo });
       // Das UpdateManagerService sollte den filePath zurückgeben
       const filePath = await window.rawalite.updates.startDownload(updateInfo);
+      logApiResponse('UpdateDialog', 'startDownload', { filePath, type: typeof filePath });
+      
       if (typeof filePath === 'string') {
         setDownloadedFilePath(filePath);
+        logStateChange('UpdateDialog', { downloadedFilePath: null }, { downloadedFilePath: filePath }, 'download_completed');
+      } else {
+        logError('UpdateDialog', 'startDownload', 'Invalid response type', { filePath, expectedType: 'string', actualType: typeof filePath });
       }
       setIsDownloading(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Download fehlgeschlagen');
+      const errorMsg = err instanceof Error ? err.message : 'Download fehlgeschlagen';
+      logError('UpdateDialog', 'startDownload', err as Error, { step: 'download_execution' });
+      setError(errorMsg);
       setIsDownloading(false);
     }
   };
 
   const installUpdate = async () => {
+    logClick('UpdateDialog', 'installUpdate', { downloadedFilePath });
+    
     if (!window.rawalite?.updates || !downloadedFilePath) {
-      setError('Installation nicht möglich - Keine Datei heruntergeladen');
+      const errorMsg = 'Installation nicht möglich - Keine Datei heruntergeladen';
+      logError('UpdateDialog', 'installUpdate', errorMsg, { apiAvailable: !!window.rawalite?.updates, filePath: downloadedFilePath });
+      setError(errorMsg);
       return;
     }
     
     setIsInstalling(true);
+    logStateChange('UpdateDialog', { isInstalling: false }, { isInstalling: true }, 'installUpdate_start');
     
     try {
+      logApiCall('UpdateDialog', 'installUpdate', { filePath: downloadedFilePath });
       await window.rawalite.updates.installUpdate(downloadedFilePath);
+      logApiResponse('UpdateDialog', 'installUpdate', { success: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Installation fehlgeschlagen');
+      const errorMsg = err instanceof Error ? err.message : 'Installation fehlgeschlagen';
+      logError('UpdateDialog', 'installUpdate', err as Error, { step: 'installation_execution' });
+      setError(errorMsg);
       setIsInstalling(false);
     }
   };
 
   const cancelDownload = async () => {
+    logClick('UpdateDialog', 'cancelDownload');
+    
     if (window.rawalite?.updates) {
-      await window.rawalite.updates.cancelDownload();
+      try {
+        logApiCall('UpdateDialog', 'cancelDownload');
+        await window.rawalite.updates.cancelDownload();
+        logApiResponse('UpdateDialog', 'cancelDownload', { success: true });
+      } catch (err) {
+        logError('UpdateDialog', 'cancelDownload', err as Error);
+      }
     }
     setIsDownloading(false);
+    logStateChange('UpdateDialog', { isDownloading: true }, { isDownloading: false }, 'download_cancelled');
   };
 
   const restartApp = async () => {
+    logClick('UpdateDialog', 'restartApp');
+    
     if (window.rawalite?.updates) {
-      await window.rawalite.updates.restartApp();
+      try {
+        logApiCall('UpdateDialog', 'restartApp');
+        await window.rawalite.updates.restartApp();
+        logApiResponse('UpdateDialog', 'restartApp', { success: true });
+      } catch (err) {
+        logError('UpdateDialog', 'restartApp', err as Error);
+      }
     }
   };
 
   const grantConsent = () => {
+    logClick('UpdateDialog', 'grantConsent', { updateInfo });
     if (updateInfo) {
       startDownload(); // Explizit Download starten wenn User zustimmt
     }
   };
 
   const denyConsent = () => {
+    logClick('UpdateDialog', 'denyConsent');
     setHasUpdate(false);
     setUpdateInfo(undefined);
+    logStateChange('UpdateDialog', { hasUpdate: true }, { hasUpdate: false }, 'consent_denied');
     onClose();
   };
 
   const clearError = () => {
+    logClick('UpdateDialog', 'clearError', { previousError: error });
     setError(null);
   };
 

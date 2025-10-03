@@ -31,7 +31,7 @@ function createWindow() {
 
   if (isDev) {
     // Vite-Dev-Server
-    win.loadURL('http://localhost:5173')
+    win.loadURL('http://localhost:5174')
     win.webContents.openDevTools({ mode: 'detach' })
   } else {
     // Produktive Version: HTML liegt als extraResource direkt im resources Ordner

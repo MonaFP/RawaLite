@@ -186,7 +186,7 @@ export interface UpdateIpcApi {
   getCurrentVersion(): Promise<string>;
   
   // Download operations
-  startDownload(updateInfo: UpdateInfo): Promise<void>;
+  startDownload(updateInfo: UpdateInfo): Promise<string>; // Returns file path
   cancelDownload(): Promise<void>;
   
   // Installation operations

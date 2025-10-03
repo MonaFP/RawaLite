@@ -18,7 +18,27 @@ Die Dokumentation ist Read-Only und darf von dir niemals verändert oder übersc
 
 Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
 
-## 🔑 Kernregeln
+## � CRITICAL FIX PRESERVATION RULES - NICHT VERHANDELBAR
+
+**BEFORE ANY FILE EDIT OR VERSION CHANGE:**
+
+1. **MANDATORY:** Check `docs/00-meta/CRITICAL-FIXES-REGISTRY.md`
+2. **MANDATORY:** Verify file is not listed in critical fixes
+3. **MANDATORY:** If file IS listed → preserve ALL required patterns
+4. **MANDATORY:** Run `pnpm validate:critical-fixes` before version bump
+5. **FORBIDDEN:** Remove Promise-based WriteStream patterns
+6. **FORBIDDEN:** Remove file system flush delays  
+7. **FORBIDDEN:** Add duplicate event handlers
+8. **FORBIDDEN:** Change established port configurations
+
+**Critical Files (EXTRA CAUTION):**
+- `src/main/services/GitHubApiService.ts` - WriteStream race condition fix
+- `src/main/services/UpdateManagerService.ts` - File flush delay + event handler fix
+- `vite.config.mts` + `electron/main.ts` - Port consistency
+
+**If Critical Pattern Missing:** STOP immediately, re-implement from registry, test thoroughly.
+
+## �🔑 Kernregeln
 
 - **PNPM-only** – niemals `npm` oder `yarn` verwenden.  
 - **Alles in-App** – keine externen Links, kein `shell.openExternal`, kein `window.open`, kein `target="_blank"`.  

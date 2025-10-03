@@ -31,6 +31,22 @@ import type {
 import { DEFAULT_UPDATE_CONFIG, UPDATE_CONSTANTS } from '../../types/update.types';
 
 /**
+ * Debug Logger für Main Process
+ */
+function debugLog(component: string, action: string, data?: any, error?: string) {
+  const timestamp = new Date().toISOString();
+  const prefix = error ? '🚨' : '🔍';
+  
+  console.log(`${prefix} [${timestamp}] ${component}.${action}`);
+  if (data) {
+    console.log('📊 Data:', JSON.stringify(data, null, 2));
+  }
+  if (error) {
+    console.error('❌ Error:', error);
+  }
+}
+
+/**
  * Event Emitter für Update Events
  */
 export class UpdateEventEmitter {
@@ -197,9 +213,16 @@ export class UpdateManagerService {
    * Start Update Download
    */
   async startDownload(updateInfo: UpdateInfo): Promise<string> {
+    debugLog('UpdateManagerService', 'startDownload_begin', {
+      updateInfo,
+      currentState: this.state
+    });
+    
     try {
       if (this.state.downloading) {
-        throw new Error('Download already in progress');
+        const error = 'Download already in progress';
+        debugLog('UpdateManagerService', 'startDownload_error', { reason: 'already_downloading' }, error);
+        throw new Error(error);
       }
 
       this.setState({ 
@@ -208,11 +231,22 @@ export class UpdateManagerService {
         userConsentGiven: true
       });
 
+      debugLog('UpdateManagerService', 'state_updated', {
+        newState: { downloading: true, currentPhase: 'downloading' }
+      });
+
       this.emit({ type: 'download-started', updateInfo });
 
       // Prepare download directory
+      debugLog('UpdateManagerService', 'prepare_download_dir');
       const downloadDir = await this.prepareDownloadDirectory();
       const targetPath = join(downloadDir, updateInfo.assetName);
+      
+      debugLog('UpdateManagerService', 'download_paths', {
+        downloadDir,
+        targetPath,
+        assetName: updateInfo.assetName
+      });
 
       // Create abort controller for cancellation
       this.currentDownloadController = new AbortController();
@@ -225,19 +259,35 @@ export class UpdateManagerService {
         content_type: 'application/octet-stream',
         download_count: 0
       };
+      
+      debugLog('UpdateManagerService', 'setup_asset_prepared', { setupAsset });
 
       // Download with progress tracking
+      debugLog('UpdateManagerService', 'github_download_start', { asset: setupAsset, targetPath });
       await githubApiService.downloadAsset(setupAsset, targetPath, (progress) => {
+        debugLog('UpdateManagerService', 'download_progress', { progress });
         this.emit({ type: 'download-progress', progress });
       });
+
+      debugLog('UpdateManagerService', 'github_download_complete', { targetPath });
 
       // Verify download
       this.setState({ currentPhase: 'verifying' });
       this.emit({ type: 'verification-started' });
 
+      debugLog('UpdateManagerService', 'verification_start', {
+        targetPath,
+        expectedSize: setupAsset.size
+      });
+      
       const verification = await this.verifyDownload(targetPath, setupAsset.size);
+      
+      debugLog('UpdateManagerService', 'verification_result', { verification });
+      
       if (!verification.valid) {
-        throw new Error(`Download verification failed: ${verification.error}`);
+        const error = `Download verification failed: ${verification.error}`;
+        debugLog('UpdateManagerService', 'verification_failed', { verification }, error);
+        throw new Error(error);
       }
 
       this.emit({ type: 'verification-completed' });
@@ -251,9 +301,15 @@ export class UpdateManagerService {
         }
       });
 
+      debugLog('UpdateManagerService', 'download_success', { targetPath });
       return targetPath;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      debugLog('UpdateManagerService', 'download_error', {
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined
+      }, errorMessage);
+      
       this.setState({ 
         currentPhase: 'error',
         lastError: errorMessage,
@@ -267,6 +323,9 @@ export class UpdateManagerService {
     } finally {
       this.setState({ downloading: false });
       this.currentDownloadController = null;
+      debugLog('UpdateManagerService', 'startDownload_complete', {
+        finalState: this.state
+      });
     }
   }
 
@@ -419,15 +478,45 @@ export class UpdateManagerService {
   }
 
   private async verifyDownload(filePath: string, expectedSize: number): Promise<FileVerificationResult> {
+    debugLog('UpdateManagerService', 'verifyDownload_start', {
+      filePath,
+      expectedSize,
+      expectedSizeType: typeof expectedSize
+    });
+    
     try {
+      debugLog('UpdateManagerService', 'file_stat_request', { filePath });
+      
+      // Wait for file system to flush WriteStream to disk
+      // This prevents race condition between WriteStream.end() and fs.stat()
+      await new Promise(resolve => setTimeout(resolve, 100));
+      debugLog('UpdateManagerService', 'file_system_flush_delay_complete', { delayMs: 100 });
+      
       const stats = await fs.stat(filePath);
       
+      debugLog('UpdateManagerService', 'file_stat_result', {
+        actualSize: stats.size,
+        actualSizeType: typeof stats.size,
+        expectedSize,
+        expectedSizeType: typeof expectedSize,
+        strictEqual: stats.size === expectedSize,
+        looseEqual: stats.size == expectedSize,
+        difference: stats.size - expectedSize
+      });
+      
       if (stats.size !== expectedSize) {
+        const errorMsg = `File size mismatch: expected ${expectedSize}, got ${stats.size}`;
+        debugLog('UpdateManagerService', 'verification_failed', {
+          expectedSize,
+          actualSize: stats.size,
+          difference: stats.size - expectedSize
+        }, errorMsg);
+        
         return {
           valid: false,
           expectedSize,
           actualSize: stats.size,
-          error: `File size mismatch: expected ${expectedSize}, got ${stats.size}`
+          error: errorMsg
         };
       }
 
@@ -498,6 +587,7 @@ export class UpdateManagerService {
       });
 
       process.on('close', (code) => {
+        clearTimeout(timeout); // Cleanup timeout first
         if (code === 0) {
           resolve();
         } else {
@@ -505,15 +595,16 @@ export class UpdateManagerService {
         }
       });
 
-      process.on('error', reject);
+      process.on('error', (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
 
       // Timeout for installation
       const timeout = setTimeout(() => {
         process.kill();
         reject(new Error('Installation timeout'));
       }, UPDATE_CONSTANTS.INSTALLATION_TIMEOUT);
-
-      process.on('close', () => clearTimeout(timeout));
     });
   }
 

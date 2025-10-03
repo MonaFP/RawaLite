@@ -1,82 +1,103 @@
-import { useState } from 'react';
+// Echter Database-Hook mit SQLite-Verbindung
+import { useState, useEffect } from 'react';
+import { usePersistence } from '../contexts/PersistenceContext';
+import { useUnifiedSettings } from './useUnifiedSettings';
 import type { Offer } from '../persistence/adapter';
 
-const initialOffer: Offer = {
-  id: 1,
-  offerNumber: 'A-2024-001',
-  customerId: 1,
-  title: 'Mock Offer',
-  status: 'draft',
-  validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-  lineItems: [],
-  subtotal: 1000,
-  vatRate: 19,
-  vatAmount: 190,
-  total: 1190,
-  notes: 'Mock offer notes',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-};
-
 export const useOffers = () => {
-  const [offers, setOffers] = useState<Offer[]>([initialOffer]);
-  const [loading, setLoading] = useState(false);
+  const { adapter, ready } = usePersistence();
+  const { getNextNumber } = useUnifiedSettings();
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
 
+  // Load offers from database
+  useEffect(() => {
+    if (!ready || !adapter) return;
+    
+    let active = true;
+    const loadOffers = async () => {
+      try {
+        setLoading(true);
+        const data = await adapter.listOffers();
+        if (active) {
+          setOffers(data);
+          setError(undefined);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err instanceof Error ? err.message : 'Failed to load offers');
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadOffers();
+    return () => { active = false; };
+  }, [ready, adapter]);
+
   const createOffer = async (data: Omit<Offer, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!adapter) throw new Error('Database not ready');
+    
     setLoading(true);
     try {
-      const newOffer: Offer = {
+      // Generate offer number if not provided
+      const offerNumber = data.offerNumber || await getNextNumber('offers');
+      
+      const newOffer = await adapter.createOffer({
         ...data,
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+        offerNumber
+      });
       
       setOffers(prev => [...prev, newOffer]);
       setError(undefined);
       return newOffer;
     } catch (err) {
-      setError('Failed to create offer');
-      throw err;
+      const errorMsg = err instanceof Error ? err.message : 'Failed to create offer';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   const updateOffer = async (id: number, data: Partial<Offer>) => {
+    if (!adapter) throw new Error('Database not ready');
+    
     setLoading(true);
     try {
-      const updatedOffer = { ...data, id, updatedAt: new Date().toISOString() };
+      const updatedOffer = await adapter.updateOffer(id, data);
       
       setOffers(prev => prev.map(offer => 
-        offer.id === id 
-          ? { ...offer, ...updatedOffer }
-          : offer
+        offer.id === id ? updatedOffer : offer
       ));
       
-      const offer = offers.find(o => o.id === id);
-      if (!offer) throw new Error('Offer not found');
-      
-      const result = { ...offer, ...updatedOffer };
       setError(undefined);
-      return result;
+      return updatedOffer;
     } catch (err) {
-      setError('Failed to update offer');
-      throw err;
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update offer';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   const deleteOffer = async (id: number) => {
+    if (!adapter) throw new Error('Database not ready');
+    
     setLoading(true);
     try {
+      await adapter.deleteOffer(id);
       setOffers(prev => prev.filter(offer => offer.id !== id));
       setError(undefined);
     } catch (err) {
-      setError('Failed to delete offer');
-      throw err;
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete offer';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }

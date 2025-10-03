@@ -1,82 +1,103 @@
-import { useState } from 'react';
+// Echter Database-Hook mit SQLite-Verbindung
+import { useState, useEffect } from 'react';
+import { usePersistence } from '../contexts/PersistenceContext';
+import { useUnifiedSettings } from './useUnifiedSettings';
 import type { Invoice } from '../persistence/adapter';
 
-const initialInvoice: Invoice = {
-  id: 1,
-  invoiceNumber: 'R-2024-001',
-  customerId: 1,
-  title: 'Mock Invoice',
-  status: 'draft',
-  dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-  lineItems: [],
-  subtotal: 1200,
-  vatRate: 19,
-  vatAmount: 228,
-  total: 1428,
-  notes: 'Mock invoice notes',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-};
-
 export const useInvoices = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>([initialInvoice]);
-  const [loading, setLoading] = useState(false);
+  const { adapter, ready } = usePersistence();
+  const { getNextNumber } = useUnifiedSettings();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
 
+  // Load invoices from database
+  useEffect(() => {
+    if (!ready || !adapter) return;
+    
+    let active = true;
+    const loadInvoices = async () => {
+      try {
+        setLoading(true);
+        const data = await adapter.listInvoices();
+        if (active) {
+          setInvoices(data);
+          setError(undefined);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err instanceof Error ? err.message : 'Failed to load invoices');
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadInvoices();
+    return () => { active = false; };
+  }, [ready, adapter]);
+
   const createInvoice = async (data: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!adapter) throw new Error('Database not ready');
+    
     setLoading(true);
     try {
-      const newInvoice: Invoice = {
+      // Generate invoice number if not provided
+      const invoiceNumber = data.invoiceNumber || await getNextNumber('invoices');
+      
+      const newInvoice = await adapter.createInvoice({
         ...data,
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+        invoiceNumber
+      });
       
       setInvoices(prev => [...prev, newInvoice]);
       setError(undefined);
       return newInvoice;
     } catch (err) {
-      setError('Failed to create invoice');
-      throw err;
+      const errorMsg = err instanceof Error ? err.message : 'Failed to create invoice';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   const updateInvoice = async (id: number, data: Partial<Invoice>) => {
+    if (!adapter) throw new Error('Database not ready');
+    
     setLoading(true);
     try {
-      const updatedInvoice = { ...data, id, updatedAt: new Date().toISOString() };
+      const updatedInvoice = await adapter.updateInvoice(id, data);
       
       setInvoices(prev => prev.map(invoice => 
-        invoice.id === id 
-          ? { ...invoice, ...updatedInvoice }
-          : invoice
+        invoice.id === id ? updatedInvoice : invoice
       ));
       
-      const invoice = invoices.find(i => i.id === id);
-      if (!invoice) throw new Error('Invoice not found');
-      
-      const result = { ...invoice, ...updatedInvoice };
       setError(undefined);
-      return result;
+      return updatedInvoice;
     } catch (err) {
-      setError('Failed to update invoice');
-      throw err;
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update invoice';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   const deleteInvoice = async (id: number) => {
+    if (!adapter) throw new Error('Database not ready');
+    
     setLoading(true);
     try {
+      await adapter.deleteInvoice(id);
       setInvoices(prev => prev.filter(invoice => invoice.id !== id));
       setError(undefined);
     } catch (err) {
-      setError('Failed to delete invoice');
-      throw err;
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete invoice';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }

@@ -92,7 +92,7 @@ declare interface Window {
       getCurrentVersion(): Promise<string>;
       
       // Download operations
-      startDownload(updateInfo: any): Promise<void>;
+      startDownload(updateInfo: any): Promise<string>; // Returns file path
       cancelDownload(): Promise<void>;
       
       // Installation operations

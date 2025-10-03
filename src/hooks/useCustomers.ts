@@ -1,89 +1,109 @@
-// Funktionale Mock-Hooks mit echtem React State Management
-import { useState } from 'react';
-import type { Customer, Offer, Invoice, Package } from '../persistence/adapter';
-
-// Initial Mock Data
-const initialCustomer: Customer = {
-  id: 1,
-  number: 'K-001',
-  name: 'Mock Customer',
-  email: 'mock@customer.com',
-  phone: '123456789',
-  street: 'Mock Street',
-  zip: '12345',
-  city: 'Mock City',
-  notes: 'Mock notes',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-};
+// Echter Database-Hook mit SQLite-Verbindung
+import { useState, useEffect } from 'react';
+import { usePersistence } from '../contexts/PersistenceContext';
+import { useUnifiedSettings } from './useUnifiedSettings';
+import type { Customer } from '../persistence/adapter';
 
 export const useCustomers = () => {
-  const [customers, setCustomers] = useState<Customer[]>([initialCustomer]);
-  const [loading, setLoading] = useState(false);
+  const { adapter, ready } = usePersistence();
+  const { getNextNumber } = useUnifiedSettings();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
 
+  // Load customers from database
+  useEffect(() => {
+    if (!ready || !adapter) return;
+    
+    let active = true;
+    const loadCustomers = async () => {
+      try {
+        setLoading(true);
+        const data = await adapter.listCustomers();
+        if (active) {
+          setCustomers(data);
+          setError(undefined);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err instanceof Error ? err.message : 'Failed to load customers');
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadCustomers();
+    return () => { active = false; };
+  }, [ready, adapter]);
+
   const createCustomer = async (data: Partial<Customer> & Pick<Customer, 'name'>) => {
+    if (!adapter) throw new Error('Database not ready');
+    
     setLoading(true);
     try {
-      const customerCount = customers.length + 1;
-      const newCustomer: Customer = {
-        id: Date.now(), // Simple ID generation
-        number: data.number || `K-${String(customerCount).padStart(3, '0')}`, // Auto-generate if not provided
+      // Generate number if not provided
+      const number = data.number || await getNextNumber('customers');
+      
+      const newCustomer = await adapter.createCustomer({
+        number,
         name: data.name,
         email: data.email || '',
         phone: data.phone || '',
         street: data.street || '',
         zip: data.zip || '',
         city: data.city || '',
-        notes: data.notes || '',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+        notes: data.notes || ''
+      });
       
       setCustomers(prev => [...prev, newCustomer]);
       setError(undefined);
       return newCustomer;
     } catch (err) {
-      setError('Failed to create customer');
-      throw err;
+      const errorMsg = err instanceof Error ? err.message : 'Failed to create customer';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   const updateCustomer = async (id: number, data: Partial<Customer>) => {
+    if (!adapter) throw new Error('Database not ready');
+    
     setLoading(true);
     try {
-      const updatedCustomer = { ...data, id, updatedAt: new Date().toISOString() };
+      const updatedCustomer = await adapter.updateCustomer(id, data);
       
       setCustomers(prev => prev.map(customer => 
-        customer.id === id 
-          ? { ...customer, ...updatedCustomer }
-          : customer
+        customer.id === id ? updatedCustomer : customer
       ));
       
-      const customer = customers.find(c => c.id === id);
-      if (!customer) throw new Error('Customer not found');
-      
-      const result = { ...customer, ...updatedCustomer };
       setError(undefined);
-      return result;
+      return updatedCustomer;
     } catch (err) {
-      setError('Failed to update customer');
-      throw err;
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update customer';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   const deleteCustomer = async (id: number) => {
+    if (!adapter) throw new Error('Database not ready');
+    
     setLoading(true);
     try {
+      await adapter.deleteCustomer(id);
       setCustomers(prev => prev.filter(customer => customer.id !== id));
       setError(undefined);
     } catch (err) {
-      setError('Failed to delete customer');
-      throw err;
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete customer';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -98,27 +118,3 @@ export const useCustomers = () => {
     deleteCustomer 
   };
 };
-
-// useUpdateChecker Export für Kompatibilität
-export const useUpdateChecker = () => ({
-  state: { currentPhase: 'idle' },
-  isChecking: false,
-  isDownloading: false,
-  isInstalling: false,
-  hasUpdate: false,
-  currentVersion: '1.0.5',
-  latestVersion: undefined,
-  updateInfo: undefined,
-  downloadProgress: undefined,
-  error: undefined,
-  checkForUpdates: async () => {},
-  startDownload: async () => {},
-  cancelDownload: async () => {},
-  installUpdate: async () => {},
-  restartApp: async () => {},
-  grantConsent: () => {},
-  denyConsent: () => {},
-  clearError: () => {},
-  config: {},
-  updateConfig: async () => {}
-});
