@@ -13,6 +13,23 @@ import { EventEmitter } from 'events';
 import { createWriteStream, promises as fs } from 'fs';
 import { dirname } from 'path';
 import { RateLimitManager } from './RateLimitManager';
+
+/**
+ * Debug Logger für Main Process
+ */
+function debugLog(component: string, action: string, data?: any, error?: string) {
+  const timestamp = new Date().toISOString();
+  const prefix = error ? '🚨' : '🔍';
+  
+  console.log(`${prefix} [${timestamp}] ${component}.${action}`);
+  if (data) {
+    console.log('📊 Data:', JSON.stringify(data, null, 2));
+  }
+  if (error) {
+    console.error('❌ Error:', error);
+  }
+}
+
 import type {
   GitHubRelease,
   GitHubAsset,
@@ -136,7 +153,17 @@ export class GitHubApiService extends EventEmitter {
 
       } finally {
         reader.releaseLock();
-        writeStream.end();
+        
+        // Ensure WriteStream is properly closed with Promise-based completion
+        await new Promise<void>((resolve, reject) => {
+          writeStream.end((error?: Error) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve();
+            }
+          });
+        });
       }
 
     } catch (error) {
