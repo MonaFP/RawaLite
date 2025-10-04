@@ -13,58 +13,90 @@ export class SQLiteAdapter implements PersistenceAdapter {
     this.client = DbClient.getInstance();
   }
 
-  async ready(): Promise<void> {
-    // DbClient validates availability automatically
-  }
-
   // SETTINGS
   async getSettings(): Promise<Settings> {
-    const query = convertSQLQuery("SELECT * FROM settings WHERE id = 1");
-    const rows = await this.client.query<Settings>(query);
-    return rows[0] as Settings;
+    const query = convertSQLQuery("SELECT * FROM settings LIMIT 1");
+    const rows = await this.client.query<any>(query);
+    
+    if (rows.length === 0) {
+      const defaultSettings: Settings = {
+        id: 1,
+        companyName: "",
+        street: "",
+        zip: "",
+        city: "",
+        taxId: "",
+        kleinunternehmer: false,
+        nextCustomerNumber: 1,
+        nextOfferNumber: 1,
+        nextInvoiceNumber: 1,
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      };
+      
+      const mappedSettings = mapToSQL(defaultSettings);
+      await this.client.exec(
+        `
+        INSERT INTO settings (id, company_name, street, zip, city, tax_id, kleinunternehmer, next_customer_number, next_offer_number, next_invoice_number, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+        [
+          mappedSettings.id,
+          mappedSettings.company_name || "",
+          mappedSettings.street || "",
+          mappedSettings.zip || "",
+          mappedSettings.city || "",
+          mappedSettings.tax_id || "",
+          mappedSettings.kleinunternehmer ? 1 : 0,
+          mappedSettings.next_customer_number || 1,
+          mappedSettings.next_offer_number || 1,
+          mappedSettings.next_invoice_number || 1,
+          mappedSettings.created_at,
+          mappedSettings.updated_at,
+        ]
+      );
+      return defaultSettings;
+    }
+    
+    return mapFromSQL(rows[0]) as Settings;
   }
 
   async updateSettings(patch: Partial<Settings>): Promise<Settings> {
-    // Get current settings
     const current = await this.getSettings();
     const next = { ...current, ...patch, updatedAt: nowIso() };
-
-    // Map settings to SQL format
+    
     const mappedNext = mapToSQL(next);
-
-    // Update via transaction
-    await this.client.transaction([
-      {
-        sql: `
-          UPDATE settings SET
-            company_name = ?, street = ?, zip = ?, city = ?, tax_id = ?,
-            kleinunternehmer = ?, next_customer_number = ?, next_offer_number = ?, next_invoice_number = ?,
-            updated_at = ?
-          WHERE id = 1
-        `,
-        params: [
-          mappedNext.company_name ?? null,
-          mappedNext.street ?? null,
-          mappedNext.zip ?? null,
-          mappedNext.city ?? null,
-          mappedNext.tax_id ?? null,
-          mappedNext.kleinunternehmer ? 1 : 0,
-          mappedNext.next_customer_number ?? 1,
-          mappedNext.next_offer_number ?? 1,
-          mappedNext.next_invoice_number ?? 1,
-          mappedNext.updated_at,
-        ]
-      }
-    ]);
+    
+    await this.client.exec(
+      `
+      UPDATE settings SET
+        company_name = ?, street = ?, zip = ?, city = ?, tax_id = ?, kleinunternehmer = ?,
+        next_customer_number = ?, next_offer_number = ?, next_invoice_number = ?, updated_at = ?
+      WHERE id = ?
+    `,
+      [
+        mappedNext.company_name || "",
+        mappedNext.street || "",
+        mappedNext.zip || "",
+        mappedNext.city || "",
+        mappedNext.tax_id || "",
+        mappedNext.kleinunternehmer ? 1 : 0,
+        mappedNext.next_customer_number || 1,
+        mappedNext.next_offer_number || 1,
+        mappedNext.next_invoice_number || 1,
+        mappedNext.updated_at,
+        next.id,
+      ]
+    );
     
     return next;
   }
 
   // CUSTOMERS
   async listCustomers(): Promise<Customer[]> {
-    const query = convertSQLQuery(`SELECT * FROM customers ORDER BY createdAt DESC`);
-    const sqlRows = await this.client.query<any>(query);
-    return mapFromSQLArray(sqlRows) as Customer[];
+    const query = convertSQLQuery("SELECT * FROM customers ORDER BY createdAt DESC");
+    const rows = await this.client.query<any>(query);
+    return mapFromSQLArray(rows) as Customer[];
   }
 
   async getCustomer(id: number): Promise<Customer | null> {
@@ -74,12 +106,9 @@ export class SQLiteAdapter implements PersistenceAdapter {
     return mapFromSQL(rows[0]) as Customer;
   }
 
-  async createCustomer(
-    data: Omit<Customer, "id" | "createdAt" | "updatedAt">
-  ): Promise<Customer> {
+  async createCustomer(data: Omit<Customer, "id" | "createdAt" | "updatedAt">): Promise<Customer> {
     const ts = nowIso();
     
-    // Map input data to SQL format
     const mappedData = mapToSQL({ ...data, createdAt: ts, updatedAt: ts });
     
     const result = await this.client.exec(
@@ -100,7 +129,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         mappedData.updated_at,
       ]
     );
-    
+
     const newCustomer = await this.getCustomer(result.lastInsertRowid);
     if (!newCustomer) throw new Error("Customer creation failed");
     return newCustomer;
@@ -167,7 +196,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         parentItemId: item.parentItemId || undefined,
         description: item.description || undefined
       }));
-      
+
       result.push({
         ...pkg,
         lineItems
@@ -180,7 +209,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const query = convertSQLQuery("SELECT * FROM packages WHERE id = ?");
     const sqlRows = await this.client.query<any>(query, [id]);
     if (sqlRows.length === 0) return null;
-    
+
     const pkg = mapFromSQL(sqlRows[0]) as Omit<Package, "lineItems">;
     const lineItemQuery = convertSQLQuery(`SELECT id, title, quantity, amount, parentItemId, description FROM packageLineItems WHERE packageId = ? ORDER BY id`);
     const lineItemRows = await this.client.query<any>(lineItemQuery, [id]);
@@ -192,7 +221,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
       parentItemId: item.parentItemId || undefined,
       description: item.description || undefined
     }));
-    
+
     return {
       ...pkg,
       lineItems
@@ -201,7 +230,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   async createPackage(data: Omit<Package, "id" | "createdAt" | "updatedAt">): Promise<Package> {
     const ts = nowIso();
-    
+
     // Map package data to SQL format
     const mappedPackageData = mapToSQL({ ...data, createdAt: ts, updatedAt: ts });
     
@@ -222,13 +251,13 @@ export class SQLiteAdapter implements PersistenceAdapter {
         ]
       }
     ];
-    
+
     await this.client.transaction(queries);
-    
+
     // Get the inserted package ID using a separate query
     const packageRows = await this.client.query<{ id: number }>(`SELECT id FROM packages WHERE internal_title = ? AND created_at = ? ORDER BY id DESC LIMIT 1`, [mappedPackageData.internal_title, mappedPackageData.created_at]);
     const packageId = packageRows[0].id;
-    
+
     // Insert line items
     for (const item of data.lineItems) {
       const mappedItem = mapToSQL(item);
@@ -237,7 +266,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         [packageId, mappedItem.title, mappedItem.quantity, mappedItem.amount, mappedItem.parent_item_id || null, mappedItem.description || null]
       );
     }
-    
+
     const newPackage = await this.getPackage(packageId);
     if (!newPackage) throw new Error("Package creation failed");
     return newPackage;
@@ -319,7 +348,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         total: number;
         parentItemId: number | null;
       }>(lineItemQuery, [offer.id]);
-      
+
       result.push({
         ...mappedOffer,
         lineItems: lineItems.map(item => ({
@@ -340,7 +369,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const query = convertSQLQuery("SELECT * FROM offers WHERE id = ?");
     const rows = await this.client.query<Omit<Offer, "lineItems">>(query, [id]);
     if (!rows[0]) return null;
-    
+
     const offer = mapFromSQL(rows[0]) as Omit<Offer, "lineItems">;
     const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price as unitPrice, total, parent_item_id as parentItemId, item_type as itemType, source_package_id as sourcePackageId FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
     const lineItems = await this.client.query<{
@@ -352,7 +381,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
       total: number;
       parentItemId: number | null;
     }>(lineItemQuery, [id]);
-    
+
     return {
       ...offer,
       lineItems: lineItems.map(item => ({
@@ -369,7 +398,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   async createOffer(data: Omit<Offer, "id" | "createdAt" | "updatedAt">): Promise<Offer> {
     const ts = nowIso();
-    
+
     // Map offer data to SQL format
     const mappedOfferData = mapToSQL({ ...data, createdAt: ts, updatedAt: ts });
     
@@ -397,55 +426,50 @@ export class SQLiteAdapter implements PersistenceAdapter {
         mappedOfferData.updated_at,
       ]
     );
-    
+
     const offerId = result.lastInsertRowid;
-    
+
     // Create ID mapping for frontend negative IDs to database positive IDs
     const idMapping: Record<number, number> = {};
-    
+
     // Sort items - main items first, then sub-items to ensure parent_item_id references exist
     const mainItems = data.lineItems.filter(item => !item.parentItemId);
     const subItems = data.lineItems.filter(item => item.parentItemId);
-    
-    // Insert main items first and build ID mapping
+
+    // Insert main items first and build ID mapping for ALL IDs
     for (const item of mainItems) {
       const mappedItem = mapToSQL(item);
       const itemResult = await this.client.exec(
         `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, item.itemType || 'standalone', item.sourcePackageId || null]
       );
+
+      // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
+      idMapping[item.id] = Number(itemResult.lastInsertRowid);
       
-      // Map frontend ID (negative) to database ID (positive)
-      if (item.id < 0) {
-        idMapping[item.id] = Number(itemResult.lastInsertRowid);
-      }
+      console.log(`🔧 CREATE ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
     }
-    
+
     // Then insert sub-items with correct parent references
     for (const item of subItems) {
       const mappedItem = mapToSQL(item);
-      
-      // Resolve parent_item_id using ID mapping
+
+      // Resolve parent_item_id using ID mapping - CRITICAL: Look up parent's NEW database ID
       let resolvedParentId = null;
-      if (item.parentItemId && item.parentItemId < 0) {
-        // Frontend negative ID - look up in mapping
+      if (item.parentItemId) {
         resolvedParentId = idMapping[item.parentItemId] || null;
-      } else if (item.parentItemId && item.parentItemId > 0) {
-        // Existing database ID - use directly
-        resolvedParentId = item.parentItemId;
+        console.log(`🔧 CREATE Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
       }
-      
+
       const itemResult = await this.client.exec(
         `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, item.itemType || 'individual_sub', item.sourcePackageId || null]
       );
-      
+
       // Map sub-item ID as well for potential nested sub-items
-      if (item.id < 0) {
-        idMapping[item.id] = Number(itemResult.lastInsertRowid);
-      }
+      idMapping[item.id] = Number(itemResult.lastInsertRowid);
     }
-    
+
     const newOffer = await this.getOffer(offerId);
     if (!newOffer) throw new Error("Offer creation failed");
     return newOffer;
@@ -463,8 +487,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
     await this.client.exec(
       `
       UPDATE offers SET
-        offer_number = ?, customer_id = ?, title = ?, status = ?, valid_until = ?, 
-        subtotal = ?, vat_rate = ?, vat_amount = ?, total = ?, notes = ?, 
+        offer_number = ?, customer_id = ?, title = ?, status = ?, valid_until = ?,
+        subtotal = ?, vat_rate = ?, vat_amount = ?, total = ?, notes = ?,
         discount_type = ?, discount_value = ?, discount_amount = ?, subtotal_before_discount = ?,
         updated_at = ?
       WHERE id = ?
@@ -492,57 +516,55 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (patch.lineItems) {
       await this.client.exec(`DELETE FROM offer_line_items WHERE offer_id = ?`, [id]);
       
+      console.log(`🔧 UPDATE: Starting with ${patch.lineItems.length} total items`);
+      
       // Create ID mapping for frontend negative IDs to database positive IDs
       const idMapping: Record<number, number> = {};
-      
+
       // Sort items - main items first, then sub-items
       const mainItems = patch.lineItems.filter(item => !item.parentItemId);
       const subItems = patch.lineItems.filter(item => item.parentItemId);
       
-      // Insert main items first and build ID mapping
+      console.log(`🔧 UPDATE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+      console.log(`🔧 UPDATE: Main items:`, mainItems.map(i => `${i.id}:${i.title}`));
+      console.log(`🔧 UPDATE: Sub items:`, subItems.map(i => `${i.id}:${i.title} (parent: ${i.parentItemId})`));
+
+      // Insert main items first and build ID mapping for ALL IDs
       for (const item of mainItems) {
         const mappedItem = mapToSQL(item);
-        const result = await this.client.exec(
+        const mainItemResult = await this.client.exec(
           `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, item.itemType || 'standalone', item.sourcePackageId || null]
         );
+
+        // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
+        idMapping[item.id] = Number(mainItemResult.lastInsertRowid);
         
-        // Map frontend ID (negative) to database ID (positive)
-        if (item.id < 0) {
-          idMapping[item.id] = Number(result.lastInsertRowid);
-        }
+        console.log(`🔧 ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
       }
       
+      console.log(`🔧 UPDATE: Final ID mapping:`, idMapping);
+
       // Then insert sub-items with correct parent references
       for (const item of subItems) {
         const mappedItem = mapToSQL(item);
-        
-        // Resolve parent_item_id using ID mapping
-        let resolvedParentId = mappedItem.parent_item_id;
-        if (item.parentItemId && item.parentItemId < 0) {
-          // Frontend negative ID - look up in mapping
+
+        // Resolve parent_item_id using ID mapping - CRITICAL: Look up parent's NEW database ID
+        let resolvedParentId = null;
+        if (item.parentItemId) {
           resolvedParentId = idMapping[item.parentItemId] || null;
-        } else if (item.parentItemId && item.parentItemId > 0) {
-          // Existing database ID - check if it still exists (unlikely after DELETE)
-          resolvedParentId = null; // Safer to set to null since we deleted all items
+          console.log(`🔧 Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
         }
-        
-        console.log('🔧 ID Mapping Debug:', {
-          frontendId: item.id,
-          parentItemId: item.parentItemId,
-          resolvedParentId,
-          idMapping
-        });
-        
-        const result = await this.client.exec(
+
+        const subItemResult = await this.client.exec(
           `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, item.itemType || 'individual_sub', item.sourcePackageId || null]
         );
-        
+
         // Map sub-item ID as well for potential nested sub-items
-        if (item.id < 0) {
-          idMapping[item.id] = Number(result.lastInsertRowid);
-        }
+        idMapping[item.id] = Number(subItemResult.lastInsertRowid);
+        
+        console.log(`🔧 Sub-Item inserted with parent_item_id: ${resolvedParentId}`);
       }
     }
 
@@ -576,7 +598,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         total: number;
         parent_item_id: number | null;
       }>(lineItemQuery, [invoice.id]);
-      
+
       result.push({
         ...mappedInvoice,
         lineItems: lineItems.map(item => {
@@ -600,7 +622,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const query = convertSQLQuery("SELECT * FROM invoices WHERE id = ?");
     const rows = await this.client.query<Omit<Invoice, "lineItems">>(query, [id]);
     if (!rows[0]) return null;
-    
+
     const invoice = mapFromSQL(rows[0]) as Omit<Invoice, "lineItems">;
     const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoiceLineItems WHERE invoiceId = ? ORDER BY id`);
     const lineItems = await this.client.query<{
@@ -612,7 +634,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
       total: number;
       parent_item_id: number | null;
     }>(lineItemQuery, [id]);
-    
+
     return {
       ...invoice,
       lineItems: lineItems.map(item => {
@@ -632,7 +654,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   async createInvoice(data: Omit<Invoice, "id" | "createdAt" | "updatedAt">): Promise<Invoice> {
     const ts = nowIso();
-    
+
     // Map invoice data to SQL format
     const mappedInvoiceData = mapToSQL({ ...data, createdAt: ts, updatedAt: ts });
     
@@ -661,9 +683,9 @@ export class SQLiteAdapter implements PersistenceAdapter {
         mappedInvoiceData.updated_at,
       ]
     );
-    
+
     const invoiceId = result.lastInsertRowid;
-    
+
     for (const item of data.lineItems) {
       const mappedItem = mapToSQL(item);
       await this.client.exec(
@@ -671,7 +693,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         [invoiceId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, mappedItem.parent_item_id || null]
       );
     }
-    
+
     const newInvoice = await this.getInvoice(invoiceId);
     if (!newInvoice) throw new Error("Invoice creation failed");
     return newInvoice;
@@ -689,8 +711,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
     await this.client.exec(
       `
       UPDATE invoices SET
-        invoice_number = ?, customer_id = ?, offer_id = ?, title = ?, status = ?, due_date = ?, 
-        subtotal = ?, vat_rate = ?, vat_amount = ?, total = ?, notes = ?, 
+        invoice_number = ?, customer_id = ?, offer_id = ?, title = ?, status = ?, due_date = ?,
+        subtotal = ?, vat_rate = ?, vat_amount = ?, total = ?, notes = ?,
         discount_type = ?, discount_value = ?, discount_amount = ?, subtotal_before_discount = ?,
         updated_at = ?
       WHERE id = ?
@@ -755,7 +777,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   async createActivity(data: Omit<Activity, "id" | "createdAt" | "updatedAt">): Promise<Activity> {
     const ts = nowIso();
-    
+
     // Map activity data to SQL format
     const mappedData = mapToSQL({ ...data, createdAt: ts, updatedAt: ts });
     
@@ -773,7 +795,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         mappedData.updated_at,
       ]
     );
-    
+
     const newActivity = await this.getActivity(result.lastInsertRowid);
     if (!newActivity) throw new Error("Activity creation failed");
     return newActivity;
@@ -826,9 +848,9 @@ export class SQLiteAdapter implements PersistenceAdapter {
     for (const timesheet of timesheets) {
       const mappedTimesheet = mapFromSQL(timesheet) as Omit<Timesheet, "activities">;
       const activitiesQuery = convertSQLQuery(`
-        SELECT id, timesheetId, activityId, title, description, date, startTime, endTime, hours, hourlyRate, total, isBreak 
-        FROM timesheetActivities 
-        WHERE timesheetId = ? 
+        SELECT id, timesheetId, activityId, title, description, date, startTime, endTime, hours, hourlyRate, total, isBreak
+        FROM timesheetActivities
+        WHERE timesheetId = ?
         ORDER BY date ASC, startTime ASC
       `);
       const activities = await this.client.query<any>(activitiesQuery, [timesheet.id]);
@@ -845,12 +867,12 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const query = convertSQLQuery("SELECT * FROM timesheets WHERE id = ?");
     const rows = await this.client.query<Omit<Timesheet, "activities">>(query, [id]);
     if (!rows[0]) return null;
-    
+
     const timesheet = mapFromSQL(rows[0]) as Omit<Timesheet, "activities">;
     const activitiesQuery = convertSQLQuery(`
-      SELECT id, timesheetId, activityId, title, description, date, startTime, endTime, hours, hourlyRate, total, isBreak 
-      FROM timesheetActivities 
-      WHERE timesheetId = ? 
+      SELECT id, timesheetId, activityId, title, description, date, startTime, endTime, hours, hourlyRate, total, isBreak
+      FROM timesheetActivities
+      WHERE timesheetId = ?
       ORDER BY date ASC, startTime ASC
     `);
     const activities = await this.client.query<any>(activitiesQuery, [id]);
@@ -958,5 +980,10 @@ export class SQLiteAdapter implements PersistenceAdapter {
       { sql: `DELETE FROM timesheet_activities WHERE timesheet_id = ?`, params: [id] },
       { sql: `DELETE FROM timesheets WHERE id = ?`, params: [id] }
     ]);
+  }
+
+  // READY STATUS
+  async ready(): Promise<void> {
+    // Ready when client is available
   }
 }
