@@ -467,7 +467,10 @@ export const OfferForm: React.FC<OfferFormProps> = ({
             {/* React.Fragment-basierte Gruppierung: Parent-Items mit ihren Sub-Items gruppiert */}
             {lineItems
               .filter(item => !item.parentItemId) // Nur Parent-Items
-              .map(parentItem => (
+              .map(parentItem => {
+                const subItems = lineItems.filter(item => item.parentItemId === parentItem.id);
+                
+                return (
                 <React.Fragment key={`parent-${parentItem.id}`}>
                   {/* Parent-Item */}
                   <div style={{
@@ -605,7 +608,8 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                       </div>
                     ))}
                 </React.Fragment>
-              ))}
+                );
+              })}
             
             {/* Orphaned sub-items (itemType === 'individual_sub' but no parentItemId) */}
             {lineItems
