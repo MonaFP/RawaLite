@@ -466,3 +466,64 @@ body{
     opacity: 1;
   }
 }
+
+/* 🎯 Sub-Item Implementation - Phase 1 CSS Classes */
+/* Ersetzt inline marginLeft styles mit wiederverwendbaren CSS-Classes */
+
+.line-item {
+  position: relative;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.line-item--parent {
+  border: 2px solid #007bff;
+  background: rgba(0, 123, 255, 0.1);
+}
+
+.line-item--sub {
+  margin-left: 40px; /* Reduziert von 120px extreme indentation */
+  border: 4px solid #ff0000;
+  border-left: 8px solid #00ff00;
+  background: rgba(255, 0, 0, 0.3);
+}
+
+.line-item--orphaned {
+  border: 4px dashed #ffa500;
+  background: rgba(255, 165, 0, 0.3);
+}
+
+/* Debug Labels - konsistente Positionierung */
+.debug-label {
+  position: absolute;
+  top: -12px;
+  left: 8px;
+  color: white;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+  z-index: 10;
+}
+
+.debug-label--parent {
+  background: #007bff;
+}
+
+.debug-label--sub {
+  background: #ff0000;
+}
+
+.debug-label--orphaned {
+  background: #ffa500;
+}
+
+/* Hover-Effekte für bessere UX */
+.line-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.line-item--sub:hover {
+  margin-left: 42px; /* Leichte Hover-Animation */
+}

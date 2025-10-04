@@ -22,6 +22,7 @@ import * as migration010 from './010_add_timesheets_numbering';
 import * as migration011 from './011_extend_offer_line_items';
 import * as migration012 from './012_add_tax_office_field';
 import * as migration013 from './013_add_discount_system';
+import * as migration014 from './014_add_item_origin_system';
 
 export const migrations: Migration[] = [
   {
@@ -101,6 +102,12 @@ export const migrations: Migration[] = [
     name: '013_add_discount_system',
     up: migration013.up,
     down: migration013.down
+  },
+  {
+    version: 14,
+    name: '014_add_item_origin_system',
+    up: migration014.up,
+    down: migration014.down
   }
 ];
 

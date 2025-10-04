@@ -889,6 +889,12 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
 
     try {
       setSaving(true);
+      
+      // 🔥 KRITISCH: App sofort in "Maintenance Mode" versetzen
+      // Global state setzen, der alle Formulare deaktiviert
+      document.body.style.pointerEvents = 'none';
+      document.body.style.opacity = '0.7';
+      
       let deletedCount = 0;
       
       // Lösche alle Daten sequenziell, um Race Conditions zu vermeiden
@@ -970,12 +976,16 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
       
       showSuccess(`${deletedCount} Datensätze wurden gelöscht und alle Nummernkreise zurückgesetzt. Die Anwendung wird neu geladen...`);
       
-      // Kurze Verzögerung, damit der Nutzer die Erfolgsmeldung lesen kann  
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // Sofortiges Reload ohne Verzögerung, um inkonsistente States zu vermeiden
+      // Die 2-Sekunden-Verzögerung verursachte Probleme mit unbeschreibbaren Eingabefeldern
+      window.location.reload();
     } catch (error) {
       console.error('Clear data error:', error);
+      
+      // UI wieder aktivieren bei Fehlern
+      document.body.style.pointerEvents = '';
+      document.body.style.opacity = '';
+      
       alert('Fehler beim Löschen der Daten: ' + error);
     } finally {
       setSaving(false);

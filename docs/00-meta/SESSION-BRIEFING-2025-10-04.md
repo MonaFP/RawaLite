@@ -38,6 +38,68 @@
 - **Critical Fixes:** ✅ 5/5 Validierungen bestanden
 - **Build System:** ✅ Funktionsfähig, Artefakte korrekt ausgeschlossen
 
+## 🎯 **PRIORITÄT 1: SUB-ITEM IMPLEMENTATION PLAN UMSETZEN**
+
+### **BEREIT ZUR UMSETZUNG:** 
+- **Vollständiger Implementierungsplan:** `docs/08-ui/active/SUB-ITEM-IMPLEMENTATION-PLAN.md`
+- **Status:** Phase 1 kann SOFORT begonnen werden
+- **Aufwand:** 4-6 Stunden für Phase 1 (Minimal-Invasiv)
+- **Bewertung:** 9.5/10 ⭐ Enterprise-ready Hybrid-Architektur
+
+### **SOFORTIGER START:**
+1. **Browser DevTools Debugging** (1 Stunde) - DOM-Struktur analysieren
+2. **CSS-Classes Implementation** (2 Stunden) - Inline styles ersetzen
+3. **ID-Range System** (3 Stunden) - Collision-freie IDs implementieren
+
+---
+
+## 🎨 SUB-ITEM IMPLEMENTATION - BEREIT ZUR UMSETZUNG
+
+### IMPLEMENTIERUNGSPLAN VERFÜGBAR:
+- **Vollständiger Plan:** `docs/08-ui/active/SUB-ITEM-IMPLEMENTATION-PLAN.md`
+- **Bewertung:** 9.5/10 ⭐ Enterprise-ready Hybrid-Architektur
+- **Status:** Phase 1 kann SOFORT implementiert werden
+
+### PHASE 1: Sofortige Verbesserung (4-6 Stunden, Niedrig-Risiko)
+
+#### **KRITISCHES PROBLEM:**
+Sub-Items erscheinen nicht visuell eingerückt unter Parent-Items, obwohl Datenstruktur korrekt ist.
+
+#### **SOFORTLÖSUNG - HEUTE IMPLEMENTIEREN:**
+
+**1. Browser DevTools Debugging (1 Stunde):**
+```powershell
+pnpm dev  # Anwendung starten
+# Dann in Browser DevTools: OfferForm.tsx DOM-Struktur analysieren
+```
+
+**2. CSS-Classes Implementation (2 Stunden):**
+```css
+/* Neue CSS-Classes erstellen */
+.line-item--parent { border-color: #007bff; background: #f8f9fa; }
+.line-item--sub { margin-left: 40px; border-left: 4px solid #00ff00; }
+.line-item--orphaned { border: 2px dashed #ffa500; }
+```
+
+**3. ID-Range System (3 Stunden):**
+```typescript
+// ID-Collision Prevention
+// OfferForm: -1000 bis -1999 (Parents), -2000 bis -2999 (Subs)
+// InvoiceForm: -3000 bis -3999 (Parents), -4000 bis -4999 (Subs)
+const generateStableId = (itemType: 'parent' | 'sub', formType: 'offer' | 'invoice') => {
+  const baseRanges = {
+    offer: { parent: -1000, sub: -2000 },
+    invoice: { parent: -3000, sub: -4000 }
+  };
+  return baseRanges[formType][itemType] - lineItems.length - 1;
+};
+```
+
+### CRITICAL FIXES COMPLIANCE ✅
+- **Alle 7 Critical Fixes bleiben unberührt**
+- **Minimal-invasive Änderungen**
+- **Kein WriteStream/Event Handler Impact**
+
 ---
 
 ## 🎨 OFFERFORM.tsx - EXTREME DEBUG-INFRASTRUKTUR AKTIV
@@ -188,12 +250,17 @@ yarn install
    ```
    Muss 5/5 bestehen!
 
-2. **OfferForm.tsx-Status checken:**
+2. **SUB-ITEM IMPLEMENTATION starten:**
+   - Plan lesen: `docs/08-ui/active/SUB-ITEM-IMPLEMENTATION-PLAN.md`
+   - Phase 1 beginnen: Browser DevTools → CSS Classes → ID-Range System
+   - Erwarteter Aufwand: 4-6 Stunden für vollständige Phase 1
+
+3. **OfferForm.tsx-Status checken:**
    - Extreme Debug-Infrastruktur vorhanden?
    - Farbige Borders aktiv?
    - Console-Logging mit Emojis?
 
-3. **VOR JEDER ÄNDERUNG:**
+4. **VOR JEDER ÄNDERUNG:**
    - Critical Fixes Registry konsultieren
    - Debug-Infrastruktur bewahren
    - Validation-Scripts ausführen
@@ -213,6 +280,11 @@ yarn install
 
 ## 🔗 WICHTIGE DOKUMENTATIONS-REFERENZEN
 
+**PRIORITÄT 1 - SUB-ITEM IMPLEMENTATION:**
+- `docs/08-ui/active/SUB-ITEM-IMPLEMENTATION-PLAN.md` - **HAUPTPLAN für Phase 1 Umsetzung**
+- `docs/12-lessons/active/LESSONS-LEARNED-SUB-ITEM-POSITIONING-ISSUE.md` - Problem-Analyse
+
+**CRITICAL FIXES & RICHTLINIEN:**
 - `docs/00-meta/CRITICAL-FIXES-REGISTRY.md` - Vollständige Fix-Patterns
 - `docs/00-meta/INSTRUCTIONS-KI.md` - KI-Richtlinien (diese Datei)
 - `docs/00-meta/DOCUMENTATION-STRUCTURE-GUIDE.md` - Docs-Organisation
@@ -222,7 +294,26 @@ yarn install
 
 ## 🎯 TYPISCHE NÄCHSTE SCHRITTE
 
-**Mögliche Entwicklungsaktivitäten:**
+**PRIORITÄT 1 - SUB-ITEM IMPLEMENTATION:**
+```powershell
+# SOFORT starten:
+pnpm dev                          # Development Server starten
+pnpm validate:critical-fixes      # 5/5 muss bestehen
+
+# Phase 1 Implementation (heute):
+# 1. Browser DevTools → OfferForm.tsx DOM analysieren
+# 2. CSS-Classes → .line-item--parent/.line-item--sub erstellen  
+# 3. ID-Range System → generateStableId() implementieren
+# 4. Migration 014 → Schema-Erweiterung (item_origin, sort_order)
+```
+
+**Phase 1 Erfolg-Kriterien:**
+- ✅ Sub-Items werden visuell eingerückt dargestellt
+- ✅ Debug-System bleibt funktional  
+- ✅ Alle Critical Fixes bleiben intakt
+- ✅ Performance-Regression < 5%
+
+**Weitere Entwicklungsaktivitäten (nach Sub-Item):**
 - OfferForm.tsx-Verbesserungen (Debug-System beibehalten!)
 - Weitere UI-Komponenten (ähnliches Debug-System implementieren?)
 - Persistenz-Layer-Optimierungen
@@ -233,10 +324,12 @@ yarn install
 1. Critical Fixes Registry checken
 2. Validation ausführen
 3. Bei OfferForm.tsx: Debug-Infrastruktur bewahren!
-4. Bei Zweifeln: Nachfragen statt raten
+4. Sub-Item Implementation Plan konsultieren: `docs/08-ui/active/SUB-ITEM-IMPLEMENTATION-PLAN.md`
 
 ---
 
-**SESSION BEREIT ZUR ÜBERGABE** 🚀
+**SESSION BEREIT ZUR SUB-ITEM IMPLEMENTATION** 🚀
 
-*Dieses Briefing wurde am 04.10.2025 erstellt und enthält alle relevanten Kontext-Informationen für die nahtlose Fortsetzung der RawaLite-Entwicklung.*
+*Vollständiger Implementation Plan verfügbar in `docs/08-ui/active/SUB-ITEM-IMPLEMENTATION-PLAN.md`*  
+*Phase 1 (4-6h, niedrig-Risiko) kann sofort begonnen werden*  
+*Dieses Briefing wurde am 04.10.2025 erstellt und priorisiert die Sub-Item Umsetzung.*

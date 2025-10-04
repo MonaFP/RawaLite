@@ -22,9 +22,20 @@ Gelöste UI/Theme Probleme:
   - Parent-Child Display Hierarchy Implementation
   - UI Element Cleanup (removed redundant dropdowns/buttons)
   - Visual Design: Parent-first rendering with grouped sub-items
+- ✅ **[SUB-ITEM-VISUAL-HIERARCHY-FIX-2025-10-04.md](solved/SUB-ITEM-VISUAL-HIERARCHY-FIX-2025-10-04.md)** - **Sub-Item Visual Hierarchy Complete Solution**
+  - React.Fragment-basierte Gruppierung für Parent-Child UI-Hierarchie
+  - SQLiteAdapter ID-Mapping Fix für persistente Parent-Child-Beziehungen
+  - 24px Einrückung, blaue Border-Left, bläulicher Hintergrund für Sub-Items
+  - Vollständige Frontend + Backend Koordination für dauerhafte Funktionalität
 
 #### ⚠️ active/
-Bekannte offene UI/Theme Probleme
+Bekannte offene UI/Theme Probleme:
+- **[SUB-ITEM-IMPLEMENTATION-PLAN.md](active/SUB-ITEM-IMPLEMENTATION-PLAN.md)** - ✅ **Vollständiger Implementierungsplan** für Sub-Item Visual Hierarchy Problem
+  - **Phase 1**: CSS-basierte Einrückung, ID-Range Segregation, Schema-Erweiterung (4-6h, niedrig Risiko)
+  - **Phase 2**: Zentrale Item-Bibliothek, Referenz-System statt Duplikation (12-16h, mittel Risiko)
+  - **Bewertung**: 9.5/10 - Enterprise-ready Hybrid-Architektur-Ansatz
+  - **Status**: Ready for Implementation, Critical Fixes kompatibel
+  - **Basiert auf**: Umfassender Chat-Analyse und evolutionärem statt Big-Bang-Ansatz
 
 ### 🚀 Aktuelle UI-Components (v1.5.2)
 

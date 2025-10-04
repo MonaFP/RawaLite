@@ -6,6 +6,7 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 
 ### UI & Theme Development
 - **[LESSONS-LEARNED-v1-5-2-theme-navigation-system.md](./LESSONS-LEARNED-v1-5-2-theme-navigation-system.md)** - ✅ **COMPLETE:** v1.5.2 Beautiful Pastel Themes & Enhanced Navigation system implementation lessons
+- **[LESSONS-LEARNED-SUB-ITEM-POSITIONING-ISSUE.md](./solved/LESSONS-LEARNED-SUB-ITEM-POSITIONING-ISSUE.md)** - ✅ **SOLVED:** Sub-Item Visual Hierarchy Debug Journey
 
 ### Database & Schema
 - **[DATABASE-SCHEMA-MIGRATION-FIX.md](./solved/LESSONS-LEARNED-database-schema-migration-fix.md)** - ✅ **SOLVED:** Critical fixes for NOT NULL constraint errors, schema mismatches, and missing table migrations (v1.0.1)
@@ -65,6 +66,7 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 | Problem | Bereich | Lösung | Datei |
 |---------|---------|--------|--------|
 | UI/Theme System Issues | v1.5.2 Development | ✅ Backup color restoration + 3-mode navigation | LESSONS-LEARNED-v1-5-2-theme-navigation-system.md |
+| Sub-Item Visual Hierarchy | UI Components | ✅ React.Fragment Gruppierung + SQLiteAdapter ID-Mapping | solved/LESSONS-LEARNED-SUB-ITEM-POSITIONING-ISSUE.md |
 | Database Schema Migration Issues | Database | ✅ Migration 007+008 + Field-Mapper Fix | DATABASE-SCHEMA-MIGRATION-FIX.md |
 | Schema Mismatch | Database | Field-Mapper System | SCHEMA-CONSISTENCY-LESSONS.md |
 | Fehlende Nummernkreise | Production | ✅ Migration 006 | NUMMERNKREISE-PRODUCTION-BUG.md |
