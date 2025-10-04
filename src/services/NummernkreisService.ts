@@ -38,8 +38,8 @@ export class NummernkreisService {
     await this.client.transaction([
       {
         sql: convertSQLQuery(`
-          UPDATE numberingCircles 
-          SET current = ?, lastResetYear = ?, updatedAt = datetime('now')
+          UPDATE numbering_circles 
+          SET current = ?, lastResetYear = ?, updated_at = datetime('now')
           WHERE id = ?
         `),
         params: [
@@ -77,8 +77,8 @@ export class NummernkreisService {
 
   async update(id: string, circle: NumberingCircle): Promise<void> {
     const query = convertSQLQuery(`
-      UPDATE numberingCircles 
-      SET name = ?, prefix = ?, digits = ?, current = ?, resetMode = ?, updatedAt = datetime('now')
+      UPDATE numbering_circles 
+      SET name = ?, prefix = ?, digits = ?, current = ?, resetMode = ?, updated_at = datetime('now')
       WHERE id = ?
     `);
     

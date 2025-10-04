@@ -45,6 +45,9 @@ importers:
       '@playwright/test':
         specifier: ^1.55.1
         version: 1.55.1
+      '@rollup/rollup-win32-x64-msvc':
+        specifier: ^4.52.4
+        version: 4.52.4
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
@@ -778,6 +781,11 @@ packages:
 
   '@rollup/rollup-win32-x64-msvc@4.52.3':
     resolution: {integrity: sha512-zGIbEVVXVtauFgl3MRwGWEN36P5ZGenHRMgNw88X5wEhEBpq0XrMEZwOn07+ICrwM17XO5xfMZqh0OldCH5VTA==}
+    cpu: [x64]
+    os: [win32]
+
+  '@rollup/rollup-win32-x64-msvc@4.52.4':
+    resolution: {integrity: sha512-bf9PtUa0u8IXDVxzRToFQKsNCRz9qLYfR/MpECxl4mRoWYjAeFjgxj1XdZr2M/GNVpT05p+LgQOHopYDlUu6/w==}
     cpu: [x64]
     os: [win32]
 
@@ -3906,6 +3914,8 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.52.3':
     optional: true
+
+  '@rollup/rollup-win32-x64-msvc@4.52.4': {}
 
   '@sindresorhus/is@4.6.0': {}
 

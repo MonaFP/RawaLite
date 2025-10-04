@@ -601,6 +601,72 @@ ipcMain.handle('pdf:generate', async (event, options: {
       // Wait for content to load
       await new Promise(resolve => setTimeout(resolve, 1000));
 
+      // 🔧 Versuch 5: Tabellen-basierte Container-Lösung (thead/tfoot Wiederholung)
+      await pdfWindow.webContents.executeJavaScript(`
+        (function() {
+          console.log('🔧 Starting table-based container wrapping...');
+          
+          function wrapLongNoteContainers() {
+            const containers = Array.from(document.querySelectorAll('.notes-long'));
+            console.log('📦 Found', containers.length, 'containers to wrap');
+            
+            containers.forEach((container, index) => {
+              console.log('� Wrapping container', index + 1);
+              
+              // Get original content
+              const originalContent = container.innerHTML;
+              const originalClasses = container.className;
+              
+              // Calculate page info for multi-container scenarios
+              const containerIndex = index + 1;
+              const totalContainers = containers.length;
+              const showPageInfo = totalContainers > 1;
+              const pageInfo = showPageInfo ? \`\${containerIndex}/\${totalContainers}\` : '';
+              
+              // Create table structure
+              const table = document.createElement('table');
+              table.className = 'pdf-box-table notes-table-container';
+              
+              // Build header HTML with optional mini-header
+              const miniHeaderHtml = showPageInfo ? 
+                \`<tr><td class="pdf-box-mini-header">\${pageInfo}</td></tr>\` : '';
+              
+              table.innerHTML = \`
+                <thead>
+                  \${miniHeaderHtml}
+                  <tr><th class="pdf-box-header-line"></th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="pdf-box-content">
+                      \${originalContent}
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr><td class="pdf-box-footer-line"></td></tr>
+                </tfoot>
+              \`;
+              
+              // Replace original container with table
+              container.parentNode.replaceChild(table, container);
+              
+              console.log('✅ Container', index + 1, 'wrapped successfully');
+            });
+            
+            console.log('🎉 Table-based wrapping completed');
+          }
+          
+          // Execute the wrapping
+          wrapLongNoteContainers();
+          
+          return 'Table wrapping completed';
+        })();
+      `);
+
+      // Wait a bit more for DOM manipulation to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Generate PDF with optimized margins for header/footer
       const pdfBuffer = await pdfWindow.webContents.printToPDF({
         pageSize: 'A4',
@@ -869,14 +935,174 @@ function generateTemplateHTML(options: any): string {
           color: ${primaryColor};
         }
         .notes { 
-          margin-top: 25px;  /* Reduced from 40px */
-          padding: 15px;     /* Reduced from 20px */
-          background-color: ${backgroundColor};  /* Use theme background */
-          border: 1px solid ${accentColor};      /* Add subtle border */
-          border-radius: 5px;
-          border-left: 3px solid ${primaryColor};
-          font-size: 11px;   /* Smaller notes text */
-          color: ${textColor};  /* Use theme text color */
+          margin-top: 25px;
+          margin-bottom: 25px;
+          padding: 15px;
+          background-color: ${backgroundColor};
+          border: 2px solid ${primaryColor};
+          border-radius: 8px;
+          font-size: 11px;
+          color: ${textColor};
+          page-break-inside: avoid;
+          position: relative;
+          z-index: 10;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          isolation: isolate;
+        }
+
+        .notes-long {
+          page-break-inside: auto;
+          border: 2px solid ${primaryColor};
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          z-index: 15;
+          margin-bottom: 25px;
+          position: relative;
+        }
+
+        /* Print-specific rules for proper page break visualization */
+        @media print {
+          .notes {
+            position: relative !important;
+            z-index: 10 !important;
+            margin-top: 25px !important;
+            margin-bottom: 25px !important;
+            overflow: visible !important;
+            border: 2px solid ${primaryColor} !important;
+            border-radius: 8px !important;
+          }
+          
+          .notes-long {
+            z-index: 15 !important;
+            margin-bottom: 25px !important;
+            border: 2px solid ${primaryColor} !important;
+            border-radius: 8px !important;
+            padding: 15px !important;
+            background: white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            
+            /* Prevent page breaks inside individual containers */
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            overflow: visible !important;
+            position: relative !important;
+          }
+
+          /* 🔧 Versuch 5: Tabellen-basierte Container mit thead/tfoot Wiederholung */
+          .pdf-box-table {
+            width: 100% !important;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            border-radius: 8px !important;
+            overflow: hidden !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            margin-bottom: 25px !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+          }
+
+          /* Kopfzeile (wiederholt automatisch auf jeder Seite) */
+          .pdf-box-table thead {
+            display: table-header-group !important;
+          }
+
+          .pdf-box-header-line {
+            height: 4px !important;
+            padding: 0 !important;
+            background: ${primaryColor} !important;
+            border-top-left-radius: 8px !important;
+            border-top-right-radius: 8px !important;
+            border: none !important;
+          }
+
+          /* Mini-Header mit Seitenanzeige */
+          .pdf-box-mini-header {
+            height: 16px !important;
+            background: ${primaryColor} !important;
+            color: white !important;
+            font-size: 9px !important;
+            font-weight: bold !important;
+            text-align: center !important;
+            vertical-align: middle !important;
+            padding: 2px 0 !important;
+            border: none !important;
+          }
+
+          /* Fußzeile (wiederholt automatisch auf jeder Seite) */
+          .pdf-box-table tfoot {
+            display: table-footer-group !important;
+          }
+
+          .pdf-box-footer-line {
+            height: 4px !important;
+            padding: 0 !important;
+            background: ${primaryColor} !important;
+            border-bottom-left-radius: 8px !important;
+            border-bottom-right-radius: 8px !important;
+            border: none !important;
+          }
+
+          /* Inhaltszelle mit seitlichen Rahmen */
+          .pdf-box-content {
+            border-left: 2px solid ${primaryColor} !important;
+            border-right: 2px solid ${primaryColor} !important;
+            padding: 15px !important;
+            background: white !important;
+            vertical-align: top !important;
+          }
+
+          /* Anmerkungen-Titel */
+          .pdf-box-content strong:first-child {
+            display: block !important;
+            margin-bottom: 8px !important;
+            font-weight: 600 !important;
+          }
+        }
+
+        /* Markdown formatting in notes */
+        .notes h1, .notes h2, .notes h3, .notes h4, .notes h5, .notes h6 {
+          margin: 8px 0 4px 0;
+          font-weight: bold;
+          page-break-after: avoid;
+          color: ${primaryColor};
+        }
+        
+        .notes p {
+          margin: 4px 0;
+          orphans: 2;
+          widows: 2;
+          line-height: 1.4;
+        }
+        
+        .notes ul, .notes ol {
+          margin: 6px 0;
+          padding-left: 18px;
+          page-break-inside: avoid;
+        }
+        
+        .notes li {
+          margin: 3px 0;
+          line-height: 1.3;
+        }
+        
+        .notes strong {
+          font-weight: bold;
+          color: ${primaryColor};
+        }
+        
+        .notes em {
+          font-style: italic;
+          color: ${textColor};
+        }
+        
+        .notes code {
+          background-color: ${primaryColor}20;
+          color: ${primaryColor};
+          padding: 2px 5px;
+          border-radius: 3px;
+          font-family: 'Courier New', monospace;
+          font-size: 10px;
+          border: 1px solid ${primaryColor}40;
         }
       </style>
     </head>
@@ -917,17 +1143,44 @@ function generateTemplateHTML(options: any): string {
           </tr>
         </thead>
         <tbody>
-          ${entity.lineItems?.map((item: any) => `
-            <tr class="${item.parentItemId ? 'sub-item' : ''}">
-              <td>
-                ${item.parentItemId ? '↳ ' : ''}${item.title}
-                ${item.description ? `<br><small>${convertMarkdownToHtml(item.description)}</small>` : ''}
-              </td>
-              <td>${item.quantity}</td>
-              <td>€${item.unitPrice?.toFixed(2) || '0.00'}</td>
-              <td>€${item.total?.toFixed(2) || '0.00'}</td>
-            </tr>
-          `).join('') || '<tr><td colspan="4">Keine Positionen</td></tr>'}
+          ${entity.lineItems?.length > 0 ? (() => {
+            const lineItems = entity.lineItems;
+            // Parent-First + Grouped Sub-Items Logic (same as frontend)
+            const parentItems = lineItems.filter((item: any) => !item.parentItemId);
+            return parentItems.map((parentItem: any) => {
+              const subItems = lineItems.filter((item: any) => item.parentItemId === parentItem.id);
+              
+              // Parent item row
+              let html = `
+                <tr>
+                  <td>
+                    ${parentItem.title}
+                    ${parentItem.description ? `<br><small>${convertMarkdownToHtml(parentItem.description)}</small>` : ''}
+                  </td>
+                  <td>${parentItem.quantity}</td>
+                  <td>€${parentItem.unitPrice?.toFixed(2) || '0.00'}</td>
+                  <td>€${parentItem.total?.toFixed(2) || '0.00'}</td>
+                </tr>
+              `;
+              
+              // Sub-items for this parent (grouped underneath)
+              subItems.forEach((subItem: any) => {
+                html += `
+                  <tr class="sub-item">
+                    <td>
+                      ↳ ${subItem.title}
+                      ${subItem.description ? `<br><small>${convertMarkdownToHtml(subItem.description)}</small>` : ''}
+                    </td>
+                    <td>${subItem.quantity}</td>
+                    <td>€${subItem.unitPrice?.toFixed(2) || '0.00'}</td>
+                    <td>€${subItem.total?.toFixed(2) || '0.00'}</td>
+                  </tr>
+                `;
+              });
+              
+              return html;
+            }).join('');
+          })() : '<tr><td colspan="4">Keine Positionen</td></tr>'}
         </tbody>
       </table>
 
@@ -952,7 +1205,7 @@ function generateTemplateHTML(options: any): string {
         <div class="total-row">Gesamtbetrag: €${entity.total?.toFixed(2) || '0.00'}</div>
       </div>
 
-      ${entity.notes ? `<div class="notes"><strong>Anmerkungen:</strong><br>${entity.notes}</div>` : ''}
+      ${entity.notes ? `<div class="notes${entity.notes.length > 500 ? ' notes-long' : ''}"><strong>Anmerkungen:</strong><br>${convertMarkdownToHtml(entity.notes)}</div>` : ''}
     </body>
     </html>
   `;

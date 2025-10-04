@@ -293,7 +293,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
     }
 
     const offerData: Omit<Offer, 'id' | 'createdAt' | 'updatedAt'> = {
-      offerNumber: offer?.offerNumber || `AN-${Date.now()}`,
+      offerNumber: offer?.offerNumber || '', // Let useOffers handle number generation
       customerId: parseInt(customerId),
       title: title.trim(),
       notes: notes.trim(),
