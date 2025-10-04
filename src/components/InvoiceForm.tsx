@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Invoice, InvoiceLineItem, Customer, Offer } from '../persistence/adapter';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { usePersistence } from '../contexts/PersistenceContext';
+import { calculateDocumentTotals, validateDiscount, formatCurrency } from '../lib/discount-calculator';
 
 interface InvoiceFormProps {
   invoice?: Invoice;
@@ -30,13 +31,21 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>(invoice?.lineItems || []);
   const [vatRate, setVatRate] = useState(invoice?.vatRate || 19);
 
+  // Discount system state
+  const [discountType, setDiscountType] = useState<'none' | 'percentage' | 'fixed'>(invoice?.discountType || 'none');
+  const [discountValue, setDiscountValue] = useState(invoice?.discountValue || 0);
+
   // Check if Kleinunternehmer mode is enabled
   const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
 
-  // Automatische Berechnung der Summen
-  const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
-  const vatAmount = isKleinunternehmer ? 0 : subtotal * (vatRate / 100);
-  const total = subtotal + vatAmount;
+  // Calculate totals using discount calculator
+  const totals = calculateDocumentTotals(
+    lineItems.map(item => ({ quantity: item.quantity, unitPrice: item.unitPrice })),
+    discountType,
+    discountValue,
+    vatRate,
+    isKleinunternehmer
+  );
 
   const addLineItem = () => {
     const newItem: InvoiceLineItem = {
@@ -127,10 +136,16 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       notes,
       dueDate,
       lineItems,
-      subtotal,
+      // Use new discount calculator results
+      subtotal: totals.subtotalAfterDiscount,
       vatRate,
-      vatAmount,
-      total,
+      vatAmount: totals.vatAmount,
+      total: totals.totalAmount,
+      // Add discount fields
+      discountType,
+      discountValue,
+      discountAmount: totals.discountAmount,
+      subtotalBeforeDiscount: totals.subtotalBeforeDiscount,
       status: invoice?.status || 'draft'
     };
 
@@ -362,14 +377,106 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </div>
         </div>
 
+        {/* Rabatt-Sektion */}
+        <div style={{borderTop:"1px solid rgba(255,255,255,.1)", paddingTop:"16px"}}>
+          <h3 style={{margin:"0 0 16px 0", color:"var(--accent)", fontSize:"16px"}}>📊 Rabatt</h3>
+          
+          <div style={{display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:"16px", marginBottom:"16px"}}>
+            <div>
+              <label style={{display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px"}}>
+                <input
+                  type="radio"
+                  name="discountType"
+                  value="none"
+                  checked={discountType === 'none'}
+                  onChange={(e) => setDiscountType(e.target.value as 'none')}
+                />
+                <span>Kein Rabatt</span>
+              </label>
+            </div>
+            
+            <div>
+              <label style={{display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px"}}>
+                <input
+                  type="radio"
+                  name="discountType"
+                  value="percentage"
+                  checked={discountType === 'percentage'}
+                  onChange={(e) => setDiscountType(e.target.value as 'percentage')}
+                />
+                <span>Prozentual</span>
+              </label>
+              {discountType === 'percentage' && (
+                <div style={{display:"flex", alignItems:"center", gap:"4px"}}>
+                  <input
+                    type="number"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                    style={{width:"80px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    placeholder="0"
+                  />
+                  <span>%</span>
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <label style={{display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px"}}>
+                <input
+                  type="radio"
+                  name="discountType"
+                  value="fixed"
+                  checked={discountType === 'fixed'}
+                  onChange={(e) => setDiscountType(e.target.value as 'fixed')}
+                />
+                <span>Fester Betrag</span>
+              </label>
+              {discountType === 'fixed' && (
+                <div style={{display:"flex", alignItems:"center", gap:"4px"}}>
+                  <span>€</span>
+                  <input
+                    type="number"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                    style={{width:"100px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Summen */}
         <div style={{borderTop:"1px solid rgba(255,255,255,.1)", paddingTop:"16px"}}>
           <div style={{display:"flex", justifyContent:"flex-end"}}>
             <div style={{width:"300px", display:"flex", flexDirection:"column", gap:"8px"}}>
               <div style={{display:"flex", justifyContent:"space-between"}}>
                 <span>Zwischensumme:</span>
-                <span>€{subtotal.toFixed(2)}</span>
+                <span>{formatCurrency(totals.subtotalBeforeDiscount)}</span>
               </div>
+              
+              {/* Rabatt-Anzeige */}
+              {discountType !== 'none' && totals.discountAmount > 0 && (
+                <div style={{display:"flex", justifyContent:"space-between", color:"var(--accent)"}}>
+                  <span>Rabatt ({discountType === 'percentage' ? `${discountValue}%` : 'fester Betrag'}):</span>
+                  <span>-{formatCurrency(totals.discountAmount)}</span>
+                </div>
+              )}
+              
+              {/* Zwischensumme nach Rabatt */}
+              {discountType !== 'none' && totals.discountAmount > 0 && (
+                <div style={{display:"flex", justifyContent:"space-between", borderTop:"1px solid rgba(255,255,255,.1)", paddingTop:"4px"}}>
+                  <span>Netto nach Rabatt:</span>
+                  <span>{formatCurrency(totals.subtotalAfterDiscount)}</span>
+                </div>
+              )}
+              
               {!isKleinunternehmer && (
                 <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                   <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
@@ -385,12 +492,20 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     />
                     <span>%</span>
                   </div>
-                  <span>€{vatAmount.toFixed(2)}</span>
+                  <span>{formatCurrency(totals.vatAmount)}</span>
                 </div>
               )}
+              
+              {/* Kleinunternehmer Hinweis */}
+              {isKleinunternehmer && (
+                <div style={{fontSize:"12px", color:"var(--muted)", fontStyle:"italic"}}>
+                  (MwSt-frei nach §19 UStG)
+                </div>
+              )}
+              
               <div style={{display:"flex", justifyContent:"space-between", fontWeight:"600", fontSize:"16px", borderTop:"1px solid rgba(255,255,255,.1)", paddingTop:"8px"}}>
                 <span>Gesamtbetrag:</span>
-                <span>€{total.toFixed(2)}</span>
+                <span>{formatCurrency(totals.totalAmount)}</span>
               </div>
             </div>
           </div>

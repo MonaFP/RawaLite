@@ -113,6 +113,171 @@ server: { port: 5174 },
 win.loadURL('http://localhost:5174')
 ```
 
+### **FIX-005: Offer Foreign Key Constraint Fix**
+- **ID:** `offer-foreign-key-constraint-fix`
+- **Files:** `src/adapters/SQLiteAdapter.ts`, `src/main/db/migrations/011_extend_offer_line_items.ts`, `src/components/OfferForm.tsx`
+- **Pattern:** ID mapping system for parent-child relationships + database schema extension
+- **Location:** SQLiteAdapter updateOffer/createOffer methods, Migration 011, OfferForm parent-child rendering
+- **First Implemented:** v1.0.13
+- **Last Verified:** v1.0.13
+- **Status:** ✅ ACTIVE
+
+**Required Database Schema (Migration 011):**
+```sql
+ALTER TABLE offer_line_items ADD COLUMN item_type TEXT DEFAULT 'standalone';
+ALTER TABLE offer_line_items ADD COLUMN source_package_id INTEGER;
+UPDATE offer_line_items SET item_type = 'standalone' WHERE item_type IS NULL;
+```
+
+**Required ID Mapping Pattern (SQLiteAdapter):**
+```typescript
+// Map frontend negative IDs to database positive IDs
+const idMapping: Record<number, number> = {};
+offer.lineItems.forEach(item => {
+  if (item.id < 0) {
+    const dbItem = await createLineItem(item);
+    idMapping[item.id] = dbItem.id;
+  }
+});
+
+// Fix parent-child references
+offer.lineItems.forEach(item => {
+  if (item.parentItemId && item.parentItemId < 0) {
+    item.parentItemId = idMapping[item.parentItemId];
+  }
+});
+```
+
+**Required Frontend Structure (OfferForm):**
+```typescript
+// Parent-first rendering with grouped sub-items
+{lineItems
+  .filter(item => !item.parentItemId)
+  .map(parentItem => (
+    <React.Fragment key={`parent-${parentItem.id}`}>
+      {/* Parent Item */}
+      {/* Sub-Items grouped under parent */}
+      {lineItems
+        .filter(item => item.parentItemId === parentItem.id)
+        .map(subItem => (/* Sub-Item rendering */))}
+    </React.Fragment>
+  ))}
+```
+
+**FORBIDDEN Patterns:**
+```typescript
+// ❌ Direct parent-child insertion without ID mapping
+parentItemId: someNegativeId  
+
+// ❌ Mixed rendering without parent-grouping
+{lineItems.map(item => /* flat rendering */)}
+
+// ❌ Missing item_type in database operations
+```
+
+---
+
+### **FIX-006: Discount System Database Schema**
+- **ID:** `discount-system-database-schema`
+- **Files:** `src/main/db/migrations/013_add_discount_system.ts`, `src/adapters/SQLiteAdapter.ts`, `src/lib/field-mapper.ts`
+- **Pattern:** Complete discount field mapping and persistence
+- **Location:** Migration 013, SQLiteAdapter CREATE/UPDATE operations, field-mapper bidirectional mapping
+- **First Implemented:** v1.0.13
+- **Last Verified:** v1.0.13
+- **Status:** ✅ ACTIVE
+
+**Required Database Schema (Migration 013):**
+```sql
+ALTER TABLE offers ADD COLUMN discount_type TEXT DEFAULT NULL;
+ALTER TABLE offers ADD COLUMN discount_value REAL DEFAULT NULL;
+ALTER TABLE offers ADD COLUMN discount_amount REAL DEFAULT NULL;
+ALTER TABLE offers ADD COLUMN subtotal_before_discount REAL DEFAULT NULL;
+
+ALTER TABLE invoices ADD COLUMN discount_type TEXT DEFAULT NULL;
+ALTER TABLE invoices ADD COLUMN discount_value REAL DEFAULT NULL;
+ALTER TABLE invoices ADD COLUMN discount_amount REAL DEFAULT NULL;
+ALTER TABLE invoices ADD COLUMN subtotal_before_discount REAL DEFAULT NULL;
+```
+
+**Required Field Mapping (field-mapper.ts):**
+```typescript
+discountType: 'discount_type',
+discountValue: 'discount_value',
+discountAmount: 'discount_amount',
+subtotalBeforeDiscount: 'subtotal_before_discount'
+```
+
+**Required Database Operations (SQLiteAdapter.ts):**
+```typescript
+// CREATE operations MUST include all discount fields
+INSERT INTO offers (..., discount_type, discount_value, discount_amount, subtotal_before_discount)
+VALUES (..., ?, ?, ?, ?)
+
+// UPDATE operations MUST include all discount fields  
+UPDATE offers SET ..., discount_type = ?, discount_value = ?, discount_amount = ?, subtotal_before_discount = ?
+WHERE id = ?
+```
+
+**FORBIDDEN Patterns:**
+```typescript
+// ❌ Missing discount fields in CREATE/UPDATE operations
+INSERT INTO offers (...) VALUES (...) // without discount fields
+
+// ❌ Partial field mapping
+// Missing any of: discountType, discountValue, discountAmount, subtotalBeforeDiscount
+
+// ❌ Schema changes without migration
+// Manual ALTER TABLE without proper migration versioning
+```
+
+---
+
+### **FIX-007: PDF Theme System Parameter-Based**
+- **ID:** `pdf-theme-system-parameter-based`
+- **Files:** `src/services/PDFService.ts`, `electron/main.ts`
+- **Pattern:** Parameter-based theme passing instead of DOM inspection
+- **Location:** PDFService getCurrentPDFTheme() method, main.ts PDF template generation
+- **First Implemented:** v1.0.13
+- **Last Verified:** v1.0.13  
+- **Status:** ✅ ACTIVE
+
+**Required Theme Mapping (PDFService.ts):**
+```typescript
+private getThemeColor(theme: string): string {
+  const themeColors: Record<string, string> = {
+    'default': '#2D5016',     // Standard - Tannengrün
+    'sage': '#9CAF88',        // Salbeigrün  
+    'sky': '#87CEEB',         // Himmelblau
+    'lavender': '#DDA0DD',    // Lavendel
+    'peach': '#FFCBA4',       // Pfirsich
+    'rose': '#FFB6C1'         // Rosé
+  };
+  return themeColors[theme] || themeColors['default'];
+}
+```
+
+**Required Parameter Passing:**
+```typescript
+// ✅ Parameter-based theme detection
+getCurrentPDFTheme(): string {
+  return this.currentTheme || 'default';
+}
+```
+
+**FORBIDDEN Patterns:**
+```typescript
+// ❌ DOM-based theme detection in PDF context
+if (document.body.classList.contains('theme-lavender')) {
+  return 'lavender';
+}
+
+// ❌ Incomplete theme mapping (missing any of 6 themes)
+const themeColors = { 'lavender': '#DDA0DD' }; // Missing others
+
+// ❌ Cross-process DOM access
+document.body.classList // in Main Process context
+```
+
 ---
 
 ## 🔍 VALIDATION RULES FOR KI
@@ -141,11 +306,11 @@ win.loadURL('http://localhost:5174')
 
 ## 📊 FIX HISTORY
 
-| Version | WriteStream Fix | File Flush Fix | Event Handler Fix | Port Fix | Status |
-|---------|----------------|----------------|-------------------|----------|---------|
-| v1.0.11 | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | Partial |
-| v1.0.12 | ❌ LOST | ❌ LOST | ✅ Added | ✅ Added | Regression |
-| v1.0.13 | ✅ Restored | ✅ Restored | ✅ Present | ✅ Present | Complete |
+| Version | WriteStream Fix | File Flush Fix | Event Handler Fix | Port Fix | Offer FK Fix | Discount Schema | PDF Theme Fix | Status |
+|---------|----------------|----------------|-------------------|----------|--------------|-----------------|---------------|---------|
+| v1.0.11 | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Partial |
+| v1.0.12 | ❌ LOST | ❌ LOST | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | Regression |
+| v1.0.13 | ✅ Restored | ✅ Restored | ✅ Present | ✅ Present | ✅ Added | ✅ Added | ✅ Added | Complete |
 
 ---
 
@@ -174,6 +339,6 @@ win.loadURL('http://localhost:5174')
 - Patterns evolve (with backward compatibility)
 - New validation rules are needed
 
-**Last Updated:** 2025-10-03
+**Last Updated:** 2025-10-03 (Added FIX-006: Discount System Database Schema, FIX-007: PDF Theme System Parameter-Based)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/validate-critical-fixes.mjs`

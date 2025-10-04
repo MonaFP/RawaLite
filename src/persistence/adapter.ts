@@ -55,9 +55,19 @@ export interface OfferLineItem {
   unitPrice: number;
   total: number;
   parentItemId?: number; // Für Sub-Items
+  itemType?: 'standalone' | 'individual_sub' | 'package_import'; // Typ des Items (optional für Backwards-Kompatibilität)
+  sourcePackageId?: number; // Quell-Paket für package_import Items
 }
 
-export interface Offer {
+// Discount interface for offers and invoices
+export interface DocumentDiscount {
+  discountType: 'none' | 'percentage' | 'fixed';
+  discountValue: number; // Prozent (0-100) oder fester Betrag
+  discountAmount: number; // Berechneter Rabatt-Betrag (2 Dezimalstellen)
+  subtotalBeforeDiscount: number; // Zwischensumme vor Rabatt
+}
+
+export interface Offer extends DocumentDiscount {
   id: number;
   offerNumber: string;
   customerId: number;
@@ -88,7 +98,7 @@ export interface InvoiceLineItem {
   parentItemId?: number; // Für Sub-Items
 }
 
-export interface Invoice {
+export interface Invoice extends DocumentDiscount {
   id: number;
   invoiceNumber: string;
   customerId: number;
@@ -107,6 +117,53 @@ export interface Invoice {
   paidAt?: string;
   overdueAt?: string;
   cancelledAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Activity {
+  id: number;
+  title: string;
+  description?: string;
+  hourlyRate: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TimesheetActivity {
+  id: number;
+  timesheetId: number;
+  activityId?: number; // Optional: Bezug zu Activity template
+  title: string;
+  description?: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  hours: number;
+  hourlyRate: number;
+  total: number;
+  isBreak: boolean; // Pause oder produktive Zeit
+}
+
+export interface Timesheet {
+  id: number;
+  timesheetNumber: string;
+  customerId: number;
+  title: string;
+  status: 'draft' | 'sent' | 'accepted' | 'rejected';
+  startDate: string;
+  endDate: string;
+  activities: TimesheetActivity[];
+  subtotal: number;
+  vatRate: number;
+  vatAmount: number;
+  total: number;
+  notes?: string;
+  // Status-Datum Felder
+  sentAt?: string;
+  acceptedAt?: string;
+  rejectedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -145,4 +202,18 @@ export interface PersistenceAdapter {
   createInvoice(data: Omit<Invoice, "id" | "createdAt" | "updatedAt">): Promise<Invoice>;
   updateInvoice(id: number, patch: Partial<Invoice>): Promise<Invoice>;
   deleteInvoice(id: number): Promise<void>;
+
+  // Activities
+  listActivities(): Promise<Activity[]>;
+  getActivity(id: number): Promise<Activity | null>;
+  createActivity(data: Omit<Activity, "id" | "createdAt" | "updatedAt">): Promise<Activity>;
+  updateActivity(id: number, patch: Partial<Activity>): Promise<Activity>;
+  deleteActivity(id: number): Promise<void>;
+
+  // Timesheets
+  listTimesheets(): Promise<Timesheet[]>;
+  getTimesheet(id: number): Promise<Timesheet | null>;
+  createTimesheet(data: Omit<Timesheet, "id" | "createdAt" | "updatedAt">): Promise<Timesheet>;
+  updateTimesheet(id: number, patch: Partial<Timesheet>): Promise<Timesheet>;
+  deleteTimesheet(id: number): Promise<void>;
 }

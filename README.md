@@ -67,6 +67,7 @@ pnpm dev                # Startet Vite + Electron
 
 # Testing
 pnpm test              # Unit Tests (Vitest)
+pnpm test:critical-fixes  # Critical Fix Regression Tests
 pnpm e2e               # E2E Tests (Playwright)
 
 # Linting & Formatting
@@ -76,7 +77,39 @@ pnpm typecheck         # TypeScript Check
 # Production Build
 pnpm build             # Build für Production
 pnpm dist              # Electron Installer erstellen
+
+# 🛡️ Fix Preservation System
+pnpm validate:critical-fixes  # Validate critical code patterns
+pnpm safe:version patch       # Safe version bump with validation
+pnpm safe:dist               # Safe build with critical fix validation
 ```
+
+### 🛡️ **Critical Fix Preservation System**
+
+RawaLite nutzt ein **systematisches Fix-Preservation System** um kritische Bugfixes dauerhaft zu schützen:
+
+- **📋 Central Registry** - [`docs/00-meta/CRITICAL-FIXES-REGISTRY.md`](docs/00-meta/CRITICAL-FIXES-REGISTRY.md)
+- **🔍 Automated Validation** - Pattern-Detection bei jedem Build
+- **🧪 Regression Tests** - Unit Tests für kritische Code-Patterns  
+- **🚫 Pre-commit Hooks** - Automatische Validation vor Git-Commits
+- **🤖 KI Guidelines** - GitHub Copilot Integration für Entwickler-KIs
+
+**Verwendung:**
+```bash
+# Vor Version-Updates:
+pnpm validate:critical-fixes  # ✅ Muss erfolgreich sein
+pnpm safe:version patch       # Verwendet Validation automatisch
+
+# Bei Code-Änderungen:
+# Git pre-commit hook validiert automatisch
+git commit -m "..."          # Läuft validation + tests
+```
+
+**Geschützte Fixes:**
+- WriteStream race condition (Download-Verification)
+- File system flush delays (Update-System)  
+- Event handler race conditions (Installation)
+- Port consistency (Development environment)
 
 ## 🗄️ **Database**
 

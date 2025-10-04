@@ -4,9 +4,10 @@ import { InvoiceForm } from '../components/InvoiceForm';
 import { useInvoices } from '../hooks/useInvoices';
 import { useCustomers } from '../hooks/useCustomers';
 import { useOffers } from '../hooks/useOffers';
-import { useSettings } from '../hooks/useSettings';
+import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
+import { useTheme } from '../contexts/ThemeContext';
 import { useNotifications } from '../contexts/NotificationContext';
-import { ExportService } from '../services/ExportService';
+import { PDFService } from '../services/PDFService';
 import type { Invoice } from '../persistence/adapter';
 
 interface RechnungenPageProps {
@@ -14,10 +15,11 @@ interface RechnungenPageProps {
 }
 
 export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageProps) {
-  const { invoices, loading, error, createInvoice, updateInvoice, deleteInvoice } = useInvoices();
+  const { settings, loading, error } = useUnifiedSettings();
+  const { invoices, loading: invoicesLoading, error: invoicesError, createInvoice, updateInvoice, deleteInvoice } = useInvoices();
   const { customers } = useCustomers();
   const { offers } = useOffers();
-  const { settings } = useSettings();
+  const { currentTheme } = useTheme(); // Add current theme access
   const { showSuccess, showError } = useNotifications();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Invoice | null>(null);
@@ -189,30 +191,40 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
   const handleExportPDF = async (invoice: Invoice) => {
     const customer = customers.find(c => c.id === invoice.customerId);
     if (!customer) {
-      alert('Kunde nicht gefunden');
+      showError('Kunde nicht gefunden');
       return;
     }
 
     try {
-      await ExportService.exportInvoiceToPDF(invoice, customer, settings, false); // false = direct download
+      const result = await PDFService.exportInvoiceToPDF(invoice, customer, settings, false, currentTheme); // false = direct download
+      if (result.success) {
+        showSuccess(`PDF erfolgreich erstellt: ${result.filePath}`);
+      } else {
+        showError(`PDF Export fehlgeschlagen: ${result.error}`);
+      }
     } catch (error) {
       console.error('PDF Export failed:', error);
-      alert('PDF Export fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+      showError('PDF Export fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
     }
   };
 
   const handlePreviewPDF = async (invoice: Invoice) => {
     const customer = customers.find(c => c.id === invoice.customerId);
     if (!customer) {
-      alert('Kunde nicht gefunden');
+      showError('Kunde nicht gefunden');
       return;
     }
 
     try {
-      await ExportService.exportInvoiceToPDF(invoice, customer, settings, true); // true = preview only
+      const result = await PDFService.exportInvoiceToPDF(invoice, customer, settings, true, currentTheme); // true = preview only
+      if (result.success) {
+        showSuccess('PDF Vorschau geöffnet');
+      } else {
+        showError(`PDF Vorschau fehlgeschlagen: ${result.error}`);
+      }
     } catch (error) {
       console.error('PDF Preview failed:', error);
-      alert('PDF Vorschau fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+      showError('PDF Vorschau fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
     }
   };
 

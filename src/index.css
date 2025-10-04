@@ -16,6 +16,73 @@
   --sidebar-green-hover: #0f2419; /* Dunklere Variante für Hover-Effekte */
   --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
   --main-bg-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+  
+  /* Theme-unabhängige Basis-Variablen */
+  --accent-hover: var(--sidebar-green-hover);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;
+  --text-secondary: #374151;
+}
+
+/* 🎨 Beautiful Pastel Themes - v1.5.2 - ORIGINALE DEZENTE PASTELLTÖNE */
+[data-theme="sage"] {
+  --accent: #7dd3a0;                   /* Original Salbeigrün-Akzent */
+  --accent-hover: #6bb98a;             /* Dunklerer Hover */
+  --sidebar-bg: linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%);
+  --sidebar-green: #4a5d5a;
+  --sidebar-green-hover: #3a4d4a;
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;            /* Dunkle Kontrastfarbe */
+  --text-secondary: #475569;           /* Sekundärfarbe */
+}
+
+[data-theme="sky"] {
+  --accent: #87ceeb;                   /* Original Himmelblau-Akzent */
+  --accent-hover: #6bb5d1;             /* Dunklerer Hover */
+  --sidebar-bg: linear-gradient(160deg, #4a5b6b 0%, #3d4e5e 40%, #324151 100%);
+  --sidebar-green: #4a5b6b;
+  --sidebar-green-hover: #3d4e5e;
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;            /* Dunkle Kontrastfarbe */
+  --text-secondary: #475569;           /* Sekundärfarbe */
+}
+
+[data-theme="lavender"] {
+  --accent: #b19cd9;                   /* Original Lavendel-Akzent */
+  --accent-hover: #9a82c7;             /* Dunklerer Hover */
+  --sidebar-bg: linear-gradient(160deg, #5a4d6b 0%, #4d405e 40%, #403351 100%);
+  --sidebar-green: #5a4d6b;
+  --sidebar-green-hover: #4d405e;
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;            /* Dunkle Kontrastfarbe */
+  --text-secondary: #475569;           /* Sekundärfarbe */
+}
+
+[data-theme="peach"] {
+  --accent: #f4a28c;                   /* Original Pfirsich-Akzent */
+  --accent-hover: #e6906f;             /* Dunklerer Hover */
+  --sidebar-bg: linear-gradient(160deg, #6b5a4d 0%, #5e4d40 40%, #514033 100%);
+  --sidebar-green: #6b5a4d;
+  --sidebar-green-hover: #5e4d40;
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;            /* Dunkle Kontrastfarbe */
+  --text-secondary: #475569;           /* Sekundärfarbe */
+}
+
+[data-theme="rose"] {
+  --accent: #e6a8b8;                   /* Original Rosé-Akzent */
+  --accent-hover: #d48ca0;             /* Dunklerer Hover */
+  --sidebar-bg: linear-gradient(160deg, #6b4d5a 0%, #5e4050 40%, #513343 100%);
+  --sidebar-green: #6b4d5a;
+  --sidebar-green-hover: #5e4050;
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;            /* Dunkle Kontrastfarbe */
+  --text-secondary: #475569;           /* Sekundärfarbe */
 }
 
 *{box-sizing:border-box}
@@ -37,6 +104,31 @@ body{
   min-height:100%;
 }
 
+/* 🧭 Enhanced Navigation - Header Mode (200px Sidebar) */
+[data-navigation-mode="header"] .app {
+  grid-template-columns: 200px 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+}
+
+/* 🧭 Enhanced Navigation - Sidebar Mode (240px Sidebar) */
+[data-navigation-mode="sidebar"] .app {
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 80px 1fr; /* Höherer Header für Statistiken */
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+}
+
+/* 🧭 Enhanced Navigation - Full Sidebar Mode (240px Sidebar) */
+[data-navigation-mode="full-sidebar"] .app {
+  grid-template-columns: 240px 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+}
+
 .sidebar{
   grid-area: sidebar;
   background: var(--sidebar-bg);
@@ -46,6 +138,14 @@ body{
   top:0;
   min-height:100vh;
   box-shadow: 2px 0 10px rgba(0,0,0,.2);
+}
+
+/* Compact Sidebar Styles for Header Mode */
+.compact-sidebar {
+  width: 200px !important;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
 }
 
 .brand{
@@ -94,7 +194,7 @@ body{
 .main{
   grid-area: main;
   padding: 18px 20px 40px;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%);
+  background: var(--main-bg, linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%));
   background-attachment: fixed;
   position: relative;
 }
@@ -115,13 +215,13 @@ body{
 }
 
 .card{
-  background: rgba(255,255,255,0.98);
+  background: var(--card-bg, rgba(255,255,255,0.98));
   border:1px solid rgba(0,0,0,.12);
   border-radius:14px;
   padding:16px;
   box-shadow: 0 10px 30px rgba(0,0,0,.15), 0 1px 8px rgba(0,0,0,.08);
   backdrop-filter: blur(10px);
-  color: #1e293b;
+  color: var(--text-primary, #1e293b);
   position: relative;
   z-index: 1;
 }
@@ -158,8 +258,12 @@ body{
 }
 
 .btn-primary {
-  background: var(--sidebar-green);
+  background: var(--accent, var(--sidebar-green));
   color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover, var(--sidebar-green-hover));
 }
 
 .btn-success {
@@ -186,19 +290,19 @@ body{
 .card input, .card textarea, .card select {
   background: rgba(255,255,255,0.9) !important;
   border: 1px solid rgba(0,0,0,.2) !important;
-  color: #1e293b !important;
+  color: var(--text-primary, #1e293b) !important;
   border-radius: 6px !important;
   padding: 8px 12px !important;
 }
 
 .card input:focus, .card textarea:focus, .card select:focus {
   outline: none !important;
-  border-color: var(--sidebar-green) !important;
-  box-shadow: 0 0 0 3px rgba(30, 58, 46, 0.1) !important;
+  border-color: var(--accent, var(--sidebar-green)) !important;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 30, 58, 46), 0.1) !important;
 }
 
 .card label {
-  color: #374151 !important;
+  color: var(--text-secondary, #374151) !important;
   font-weight: 600 !important;
 }
 
@@ -215,10 +319,10 @@ body{
   opacity:.9; 
   font-weight:600; 
   background: rgba(0,0,0,.03);
-  color: #374151;
+  color: var(--text-secondary, #374151);
 }
 .table td {
-  color: #1f2937;
+  color: var(--text-primary, #1f2937);
 }
 .table tr:hover {
   background: rgba(0,0,0,.02);

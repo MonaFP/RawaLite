@@ -9,6 +9,9 @@ export type {
   Package,
   Offer,
   Invoice,
+  Activity,
+  Timesheet,
+  TimesheetActivity,
   PersistenceAdapter
 } from './persistence/adapter';
 

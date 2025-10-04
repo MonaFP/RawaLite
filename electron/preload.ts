@@ -97,6 +97,11 @@ contextBridge.exposeInMainWorld('rawalite', {
         success: boolean;
         error?: string;
       }>,
+    create: (id: string, circle: any) => 
+      ipcRenderer.invoke('nummernkreis:create', id, circle) as Promise<{
+        success: boolean;
+        error?: string;
+      }>,
     getNext: (circleId: string) => 
       ipcRenderer.invoke('nummernkreis:getNext', circleId) as Promise<{
         success: boolean;
@@ -148,5 +153,44 @@ contextBridge.exposeInMainWorld('rawalite', {
       ipcRenderer.invoke('updates:openDownloadFolder') as Promise<void>,
     verifyUpdateFile: (filePath: string) => 
       ipcRenderer.invoke('updates:verifyFile', filePath) as Promise<boolean>,
+  },
+});
+
+// 📄 PDF API (v1.7.5 Rollback) - Separate namespace for compatibility
+contextBridge.exposeInMainWorld('electronAPI', {
+  pdf: {
+    generate: (options: {
+      templateType: 'offer' | 'invoice' | 'timesheet';
+      data: {
+        offer?: any;
+        invoice?: any;
+        timesheet?: any;
+        customer: any;
+        settings: any;
+        currentDate?: string;
+        logo?: string | null;
+      };
+      theme?: any;
+      options: {
+        filename: string;
+        previewOnly: boolean;
+        enablePDFA: boolean;
+        validateCompliance: boolean;
+      };
+    }) => 
+      ipcRenderer.invoke('pdf:generate', options) as Promise<{
+        success: boolean;
+        filePath?: string;
+        previewUrl?: string;
+        fileSize?: number;
+        error?: string;
+      }>,
+    getStatus: () => 
+      ipcRenderer.invoke('pdf:getStatus') as Promise<{
+        electronAvailable: boolean;
+        ghostscriptAvailable: boolean;
+        veraPDFAvailable: boolean;
+        pdfa2bSupported: boolean;
+      }>,
   },
 });

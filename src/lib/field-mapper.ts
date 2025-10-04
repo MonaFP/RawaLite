@@ -31,6 +31,12 @@ export class FieldMapper {
     'addressZip': 'address_zip',
     'addressCountry': 'address_country',
     'taxNumber': 'tax_number',
+    'taxOffice': 'tax_office',
+    
+    // Bankdaten Felder (KRITISCH für Settings)
+    'bankName': 'bank_name',
+    'bankAccount': 'bank_account',
+    'bankBic': 'bank_bic',
     
     // Package Felder (KRITISCH - waren vorher nicht definiert!)
     'internalTitle': 'internal_title',
@@ -53,11 +59,27 @@ export class FieldMapper {
     'invoiceId': 'invoice_id',
     'vatRate': 'vat_rate',
     'vatAmount': 'vat_amount',
+    'itemType': 'item_type',
+    'sourcePackageId': 'source_package_id',
+    
+    // Timesheet & Activity Felder (KRITISCH für Zeiterfassung)
+    'timesheetId': 'timesheet_id',
+    'timesheetNumber': 'timesheet_number',
+    'activityId': 'activity_id',
+    'startDate': 'start_date',
+    'endDate': 'end_date',
+    'hourlyRate': 'hourly_rate',
     
     // Numbering Circles & Numbers
     'lastNumber': 'last_number',
     'offerNumber': 'offer_number',
     'invoiceNumber': 'invoice_number',
+    
+    // Discount System Felder (KRITISCH für Rabatt-Funktionalität)
+    'discountType': 'discount_type',
+    'discountValue': 'discount_value',
+    'discountAmount': 'discount_amount',
+    'subtotalBeforeDiscount': 'subtotal_before_discount',
     
     // Tabellennamen (für SQL-Queries)
     'packageLineItems': 'package_line_items',

@@ -5,6 +5,7 @@ import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useLoading } from '../contexts/LoadingContext';
 import { ValidationError, handleError } from '../lib/errors';
+import { calculateDocumentTotals, validateDiscount, formatCurrency } from '../lib/discount-calculator';
 
 interface OfferFormProps {
   offer?: Offer;
@@ -39,43 +40,89 @@ export const OfferForm: React.FC<OfferFormProps> = ({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Discount system state
+  const [discountType, setDiscountType] = useState<'none' | 'percentage' | 'fixed'>(offer?.discountType || 'none');
+  const [discountValue, setDiscountValue] = useState(offer?.discountValue || 0);
+
   // Check if Kleinunternehmer mode is enabled
   const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
 
-  // Automatische Berechnung der Summen
-  const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
-  const vatAmount = isKleinunternehmer ? 0 : (subtotal * vatRate) / 100;
-  const total = subtotal + vatAmount;
+  // Calculate totals using discount calculator
+  const totals = calculateDocumentTotals(
+    lineItems.map(item => ({ quantity: item.quantity, unitPrice: item.unitPrice })),
+    discountType,
+    discountValue,
+    vatRate,
+    isKleinunternehmer
+  );
 
   const addLineItem = () => {
+    // Use consistent negative IDs based on array length to avoid ID conflicts
+    const newId = -(lineItems.length + 1000); // Start from -1000 and go down
+    console.log('🆕 Creating new line item with stable ID:', newId);
     const newItem: OfferLineItem = {
-      id: Date.now(),
+      id: newId,
       title: '',
       description: '',
       quantity: 1,
       unitPrice: 0,
       total: 0,
-      parentItemId: undefined
+      parentItemId: undefined,
+      itemType: 'standalone',
+      sourcePackageId: undefined
     };
     setLineItems([...lineItems, newItem]);
   };
 
-  const addSubItem = (parentId: number) => {
+  const addSubItem = (parentId?: number) => {
+    console.log('🟢 GREEN SUB BUTTON - Individual Sub-Item! ParentId:', parentId);
+    
+    // Create new individual sub-item with stable negative ID
+    const newId = -(lineItems.length + 2000); // Start from -2000 for sub-items
+    console.log('🆕 Creating new sub-item with stable ID:', newId, 'for parent:', parentId);
     const newItem: OfferLineItem = {
-      id: Date.now(),
+      id: newId,
       title: '',
       description: '',
       quantity: 1,
       unitPrice: 0,
       total: 0,
-      parentItemId: parentId
+      parentItemId: parentId, // Will be undefined if no parent specified
+      itemType: 'individual_sub', // Individual sub-item type
+      sourcePackageId: undefined
     };
+
+    console.log('📝 Created new individual sub-item:', newItem);
+
+    if (parentId) {
+      // Insert sub-item directly after parent and its existing sub-items
+      const parentIndex = lineItems.findIndex(item => item.id === parentId);
+      if (parentIndex !== -1) {
+        // Find insertion point after all existing sub-items of this parent
+        let insertIndex = parentIndex + 1;
+        while (insertIndex < lineItems.length && lineItems[insertIndex].parentItemId === parentId) {
+          insertIndex++;
+        }
+        
+        console.log('🎯 Inserting at position:', insertIndex, 'with parentItemId:', parentId);
+        
+        // Insert at correct position to maintain parent-child grouping
+        const newItems = [...lineItems];
+        newItems.splice(insertIndex, 0, newItem);
+        setLineItems(newItems);
+        return;
+      }
+    }
+
+    // Add as orphaned sub-item at the end (will show parent selector)
+    console.log('📋 Adding as orphaned sub-item for parent selection');
     setLineItems([...lineItems, newItem]);
   };
 
   const updateLineItem = (id: number, field: keyof OfferLineItem, value: any) => {
-    setLineItems(items => 
-      items.map(item => {
+    setLineItems(items => {
+      // First update the item
+      const updatedItems = items.map(item => {
         if (item.id === id) {
           const updated = { ...item, [field]: value };
           if (field === 'quantity' || field === 'unitPrice') {
@@ -84,8 +131,39 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           return updated;
         }
         return item;
-      })
-    );
+      });
+
+      // If parentItemId was changed, reposition the item
+      if (field === 'parentItemId' && value) {
+        const updatedItem = updatedItems.find(item => item.id === id);
+        if (updatedItem) {
+          console.log('🔄 Repositioning item', id, 'to parent', value);
+          
+          // Remove item from current position
+          const itemsWithoutUpdated = updatedItems.filter(item => item.id !== id);
+          
+          // Find parent position
+          const parentIndex = itemsWithoutUpdated.findIndex(item => item.id === value);
+          if (parentIndex !== -1) {
+            // Find insertion point after all existing sub-items of this parent
+            let insertIndex = parentIndex + 1;
+            while (insertIndex < itemsWithoutUpdated.length && 
+                   itemsWithoutUpdated[insertIndex].parentItemId === value) {
+              insertIndex++;
+            }
+            
+            console.log('📍 Inserting at position', insertIndex, 'after parent at', parentIndex);
+            
+            // Insert at correct position
+            const finalItems = [...itemsWithoutUpdated];
+            finalItems.splice(insertIndex, 0, updatedItem);
+            return finalItems;
+          }
+        }
+      }
+
+      return updatedItems;
+    });
   };
 
   const removeLineItem = (id: number) => {
@@ -99,15 +177,36 @@ export const OfferForm: React.FC<OfferFormProps> = ({
       const pkg = await adapter.getPackage(packageId);
       if (!pkg) return;
 
-      const newItems: OfferLineItem[] = pkg.lineItems.map(item => ({
-        id: Date.now() + Math.random(),
-        title: item.title,
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: item.amount, // PackageLineItem uses 'amount' instead of 'unitPrice'
-        total: item.quantity * item.amount,
-        parentItemId: item.parentItemId
-      }));
+      // Create a mapping from original package item IDs to new stable negative IDs
+      const idMapping: Record<number, number> = {};
+      const baseId = -(lineItems.length + 3000); // Start from -3000 for package imports
+      
+      // First pass: create all items and build ID mapping
+      const newItems: OfferLineItem[] = pkg.lineItems.map((item, index) => {
+        const newId = baseId - index; // Sequential negative IDs
+        idMapping[item.id] = newId;
+        console.log('📦 Package import - mapping original ID', item.id, 'to new ID', newId);
+        
+        return {
+          id: newId,
+          title: item.title,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.amount, // PackageLineItem uses 'amount' instead of 'unitPrice'
+          total: item.quantity * item.amount,
+          parentItemId: undefined, // Will be set in second pass
+          itemType: 'package_import', // Package import type
+          sourcePackageId: pkg.id // Reference to source package
+        };
+      });
+
+      // Second pass: set correct parentItemId references using the mapping
+      newItems.forEach((item, index) => {
+        const originalItem = pkg.lineItems[index];
+        if (originalItem.parentItemId && idMapping[originalItem.parentItemId]) {
+          item.parentItemId = idMapping[originalItem.parentItemId];
+        }
+      });
 
       setLineItems([...lineItems, ...newItems]);
     } catch (error) {
@@ -173,10 +272,16 @@ export const OfferForm: React.FC<OfferFormProps> = ({
       notes: notes.trim(),
       validUntil,
       lineItems,
-      subtotal,
+      // Use new discount calculator results
+      subtotal: totals.subtotalAfterDiscount,
       vatRate,
-      vatAmount,
-      total,
+      vatAmount: totals.vatAmount,
+      total: totals.totalAmount,
+      // Add discount fields
+      discountType,
+      discountValue,
+      discountAmount: totals.discountAmount,
+      subtotalBeforeDiscount: totals.subtotalBeforeDiscount,
       status: offer?.status || 'draft'
     };
 
@@ -198,8 +303,6 @@ export const OfferForm: React.FC<OfferFormProps> = ({
       setIsSubmitting(false);
     }
   }
-
-  const parentItems = lineItems.filter(item => !item.parentItemId);
 
   return (
     <div className="card" style={{maxWidth:"800px", margin:"0 auto"}}>
@@ -288,7 +391,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
 
         {/* Positionen */}
         <div style={{borderTop:"1px solid rgba(255,255,255,.1)", paddingTop:"16px"}}>
-          <div style={{display:"flex", alignItems:"center", gap:"12px", marginBottom:"16px"}}>
+          <div style={{display:"flex", alignItems:"center", gap:"12px", marginBottom:"16px", flexWrap:"wrap"}}>
             <h3 style={{margin:"0", fontSize:"16px", fontWeight:"600"}}>Positionen</h3>
             <select
               onChange={(e) => {
@@ -316,6 +419,15 @@ export const OfferForm: React.FC<OfferFormProps> = ({
             >
               Position hinzufügen
             </button>
+            <button
+              type="button"
+              onClick={() => addSubItem()}
+              disabled={isSubmitting}
+              className="btn btn-success"
+              style={{fontSize:"14px", padding:"6px 12px", backgroundColor:"#16a34a"}}
+            >
+              Sub-Position hinzufügen
+            </button>
           </div>
 
           {fieldErrors.lineItems && (
@@ -325,128 +437,380 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           )}
 
           <div style={{display:"flex", flexDirection:"column", gap:"8px"}}>
-            {parentItems.map(item => (
-              <div key={item.id}>
-                {/* Hauptposition */}
-                <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start", padding:"12px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"6px", background:"rgba(17,24,39,.4)"}}>
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Titel"
-                      value={item.title}
-                      onChange={(e) => updateLineItem(item.id, 'title', e.target.value)}
-                      style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px", marginBottom:"4px"}}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Beschreibung"
-                      value={item.description || ''}
-                      onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
-                      style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="number"
-                      placeholder="Menge"
-                      value={item.quantity}
-                      onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                      style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="number"
-                      placeholder="Einzelpreis"
-                      value={item.unitPrice}
-                      onChange={(e) => updateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                      style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                  <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
-                    €{item.total.toFixed(2)}
-                  </div>
-                  <div style={{display:"flex", gap:"4px"}}>
-                    <button
-                      type="button"
-                      onClick={() => addSubItem(item.id)}
-                      style={{backgroundColor:"var(--ok)", color:"white", border:"none", padding:"4px 8px", borderRadius:"4px", cursor:"pointer", fontSize:"12px"}}
-                    >
-                      Sub
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeLineItem(item.id)}
-                      style={{backgroundColor:"var(--danger)", color:"white", border:"none", padding:"4px 8px", borderRadius:"4px", cursor:"pointer", fontSize:"12px"}}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-
-                {/* Sub-Positionen */}
-                {lineItems
-                  .filter(subItem => subItem.parentItemId === item.id)
-                  .map(subItem => (
-                    <div key={subItem.id} style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start", padding:"12px", marginLeft:"24px", border:"1px solid rgba(96,165,250,.3)", borderLeft:"4px solid var(--accent)", borderRadius:"6px", background:"rgba(96,165,250,.1)", marginTop:"4px"}}>
+            {/* EXTREME DEBUG VERSION - Render all line items sequentially in their array order */}
+            {lineItems.map((item, index) => {
+              const isSubItem = !!item.parentItemId;
+              
+              // Debug-Logging für Console
+              console.log(`🔍 DEBUG Rendering Item ${item.id}: isSubItem=${isSubItem}, parentId=${item.parentItemId}, title="${item.title}"`);
+              
+              // Parent items (no parentItemId)
+              if (!item.parentItemId) {
+                return (
+                  <div key={`parent-${item.id}`} style={{
+                    border: "3px solid #007bff",
+                    background: "rgba(0,123,255,.2)",
+                    borderRadius: "6px",
+                    position: "relative"
+                  }}>
+                    {/* EXTREME DEBUG LABEL */}
+                    <div style={{
+                      position: "absolute",
+                      top: "-12px",
+                      left: "8px",
+                      background: "#007bff",
+                      color: "white",
+                      padding: "4px 12px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      borderRadius: "4px",
+                      zIndex: 10
+                    }}>
+                      📋 PARENT ITEM - ID: {item.id}
+                    </div>
+                    <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start", padding:"12px"}}>
                       <div>
                         <input
                           type="text"
-                          placeholder="Sub-Titel"
-                          value={subItem.title}
-                          onChange={(e) => updateLineItem(subItem.id, 'title', e.target.value)}
+                          value={item.title}
+                          onChange={(e) => updateLineItem(item.id, 'title', e.target.value)}
+                          placeholder="Titel"
                           style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px", marginBottom:"4px"}}
+                          disabled={isSubmitting}
                         />
-                        <input
-                          type="text"
-                          placeholder="Sub-Beschreibung"
-                          value={subItem.description || ''}
-                          onChange={(e) => updateLineItem(subItem.id, 'description', e.target.value)}
-                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                        />
-                      </div>
-                      <div>
-                        <input
-                          type="number"
-                          placeholder="Menge"
-                          value={subItem.quantity}
-                          onChange={(e) => updateLineItem(subItem.id, 'quantity', parseFloat(e.target.value) || 0)}
-                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                          min="0"
-                          step="0.01"
+                        <textarea
+                          value={item.description || ''}
+                          onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
+                          placeholder="Beschreibung (optional)"
+                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"12px", minHeight:"60px", resize:"vertical"}}
+                          disabled={isSubmitting}
                         />
                       </div>
-                      <div>
-                        <input
-                          type="number"
-                          placeholder="Einzelpreis"
-                          value={subItem.unitPrice}
-                          onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                          min="0"
-                          step="0.01"
-                        />
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => updateLineItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                        min="1"
+                        style={{padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                        disabled={isSubmitting}
+                      />
+                      <input
+                        type="number"
+                        value={item.unitPrice}
+                        onChange={(e) => updateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                        step="0.01"
+                        min="0"
+                        style={{padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                        disabled={isSubmitting}
+                      />
+                      <div style={{padding:"8px", textAlign:"right", fontWeight:"500"}}>
+                        €{item.total.toFixed(2)}
                       </div>
-                      <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
-                        €{subItem.total.toFixed(2)}
-                      </div>
-                      <div>
+                      <div style={{display:"flex", gap:"4px"}}>
                         <button
                           type="button"
-                          onClick={() => removeLineItem(subItem.id)}
-                          style={{backgroundColor:"var(--danger)", color:"white", border:"none", padding:"4px 8px", borderRadius:"4px", cursor:"pointer", fontSize:"12px"}}
+                          onClick={() => addSubItem(item.id)}
+                          disabled={isSubmitting}
+                          className="btn btn-success"
+                          style={{fontSize:"12px", padding:"4px 8px", backgroundColor:"#16a34a"}}
+                          title="Sub-Position hinzufügen"
                         >
-                          ✕
+                          Sub
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeLineItem(item.id)}
+                          disabled={isSubmitting}
+                          className="btn btn-danger"
+                          style={{fontSize:"12px", padding:"4px 8px"}}
+                        >
+                          ×
                         </button>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                );
+              }
+              
+              // Sub-items with parentItemId
+              else if (item.parentItemId) {
+                return (
+                  <div key={`sub-${item.id}`} style={{
+                    marginLeft: "120px", // EXTREME INDENTATION
+                    border: "4px solid #ff0000",
+                    borderLeft: "8px solid #00ff00",
+                    background: "rgba(255,0,0,.3)",
+                    borderRadius: "6px",
+                    position: "relative"
+                  }}>
+                    {/* EXTREME DEBUG LABEL */}
+                    <div style={{
+                      position: "absolute",
+                      top: "-12px",
+                      left: "8px",
+                      background: "#ff0000",
+                      color: "white",
+                      padding: "4px 12px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      borderRadius: "4px",
+                      zIndex: 10
+                    }}>
+                      🔸 SUB-ITEM - ID: {item.id} → Parent: {item.parentItemId}
+                    </div>
+                    <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start", padding:"12px"}}>
+                      <div>
+                        <input
+                          type="text"
+                          value={item.title}
+                          onChange={(e) => updateLineItem(item.id, 'title', e.target.value)}
+                          placeholder="Sub-Position Titel"
+                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px", marginBottom:"4px"}}
+                          disabled={isSubmitting}
+                        />
+                        <textarea
+                          value={item.description || ''}
+                          onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
+                          placeholder="Beschreibung (optional)"
+                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"12px", minHeight:"40px", resize:"vertical"}}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => updateLineItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                        min="1"
+                        style={{padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                        disabled={isSubmitting}
+                      />
+                      <input
+                        type="number"
+                        value={item.unitPrice}
+                        onChange={(e) => updateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                        step="0.01"
+                        min="0"
+                        style={{padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                        disabled={isSubmitting}
+                      />
+                      <div style={{padding:"8px", textAlign:"right", fontWeight:"500"}}>
+                        €{item.total.toFixed(2)}
+                      </div>
+                      <div style={{display:"flex", gap:"4px"}}>
+                        <button
+                          type="button"
+                          onClick={() => removeLineItem(item.id)}
+                          disabled={isSubmitting}
+                          className="btn btn-danger"
+                          style={{fontSize:"12px", padding:"4px 8px"}}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Orphaned sub-items (itemType === 'individual_sub' but no parentItemId)
+              else if (item.itemType === 'individual_sub') {
+                return (
+                  <div key={`orphan-${item.id}`} style={{
+                    border: "4px dashed #ffa500",
+                    background: "rgba(255,165,0,.3)",
+                    borderRadius: "6px",
+                    padding: "12px",
+                    position: "relative"
+                  }}>
+                    {/* EXTREME DEBUG LABEL */}
+                    <div style={{
+                      position: "absolute",
+                      top: "-12px",
+                      left: "8px",
+                      background: "#ffa500",
+                      color: "white",
+                      padding: "4px 12px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      borderRadius: "4px",
+                      zIndex: 10
+                    }}>
+                      🔗 ORPHANED SUB-ITEM - ID: {item.id}
+                    </div>
+                    <div style={{marginBottom: "8px", color: "var(--accent)", fontSize: "14px", fontWeight: "500"}}>
+                      🔗 Sub-Position ohne Parent - Parent auswählen:
+                    </div>
+                    <div style={{marginBottom: "12px"}}>
+                      <select
+                        value={item.parentItemId || ''}
+                        onChange={(e) => {
+                          const newParentId = e.target.value ? parseInt(e.target.value) : undefined;
+                          updateLineItem(item.id, 'parentItemId', newParentId);
+                        }}
+                        style={{width:"100%", padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                        disabled={isSubmitting}
+                      >
+                        <option value="">-- Parent-Position auswählen --</option>
+                        {lineItems
+                          .filter(pItem => !pItem.parentItemId && pItem.id !== item.id)
+                          .map(parentItem => (
+                            <option key={parentItem.id} value={parentItem.id}>
+                              {parentItem.title || `Position ${parentItem.id}`}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start"}}>
+                      <div>
+                        <input
+                          type="text"
+                          value={item.title}
+                          onChange={(e) => updateLineItem(item.id, 'title', e.target.value)}
+                          placeholder="Sub-Position Titel"
+                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px", marginBottom:"4px"}}
+                          disabled={isSubmitting}
+                        />
+                        <textarea
+                          value={item.description || ''}
+                          onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
+                          placeholder="Beschreibung (optional)"
+                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"12px", minHeight:"40px", resize:"vertical"}}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => updateLineItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                        min="1"
+                        style={{padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                        disabled={isSubmitting}
+                      />
+                      <input
+                        type="number"
+                        value={item.unitPrice}
+                        onChange={(e) => updateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                        step="0.01"
+                        min="0"
+                        style={{padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                        disabled={isSubmitting}
+                      />
+                      <div style={{padding:"8px", textAlign:"right", fontWeight:"500"}}>
+                        €{item.total.toFixed(2)}
+                      </div>
+                      <div style={{display:"flex", gap:"4px"}}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            updateLineItem(item.id, 'itemType', 'standalone');
+                            updateLineItem(item.id, 'parentItemId', undefined);
+                          }}
+                          disabled={isSubmitting}
+                          className="btn btn-secondary"
+                          style={{fontSize:"12px", padding:"4px 8px"}}
+                          title="Als eigenständige Position verwenden"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeLineItem(item.id)}
+                          disabled={isSubmitting}
+                          className="btn btn-danger"
+                          style={{fontSize:"12px", padding:"4px 8px"}}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              
+              return null;
+            })}
+            
+            {/* Fallback wenn keine Items vorhanden */}
+            {lineItems.length === 0 && (
+              <div style={{textAlign:"center", padding:"20px", color:"var(--muted)", fontStyle:"italic"}}>
+                Keine Positionen hinzugefügt. Klicken Sie auf "Position hinzufügen" um zu beginnen.
               </div>
-            ))}
+            )}
+          </div>
+        </div>
+
+        {/* Rabatt-Sektion */}
+        <div style={{borderTop:"1px solid rgba(255,255,255,.1)", paddingTop:"16px"}}>
+          <h3 style={{margin:"0 0 16px 0", color:"var(--accent)", fontSize:"16px"}}>📊 Rabatt</h3>
+          
+          <div style={{display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:"16px", marginBottom:"16px"}}>
+            <div>
+              <label style={{display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px"}}>
+                <input
+                  type="radio"
+                  name="discountType"
+                  value="none"
+                  checked={discountType === 'none'}
+                  onChange={(e) => setDiscountType(e.target.value as 'none')}
+                />
+                <span>Kein Rabatt</span>
+              </label>
+            </div>
+            
+            <div>
+              <label style={{display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px"}}>
+                <input
+                  type="radio"
+                  name="discountType"
+                  value="percentage"
+                  checked={discountType === 'percentage'}
+                  onChange={(e) => setDiscountType(e.target.value as 'percentage')}
+                />
+                <span>Prozentual</span>
+              </label>
+              {discountType === 'percentage' && (
+                <div style={{display:"flex", alignItems:"center", gap:"4px"}}>
+                  <input
+                    type="number"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                    style={{width:"80px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    placeholder="0"
+                  />
+                  <span>%</span>
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <label style={{display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px"}}>
+                <input
+                  type="radio"
+                  name="discountType"
+                  value="fixed"
+                  checked={discountType === 'fixed'}
+                  onChange={(e) => setDiscountType(e.target.value as 'fixed')}
+                />
+                <span>Fester Betrag</span>
+              </label>
+              {discountType === 'fixed' && (
+                <div style={{display:"flex", alignItems:"center", gap:"4px"}}>
+                  <span>€</span>
+                  <input
+                    type="number"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                    style={{width:"100px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -456,8 +820,25 @@ export const OfferForm: React.FC<OfferFormProps> = ({
             <div style={{width:"300px", display:"flex", flexDirection:"column", gap:"8px"}}>
               <div style={{display:"flex", justifyContent:"space-between"}}>
                 <span>Zwischensumme:</span>
-                <span>€{subtotal.toFixed(2)}</span>
+                <span>{formatCurrency(totals.subtotalBeforeDiscount)}</span>
               </div>
+              
+              {/* Rabatt-Anzeige */}
+              {discountType !== 'none' && totals.discountAmount > 0 && (
+                <div style={{display:"flex", justifyContent:"space-between", color:"var(--accent)"}}>
+                  <span>Rabatt ({discountType === 'percentage' ? `${discountValue}%` : 'fester Betrag'}):</span>
+                  <span>-{formatCurrency(totals.discountAmount)}</span>
+                </div>
+              )}
+              
+              {/* Zwischensumme nach Rabatt */}
+              {discountType !== 'none' && totals.discountAmount > 0 && (
+                <div style={{display:"flex", justifyContent:"space-between", borderTop:"1px solid rgba(255,255,255,.1)", paddingTop:"4px"}}>
+                  <span>Netto nach Rabatt:</span>
+                  <span>{formatCurrency(totals.subtotalAfterDiscount)}</span>
+                </div>
+              )}
+              
               {!isKleinunternehmer && (
                 <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                   <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
@@ -473,12 +854,20 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                     />
                     <span>%</span>
                   </div>
-                  <span>€{vatAmount.toFixed(2)}</span>
+                  <span>{formatCurrency(totals.vatAmount)}</span>
                 </div>
               )}
+              
+              {/* Kleinunternehmer Hinweis */}
+              {isKleinunternehmer && (
+                <div style={{fontSize:"12px", color:"var(--muted)", fontStyle:"italic"}}>
+                  (MwSt-frei nach §19 UStG)
+                </div>
+              )}
+              
               <div style={{display:"flex", justifyContent:"space-between", fontWeight:"600", fontSize:"16px", borderTop:"1px solid rgba(255,255,255,.1)", paddingTop:"8px"}}>
                 <span>Gesamtbetrag:</span>
-                <span>€{total.toFixed(2)}</span>
+                <span>{formatCurrency(totals.totalAmount)}</span>
               </div>
             </div>
           </div>

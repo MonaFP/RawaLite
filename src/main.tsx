@@ -8,6 +8,8 @@ import { LoadingProvider, LoadingOverlay } from "./contexts/LoadingContext";
 import { NotificationProvider, NotificationContainer } from "./contexts/NotificationContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
 import { NumberingProvider } from "./contexts/NumberingContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { NavigationProvider } from "./contexts/NavigationContext";
 
 // Import pages
 import DashboardPage from "./pages/DashboardPage";
@@ -16,6 +18,7 @@ import AngebotePage from "./pages/AngebotePage";
 import AngebotDetailPage from "./pages/AngebotDetailPage";
 import PaketePage from "./pages/PaketePage";
 import RechnungenPage from "./pages/RechnungenPage";
+import TimesheetsPage from "./pages/TimesheetsPage";
 import EinstellungenPage from "./pages/EinstellungenPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -50,6 +53,10 @@ const routerConfig = [
         element: <RechnungenPage />,
       },
       {
+        path: "leistungsnachweise",
+        element: <TimesheetsPage />,
+      },
+      {
         path: "einstellungen",
         element: <EinstellungenPage />,
       },
@@ -68,18 +75,22 @@ const router = import.meta.env.PROD
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <LoadingProvider>
-      <NotificationProvider>
-        <PersistenceProvider mode="sqlite">
-          <SettingsProvider>
-            <NumberingProvider>
-              <RouterProvider router={router} />
-              <LoadingOverlay />
-              <NotificationContainer />
-            </NumberingProvider>
-          </SettingsProvider>
-        </PersistenceProvider>
-      </NotificationProvider>
-    </LoadingProvider>
+    <ThemeProvider>
+      <NavigationProvider>
+        <LoadingProvider>
+          <NotificationProvider>
+            <PersistenceProvider mode="sqlite">
+              <SettingsProvider>
+                <NumberingProvider>
+                  <RouterProvider router={router} />
+                  <LoadingOverlay />
+                  <NotificationContainer />
+                </NumberingProvider>
+              </SettingsProvider>
+            </PersistenceProvider>
+          </NotificationProvider>
+        </LoadingProvider>
+      </NavigationProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

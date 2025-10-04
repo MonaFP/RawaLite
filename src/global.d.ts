@@ -73,6 +73,10 @@ declare interface Window {
         success: boolean;
         error?: string;
       }>;
+      create(id: string, circle: any): Promise<{
+        success: boolean;
+        error?: string;
+      }>;
       getNext(circleId: string): Promise<{
         success: boolean;
         data?: string;
@@ -109,6 +113,42 @@ declare interface Window {
       // Utility
       openDownloadFolder(): Promise<void>;
       verifyUpdateFile(filePath: string): Promise<boolean>;
+    };
+  };
+  // 📄 PDF API (v1.7.5 Rollback for native Electron PDF generation)
+  electronAPI?: {
+    pdf?: {
+      generate: (options: {
+        templateType: 'offer' | 'invoice' | 'timesheet';
+        data: {
+          offer?: any;
+          invoice?: any;
+          timesheet?: any;
+          customer: any;
+          settings: any;
+          currentDate?: string;
+          logo?: string | null;
+        };
+        theme?: any;
+        options: {
+          filename: string;
+          previewOnly: boolean;
+          enablePDFA: boolean;
+          validateCompliance: boolean;
+        };
+      }) => Promise<{
+        success: boolean;
+        filePath?: string;
+        previewUrl?: string;
+        fileSize?: number;
+        error?: string;
+      }>;
+      getStatus: () => Promise<{
+        electronAvailable: boolean;
+        ghostscriptAvailable: boolean;
+        veraPDFAvailable: boolean;
+        pdfa2bSupported: boolean;
+      }>;
     };
   };
 }
