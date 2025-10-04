@@ -4,9 +4,10 @@ import { OfferForm } from '../components/OfferForm';
 import { useOffers } from '../hooks/useOffers';
 import { useCustomers } from '../hooks/useCustomers';
 import { usePackages } from '../hooks/usePackages';
-import { useSettings } from '../hooks/useSettings';
+import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
+import { useTheme } from '../contexts/ThemeContext';
 import { useNotifications } from '../contexts/NotificationContext';
-import { ExportService } from '../services/ExportService';
+import { PDFService } from '../services/PDFService';
 import type { Offer } from '../persistence/adapter';
 
 interface AngebotePageProps {
@@ -14,10 +15,11 @@ interface AngebotePageProps {
 }
 
 export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) {
-  const { offers, loading, error, createOffer, updateOffer, deleteOffer } = useOffers();
+  const { settings, loading, error } = useUnifiedSettings();
+  const { offers, loading: offersLoading, error: offersError, createOffer, updateOffer, deleteOffer } = useOffers();
   const { customers } = useCustomers();
   const { packages } = usePackages();
-  const { settings } = useSettings();
+  const { currentTheme } = useTheme(); // Add current theme access
   const { showSuccess, showError } = useNotifications();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Offer | null>(null);
@@ -182,30 +184,42 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const handleExportPDF = async (offer: Offer) => {
     const customer = customers.find(c => c.id === offer.customerId);
     if (!customer) {
-      alert('Kunde nicht gefunden');
+      showError('Kunde nicht gefunden');
       return;
     }
 
     try {
-      await ExportService.exportOfferToPDF(offer, customer, settings, false); // false = direct download
+      const logoData = settings?.companyData?.logo || null;
+      const result = await PDFService.exportOfferToPDF(offer, customer, settings, false, currentTheme, undefined, logoData); // false = direct download
+      if (result.success) {
+        showSuccess(`PDF erfolgreich erstellt: ${result.filePath}`);
+      } else {
+        showError(`PDF Export fehlgeschlagen: ${result.error}`);
+      }
     } catch (error) {
       console.error('PDF Export failed:', error);
-      alert('PDF Export fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+      showError('PDF Export fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
     }
   };
 
   const handlePreviewPDF = async (offer: Offer) => {
     const customer = customers.find(c => c.id === offer.customerId);
     if (!customer) {
-      alert('Kunde nicht gefunden');
+      showError('Kunde nicht gefunden');
       return;
     }
 
     try {
-      await ExportService.exportOfferToPDF(offer, customer, settings, true); // true = preview only
+      const logoData = settings?.companyData?.logo || null;
+      const result = await PDFService.exportOfferToPDF(offer, customer, settings, true, currentTheme, undefined, logoData); // true = preview only
+      if (result.success) {
+        showSuccess('PDF Vorschau geöffnet');
+      } else {
+        showError(`PDF Vorschau fehlgeschlagen: ${result.error}`);
+      }
     } catch (error) {
       console.error('PDF Preview failed:', error);
-      alert('PDF Vorschau fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+      showError('PDF Vorschau fehlgeschlagen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
     }
   };
 

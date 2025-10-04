@@ -78,7 +78,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
       
       {/* Haupt-Statistiken */}
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:16, marginBottom:24}}>
-        <div className="card" style={{background:"linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)"}}>
+        <div className="card" style={{background:"linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%)"}}>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
             <div>
               <div style={{fontSize:"24px", fontWeight:"600", color:"white"}}>{stats.totalCustomers}</div>
@@ -88,7 +88,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
           </div>
         </div>
         
-        <div className="card" style={{background:"linear-gradient(135deg, #059669 0%, #10b981 100%)"}}>
+        <div className="card" style={{background:"linear-gradient(135deg, var(--ok) 0%, #16a34a 100%)"}}>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
             <div>
               <div style={{fontSize:"24px", fontWeight:"600", color:"white"}}>{stats.totalOffers}</div>
@@ -101,7 +101,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
           </div>
         </div>
         
-        <div className="card" style={{background:"linear-gradient(135deg, #dc2626 0%, #ef4444 100%)"}}>
+        <div className="card" style={{background:"linear-gradient(135deg, var(--warn) 0%, #f97316 100%)"}}>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
             <div>
               <div style={{fontSize:"24px", fontWeight:"600", color:"white"}}>{stats.totalInvoices}</div>
@@ -114,7 +114,7 @@ export default function DashboardPage({ title = "Dashboard" }: DashboardPageProp
           </div>
         </div>
         
-        <div className="card" style={{background:"linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)"}}>
+        <div className="card" style={{background:"linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%)", opacity: 0.8}}>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
             <div>
               <div style={{fontSize:"24px", fontWeight:"600", color:"white"}}>{stats.totalPackages}</div>

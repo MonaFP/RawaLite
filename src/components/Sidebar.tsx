@@ -1,13 +1,15 @@
 import { NavLink } from "react-router-dom";
-import { useSettings } from "../contexts/SettingsContext";
+import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
 import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
+import { useTimesheets } from "../hooks/useTimesheets";
 import rawaliteLogo from '../assets/rawalite-logo.png';
 
 export default function Sidebar(){
-  const { settings, loading, error } = useSettings();
+  const { settings, loading, error } = useUnifiedSettings();
   const { offers } = useOffers();
   const { invoices } = useInvoices();
+  const { timesheets } = useTimesheets();
 
   // Statistiken berechnen
   const stats = {
@@ -21,10 +23,16 @@ export default function Sidebar(){
     paidInvoices: invoices.filter(invoice => invoice.status === 'paid').length,
     unpaidInvoices: invoices.filter(invoice => invoice.status === 'draft' || invoice.status === 'sent' || invoice.status === 'overdue').length,
     
+    // Leistungsnachweise
+    totalTimesheets: timesheets.length,
+    draftTimesheets: timesheets.filter(timesheet => timesheet.status === 'draft').length,
+    acceptedTimesheets: timesheets.filter(timesheet => timesheet.status === 'accepted').length,
+    
     // Finanzen
     totalOfferValue: offers.reduce((sum, offer) => sum + offer.total, 0),
     paidAmount: invoices.filter(inv => inv.status === 'paid').reduce((sum, invoice) => sum + invoice.total, 0),
     unpaidAmount: invoices.filter(inv => inv.status !== 'paid').reduce((sum, invoice) => sum + invoice.total, 0),
+    timesheetAmount: timesheets.filter(ts => ts.status === 'accepted').reduce((sum, timesheet) => sum + timesheet.total, 0),
   };
 
   const items = [
@@ -33,6 +41,7 @@ export default function Sidebar(){
     { to: "/pakete", label: "Pakete" },
     { to: "/angebote", label: "Angebote" },
     { to: "/rechnungen", label: "Rechnungen" },
+    { to: "/leistungsnachweise", label: "Leistungsnachweise" },
     { to: "/einstellungen", label: "Einstellungen" }
   ];
   return (
@@ -139,7 +148,7 @@ export default function Sidebar(){
           {!loading && settings.companyData?.name ? settings.companyData.name : "[Ihr Firmenname]"}
         </div>
 
-        {/* Angebote & Rechnungen Übersicht - immer anzeigen */}
+        {/* Angebote & Rechnungen & Leistungsnachweise Übersicht - immer anzeigen */}
         <div style={{ 
           display: "flex", 
           flexDirection: "column", 
@@ -223,6 +232,45 @@ export default function Sidebar(){
               <span>{stats.unpaidInvoices} Offen</span>
             </div>
           </div>
+
+          {/* Leistungsnachweise */}
+          <div style={{
+            padding: "8px 10px",
+            backgroundColor: "rgba(255,255,255,0.03)",
+            borderRadius: "6px",
+            border: "1px solid rgba(255,255,255,0.08)"
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "3px"
+            }}>
+              <span style={{ 
+                fontSize: "12px", 
+                color: "rgba(255,255,255,0.7)",
+                fontWeight: "500"
+              }}>
+                ⏱️ Leistungsnachweise
+              </span>
+              <span style={{ 
+                fontSize: "13px", 
+                color: "rgba(255,255,255,0.9)",
+                fontWeight: "600"
+              }}>
+                {stats.totalTimesheets}
+              </span>
+            </div>
+            <div style={{
+              fontSize: "10px",
+              color: "rgba(255,255,255,0.5)",
+              display: "flex",
+              justifyContent: "space-between"
+            }}>
+              <span>{stats.draftTimesheets} Entwürfe</span>
+              <span>{stats.acceptedTimesheets} Akzeptiert</span>
+            </div>
+          </div>
         </div>
 
         {/* Finanzübersicht - immer anzeigen */}
@@ -270,6 +318,19 @@ export default function Sidebar(){
                 fontWeight: "600" 
               }}>
                 €{stats.unpaidAmount.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </span>
+            </div>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px"
+            }}>
+              <span style={{ color: "rgba(255,255,255,0.6)" }}>Leistungen:</span>
+              <span style={{ 
+                color: "rgba(255,255,255,0.8)", 
+                fontWeight: "600" 
+              }}>
+                €{stats.timesheetAmount.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </span>
             </div>
           </div>

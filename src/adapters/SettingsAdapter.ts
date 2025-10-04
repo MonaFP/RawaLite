@@ -35,6 +35,7 @@ export class SettingsAdapter {
         bankName: mappedRow.bankName || '',
         bankAccount: mappedRow.bankAccount || '',
         bankBic: mappedRow.bankBic || '',
+        taxOffice: mappedRow.taxOffice || '', // taxOffice field
         logo: mappedRow.logo || ''
       };
     } else {
@@ -97,6 +98,14 @@ export class SettingsAdapter {
   }
 
   async updateCompanyData(companyData: CompanyData): Promise<void> {
+    console.log('🔧 SettingsAdapter.updateCompanyData called with:', companyData);
+    console.log('🔧 Bank fields received:', {
+      bankName: companyData.bankName,
+      bankAccount: companyData.bankAccount, 
+      bankBic: companyData.bankBic,
+      taxOffice: companyData.taxOffice
+    });
+    
     // Use central field mapper for snake_case conversion
     const sqliteData = mapToSQL({
       companyName: companyData.name,
@@ -112,8 +121,18 @@ export class SettingsAdapter {
       bankName: companyData.bankName,
       bankAccount: companyData.bankAccount,
       bankBic: companyData.bankBic,
+      taxOffice: companyData.taxOffice, // taxOffice field
       logo: companyData.logo
     });
+    
+    console.log('🔧 After mapToSQL conversion:', sqliteData);
+    console.log('🔧 SQL bank fields:', {
+      bank_name: sqliteData.bank_name,
+      bank_account: sqliteData.bank_account,
+      bank_bic: sqliteData.bank_bic,
+      tax_office: sqliteData.tax_office
+    });
+    
     const timestamp = new Date().toISOString();
 
     // Update or insert company data via DbClient.exec
@@ -121,9 +140,9 @@ export class SettingsAdapter {
       INSERT OR REPLACE INTO settings (
         id, company_name, street, zip, city, phone, email, website, 
         tax_id, vat_id, kleinunternehmer, bank_name, bank_account, bank_bic, 
-        logo, updated_at
+        tax_office, logo, updated_at
       ) VALUES (
-        1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       )
     `, [
       sqliteData.company_name,
@@ -139,6 +158,7 @@ export class SettingsAdapter {
       sqliteData.bank_name,
       sqliteData.bank_account,
       sqliteData.bank_bic,
+      sqliteData.tax_office,
       sqliteData.logo,
       timestamp
     ]);

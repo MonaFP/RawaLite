@@ -12,6 +12,7 @@ export type CompanyData = {
   bankName?: string;
   bankAccount?: string;
   bankBic?: string;
+  taxOffice?: string; // Finanzamt
   logo?: string; // Base64-encoded Logo
 };
 
@@ -45,6 +46,7 @@ export const defaultSettings: Settings = {
     bankName: '',
     bankAccount: '',
     bankBic: '',
+    taxOffice: '',
     logo: ''
   },
   numberingCircles: [

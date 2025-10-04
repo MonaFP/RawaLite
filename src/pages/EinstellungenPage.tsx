@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { useSettings } from "../contexts/SettingsContext";
+import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useNumbering } from "../contexts/NumberingContext";
@@ -7,18 +7,23 @@ import type { CompanyData, NumberingCircle } from "../lib/settings";
 import { defaultSettings } from "../lib/settings";
 import { UpdateDialog } from "../components/UpdateDialog";
 import { UpdateStatus } from "../components/UpdateStatus";
+import { ThemeSelector } from "../components/ThemeSelector";
+import { NavigationModeSelector } from "../components/NavigationModeSelector";
 
 interface EinstellungenPageProps {
   title?: string;
 }
 
 export default function EinstellungenPage({ title = "Einstellungen" }: EinstellungenPageProps) {
-  const { settings, loading, error, updateCompanyData } = useSettings();
+  const { settings, loading, error, updateCompanyData } = useUnifiedSettings();
   const { circles: numberingCircles, loading: numberingLoading, error: numberingError, updateCircle, getNextNumber } = useNumbering();
   const { adapter } = usePersistence();
   const { showError, showSuccess } = useNotifications();
-  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'updates' | 'maintenance'>('company');
-  const [companyFormData, setCompanyFormData] = useState<CompanyData>(settings.companyData);
+  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'themes' | 'updates' | 'maintenance'>('company');
+  const [companyFormData, setCompanyFormData] = useState<CompanyData>(() => ({
+    ...defaultSettings.companyData,
+    ...settings.companyData
+  }));
   const [numberingFormData, setNumberingFormData] = useState<NumberingCircle[]>(numberingCircles);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -32,6 +37,12 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   // Update form data when settings change
   React.useEffect(() => {
     console.log('🔍 Settings loaded - Logo length:', settings.companyData.logo?.length || 0);
+    console.log('🔍 Bank data from settings:', {
+      bankName: settings.companyData.bankName,
+      bankAccount: settings.companyData.bankAccount,
+      bankBic: settings.companyData.bankBic,
+      taxOffice: settings.companyData.taxOffice
+    });
     setCompanyFormData(settings.companyData);
   }, [settings]);
 
@@ -141,6 +152,12 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const handleBankSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('🏦 Bank form submitted, saving bank data only');
+    console.log('🔍 Current companyFormData:', companyFormData);
+    console.log('🔍 Bank fields specifically:', {
+      bankName: companyFormData.bankName,
+      bankAccount: companyFormData.bankAccount,
+      bankBic: companyFormData.bankBic
+    });
     try {
       setSaving(true);
       await updateCompanyData(companyFormData);
@@ -985,13 +1002,13 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
         <button
           onClick={() => setActiveTab('company')}
           style={{
-            backgroundColor: activeTab === 'company' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
-            color: activeTab === 'company' ? "white" : "#374151",
-            border: activeTab === 'company' ? "1px solid #1e3a2e" : "1px solid rgba(0,0,0,.2)",
+            backgroundColor: activeTab === 'company' ? "var(--accent)" : "rgba(255,255,255,0.8)",
+            color: activeTab === 'company' ? "white" : "var(--text-secondary)",
+            border: activeTab === 'company' ? "1px solid var(--accent)" : "1px solid rgba(0,0,0,.2)",
             padding: "8px 16px",
             borderRadius: "8px 8px 0 0",
             cursor: "pointer",
-            borderBottom: activeTab === 'company' ? "2px solid #1e3a2e" : "2px solid transparent",
+            borderBottom: activeTab === 'company' ? "2px solid var(--accent)" : "2px solid transparent",
             transition: "all 0.2s ease",
             fontWeight: activeTab === 'company' ? "600" : "500"
           }}
@@ -1063,6 +1080,22 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
           Nummernkreise
         </button>
         <button
+          onClick={() => setActiveTab('themes')}
+          style={{
+            backgroundColor: activeTab === 'themes' ? "var(--accent)" : "rgba(255,255,255,0.8)",
+            color: activeTab === 'themes' ? "white" : "var(--text-secondary)",
+            border: activeTab === 'themes' ? "1px solid var(--accent)" : "1px solid rgba(0,0,0,.2)",
+            padding: "8px 16px",
+            borderRadius: "8px 8px 0 0",
+            cursor: "pointer",
+            borderBottom: activeTab === 'themes' ? "2px solid var(--accent)" : "2px solid transparent",
+            transition: "all 0.2s ease",
+            fontWeight: activeTab === 'themes' ? "600" : "500"
+          }}
+        >
+          🎨 Themes
+        </button>
+        <button
           onClick={() => setActiveTab('updates')}
           style={{
             backgroundColor: activeTab === 'updates' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
@@ -1130,7 +1163,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               </label>
               <input
                 type="email"
-                value={companyFormData.email}
+                value={companyFormData.email || ''}
                 onChange={(e) => setCompanyFormData({ ...companyFormData, email: e.target.value })}
                 style={{
                   width: "100%",
@@ -1168,7 +1201,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               </label>
               <input
                 type="tel"
-                value={companyFormData.phone}
+                value={companyFormData.phone || ''}
                 onChange={(e) => setCompanyFormData({ ...companyFormData, phone: e.target.value })}
                 style={{
                   width: "100%",
@@ -1225,7 +1258,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               </label>
               <input
                 type="url"
-                value={companyFormData.website}
+                value={companyFormData.website || ''}
                 onChange={(e) => setCompanyFormData({ ...companyFormData, website: e.target.value })}
                 style={{
                   width: "100%",
@@ -1376,7 +1409,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               </label>
               <input
                 type="text"
-                value={companyFormData.taxNumber}
+                value={companyFormData.taxNumber || ''}
                 onChange={(e) => setCompanyFormData({ ...companyFormData, taxNumber: e.target.value })}
                 style={{
                   width: "100%",
@@ -1395,8 +1428,27 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               </label>
               <input
                 type="text"
-                value={companyFormData.vatId}
+                value={companyFormData.vatId || ''}
                 onChange={(e) => setCompanyFormData({ ...companyFormData, vatId: e.target.value })}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255,255,255,.2)",
+                  backgroundColor: "rgba(255,255,255,.05)",
+                  color: "var(--foreground)"
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                Finanzamt
+              </label>
+              <input
+                type="text"
+                value={companyFormData.taxOffice || ''}
+                onChange={(e) => setCompanyFormData({ ...companyFormData, taxOffice: e.target.value })}
                 style={{
                   width: "100%",
                   padding: "8px",
@@ -1458,7 +1510,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               </label>
               <input
                 type="text"
-                value={companyFormData.bankName}
+                value={companyFormData.bankName || ''}
                 onChange={(e) => setCompanyFormData({ ...companyFormData, bankName: e.target.value })}
                 style={{
                   width: "100%",
@@ -1477,7 +1529,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               </label>
               <input
                 type="text"
-                value={companyFormData.bankBic}
+                value={companyFormData.bankBic || ''}
                 onChange={(e) => setCompanyFormData({ ...companyFormData, bankBic: e.target.value })}
                 style={{
                   width: "100%",
@@ -1496,7 +1548,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               </label>
               <input
                 type="text"
-                value={companyFormData.bankAccount}
+                value={companyFormData.bankAccount || ''}
                 onChange={(e) => setCompanyFormData({ ...companyFormData, bankAccount: e.target.value })}
                 style={{
                   width: "100%",
@@ -1730,6 +1782,17 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               </label>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Themes Tab - Farbthemes */}
+      {activeTab === 'themes' && (
+        <div>
+          <ThemeSelector />
+          
+          <div style={{ margin: '32px 0', borderTop: '1px solid rgba(0,0,0,0.1)' }} />
+          
+          <NavigationModeSelector />
         </div>
       )}
 

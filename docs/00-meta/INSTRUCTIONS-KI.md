@@ -1,6 +1,55 @@
-# RawaLite – Kurz-Instructions für KI
+# RawaLite – Kurz-Instructions für KI**If Critical Pattern Missing:** STOP immediately, re-implement from registry, test thoroughly.
 
-Dies ist die **Kurzfassung** der verbindlichen Projektregeln, optimiert für KI-Prompts.  
+## 📁 DOCUMENTATION STRUCTURE RULES - MANDATORY
+
+**BEFORE CREATING OR MOVING ANY DOCUMENTATION:**
+
+1. **MANDATORY:** Follow docs/ folder structure (00-meta to 13-deprecated)
+2. **MANDATORY:** Check correct folder purpose before placement
+3. **MANDATORY:** Use consistent naming patterns (LESSONS-LEARNED-topic.md)
+4. **MANDATORY:** Update INDEX.md files when adding content
+5. **FORBIDDEN:** Create duplicate files in multiple folders
+6. **FORBIDDEN:** Mix different topics in same folder
+
+**Folder Structure (MUST FOLLOW):**
+```
+docs/
+├── 00-meta/           Meta-documentation, project management
+├── 01-standards/      Code standards, conventions, guidelines  
+├── 02-architecture/   System design, architecture decisions
+├── 03-development/    Development workflows, debugging, setup
+├── 04-testing/        Testing strategies, test documentation
+├── 05-database/       Database design, migrations, schemas
+├── 06-paths/          Path management, file system access
+├── 07-ipc/            IPC communication patterns
+├── 08-ui/             User interface design, components
+├── 09-pdf/            PDF generation, document handling
+├── 10-security/       Security concepts, authentication
+├── 11-deployment/     Deployment, updates, distribution
+├── 12-lessons/        Lessons learned, retrospectives
+└── 13-deprecated/     Deprecated/obsolete content
+```
+
+**File Placement Rules:**
+- **Development workflows** → `03-development/`
+- **Architecture decisions** → `02-architecture/`
+- **Database related** → `05-database/`
+- **Deployment/Updates** → `11-deployment/`
+- **Lessons Learned** → `12-lessons/` (unless topic-specific)
+- **Cross-cutting concerns** → Use **cross-references**, not duplicates
+
+**Naming Standards:**
+- `LESSONS-LEARNED-specific-topic.md` for lessons
+- `INDEX.md` for folder overview (ALL CAPS)
+- Status folders: `/active/`, `/solved/` where applicable
+
+**Cross-Reference Pattern:**
+```markdown
+> **Related:** See [Topic](../folder/file.md) for implementation details
+> **See also:** [Related Topic](../other-folder/related.md)
+```
+
+## 🔑 KernregelnDies ist die **Kurzfassung** der verbindlichen Projektregeln, optimiert für KI-Prompts.  
 Immer strikt befolgen, keine Abweichungen.
 
 WICHTIG – NICHT VERHANDELBAR
@@ -88,20 +137,22 @@ Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
 
 ## ✅ docs-Struktur
 - ** Änderung nur nach Abnahme und Aufforderung durch Entwickler **-
-- ** hier ergänzen/aktualisieren bei neuen Inhalten ** - 
+- **hier ergänzen/aktualisieren bei neuen Inhalten** - 
 docs/
-├── 00-standards/           [INDEX.md + 4 Root-Files + workflows/ + debugging/]
-├── 10-architecture/        [INDEX.md + 5 Root-Files + troubleshooting/ + electron/]
-├── 20-paths/              [INDEX.md + solved/ + active/]
-├── 30-updates/            [INDEX.md + solved/ + active/]
-├── 40-pdf/                [INDEX.md + solved/ + active/]
-├── 50-persistence/        [INDEX.md + 3 Root-Files + migration/ + backup/]
-├── 60-security/           [INDEX.md + ipc/]
-├── 70-reserved/           [INDEX.md + solved/ + active/]
-├── 80-ui-theme/           [INDEX.md + solved/ + active/]
-├── 90-deprecated/         [INDEX.md + solved/ + active/]
-├── 99-glossary/           [INDEX.md + solved/ + active/]
-└── INSTRUCTIONS-KI.md     [bleibt in root]
+├── 00-meta/            Meta-documentation, project management
+├── 01-standards/       Code standards, conventions, guidelines  
+├── 02-architecture/    System design, architecture decisions
+├── 03-development/     Development workflows, debugging, setup
+├── 04-testing/         Testing strategies, test documentation
+├── 05-database/        Database design, migrations, schemas
+├── 06-paths/           Path management, file system access
+├── 07-ipc/             IPC communication patterns
+├── 08-ui/              User interface design, components
+├── 09-pdf/             PDF generation, document handling
+├── 10-security/        Security concepts, authentication
+├── 11-deployment/      Deployment, updates, distribution
+├── 12-lessons/         Lessons learned, retrospectives
+└── 13-deprecated/      Deprecated/obsolete content
 
 # 📄 Patch für `.github/copilot-instructions.md`
 

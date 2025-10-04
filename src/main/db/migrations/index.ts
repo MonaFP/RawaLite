@@ -17,6 +17,11 @@ import * as migration005 from './005_add_packages_numbering';
 import * as migration006 from './006_fix_missing_circles';
 import * as migration007 from './007_fix_packages_invoice_schema';
 import * as migration008 from './008_fix_offers_schema';
+import * as migration009 from './009_add_timesheets';
+import * as migration010 from './010_add_timesheets_numbering';
+import * as migration011 from './011_extend_offer_line_items';
+import * as migration012 from './012_add_tax_office_field';
+import * as migration013 from './013_add_discount_system';
 
 export const migrations: Migration[] = [
   {
@@ -66,14 +71,37 @@ export const migrations: Migration[] = [
     name: '008_fix_offers_schema',
     up: migration008.up,
     down: migration008.down
+  },
+  {
+    version: 9,
+    name: '009_add_timesheets',
+    up: migration009.up,
+    down: migration009.down
+  },
+  {
+    version: 10,
+    name: '010_add_timesheets_numbering',
+    up: migration010.up,
+    down: migration010.down
+  },
+  {
+    version: 11,
+    name: '011_extend_offer_line_items',
+    up: migration011.up,
+    down: migration011.down
+  },
+  {
+    version: 12,
+    name: '012_add_tax_office_field',
+    up: migration012.up,
+    down: migration012.down
+  },
+  {
+    version: 13,
+    name: '013_add_discount_system',
+    up: migration013.up,
+    down: migration013.down
   }
-  // Add future migrations here:
-  // {
-  //   version: 9,
-  //   name: '009_new_migration',
-  //   up: migration009.up,
-  //   down: migration009.down
-  // }
 ];
 
 export default migrations;
