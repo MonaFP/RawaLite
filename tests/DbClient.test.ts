@@ -196,7 +196,8 @@ describe('DbClient', () => {
       const records = await client.getAll('customers', 'name ASC');
 
       expect(mockRawalite.db.query).toHaveBeenCalledWith(
-        'SELECT * FROM customers ORDER BY name ASC'
+        'SELECT * FROM customers ORDER BY name ASC',
+        undefined // ✅ Füge undefined als zweiten Parameter hinzu
       );
       expect(records).toEqual(mockResult);
     });

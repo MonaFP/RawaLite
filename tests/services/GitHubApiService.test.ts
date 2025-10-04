@@ -8,24 +8,25 @@
  * @since GitHub API Migration (Phase 3)
  */
 
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'; // ✅ afterEach hinzugefügt
 import { GitHubApiService } from '../../src/main/services/GitHubApiService';
 import { RateLimitManager } from '../../src/main/services/RateLimitManager';
 
 // Mock fetch global
-global.fetch = jest.fn();
+global.fetch = vi.fn(); // ✅ Vitest vi.fn()
 
 describe('GitHubApiService', () => {
   let service: GitHubApiService;
-  let mockFetch: jest.MockedFunction<typeof fetch>;
+  let mockFetch: ReturnType<typeof vi.fn>; // ✅ Vitest typing
 
   beforeEach(() => {
     service = new GitHubApiService();
-    mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+    mockFetch = fetch as ReturnType<typeof vi.fn>; // ✅ Vitest typing
     mockFetch.mockClear();
   });
 
   describe('getLatestRelease', () => {
-    test('should successfully fetch latest release', async () => {
+    it('should successfully fetch latest release', async () => { // ✅ test → it
       // Arrange
       const mockRelease = {
         tag_name: 'v1.0.8',
@@ -70,7 +71,7 @@ describe('GitHubApiService', () => {
       );
     });
 
-    test('should handle 404 not found', async () => {
+    it('should handle 404 not found', async () => { // ✅ test → it
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -80,7 +81,7 @@ describe('GitHubApiService', () => {
       await expect(service.getLatestRelease()).rejects.toThrow('Not Found');
     });
 
-    test('should handle rate limit (403)', async () => {
+    it('should handle rate limit (403)', async () => { // ✅ test → it
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 403,
@@ -94,7 +95,7 @@ describe('GitHubApiService', () => {
       await expect(service.getLatestRelease()).rejects.toThrow('rate limit exceeded');
     });
 
-    test('should handle network errors', async () => {
+    it('should handle network errors', async () => { // ✅ test → it
       mockFetch.mockRejectedValueOnce(new Error('Network timeout'));
 
       await expect(service.getLatestRelease()).rejects.toThrow('Failed to fetch latest release: Network timeout');
@@ -102,7 +103,7 @@ describe('GitHubApiService', () => {
   });
 
   describe('checkForUpdate', () => {
-    test('should detect available updates', async () => {
+    it('should detect available updates', async () => { // ✅ test → it
       const mockRelease = {
         tag_name: 'v1.0.8',
         name: 'Release 1.0.8',
@@ -125,7 +126,7 @@ describe('GitHubApiService', () => {
       expect(result.latestVersion).toBe('1.0.8');
     });
 
-    test('should not detect updates when current', async () => {
+    it('should not detect updates when current', async () => { // ✅ test → it
       const mockRelease = {
         tag_name: 'v1.0.7',
         name: 'Release 1.0.7',
@@ -153,14 +154,14 @@ describe('RateLimitManager', () => {
 
   beforeEach(() => {
     manager = new RateLimitManager();
-    jest.useFakeTimers();
+    vi.useFakeTimers(); // ✅ jest → vi
   });
 
-  afterEach(() => {
-    jest.useRealTimers();
+  afterEach(() => { // ✅ Import hinzugefügt oben
+    vi.useRealTimers(); // ✅ jest → vi
   });
 
-  test('should allow requests within limit', () => {
+  it('should allow requests within limit', () => { // ✅ test → it
     // Make 59 requests (under limit of 60)
     for (let i = 0; i < 59; i++) {
       expect(manager.canMakeRequest()).toBe(true);
@@ -170,7 +171,7 @@ describe('RateLimitManager', () => {
     expect(manager.getRemainingRequests()).toBe(1);
   });
 
-  test('should block requests when limit exceeded', () => {
+  it('should block requests when limit exceeded', () => { // ✅ test → it
     // Fill up the rate limit
     for (let i = 0; i < 60; i++) {
       manager.trackRequest();
@@ -180,7 +181,7 @@ describe('RateLimitManager', () => {
     expect(() => manager.trackRequest()).toThrow('Rate limit exceeded');
   });
 
-  test('should reset after time window', () => {
+  it('should reset after time window', () => { // ✅ test → it
     // Fill up rate limit
     for (let i = 0; i < 60; i++) {
       manager.trackRequest();
@@ -189,7 +190,7 @@ describe('RateLimitManager', () => {
     expect(manager.canMakeRequest()).toBe(false);
 
     // Advance time by 1 hour
-    jest.advanceTimersByTime(3600000);
+    vi.advanceTimersByTime(3600000); // ✅ jest → vi
 
     expect(manager.canMakeRequest()).toBe(true);
     expect(manager.getRemainingRequests()).toBe(60);

@@ -34,6 +34,10 @@ export interface PackageLineItem {
   amount: number;
   parentItemId?: number; // Für Sub-Items
   description?: string; // Freitext für Sub-Items
+  // Phase 1: Item origin tracking
+  itemOrigin?: 'manual' | 'package_import' | 'template';
+  sortOrder?: number;
+  clientTempId?: string; // Frontend helper for temporary IDs
 }
 
 export interface Package {
@@ -57,6 +61,11 @@ export interface OfferLineItem {
   parentItemId?: number; // Für Sub-Items
   itemType?: 'standalone' | 'individual_sub' | 'package_import'; // Typ des Items (optional für Backwards-Kompatibilität)
   sourcePackageId?: number; // Quell-Paket für package_import Items
+  // Phase 1: Item origin tracking and sort order
+  itemOrigin?: 'manual' | 'package_import' | 'template';
+  sourcePackageItemId?: number; // Reference to original package item
+  sortOrder?: number;
+  clientTempId?: string; // Frontend helper for temporary IDs
 }
 
 // Discount interface for offers and invoices
@@ -96,6 +105,11 @@ export interface InvoiceLineItem {
   unitPrice: number;
   total: number;
   parentItemId?: number; // Für Sub-Items
+  // Phase 1: Item origin tracking and sort order
+  itemOrigin?: 'manual' | 'package_import' | 'template';
+  sourcePackageItemId?: number; // Reference to original package item
+  sortOrder?: number;
+  clientTempId?: string; // Frontend helper for temporary IDs
 }
 
 export interface Invoice extends DocumentDiscount {

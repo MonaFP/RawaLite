@@ -2,6 +2,7 @@
 import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import path from 'node:path'
 import { existsSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
+import { marked } from 'marked'
 import { UpdateManagerService } from '../src/main/services/UpdateManagerService'
 // 🗄️ Database imports with correct named exports syntax
 import { getDb, prepare, exec, tx } from '../src/main/db/Database'
@@ -736,6 +737,37 @@ function generateTemplateHTML(options: any): string {
     total: entity.total
   });
   
+  // Markdown zu HTML konvertieren mit sicherer Konfiguration
+  function convertMarkdownToHtml(markdown: string | undefined): string {
+    if (!markdown?.trim()) return '';
+    
+    // Konfiguriere marked für PDF-sichere HTML-Ausgabe
+    marked.setOptions({
+      gfm: true,
+      breaks: true // Zeilenumbrüche beibehalten
+    });
+    
+    try {
+      // Konvertiere zu HTML (marked ist in der neuesten Version synchron für strings)
+      const htmlResult = marked.parse(markdown);
+      const html = typeof htmlResult === 'string' ? htmlResult : '';
+      
+      // Entferne potentiell problematische Elemente für PDF
+      return html
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Scripts entfernen
+        .replace(/href="http[^"]*"/gi, '') // Externe Links entfernen für PDF
+        .replace(/<a[^>]*>/gi, '<span>') // Links zu spans für PDF
+        .replace(/<\/a>/gi, '</span>')
+        .replace(/<h[1-6][^>]*>/gi, '<strong>') // Überschriften zu bold für PDF
+        .replace(/<\/h[1-6]>/gi, '</strong>');
+      
+    } catch (error) {
+      console.error('Markdown conversion error:', error);
+      // Fallback: Text mit manuellen <br> für Zeilenumbrüche
+      return markdown.split('\n').join('<br>');
+    }
+  }
+  
   return `
     <!DOCTYPE html>
     <html>
@@ -889,7 +921,7 @@ function generateTemplateHTML(options: any): string {
             <tr class="${item.parentItemId ? 'sub-item' : ''}">
               <td>
                 ${item.parentItemId ? '↳ ' : ''}${item.title}
-                ${item.description ? `<br><small>${item.description}</small>` : ''}
+                ${item.description ? `<br><small>${convertMarkdownToHtml(item.description)}</small>` : ''}
               </td>
               <td>${item.quantity}</td>
               <td>€${item.unitPrice?.toFixed(2) || '0.00'}</td>

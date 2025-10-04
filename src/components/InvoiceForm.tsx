@@ -253,22 +253,20 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
 
           <div style={{display:"flex", flexDirection:"column", gap:"8px"}}>
             {parentItems.map(item => (
-              <div key={item.id}>
+              <div key={item.id} style={{
+                border: "1px solid rgba(255,255,255,.1)",
+                background: "rgba(17,24,39,.4)",
+                borderRadius: "6px",
+                padding: "12px"
+              }}>
                 {/* Hauptposition */}
-                <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start", padding:"12px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"6px", background:"rgba(17,24,39,.4)"}}>
+                <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start", marginBottom:"8px"}}>
                   <div>
                     <input
                       type="text"
                       placeholder="Titel"
                       value={item.title}
                       onChange={(e) => updateLineItem(item.id, 'title', e.target.value)}
-                      style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px", marginBottom:"4px"}}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Beschreibung"
-                      value={item.description || ''}
-                      onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
                       style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
                     />
                   </div>
@@ -314,62 +312,79 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     </button>
                   </div>
                 </div>
+                {/* Beschreibungsfeld über volle Breite */}
+                <textarea
+                  placeholder="Beschreibung (optional) - Markdown unterstützt: **fett**, *kursiv*, Absätze durch Leerzeilen"
+                  value={item.description || ''}
+                  onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
+                  style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"12px", minHeight:"60px", resize:"vertical"}}
+                />
 
                 {/* Sub-Positionen */}
                 {lineItems
                   .filter(subItem => subItem.parentItemId === item.id)
                   .map(subItem => (
-                    <div key={subItem.id} style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start", padding:"12px", marginLeft:"24px", border:"1px solid rgba(96,165,250,.3)", borderLeft:"4px solid var(--accent)", borderRadius:"6px", background:"rgba(96,165,250,.1)", marginTop:"4px"}}>
-                      <div>
-                        <input
-                          type="text"
-                          placeholder="Sub-Titel"
-                          value={subItem.title}
-                          onChange={(e) => updateLineItem(subItem.id, 'title', e.target.value)}
-                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px", marginBottom:"4px"}}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Sub-Beschreibung"
-                          value={subItem.description || ''}
-                          onChange={(e) => updateLineItem(subItem.id, 'description', e.target.value)}
-                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                        />
+                    <div key={subItem.id} style={{
+                      marginLeft:"24px", 
+                      border:"1px solid rgba(96,165,250,.3)", 
+                      borderLeft:"4px solid var(--accent)", 
+                      borderRadius:"6px", 
+                      background:"rgba(96,165,250,.1)", 
+                      marginTop:"4px",
+                      padding:"12px"
+                    }}>
+                      <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start", marginBottom:"8px"}}>
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Sub-Titel"
+                            value={subItem.title}
+                            onChange={(e) => updateLineItem(subItem.id, 'title', e.target.value)}
+                            style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="number"
+                            placeholder="Menge"
+                            value={subItem.quantity}
+                            onChange={(e) => updateLineItem(subItem.id, 'quantity', parseFloat(e.target.value) || 0)}
+                            style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
+                            min="0"
+                            step="0.01"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="number"
+                            placeholder="Einzelpreis"
+                            value={subItem.unitPrice}
+                            onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                            style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
+                            min="0"
+                            step="0.01"
+                          />
+                        </div>
+                        <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
+                          €{subItem.total.toFixed(2)}
+                        </div>
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => removeLineItem(subItem.id)}
+                            style={{backgroundColor:"var(--danger)", color:"white", border:"none", padding:"4px 8px", borderRadius:"4px", cursor:"pointer", fontSize:"12px"}}
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
-                      <div>
-                        <input
-                          type="number"
-                          placeholder="Menge"
-                          value={subItem.quantity}
-                          onChange={(e) => updateLineItem(subItem.id, 'quantity', parseFloat(e.target.value) || 0)}
-                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                          min="0"
-                          step="0.01"
-                        />
-                      </div>
-                      <div>
-                        <input
-                          type="number"
-                          placeholder="Einzelpreis"
-                          value={subItem.unitPrice}
-                          onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                          style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
-                          min="0"
-                          step="0.01"
-                        />
-                      </div>
-                      <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
-                        €{subItem.total.toFixed(2)}
-                      </div>
-                      <div>
-                        <button
-                          type="button"
-                          onClick={() => removeLineItem(subItem.id)}
-                          style={{backgroundColor:"var(--danger)", color:"white", border:"none", padding:"4px 8px", borderRadius:"4px", cursor:"pointer", fontSize:"12px"}}
-                        >
-                          ✕
-                        </button>
-                      </div>
+                      {/* Beschreibungsfeld über volle Breite */}
+                      <textarea
+                        placeholder="Sub-Beschreibung (optional) - Markdown unterstützt: **fett**, *kursiv*, Absätze durch Leerzeilen"
+                        value={subItem.description || ''}
+                        onChange={(e) => updateLineItem(subItem.id, 'description', e.target.value)}
+                        style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"12px", minHeight:"40px", resize:"vertical"}}
+                      />
                     </div>
                   ))}
               </div>

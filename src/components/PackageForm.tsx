@@ -266,15 +266,25 @@ export default function PackageForm({
                     {fieldErrors[`item_${index}_title`]}
                   </div>
                 )}
-                {isSubItem && (
-                  <input 
-                    value={item.description || ""}
-                    onChange={e => updateLineItem(index, "description", e.target.value)}
-                    placeholder="Beschreibung (optional)"
-                    style={{ marginTop: "4px", fontSize: "12px", opacity: 0.8 }}
-                    disabled={isSubmitting}
-                  />
-                )}
+                <textarea 
+                  value={item.description || ""}
+                  onChange={e => updateLineItem(index, "description", e.target.value)}
+                  placeholder="Beschreibung (optional) - Markdown unterstützt: **fett**, *kursiv*, Absätze durch Leerzeilen"
+                  style={{ 
+                    width: "100%", 
+                    marginTop: "4px", 
+                    fontSize: "12px", 
+                    opacity: 0.8,
+                    minHeight: "40px",
+                    resize: "vertical",
+                    padding: "4px",
+                    border: "1px solid rgba(255,255,255,.1)",
+                    borderRadius: "4px",
+                    background: "rgba(17,24,39,.8)",
+                    color: "var(--muted)"
+                  }}
+                  disabled={isSubmitting}
+                />
               </div>
               <input 
                 type="number"
@@ -389,15 +399,25 @@ export default function PackageForm({
               disabled={isSubmitting}
             />
             
-            {currentItem.parentItemId !== undefined && (
-              <input 
-                value={currentItem.description}
-                onChange={e => setCurrentItem(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Beschreibung (optional)"
-                style={{ marginTop: "4px", fontSize: "12px", opacity: 0.8, width: "100%" }}
-                disabled={isSubmitting}
-              />
-            )}
+            <textarea 
+              value={currentItem.description}
+              onChange={e => setCurrentItem(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Beschreibung (optional) - Markdown unterstützt: **fett**, *kursiv*, Absätze durch Leerzeilen"
+              style={{ 
+                width: "100%", 
+                marginTop: "4px", 
+                fontSize: "12px", 
+                opacity: 0.8,
+                minHeight: "40px",
+                resize: "vertical",
+                padding: "4px",
+                border: "1px solid rgba(255,255,255,.1)",
+                borderRadius: "4px",
+                background: "rgba(17,24,39,.8)",
+                color: "var(--muted)"
+              }}
+              disabled={isSubmitting}
+            />
             
             {inputError && (
               <div className="field-error">

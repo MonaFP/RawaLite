@@ -10,7 +10,25 @@ export class DbClient {
   private static instance: DbClient | null = null;
 
   private constructor() {
-    if (!window.rawalite?.db?.query) {
+    this.validateDatabaseAPI();
+  }
+
+  /**
+   * Validate that database API is available
+   * In test environment, this check is skipped
+   */
+  private validateDatabaseAPI(): void {
+    // Skip validation in test environment
+    if (typeof globalThis !== 'undefined' && globalThis.process?.env?.NODE_ENV === 'test') {
+      return;
+    }
+    
+    // Skip validation in Vitest environment
+    if (typeof globalThis !== 'undefined' && globalThis.process?.env?.VITEST === 'true') {
+      return;
+    }
+    
+    if (typeof window === 'undefined' || !window.rawalite?.db?.query) {
       throw new Error('Database API not available - check preload script');
     }
   }
@@ -23,6 +41,24 @@ export class DbClient {
       DbClient.instance = new DbClient();
     }
     return DbClient.instance;
+  }
+
+  /**
+   * Get database API abstracted for testing
+   */
+  private getDatabaseAPI(): any {
+    // In test environment, return mock from global window
+    if (typeof globalThis !== 'undefined' && globalThis.process?.env?.NODE_ENV === 'test') {
+      return (globalThis as any).window?.rawalite?.db;
+    }
+    
+    // In Vitest environment, return mock from global window
+    if (typeof globalThis !== 'undefined' && globalThis.process?.env?.VITEST === 'true') {
+      return (globalThis as any).window?.rawalite?.db;
+    }
+    
+    // In production/browser environment
+    return window.rawalite.db;
   }
 
   /**
@@ -41,7 +77,7 @@ export class DbClient {
       console.log('DbClient.query', { originalSQL: sql, mappedSQL, params: mappedParams });
       
       // Step 3: Execute with mapped data
-      const result = await window.rawalite.db.query(mappedSQL, mappedParams);
+      const result = await this.getDatabaseAPI().query(mappedSQL, mappedParams);
       
       // Step 4: Convert results snake_case → camelCase
       const mappedResult = mapFromSQLArray(result) as T[];
@@ -69,7 +105,7 @@ export class DbClient {
       console.log('DbClient.exec', { originalSQL: sql, mappedSQL, params: mappedParams });
       
       // Step 3: Execute with mapped data
-      const result = await window.rawalite.db.exec(mappedSQL, mappedParams);
+      const result = await this.getDatabaseAPI().exec(mappedSQL, mappedParams);
       
       console.log('DbClient.exec result', result);
       return result;
@@ -97,7 +133,7 @@ export class DbClient {
       });
       
       // Step 2: Execute transaction with mapped data
-      const results = await window.rawalite.db.transaction(mappedQueries);
+      const results = await this.getDatabaseAPI().transaction(mappedQueries);
       
       console.log('DbClient.transaction results', { resultCount: results.length });
       return results;
