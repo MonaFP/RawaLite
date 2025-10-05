@@ -128,15 +128,7 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
           <select
             value={row.status}
             onChange={(e) => handleStatusChange(row.id, e.target.value as Timesheet['status'])}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px",
-              border: "1px solid rgba(255,255,255,.1)",
-              borderRadius: "4px",
-              background: "rgba(17,24,39,.8)",
-              color: "var(--muted)",
-              cursor: "pointer"
-            }}
+            className="status-dropdown"
           >
             <option value="draft">Entwurf</option>
             <option value="sent">Versendet</option>
@@ -232,7 +224,8 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
     }
 
     try {
-      const result = await PDFService.exportTimesheetToPDF(timesheet, customer, settings, false, currentTheme); // false = direct download
+      const logoData = settings?.companyData?.logo || null;
+      const result = await PDFService.exportTimesheetToPDF(timesheet, customer, settings, false, currentTheme, undefined, logoData); // false = direct download
       if (result.success) {
         showSuccess(`PDF erfolgreich erstellt: ${result.filePath}`);
       } else {
@@ -252,7 +245,8 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
     }
 
     try {
-      const result = await PDFService.exportTimesheetToPDF(timesheet, customer, settings, true, currentTheme); // true = preview only
+      const logoData = settings?.companyData?.logo || null;
+      const result = await PDFService.exportTimesheetToPDF(timesheet, customer, settings, true, currentTheme, undefined, logoData); // true = preview only
       if (result.success) {
         showSuccess('PDF Vorschau geöffnet');
       } else {

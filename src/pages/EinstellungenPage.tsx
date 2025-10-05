@@ -9,6 +9,7 @@ import { UpdateDialog } from "../components/UpdateDialog";
 import { UpdateStatus } from "../components/UpdateStatus";
 import { ThemeSelector } from "../components/ThemeSelector";
 import { NavigationModeSelector } from "../components/NavigationModeSelector";
+import VersionService from "../services/VersionService";
 
 interface EinstellungenPageProps {
   title?: string;
@@ -222,7 +223,6 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
       ]);
 
       // ✅ Verwende VersionService für konsistente Versionsinformation (Phase 2)
-      const { VersionService } = await import('../services/VersionService');
       const versionInfo = VersionService.getBackupVersionInfo();
       
       const backupData = {
@@ -1850,13 +1850,8 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                 disabled={saving}
                 className="btn btn-secondary"
                 style={{
-                  backgroundColor: "#6b7280",
-                  color: "white",
-                  border: "none",
                   padding: "10px 20px",
-                  borderRadius: "6px",
                   cursor: saving ? "not-allowed" : "pointer",
-                  fontWeight: "500",
                   opacity: saving ? 0.6 : 1
                 }}
               >
@@ -1868,13 +1863,8 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                 disabled={saving}
                 className="btn btn-secondary"
                 style={{
-                  backgroundColor: "#6b7280",
-                  color: "white",
-                  border: "none",
                   padding: "10px 20px",
-                  borderRadius: "6px",
                   cursor: saving ? "not-allowed" : "pointer",
-                  fontWeight: "500",
                   opacity: saving ? 0.6 : 1
                 }}
               >
@@ -1886,13 +1876,8 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                 disabled={saving}
                 className="btn btn-secondary"
                 style={{
-                  backgroundColor: "#6b7280",
-                  color: "white",
-                  border: "none",
                   padding: "10px 20px",
-                  borderRadius: "6px",
                   cursor: saving ? "not-allowed" : "pointer",
-                  fontWeight: "500",
                   opacity: saving ? 0.6 : 1
                 }}
               >
@@ -1904,13 +1889,8 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                 disabled={saving}
                 className="btn btn-secondary"
                 style={{
-                  backgroundColor: "#6b7280",
-                  color: "white",
-                  border: "none",
                   padding: "10px 20px",
-                  borderRadius: "6px",
                   cursor: saving ? "not-allowed" : "pointer",
-                  fontWeight: "500",
                   opacity: saving ? 0.6 : 1
                 }}
               >

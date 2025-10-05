@@ -70,8 +70,9 @@ export class SQLiteAdapter implements PersistenceAdapter {
     await this.client.exec(
       `
       UPDATE settings SET
-        company_name = ?, street = ?, zip = ?, city = ?, tax_id = ?, kleinunternehmer = ?,
-        next_customer_number = ?, next_offer_number = ?, next_invoice_number = ?, updated_at = ?
+        company_name = ?, street = ?, zip = ?, city = ?, phone = ?, email = ?, website = ?, 
+        tax_id = ?, vat_id = ?, kleinunternehmer = ?, bank_name = ?, bank_account = ?, bank_bic = ?, 
+        logo = ?, next_customer_number = ?, next_offer_number = ?, next_invoice_number = ?, updated_at = ?
       WHERE id = ?
     `,
       [
@@ -79,8 +80,16 @@ export class SQLiteAdapter implements PersistenceAdapter {
         mappedNext.street || "",
         mappedNext.zip || "",
         mappedNext.city || "",
+        mappedNext.phone || "",
+        mappedNext.email || "",
+        mappedNext.website || "",
         mappedNext.tax_id || "",
+        mappedNext.vat_id || "",
         mappedNext.kleinunternehmer ? 1 : 0,
+        mappedNext.bank_name || "",
+        mappedNext.bank_account || "",
+        mappedNext.bank_bic || "",
+        mappedNext.logo || "",
         mappedNext.next_customer_number || 1,
         mappedNext.next_offer_number || 1,
         mappedNext.next_invoice_number || 1,
@@ -332,13 +341,23 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   // OFFERS
   async listOffers(): Promise<Offer[]> {
+    console.log('🔧 [SQLiteAdapter.listOffers] Starting offers query...');
+    
     const query = convertSQLQuery(`SELECT * FROM offers ORDER BY createdAt DESC`);
+    console.log('🔧 [SQLiteAdapter.listOffers] Main query:', query);
+    
     const offers = await this.client.query<Omit<Offer, "lineItems">>(query);
+    console.log('🔧 [SQLiteAdapter.listOffers] Raw offers from DB:', offers.length, offers[0]);
     
     const result: Offer[] = [];
     for (const offer of offers) {
       const mappedOffer = mapFromSQL(offer) as Omit<Offer, "lineItems">;
-      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price as unitPrice, total, parent_item_id as parentItemId, item_type as itemType, source_package_id as sourcePackageId FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
+      console.log('🔧 [SQLiteAdapter.listOffers] Mapped offer:', mappedOffer);
+      
+      // FIX: Use consistent field-mapping instead of manual aliases
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, itemType, sourcePackageId FROM offerLineItems WHERE offerId = ? ORDER BY id`);
+      console.log('🔧 [SQLiteAdapter.listOffers] LineItem query:', lineItemQuery);
+      
       const lineItems = await this.client.query<{
         id: number;
         title: string;
@@ -348,6 +367,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
         total: number;
         parentItemId: number | null;
       }>(lineItemQuery, [offer.id]);
+
+      console.log('🔧 [SQLiteAdapter.listOffers] LineItems for offer', offer.id, ':', lineItems);
 
       result.push({
         ...mappedOffer,
@@ -362,6 +383,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
         }))
       });
     }
+    
+    console.log('🔧 [SQLiteAdapter.listOffers] Final result:', result.length, 'offers');
     return result;
   }
 
@@ -490,7 +513,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         offer_number = ?, customer_id = ?, title = ?, status = ?, valid_until = ?,
         subtotal = ?, vat_rate = ?, vat_amount = ?, total = ?, notes = ?,
         discount_type = ?, discount_value = ?, discount_amount = ?, subtotal_before_discount = ?,
-        updated_at = ?
+        sent_at = ?, accepted_at = ?, rejected_at = ?, updated_at = ?
       WHERE id = ?
     `,
       [
@@ -508,6 +531,9 @@ export class SQLiteAdapter implements PersistenceAdapter {
         mappedNext.discount_value || 0,
         mappedNext.discount_amount || 0,
         mappedNext.subtotal_before_discount || mappedNext.subtotal,
+        mappedNext.sent_at || null,
+        mappedNext.accepted_at || null,
+        mappedNext.rejected_at || null,
         mappedNext.updated_at,
         id,
       ]
@@ -582,39 +608,50 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   // INVOICES
   async listInvoices(): Promise<Invoice[]> {
+    console.log('🔧 [SQLiteAdapter.listInvoices] Starting invoices query...');
+    
     const query = convertSQLQuery(`SELECT * FROM invoices ORDER BY createdAt DESC`);
+    console.log('🔧 [SQLiteAdapter.listInvoices] Main query:', query);
+    
     const invoices = await this.client.query<Omit<Invoice, "lineItems">>(query);
+    console.log('🔧 [SQLiteAdapter.listInvoices] Raw invoices from DB:', invoices.length, invoices[0]);
     
     const result: Invoice[] = [];
     for (const invoice of invoices) {
       const mappedInvoice = mapFromSQL(invoice) as Omit<Invoice, "lineItems">;
+      console.log('🔧 [SQLiteAdapter.listInvoices] Mapped invoice:', mappedInvoice);
+      
+      // FIX: Use consistent field-mapping instead of manual aliases
       const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoiceLineItems WHERE invoiceId = ? ORDER BY id`);
+      console.log('🔧 [SQLiteAdapter.listInvoices] LineItem query:', lineItemQuery);
+      
       const lineItems = await this.client.query<{
         id: number;
         title: string;
         description: string | null;
         quantity: number;
-        unit_price: number;
+        unitPrice: number;
         total: number;
-        parent_item_id: number | null;
+        parentItemId: number | null;
       }>(lineItemQuery, [invoice.id]);
+
+      console.log('🔧 [SQLiteAdapter.listInvoices] LineItems for invoice', invoice.id, ':', lineItems);
 
       result.push({
         ...mappedInvoice,
-        lineItems: lineItems.map(item => {
-          const mappedItem = mapFromSQL(item);
-          return {
-            id: mappedItem.id,
-            title: mappedItem.title,
-            description: mappedItem.description || undefined,
-            quantity: mappedItem.quantity,
-            unitPrice: mappedItem.unitPrice,
-            total: mappedItem.total,
-            parentItemId: mappedItem.parentItemId || undefined
-          };
-        })
+        lineItems: lineItems.map(item => ({
+          id: item.id,
+          title: item.title,
+          description: item.description || undefined,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          total: item.total,
+          parentItemId: item.parentItemId || undefined
+        }))
       });
     }
+    
+    console.log('🔧 [SQLiteAdapter.listInvoices] Final result:', result.length, 'invoices');
     return result;
   }
 
@@ -714,7 +751,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         invoice_number = ?, customer_id = ?, offer_id = ?, title = ?, status = ?, due_date = ?,
         subtotal = ?, vat_rate = ?, vat_amount = ?, total = ?, notes = ?,
         discount_type = ?, discount_value = ?, discount_amount = ?, subtotal_before_discount = ?,
-        updated_at = ?
+        sent_at = ?, paid_at = ?, overdue_at = ?, cancelled_at = ?, updated_at = ?
       WHERE id = ?
     `,
       [
@@ -733,6 +770,10 @@ export class SQLiteAdapter implements PersistenceAdapter {
         mappedNext.discount_value || 0,
         mappedNext.discount_amount || 0,
         mappedNext.subtotal_before_discount || mappedNext.subtotal,
+        mappedNext.sent_at || null,
+        mappedNext.paid_at || null,
+        mappedNext.overdue_at || null,
+        mappedNext.cancelled_at || null,
         mappedNext.updated_at,
         id,
       ]
@@ -984,6 +1025,40 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   // READY STATUS
   async ready(): Promise<void> {
-    // Ready when client is available
+    console.log('🔧 [SQLiteAdapter.ready] Starting readiness check...');
+    
+    try {
+      // Test if DbClient is available
+      if (!this.client) {
+        throw new Error('DbClient not initialized');
+      }
+      console.log('🔧 [SQLiteAdapter.ready] DbClient available');
+      
+      // Test if window.rawalite.db is available
+      if (typeof window === 'undefined' || !window.rawalite?.db) {
+        throw new Error('window.rawalite.db API not available');
+      }
+      console.log('🔧 [SQLiteAdapter.ready] window.rawalite.db API available');
+      
+      // Test actual database connection with a simple query
+      const testResult = await this.client.query('SELECT 1 as test');
+      if (!testResult || testResult.length === 0) {
+        throw new Error('Database connection test failed');
+      }
+      console.log('🔧 [SQLiteAdapter.ready] Database connection test successful');
+      
+      // Test table existence
+      const tables = await this.client.query("SELECT name FROM sqlite_master WHERE type='table'");
+      console.log('🔧 [SQLiteAdapter.ready] Found tables:', tables.map((t: any) => t.name));
+      
+      if (tables.length === 0) {
+        throw new Error('No tables found in database');
+      }
+      
+      console.log('🔧 [SQLiteAdapter.ready] All checks passed - adapter is ready');
+    } catch (error) {
+      console.error('🔧 [SQLiteAdapter.ready] Readiness check failed:', error);
+      throw error;
+    }
   }
 }

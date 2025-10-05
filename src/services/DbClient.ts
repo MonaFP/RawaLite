@@ -74,15 +74,18 @@ export class DbClient {
       // Das mapping erfolgt nur für Object-Parameters in komplexeren Operationen
       const mappedParams = params; // Für prepared statements: Parameter bleiben unverändert
 
-      console.log('DbClient.query', { originalSQL: sql, mappedSQL, params: mappedParams });
+      console.log('🔧 [DbClient.query] STARTING:', { originalSQL: sql, mappedSQL, params: mappedParams });
       
       // Step 3: Execute with mapped data
       const result = await this.getDatabaseAPI().query(mappedSQL, mappedParams);
       
+      console.log('🔧 [DbClient.query] RAW RESULT:', { rawCount: result.length, rawSample: result[0] });
+      
       // Step 4: Convert results snake_case → camelCase
       const mappedResult = mapFromSQLArray(result) as T[];
       
-      console.log('DbClient.query result', { rawCount: result.length, mappedCount: mappedResult.length });
+      console.log('🔧 [DbClient.query] MAPPED RESULT:', { mappedCount: mappedResult.length, mappedSample: mappedResult[0] });
+      console.log('🔧 [DbClient.query] COMPLETED SUCCESSFULLY');
       return mappedResult;
     } catch (error) {
       await LoggingService.logError(error as Error, 'DbClient.query failed');

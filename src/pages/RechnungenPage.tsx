@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Table } from '../components/Table';
 import { InvoiceForm } from '../components/InvoiceForm';
+import { SearchAndFilterBar, useTableSearch, FilterConfig } from '../components/SearchAndFilter';
 import { useInvoices } from '../hooks/useInvoices';
 import { useCustomers } from '../hooks/useCustomers';
 import { useOffers } from '../hooks/useOffers';
@@ -23,6 +24,70 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
   const { showSuccess, showError } = useNotifications();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Invoice | null>(null);
+
+  // DEBUG: Log the invoices data
+  console.log('🔍 [RECHNUNGEN PAGE] invoices from useInvoices:', invoices);
+  console.log('🔍 [RECHNUNGEN PAGE] invoicesLoading:', invoicesLoading);
+  console.log('🔍 [RECHNUNGEN PAGE] invoicesError:', invoicesError);
+
+  // Search and Filter Configuration for Invoices
+  const searchFieldMapping = useMemo(() => ({
+    invoiceNumber: 'invoiceNumber',
+    customer: (invoice: Invoice) => {
+      const customer = customers.find(c => c.id === invoice.customerId);
+      return customer?.name || '';
+    },
+    title: 'title',
+    status: 'status',
+    dueDate: 'dueDate',
+    total: 'total'
+  }), [customers]);
+
+  const filterConfigs: FilterConfig[] = useMemo(() => [
+    {
+      field: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: 'draft', label: 'Entwurf' },
+        { value: 'sent', label: 'Versendet' },
+        { value: 'paid', label: 'Bezahlt' },
+        { value: 'overdue', label: 'Überfällig' }
+      ]
+    },
+    {
+      field: 'dueDate',
+      label: 'Fälligkeitsdatum',
+      type: 'dateRange'
+    },
+    {
+      field: 'total',
+      label: 'Rechnungsbetrag',
+      type: 'numberRange',
+      min: 0,
+      step: 0.01
+    },
+    {
+      field: 'customerId',
+      label: 'Kunde',
+      type: 'select',
+      options: customers.map(customer => ({
+        value: customer.id,
+        label: customer.name
+      }))
+    }
+  ], [customers]);
+
+  const {
+    searchTerm,
+    setSearchTerm,
+    filters,
+    setFilter,
+    clearFilters,
+    clearAll,
+    filteredData,
+    activeFilterCount
+  } = useTableSearch(invoices, searchFieldMapping);
 
   const columns = useMemo(() => ([
     { key: "invoiceNumber", header: "Nummer" },
@@ -106,19 +171,11 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
           >
             💾 PDF
           </button>
-          <button className="btn btn-secondary" style={{ padding: "4px 8px", fontSize: "12px" }} onClick={() => { setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
+          <button className="btn btn-secondary" onClick={() => { setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
           <select
             value={row.status}
             onChange={(e) => handleStatusChange(row.id, e.target.value as Invoice['status'])}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px",
-              border: "1px solid rgba(255,255,255,.1)",
-              borderRadius: "4px",
-              background: "rgba(17,24,39,.8)",
-              color: "var(--muted)",
-              cursor: "pointer"
-            }}
+            className="status-dropdown"
           >
             <option value="draft">Entwurf</option>
             <option value="sent">Gesendet</option>
@@ -126,7 +183,7 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
             <option value="overdue">Überfällig</option>
             <option value="cancelled">Storniert</option>
           </select>
-          <button className="btn btn-danger" style={{ padding: "4px 8px", fontSize: "12px" }} onClick={() => { if (confirm("Diese Rechnung wirklich löschen?")) handleRemove(row.id); }}>Löschen</button>
+          <button className="btn btn-danger" onClick={() => { if (confirm("Diese Rechnung wirklich löschen?")) handleRemove(row.id); }}>Löschen</button>
         </div>
       ) 
     }
@@ -148,11 +205,11 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     try {
       const invoice = invoices.find(i => i.id === invoiceId);
       if (!invoice) return;
-      
+
       // Prepare status date fields
       const now = new Date().toISOString();
       const statusDates: Partial<Invoice> = {};
-      
+
       switch (newStatus) {
         case 'sent':
           statusDates.sentAt = now;
@@ -167,13 +224,13 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
           statusDates.cancelledAt = now;
           break;
       }
-      
+
       await updateInvoice(invoiceId, { ...invoice, status: newStatus, ...statusDates });
-      
+
       // Success notification
       const statusLabels = {
         'draft': 'Entwurf',
-        'sent': 'Gesendet', 
+        'sent': 'Gesendet',
         'paid': 'Bezahlt',
         'overdue': 'Überfällig',
         'cancelled': 'Storniert'
@@ -196,7 +253,8 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     }
 
     try {
-      const result = await PDFService.exportInvoiceToPDF(invoice, customer, settings, false, currentTheme); // false = direct download
+      const logoData = settings?.companyData?.logo || null;
+      const result = await PDFService.exportInvoiceToPDF(invoice, customer, settings, false, currentTheme, undefined, logoData); // false = direct download
       if (result.success) {
         showSuccess(`PDF erfolgreich erstellt: ${result.filePath}`);
       } else {
@@ -216,7 +274,8 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     }
 
     try {
-      const result = await PDFService.exportInvoiceToPDF(invoice, customer, settings, true, currentTheme); // true = preview only
+      const logoData = settings?.companyData?.logo || null;
+      const result = await PDFService.exportInvoiceToPDF(invoice, customer, settings, true, currentTheme, undefined, logoData); // true = preview only
       if (result.success) {
         showSuccess('PDF Vorschau geöffnet');
       } else {
@@ -243,10 +302,26 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
         </button>
       </div>
       
+      {/* Search and Filter Bar */}
+      <SearchAndFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Rechnungen durchsuchen..."
+        filters={filters}
+        filterConfigs={filterConfigs}
+        onFilterChange={setFilter}
+        onClearFilters={clearFilters}
+        onClearAll={clearAll}
+        activeFilterCount={activeFilterCount}
+        resultCount={filteredData.length}
+        totalCount={invoices.length}
+      />
+      
       <Table<Invoice>
         columns={columns as any}
-        data={invoices}
-        emptyMessage="Noch keine Rechnungen erstellt."
+        data={filteredData}
+        emptyMessage="Keine Rechnungen gefunden."
+        getRowKey={(invoice) => `invoice-${invoice.id}-${invoice.status}-${invoice.updatedAt}`}
       />
 
       {mode === "create" && (

@@ -11,9 +11,10 @@ export interface TableProps<T>{
   columns: Column<T>[];
   data: T[];
   emptyMessage?: string;
+  getRowKey?: (row: T, index: number) => string | number;
 }
 
-export function Table<T>({ columns, data, emptyMessage }: TableProps<T>){
+export function Table<T>({ columns, data, emptyMessage, getRowKey }: TableProps<T>){
   return (
     <div className="card">
       <table className="table">
@@ -32,7 +33,7 @@ export function Table<T>({ columns, data, emptyMessage }: TableProps<T>){
               </td>
             </tr>
           ) : data.map((row, i) => (
-            <tr key={i}>
+            <tr key={getRowKey ? getRowKey(row, i) : i}>
               {columns.map(c => (
                 <td key={String(c.key)}>
                   {c.render ? c.render(row) : String(row[c.key])}

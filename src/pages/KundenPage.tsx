@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Table } from "../components/Table";
+import { SearchAndFilterBar, useTableSearch, FilterConfig } from "../components/SearchAndFilter";
 import type { Customer } from "../persistence/adapter";
 import CustomerForm, { CustomerFormValues } from "../components/CustomerForm";
 import { useCustomers } from "../hooks/useCustomers";
@@ -18,6 +19,44 @@ export default function KundenPage({ title = "Kunden" }: KundenPageProps){
   const [current, setCurrent] = useState<Customer | null>(null);
   const { showError, showSuccess } = useNotifications();
   const { withLoading } = useLoading();
+
+  // Search and Filter Configuration for Customers
+  const searchFieldMapping = useMemo(() => ({
+    number: 'number',
+    name: 'name',
+    email: 'email',
+    phone: 'phone',
+    street: 'street',
+    postalCode: 'postalCode',
+    city: 'city',
+    notes: 'notes'
+  }), []);
+
+  const filterConfigs: FilterConfig[] = useMemo(() => [
+    {
+      field: 'city',
+      label: 'Ort',
+      type: 'select',
+      options: Array.from(new Set(customers.map(c => c.city).filter(Boolean)))
+        .map(city => ({ value: city as string, label: city as string }))
+    },
+    {
+      field: 'createdAt',
+      label: 'Erstellt',
+      type: 'dateRange'
+    }
+  ], [customers]);
+
+  const {
+    searchTerm,
+    setSearchTerm,
+    filters,
+    setFilter,
+    clearFilters,
+    clearAll,
+    filteredData,
+    activeFilterCount
+  } = useTableSearch(customers, searchFieldMapping);
 
   const columns = useMemo(()=>([
     { key: "number", header: "Nummer" },
@@ -180,10 +219,25 @@ export default function KundenPage({ title = "Kunden" }: KundenPageProps){
         </div>
       </div>
       
+      {/* Search and Filter Bar */}
+      <SearchAndFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Kunden durchsuchen..."
+        filters={filters}
+        filterConfigs={filterConfigs}
+        onFilterChange={setFilter}
+        onClearFilters={clearFilters}
+        onClearAll={clearAll}
+        activeFilterCount={activeFilterCount}
+        resultCount={filteredData.length}
+        totalCount={customers.length}
+      />
+      
       <Table<Customer>
         columns={columns as any}
-        data={customers}
-        emptyMessage="Noch keine Kunden angelegt."
+        data={filteredData}
+        emptyMessage="Keine Kunden gefunden."
       />
 
       {mode === "create" && (
