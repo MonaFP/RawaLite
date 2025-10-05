@@ -1,4 +1,3 @@
-// src/lib/field-mapper.ts
 /**
  * Robust Field Mapping zwischen JavaScript camelCase und SQL snake_case
  * 
@@ -30,13 +29,16 @@ export class FieldMapper {
     'addressCity': 'address_city',
     'addressZip': 'address_zip',
     'addressCountry': 'address_country',
-    'taxNumber': 'tax_number',
+    'taxNumber': 'tax_id',
     'taxOffice': 'tax_office',
     
     // Bankdaten Felder (KRITISCH für Settings)
     'bankName': 'bank_name',
     'bankAccount': 'bank_account',
     'bankBic': 'bank_bic',
+    
+    // Company/Settings Felder
+    'logo': 'logo',
     
     // Package Felder (KRITISCH - waren vorher nicht definiert!)
     'internalTitle': 'internal_title',
@@ -51,6 +53,13 @@ export class FieldMapper {
     'validUntil': 'valid_until',
     'dueDate': 'due_date',
     'paidAt': 'paid_at',
+    'overdueAt': 'overdue_at',
+    'cancelledAt': 'cancelled_at',
+    
+    // Offer/Invoice Status Date Felder (KRITISCH für Status-Updates)
+    'sentAt': 'sent_at',
+    'acceptedAt': 'accepted_at',
+    'rejectedAt': 'rejected_at',
     
     // LineItem Felder (KRITISCH für Packages/Offers/Invoices)
     'unitPrice': 'unit_price',

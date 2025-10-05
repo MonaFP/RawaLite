@@ -23,14 +23,26 @@ export default function PersistenceProvider({ children, mode = "sqlite" }: Props
 
   useEffect(() => {
     let active = true;
+    console.log('🔧 [PersistenceProvider] Starting initialization...', { mode, instance });
+    
     (async () => {
       try {
+        console.log('🔧 [PersistenceProvider] Calling instance.ready()...');
         await instance.ready();
-        if (!active) return;
+        
+        if (!active) {
+          console.log('🔧 [PersistenceProvider] Component unmounted, aborting...');
+          return;
+        }
+        
+        console.log('🔧 [PersistenceProvider] instance.ready() completed successfully');
         setAdapter(instance);
         setReady(true);
+        console.log('🔧 [PersistenceProvider] Context ready=true, adapter set');
       } catch (e: any) {
-        setError(String(e?.message ?? e));
+        const errorMsg = String(e?.message ?? e);
+        console.error('🔧 [PersistenceProvider] Initialization failed:', errorMsg, e);
+        setError(errorMsg);
       }
     })();
     return () => {

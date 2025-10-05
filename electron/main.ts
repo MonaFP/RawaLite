@@ -20,9 +20,23 @@ function createWindow() {
     ? path.join(rootPath, 'dist-electron', 'preload.js')
     : path.join(__dirname, 'preload.js')
 
+  // Icon-Pfad definieren - konsistent mit PATHS-System aber Main-Process kompatibel
+  let iconPath: string;
+  if (isDev) {
+    // Development: Verwende public/ Ordner aus Projekt-Root
+    iconPath = path.join(rootPath, 'public', 'rawalite-logo.png');
+  } else {
+    // Production: Verwende assets/ aus extraResources (definiert in electron-builder.yml)
+    iconPath = path.join(process.resourcesPath, 'assets', 'icon.png');
+  }
+
+  console.log('🎯 [DEBUG] App Icon Path:', iconPath);
+  console.log('🎯 [DEBUG] Icon exists:', existsSync(iconPath));
+
   const win = new BrowserWindow({
     width: 1280,
     height: 900,
+    icon: iconPath, // App-Icon setzen
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -492,10 +506,15 @@ ipcMain.handle('pdf:generate', async (event, options: {
     });
     
     // Create header template with 3-column layout: Logo | Empty | Company Address
+    // Fix Base64 logo format - ensure it has proper data URL prefix
+    const logoSrc = options.data.logo ? 
+      (options.data.logo.startsWith('data:') ? options.data.logo : `data:image/png;base64,${options.data.logo}`) : 
+      null;
+    
     const headerTemplate = `
       <div style="font-size: 14px; width: 100%; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid ${primaryColor}; background-color: #ffffff;">
         <div style="flex: 1; display: flex; align-items: center;">
-          ${options.data.logo ? `<img src="${options.data.logo}" alt="Logo" style="max-height: 70px; max-width: 180px;">` : `<div style="color: ${primaryColor}; font-weight: bold; font-size: 16px;">${settings?.companyData?.name || 'RawaLite'}</div>`}
+          ${logoSrc ? `<img src="${logoSrc}" alt="Logo" style="max-height: 70px; max-width: 180px;">` : `<div style="color: ${primaryColor}; font-weight: bold; font-size: 16px;">${settings?.companyData?.name || 'RawaLite'}</div>`}
         </div>
         <div style="flex: 1;">
           <!-- Mittlere Spalte leer -->
@@ -852,21 +871,7 @@ function generateTemplateHTML(options: any): string {
           line-height: 1.3;  /* Reduced from 1.4 to 1.3 for more compact */
           font-size: 12px;   /* Slightly smaller base font */
         }
-        .header { 
-          display: flex; 
-          justify-content: space-between; 
-          align-items: flex-start; 
-          margin-bottom: 25px;  /* Reduced from 40px */
-        }
-        .company { 
-          font-weight: bold; 
-          color: ${primaryColor};
-          font-size: 14px;  /* Explicit font size */
-        }
-        .logo { 
-          max-width: 150px;  /* Reduced from 200px */
-          max-height: 60px;  /* Reduced from 80px */
-        }
+        /* Header wird durch headerTemplate/footerTemplate ersetzt */
         .customer { 
           margin-bottom: 20px;  /* Reduced from 30px */
           padding: 10px 15px;   /* Reduced padding */
@@ -1107,19 +1112,7 @@ function generateTemplateHTML(options: any): string {
       </style>
     </head>
     <body>
-      <div class="header">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-          <div style="flex: 1;">
-            <!-- Logo wird im PDF Header angezeigt, hier leer lassen -->
-          </div>
-          <div style="flex: 1;">
-            <!-- Mittlere Spalte leer -->
-          </div>
-          <div style="flex: 1;">
-            <!-- Firmenadresse wird im PDF Header angezeigt, hier leer lassen -->
-          </div>
-        </div>
-      </div>
+      <!-- Header wird durch headerTemplate ersetzt - kein duplicate header hier -->
 
       <div class="customer">
         <strong>${customer.name}</strong><br>

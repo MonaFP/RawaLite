@@ -190,7 +190,8 @@ export class PDFService {
     settings: any,
     isPreview: boolean = false,
     currentTheme?: any,
-    customColors?: any
+    customColors?: any,
+    logoData?: string | null // Base64-encoded Logo-Daten für PDF
   ): Promise<PDFResult> {
     try {
       console.log(`📄 Exporting timesheet ${timesheet.timesheetNumber} to PDF (preview: ${isPreview})`);
@@ -206,7 +207,8 @@ export class PDFService {
           timesheet,
           customer,
           settings,
-          currentDate: new Date().toLocaleDateString('de-DE')
+          currentDate: new Date().toLocaleDateString('de-DE'),
+          logo: logoData // Logo-Daten für Template-Einbettung
         },
         // Theme data at the top level for template access
         theme: pdfTheme ? {

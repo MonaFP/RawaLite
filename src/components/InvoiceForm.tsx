@@ -129,7 +129,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }
 
     const invoiceData: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'> = {
-      invoiceNumber: invoice?.invoiceNumber || `RE-${Date.now()}`,
+      invoiceNumber: invoice?.invoiceNumber || '',
       customerId: parseInt(customerId),
       offerId: offerId ? parseInt(offerId) : undefined,
       title,

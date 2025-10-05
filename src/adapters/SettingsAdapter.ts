@@ -29,7 +29,7 @@ export class SettingsAdapter {
         phone: mappedRow.phone || '',
         email: mappedRow.email || '',
         website: mappedRow.website || '',
-        taxNumber: mappedRow.taxId || '', // taxId -> taxNumber mapping
+        taxNumber: mappedRow.taxNumber || '', // mapFromSQL handles tax_id -> taxNumber
         vatId: mappedRow.vatId || '',
         kleinunternehmer: Boolean(mappedRow.kleinunternehmer), // INTEGER -> boolean
         bankName: mappedRow.bankName || '',
@@ -115,7 +115,7 @@ export class SettingsAdapter {
       phone: companyData.phone,
       email: companyData.email,
       website: companyData.website,
-      taxId: companyData.taxNumber, // taxNumber -> taxId mapping
+      taxNumber: companyData.taxNumber, // Let mapToSQL handle taxNumber -> tax_id
       vatId: companyData.vatId,
       kleinunternehmer: companyData.kleinunternehmer ? 1 : 0, // boolean -> INTEGER
       bankName: companyData.bankName,

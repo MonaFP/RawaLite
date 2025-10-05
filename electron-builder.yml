@@ -9,6 +9,8 @@ files:
 extraResources:
   - from: dist-web
     to: .
+  - from: public/rawalite-logo.png
+    to: rawalite-logo.png
 buildDependenciesFromSource: false
 nodeGypRebuild: false
 asarUnpack:

@@ -54,14 +54,13 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
         const color = statusColors[row.status as keyof typeof statusColors] || '#6b7280';
         const text = statusTexts[row.status as keyof typeof statusTexts] || row.status;
         return (
-          <span style={{
-            padding: "4px 8px",
-            borderRadius: "12px",
-            fontSize: "12px",
-            fontWeight: "500",
-            backgroundColor: color + "20",
-            color: color
-          }}>
+          <span 
+            className="offer-status-badge"
+            style={{
+              backgroundColor: color + "20",
+              color: color
+            }}
+          >
             {text}
           </span>
         );
@@ -81,14 +80,10 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       key: "id", 
       header: "Aktionen", 
       render: (row: Offer) => (
-        <div style={{ display: "flex", gap: "4px" }}>
+        <div className="offer-actions-container">
           <button
             className="btn btn-info"
             onClick={() => handlePreviewPDF(row)}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px"
-            }}
             title="PDF Vorschau anzeigen"
           >
             👁️ Vorschau
@@ -96,34 +91,22 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
           <button
             className="btn btn-warning"
             onClick={() => handleExportPDF(row)}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px"
-            }}
             title="PDF herunterladen"
           >
             💾 PDF
           </button>
-          <button className="btn btn-secondary" style={{ padding: "4px 8px", fontSize: "12px" }} onClick={() => { setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
+          <button className="btn btn-secondary" onClick={() => { setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
           <select
             value={row.status}
             onChange={(e) => handleStatusChange(row.id, e.target.value as Offer['status'])}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px",
-              border: "1px solid rgba(255,255,255,.1)",
-              borderRadius: "4px",
-              background: "rgba(17,24,39,.8)",
-              color: "var(--muted)",
-              cursor: "pointer"
-            }}
+            className="offer-status-select"
           >
             <option value="draft">Entwurf</option>
             <option value="sent">Gesendet</option>
             <option value="accepted">Angenommen</option>
             <option value="rejected">Abgelehnt</option>
           </select>
-          <button className="btn btn-danger" style={{ padding: "4px 8px", fontSize: "12px" }} onClick={() => { if (confirm("Dieses Angebot wirklich löschen?")) handleRemove(row.id); }}>Löschen</button>
+          <button className="btn btn-danger" onClick={() => { if (confirm("Dieses Angebot wirklich löschen?")) handleRemove(row.id); }}>Löschen</button>
         </div>
       ) 
     }
@@ -142,8 +125,10 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   }
 
   async function handleStatusChange(offerId: number, newStatus: Offer['status']) {
+    console.log('🔍 Status Change:', { offerId, newStatus, offersCount: offers.length });
     try {
       const offer = offers.find(o => o.id === offerId);
+      console.log('🔍 Found offer:', !!offer, offer ? { id: offer.id, currentStatus: offer.status } : 'not found');
       if (!offer) return;
       
       // Prepare status date fields
@@ -162,7 +147,9 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
           break;
       }
       
+      console.log('🔍 Calling updateOffer with:', { offerId, statusData: { status: newStatus, ...statusDates } });
       await updateOffer(offerId, { ...offer, status: newStatus, ...statusDates });
+      console.log('🔍 updateOffer completed successfully');
       
       // Success notification
       const statusLabels = {
@@ -172,7 +159,9 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
         'rejected': 'Abgelehnt'
       };
       showSuccess(`Angebot-Status auf "${statusLabels[newStatus]}" geändert`);
+      console.log('🔍 Success notification sent');
     } catch (error) {
+      console.error('🚨 Error in handleStatusChange:', error);
       showError('Fehler beim Ändern des Status');
     }
   }
@@ -228,10 +217,10 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
 
   return (
     <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+      <div className="offer-page-header">
         <div>
-          <h2 style={{ margin: "0 0 4px 0" }}>{title}</h2>
-          <div style={{ opacity: 0.7 }}>Verwalte deine Angebote und exportiere sie als PDF.</div>
+          <h2 className="offer-page-title">{title}</h2>
+          <div className="offer-page-subtitle">Verwalte deine Angebote und exportiere sie als PDF.</div>
         </div>
         <button 
           className={`btn ${mode === "create" ? "btn-secondary" : "btn-primary"}`}
@@ -244,14 +233,15 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       <Table<Offer>
         columns={columns as any}
         data={offers}
+        getRowKey={(offer) => `offer-${offer.id}-${offer.status}-${offer.updatedAt}`}
         emptyMessage="Noch keine Angebote erstellt."
       />
 
       {mode === "create" && (
-        <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,.1)" }}>
-          <div style={{ marginBottom: "16px" }}>
-            <h3 style={{ margin: "0 0 4px 0" }}>Neues Angebot</h3>
-            <div style={{ opacity: 0.7 }}>Erstelle ein neues Angebot.</div>
+        <div className="offer-form-section">
+          <div className="offer-form-header">
+            <h3 className="offer-form-title">Neues Angebot</h3>
+            <div className="offer-form-subtitle">Erstelle ein neues Angebot.</div>
           </div>
           <OfferForm
             customers={customers}
@@ -264,10 +254,10 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       )}
 
       {mode === "edit" && current && (
-        <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,.1)" }}>
-          <div style={{ marginBottom: "16px" }}>
-            <h3 style={{ margin: "0 0 4px 0" }}>Angebot bearbeiten</h3>
-            <div style={{ opacity: 0.7 }}>Bearbeite das Angebot "{current.title}".</div>
+        <div className="offer-form-section">
+          <div className="offer-form-header">
+            <h3 className="offer-form-title">Angebot bearbeiten</h3>
+            <div className="offer-form-subtitle">Bearbeite das Angebot "{current.title}".</div>
           </div>
           <OfferForm
             offer={current}

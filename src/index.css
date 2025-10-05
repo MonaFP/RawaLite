@@ -286,8 +286,52 @@ body{
   color: white;
 }
 
-/* Input field styles for better contrast */
-.card input, .card textarea, .card select {
+/* Status Dropdown Styles */
+.status-dropdown {
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 4px;
+  background: rgba(17,24,39,.8);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-dropdown:hover {
+  background: rgba(17,24,39,.9);
+  border-color: rgba(255,255,255,.2);
+}
+
+.status-dropdown:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(30, 58, 46, 0.2);
+}
+
+/* Theme-aware status dropdown variants */
+[data-theme="sage"] .status-dropdown {
+  background: rgba(74, 93, 90, 0.1);
+  border-color: rgba(125, 211, 160, 0.2);
+}
+
+[data-theme="sage"] .status-dropdown:hover {
+  background: rgba(74, 93, 90, 0.2);
+  border-color: rgba(125, 211, 160, 0.3);
+}
+
+[data-theme="sky"] .status-dropdown {
+  background: rgba(74, 91, 107, 0.1);
+  border-color: rgba(135, 206, 235, 0.2);
+}
+
+[data-theme="sky"] .status-dropdown:hover {
+  background: rgba(74, 91, 107, 0.2);
+  border-color: rgba(135, 206, 235, 0.3);
+}
+
+/* Input field styles for better contrast - exclude status dropdowns */
+.card input, .card textarea, .card select:not(.status-dropdown):not(.offer-status-select) {
   background: rgba(255,255,255,0.9) !important;
   border: 1px solid rgba(0,0,0,.2) !important;
   color: var(--text-primary, #1e293b) !important;
@@ -295,7 +339,7 @@ body{
   padding: 8px 12px !important;
 }
 
-.card input:focus, .card textarea:focus, .card select:focus {
+.card input:focus, .card textarea:focus, .card select:not(.status-dropdown):not(.offer-status-select):focus {
   outline: none !important;
   border-color: var(--accent, var(--sidebar-green)) !important;
   box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 30, 58, 46), 0.1) !important;
@@ -526,4 +570,80 @@ body{
 
 .line-item--sub:hover {
   margin-left: 42px; /* Leichte Hover-Animation */
+}
+
+/* ====== ANGEBOT PAGE SPEZIFISCHE STYLES ====== */
+
+/* Page Header */
+.offer-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.offer-page-title {
+  margin: 0 0 4px 0;
+}
+
+.offer-page-subtitle {
+  opacity: 0.7;
+}
+
+/* Actions Container - für die Button-Leiste in der Tabelle */
+.offer-actions-container {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Status Badge - für die farbigen Status Badges */
+.offer-status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Status Dropdown - NEUE spezifische Klasse */
+.offer-status-select {
+  padding: 6px 8px !important;
+  font-size: 12px !important;
+  border: 1px solid rgba(255,255,255,.15) !important;
+  border-radius: 4px !important;
+  background: rgba(17,24,39,.9) !important;
+  color: #d1d5db !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-width: 100px !important;
+}
+
+.offer-status-select:hover {
+  background: rgba(17,24,39,1) !important;
+  border-color: rgba(255,255,255,.25) !important;
+}
+
+.offer-status-select:focus {
+  outline: none !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(30, 58, 46, 0.2) !important;
+}
+
+/* Form Sections */
+.offer-form-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+
+.offer-form-header {
+  margin-bottom: 16px;
+}
+
+.offer-form-title {
+  margin: 0 0 4px 0;
+}
+
+.offer-form-subtitle {
+  opacity: 0.7;
 }
