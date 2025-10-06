@@ -59,10 +59,10 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
       header: "Status", 
       render: (row: Timesheet) => {
         const statusColors = {
-          'draft': '#6c757d',
-          'sent': '#007bff', 
-          'accepted': '#28a745',
-          'rejected': '#dc3545'
+          'draft': '#6b7280',   // Harmonisches Grau - konsistent mit Dashboard
+          'sent': '#f59e0b',    // Warmes Orange statt knalliges Blau
+          'accepted': '#22c55e', // Harmonisches Grün - konsistent mit Dashboard  
+          'rejected': '#ef4444' // Harmonisches Rot - konsistent mit Dashboard
         };
         const statusLabels = {
           'draft': 'Entwurf',
@@ -562,30 +562,17 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
             <div style={{opacity:.7}}>Erstelle einen neuen Leistungsnachweis (Grunddaten).</div>
           </div>
           
-          {/* Grunddaten als Tabelle */}
+          {/* Grunddaten als Tabelle - Desktop */}
           <div style={{border:"1px solid var(--color-border)", borderRadius:"8px", overflow:"hidden", marginBottom:"24px"}}>
-            <div style={{
-              display:"grid", 
-              gridTemplateColumns:"120px 1fr 120px 120px 100px", 
-              backgroundColor:"var(--color-table-header)", 
-              padding:"12px 16px", 
-              fontWeight:"600",
-              borderBottom:"1px solid var(--color-border)"
-            }}>
+            <div className="timesheet-create-header">
               <div>Kunde</div>
               <div>Titel</div>
               <div>Von</div>
               <div>Bis</div>
-              <div>Aktionen</div>
+              <div className="timesheet-actions">Aktionen</div>
             </div>
             
-            <div style={{
-              display:"grid", 
-              gridTemplateColumns:"120px 1fr 120px 120px 100px", 
-              padding:"12px 16px",
-              alignItems:"center",
-              gap:"8px"
-            }}>
+            <div className="timesheet-create-grid">
               <select 
                 className="form-control" 
                 style={{fontSize:"14px"}}
@@ -623,7 +610,7 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
                 onChange={(e) => setCreateFormData(prev => ({...prev, endDate: e.target.value}))}
               />
               
-              <div style={{display:"flex", gap:"4px"}}>
+              <div className="timesheet-actions" style={{display:"flex", gap:"4px"}}>
                 <button 
                   className="btn btn-success" 
                   style={{padding:"4px 8px", fontSize:"12px"}}
@@ -634,6 +621,71 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
                 <button 
                   className="btn btn-secondary" 
                   style={{padding:"4px 8px", fontSize:"12px"}}
+                  onClick={() => setMode("list")}
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+            
+            {/* Mobile Version */}
+            <div className="timesheet-create-mobile">
+              <div className="form-group">
+                <label>Kunde</label>
+                <select 
+                  className="form-control"
+                  value={createFormData.customerId}
+                  onChange={(e) => setCreateFormData(prev => ({...prev, customerId: e.target.value}))}
+                >
+                  <option value="">Kunde wählen...</option>
+                  {customers.map(customer => (
+                    <option key={customer.id} value={customer.id}>{customer.name}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label>Titel</label>
+                <input 
+                  type="text" 
+                  placeholder="Titel eingeben..." 
+                  className="form-control"
+                  value={createFormData.title}
+                  onChange={(e) => setCreateFormData(prev => ({...prev, title: e.target.value}))}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Von</label>
+                <input 
+                  type="date" 
+                  className="form-control"
+                  value={createFormData.startDate}
+                  onChange={(e) => setCreateFormData(prev => ({...prev, startDate: e.target.value}))}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Bis</label>
+                <input 
+                  type="date" 
+                  className="form-control"
+                  value={createFormData.endDate}
+                  onChange={(e) => setCreateFormData(prev => ({...prev, endDate: e.target.value}))}
+                />
+              </div>
+              
+              <div className="timesheet-actions" style={{display:"flex", gap:"8px"}}>
+                <button 
+                  className="btn btn-success" 
+                  style={{flex:1, padding:"12px", fontSize:"16px"}}
+                  onClick={handleCreateTimesheet}
+                >
+                  Erstellen
+                </button>
+                <button 
+                  className="btn btn-secondary" 
+                  style={{flex:1, padding:"12px", fontSize:"16px"}}
                   onClick={() => setMode("list")}
                 >
                   Abbrechen
@@ -701,14 +753,8 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
           </div>
 
           <div style={{border:"1px solid var(--color-border)", borderRadius:"8px", overflow:"hidden"}}>
-            <div style={{
-              display:"grid", 
-              gridTemplateColumns:"100px 1fr 80px 80px 80px 100px 80px 100px", 
-              backgroundColor:"var(--color-table-header)", 
-              padding:"12px 16px", 
-              fontWeight:"600",
-              borderBottom:"1px solid var(--color-border)"
-            }}>
+            {/* Desktop Positionen-Header */}
+            <div className="timesheet-positionen-header">
               <div>Datum</div>
               <div>Tätigkeit</div>
               <div>Von</div>
@@ -719,14 +765,9 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
               <div>Aktionen</div>
             </div>
             
-            {/* Existing activities */}
+            {/* Desktop Existing activities */}
             {current.activities?.map((activity, index) => (
-              <div key={activity.id} style={{
-                display:"grid", 
-                gridTemplateColumns:"100px 1fr 80px 80px 80px 100px 80px 100px", 
-                padding:"8px 16px",
-                alignItems:"center",
-                gap:"8px",
+              <div key={activity.id} className="timesheet-positionen-grid" style={{
                 borderBottom: index < current.activities.length - 1 ? "1px solid var(--color-border)" : "none"
               }}>
                 <div style={{fontSize:"14px"}}>
@@ -762,13 +803,35 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
               </div>
             ))}
             
-            {/* Add new position row */}
-            <div style={{
-              display:"grid", 
-              gridTemplateColumns:"100px 1fr 80px 80px 80px 100px 80px 100px", 
-              padding:"8px 16px",
-              alignItems:"center",
-              gap:"8px",
+            {/* Mobile Positionen */}
+            <div className="timesheet-positionen-mobile">
+              {current.activities?.map((activity, index) => (
+                <div key={activity.id} className="timesheet-position-card">
+                  <div className="position-header">
+                    <span>{activity.title}</span>
+                    <button 
+                      className="btn btn-danger" 
+                      style={{padding:"4px 8px", fontSize:"12px"}}
+                      onClick={() => handleRemovePosition(activity.id)}
+                    >
+                      🗑️ Löschen
+                    </button>
+                  </div>
+                  <div className="position-details">
+                    <div><strong>Datum:</strong><br/>{new Date(activity.date).toLocaleDateString('de-DE')}</div>
+                    <div><strong>Zeit:</strong><br/>{activity.startTime} - {activity.endTime}</div>
+                    <div><strong>Stunden:</strong><br/>{activity.hours}h</div>
+                    <div><strong>Stundensatz:</strong><br/>€{activity.hourlyRate}</div>
+                  </div>
+                  <div className="position-meta">
+                    <strong>Summe: €{activity.total.toFixed(2)}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Desktop Add new position row */}
+            <div className="timesheet-positionen-grid" style={{
               borderTop:"1px solid var(--color-border)",
               backgroundColor:"var(--color-bg-light)"
             }}>
@@ -838,6 +901,88 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
                 onClick={handleAddPosition}
               >
                 + Hinzufügen
+              </button>
+            </div>
+            
+            {/* Mobile Add Position Form */}
+            <div className="timesheet-add-position-mobile">
+              <div className="form-group">
+                <label>Datum</label>
+                <input 
+                  type="date" 
+                  className="form-control"
+                  value={newPosition.date}
+                  onChange={(e) => setNewPosition(prev => ({...prev, date: e.target.value}))}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Tätigkeit</label>
+                <select 
+                  className="form-control"
+                  value={newPosition.activityId}
+                  onChange={(e) => setNewPosition(prev => ({...prev, activityId: e.target.value}))}
+                >
+                  <option value="">Tätigkeit wählen...</option>
+                  {activities?.map(activity => (
+                    <option key={activity.id} value={activity.id}>{activity.title}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="time-inputs">
+                <div>
+                  <label>Von</label>
+                  <input 
+                    type="time" 
+                    className="form-control"
+                    value={newPosition.startTime}
+                    onChange={(e) => setNewPosition(prev => ({...prev, startTime: e.target.value}))}
+                  />
+                </div>
+                <div>
+                  <label>Bis</label>
+                  <input 
+                    type="time" 
+                    className="form-control"
+                    value={newPosition.endTime}
+                    onChange={(e) => setNewPosition(prev => ({...prev, endTime: e.target.value}))}
+                  />
+                </div>
+                <div>
+                  <label>Stunden</label>
+                  <input 
+                    type="number" 
+                    step="0.1"
+                    className="form-control"
+                    placeholder="8.0"
+                    value={newPosition.hours}
+                    onChange={(e) => setNewPosition(prev => ({...prev, hours: parseFloat(e.target.value) || 0}))}
+                  />
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label>Stundensatz (€)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  className="form-control"
+                  placeholder="50.00"
+                  value={newPosition.hourlyRate}
+                  onChange={(e) => setNewPosition(prev => ({...prev, hourlyRate: parseFloat(e.target.value) || 0}))}
+                />
+              </div>
+              
+              <div style={{textAlign:"center", marginBottom:"12px", fontSize:"16px", fontWeight:"600"}}>
+                Summe: €{(newPosition.hours * newPosition.hourlyRate).toFixed(2)}
+              </div>
+              
+              <button 
+                className="btn btn-success add-button"
+                onClick={handleAddPosition}
+              >
+                + Position hinzufügen
               </button>
             </div>
           </div>

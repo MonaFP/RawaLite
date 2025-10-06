@@ -7,30 +7,30 @@
 
 /* CSS-Variablen nur für Status-Updates */
 :root {
-  /* Status Farben - State-basiert */
-  --status-draft-color: #6b7280;
+  /* Status Farben - State-basiert - Harmonisch und theme-integriert */
+  --status-draft-color: #6b7280;    /* Harmonisches Grau */
   --status-draft-bg: #f9fafb;
   --status-draft-border: #d1d5db;
 
-  --status-sent-color: #3b82f6;
-  --status-sent-bg: #eff6ff;
-  --status-sent-border: #bfdbfe;
+  --status-sent-color: #f59e0b;     /* Warmes Orange statt knalliges Blau */
+  --status-sent-bg: #fffbeb;
+  --status-sent-border: #fed7aa;
 
-  --status-accepted-color: #10b981;
+  --status-accepted-color: #22c55e; /* Harmonisches Grün */
   --status-accepted-bg: #f0fdf4;
   --status-accepted-border: #bbf7d0;
 
-  --status-rejected-color: #ef4444;
+  --status-rejected-color: #ef4444; /* Harmonisches Rot */
   --status-rejected-bg: #fef2f2;
   --status-rejected-border: #fecaca;
 
-  --status-paid-color: #059669;
-  --status-paid-bg: #ecfdf5;
-  --status-paid-border: #a7f3d0;
+  --status-paid-color: #22c55e;     /* Konsistent mit accepted */
+  --status-paid-bg: #f0fdf4;
+  --status-paid-border: #bbf7d0;
 
-  --status-overdue-color: #dc2626;
+  --status-overdue-color: #ef4444;  /* Konsistent mit rejected */
   --status-overdue-bg: #fef2f2;
-  --status-overdue-border: #fca5a5;
+  --status-overdue-border: #fecaca;
 
   /* Status Element Basis-Variablen */
   --status-font-size: 14px;
