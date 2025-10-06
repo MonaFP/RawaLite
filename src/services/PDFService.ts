@@ -292,54 +292,33 @@ export class PDFService {
 
   /**
    * Process offer attachments for PDF embedding
-   * Converts file paths to base64 data for embedding in PDF
+   * Since we use database-only storage, attachments already have base64Data
    */
   private static async processOfferAttachments(offer: Offer): Promise<Offer> {
-    if (!offer.lineItems) return offer;
+    if (!offer.lineItems) {
+      console.log('📷 [PDF] No line items found in offer');
+      return offer;
+    }
 
-    const processedLineItems = await Promise.all(
-      offer.lineItems.map(async (lineItem) => {
-        if (!lineItem.attachments || lineItem.attachments.length === 0) {
-          return lineItem;
-        }
+    console.log('📷 [PDF] Processing attachments for', offer.lineItems.length, 'line items');
 
-        const processedAttachments = await Promise.all(
-          lineItem.attachments.map(async (attachment) => {
-            // If already has base64 data, use it
-            if (attachment.base64Data) {
-              return attachment;
-            }
+    // With database-only storage, attachments already have base64Data
+    // Just log what we have for debugging
+    offer.lineItems.forEach((lineItem) => {
+      if (lineItem.attachments && lineItem.attachments.length > 0) {
+        console.log(`📷 [PDF] Line item ${lineItem.id} has ${lineItem.attachments.length} attachments:`);
+        lineItem.attachments.forEach((attachment) => {
+          console.log(`📷 [PDF] - ${attachment.originalFilename} (${attachment.fileType}) - has base64: ${!!attachment.base64Data}`);
+          if (attachment.base64Data) {
+            console.log(`📷 [PDF] - Base64 data length: ${attachment.base64Data.length} chars`);
+          }
+        });
+      } else {
+        console.log(`📷 [PDF] Line item ${lineItem.id} has no attachments`);
+      }
+    });
 
-            // If has file path, try to load as base64
-            if (attachment.filePath) {
-              try {
-                const result = await (window as any).rawalite?.files?.getImageAsBase64?.(attachment.filePath);
-                if (result?.success && result.base64Data) {
-                  return {
-                    ...attachment,
-                    base64Data: result.base64Data
-                  };
-                }
-              } catch (error) {
-                console.warn(`Failed to load attachment ${attachment.filename}:`, error);
-              }
-            }
-
-            return attachment;
-          })
-        );
-
-        return {
-          ...lineItem,
-          attachments: processedAttachments
-        };
-      })
-    );
-
-    return {
-      ...offer,
-      lineItems: processedLineItems
-    };
+    return offer; // Return as-is since base64Data is already available
   }
 
   /**

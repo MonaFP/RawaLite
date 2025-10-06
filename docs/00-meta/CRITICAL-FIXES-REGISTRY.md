@@ -437,16 +437,16 @@ document.body.classList // in Main Process context
 
 ### **FIX-009: Database-Driven Status Updates with Optimistic Locking**
 - **ID:** `database-status-updates-optimistic-locking`
-- **Files:** `src/main/services/UpdateStatusService.ts`, `src/migrations/015_add_status_versioning.ts`, `electron/main.ts`, `electron/preload.ts`
+- **Files:** `src/main/services/EntityStatusService.ts`, `src/migrations/015_add_status_versioning.ts`, `electron/main.ts`, `electron/preload.ts`
 - **Pattern:** Complete status update system using database transactions with version-based optimistic locking
-- **Location:** UpdateStatusService backend, Migration 015, IPC handlers for all entity types
+- **Location:** EntityStatusService backend, Migration 015, IPC handlers for all entity types
 - **First Implemented:** v1.0.13
 - **Last Verified:** v1.0.13
 - **Status:** ✅ ACTIVE
 
-**Required Backend Service (UpdateStatusService.ts):**
+**Required Backend Service (EntityStatusService.ts):**
 ```typescript
-export class UpdateStatusService {
+export class EntityStatusService {
   async updateEntityStatus(params: {
     tableName: string;
     id: number;
@@ -514,21 +514,21 @@ END;
 ```typescript
 // Status update IPC handlers for all entity types
 ipcMain.handle('status:update-offer-status', async (event, params) => {
-  return await updateStatusService.updateEntityStatus({
+  return await entityStatusService.updateEntityStatus({
     tableName: 'offers',
     ...params
   });
 });
 
 ipcMain.handle('status:update-invoice-status', async (event, params) => {
-  return await updateStatusService.updateEntityStatus({
+  return await entityStatusService.updateEntityStatus({
     tableName: 'invoices', 
     ...params
   });
 });
 
 ipcMain.handle('status:update-timesheet-status', async (event, params) => {
-  return await updateStatusService.updateEntityStatus({
+  return await entityStatusService.updateEntityStatus({
     tableName: 'timesheets',
     ...params
   });

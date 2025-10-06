@@ -16,6 +16,7 @@ import { spawn } from 'child_process';
 import { app } from 'electron';
 
 import { githubApiService } from './GitHubApiService';
+import UpdateHistoryService from './UpdateHistoryService';
 import type {
   UpdateCheckResult,
   UpdateInfo,
@@ -92,6 +93,7 @@ export class UpdateManagerService {
   private currentDownloadController: AbortController | null = null;
   private retryTimeouts: Map<string, NodeJS.Timeout> = new Map();
   private currentCheckPromise: Promise<UpdateCheckResult> | null = null;
+  private historyService: UpdateHistoryService | null = null;
 
   constructor(config: Partial<UpdateConfig> = {}) {
     this.config = { ...DEFAULT_UPDATE_CONFIG, ...config };
@@ -105,6 +107,16 @@ export class UpdateManagerService {
       retryCount: 0,
       maxRetries: this.config.maxRetries
     };
+  }
+
+  /**
+   * Initialisiert den Update History Service mit Database-Verbindung
+   */
+  initializeHistoryService(database: any): void {
+    this.historyService = new UpdateHistoryService(database);
+    debugLog('UpdateManagerService', 'initializeHistoryService', {
+      sessionId: this.historyService.getCurrentSessionId()
+    });
   }
 
   /**
@@ -156,12 +168,19 @@ export class UpdateManagerService {
   }
 
   private async performUpdateCheck(): Promise<UpdateCheckResult> {
+    const startTime = Date.now();
+    const currentVersion = await this.getCurrentVersion();
+    
     try {
       this.setState({ checking: true, currentPhase: 'checking' });
       this.emit({ type: 'check-started' });
 
-      // Get current version
-      const currentVersion = await this.getCurrentVersion();
+      // Log check started
+      this.historyService?.addEntry({
+        event_type: 'check_started',
+        current_version: currentVersion,
+        user_action: 'manual' // TODO: Detect automatic vs manual
+      });
 
       // Check for updates using new GitHub API service
       const updateCheck = await githubApiService.checkForUpdate(currentVersion);
@@ -172,6 +191,15 @@ export class UpdateManagerService {
         latestVersion: updateCheck.latestVersion,
         latestRelease: updateCheck.latestRelease
       };
+
+      // Log successful check
+      this.historyService?.addEntry({
+        event_type: 'check_completed',
+        current_version: currentVersion,
+        target_version: updateCheck.latestVersion,
+        success: true,
+        duration_ms: Date.now() - startTime
+      });
 
       this.setState({ 
         checkResult: result,
@@ -198,6 +226,16 @@ export class UpdateManagerService {
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Log failed check
+      this.historyService?.addEntry({
+        event_type: 'check_failed',
+        current_version: currentVersion,
+        success: false,
+        error_message: errorMessage,
+        duration_ms: Date.now() - startTime
+      });
+
       this.setState({ 
         currentPhase: 'error',
         lastError: errorMessage
@@ -213,6 +251,8 @@ export class UpdateManagerService {
    * Start Update Download
    */
   async startDownload(updateInfo: UpdateInfo): Promise<string> {
+    const startTime = Date.now();
+    
     debugLog('UpdateManagerService', 'startDownload_begin', {
       updateInfo,
       currentState: this.state
@@ -229,6 +269,16 @@ export class UpdateManagerService {
         downloading: true, 
         currentPhase: 'downloading',
         userConsentGiven: true
+      });
+
+      // Log download started
+      this.historyService?.addEntry({
+        event_type: 'download_started',
+        current_version: await this.getCurrentVersion(),
+        target_version: updateInfo.version,
+        download_url: updateInfo.downloadUrl,
+        file_size_bytes: updateInfo.fileSize,
+        user_action: 'manual' // TODO: Detect automatic vs manual
       });
 
       debugLog('UpdateManagerService', 'state_updated', {
@@ -293,6 +343,15 @@ export class UpdateManagerService {
       this.emit({ type: 'verification-completed' });
       this.emit({ type: 'download-completed', filePath: targetPath });
 
+      // Log successful download
+      this.historyService?.addEntry({
+        event_type: 'download_completed',
+        current_version: await this.getCurrentVersion(),
+        target_version: updateInfo.version,
+        success: true,
+        duration_ms: Date.now() - startTime
+      });
+
       this.setState({ 
         currentPhase: 'completed',
         downloadStatus: {
@@ -352,6 +411,8 @@ export class UpdateManagerService {
    * Install Update
    */
   async installUpdate(filePath: string, options: Partial<InstallationOptions> = {}): Promise<void> {
+    const startTime = Date.now();
+    
     try {
       if (this.state.installing) {
         throw new Error('Installation already in progress');
@@ -363,6 +424,13 @@ export class UpdateManagerService {
       });
 
       this.emit({ type: 'installation-started' });
+
+      // Log installation started
+      this.historyService?.addEntry({
+        event_type: 'install_started',
+        current_version: await this.getCurrentVersion(),
+        user_action: 'manual'
+      });
 
       // Verify file exists and is valid
       const verification = await this.verifyInstaller(filePath);
@@ -382,6 +450,14 @@ export class UpdateManagerService {
 
       this.emit({ type: 'installation-completed' });
 
+      // Log successful installation
+      this.historyService?.addEntry({
+        event_type: 'install_completed',
+        current_version: await this.getCurrentVersion(),
+        success: true,
+        duration_ms: Date.now() - startTime
+      });
+
       if (installOptions.restartAfter) {
         this.emit({ type: 'restart-required' });
         this.setState({ currentPhase: 'restart-required' });
@@ -391,6 +467,16 @@ export class UpdateManagerService {
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Log failed installation
+      this.historyService?.addEntry({
+        event_type: 'install_failed',
+        current_version: await this.getCurrentVersion(),
+        success: false,
+        error_message: errorMessage,
+        duration_ms: Date.now() - startTime
+      });
+      
       this.setState({ 
         currentPhase: 'error',
         lastError: errorMessage,
