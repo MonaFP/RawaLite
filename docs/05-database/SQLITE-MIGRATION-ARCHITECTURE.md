@@ -163,7 +163,7 @@ const results = await window.rawalite.db.query("SELECT * FROM table", []);
 // package.json - Electron-spezifische Builds
 {
   "scripts": {
-    "postinstall": "electron-builder install-app-deps && npx electron-rebuild"
+    "postinstall": "electron-builder install-app-deps && pnpm run rebuild:electron"
   },
   "build": {
     "buildDependenciesFromSource": true,

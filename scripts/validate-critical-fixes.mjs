@@ -70,6 +70,12 @@ const CRITICAL_FIXES = {
     file: 'electron/main.ts',
     pattern: /ipcMain\.handle\('status:updateOfferStatus'[\s\S]*?updateEntityStatus[\s\S]*?ipcMain\.handle\('status:updateInvoiceStatus'/,
     description: 'IPC handlers for database-driven status updates'
+  },
+  
+  'abi-management-system': {
+    file: 'scripts/rebuild-native-electron.cjs',
+    pattern: /console\.log\('🔄 \[Rebuild\] Attempt 1: Standard rebuild\.\.\.'\);[\s\S]*?const r1 = spawnSync\('pnpm', \['rebuild', 'better-sqlite3', '--verbose'\][\s\S]*?console\.log\('🔄 \[Rebuild\] Attempt 2: Remove and reinstall\.\.\.'\);/,
+    description: 'ABI Management System with fallback recovery for better-sqlite3'
   }
 };
 
@@ -158,6 +164,11 @@ function validateAntiPatterns() {
       file: 'src/main/services/UpdateManagerService.ts', 
       pattern: /const stats = await fs\.stat\(filePath\);\s*$/m,
       description: 'fs.stat() without file system flush delay'
+    },
+    'dangerous-electron-rebuild': {
+      file: 'package.json',
+      pattern: /"rebuild:electron":\s*"electron-rebuild"/,
+      description: 'Dangerous npx electron-rebuild (compiles for Node.js ABI instead of Electron)'
     }
   };
   

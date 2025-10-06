@@ -109,9 +109,9 @@ Distribution Benefits:
     // ... weitere bestehende deps
   },
   "scripts": {
-    "build": "npm run build:renderer && npm run build:main",
-    "dist": "npm run build && electron-builder",
-    "dist:dir": "npm run build && electron-builder --dir",
+    "build": "pnpm run build:renderer && pnpm run build:main",
+    "dist": "pnpm run build && electron-builder",
+    "dist:dir": "pnpm run build && electron-builder --dir",
     
     // Neue/aktualisierte Scripts:
     "verify:no-cli": "node scripts/verify-no-cli-deps.js",

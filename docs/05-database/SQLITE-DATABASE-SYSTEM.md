@@ -187,7 +187,7 @@ const result = await BackupService.cleanOldBackups(keepCount = 10)
 **Native Module Build Error**:
 ```bash
 # Lösung: Electron native dependencies rebuilden
-npx electron-rebuild
+pnpm run rebuild:electron
 ```
 
 **Database Lock Error**:
