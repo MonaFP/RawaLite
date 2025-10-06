@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Offer, OfferLineItem, Customer, Package } from '../persistence/adapter';
+import type { Offer, OfferLineItem, OfferAttachment, Customer, Package } from '../persistence/adapter';
 import { usePersistence } from '../contexts/PersistenceContext';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { useNotifications } from '../contexts/NotificationContext';
@@ -82,6 +82,93 @@ export const OfferForm: React.FC<OfferFormProps> = ({
     vatRate,
     isKleinunternehmer
   );
+
+  // 📷 Image Upload Functions
+  const handleImageUpload = async (lineItemId: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          showError(`❌ ${file.name}: Nur Bilddateien sind erlaubt (PNG, JPG, GIF, etc.)`);
+          return null;
+        }
+
+        // Validate file size (max 5MB)
+        const maxSizeMB = 5;
+        const fileSizeMB = file.size / (1024 * 1024);
+        if (file.size > maxSizeMB * 1024 * 1024) {
+          showError(`❌ ${file.name}: Datei zu groß (${fileSizeMB.toFixed(2)} MB). Maximum: ${maxSizeMB} MB`);
+          return null;
+        }
+
+        // Convert to base64
+        return new Promise<string | null>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => {
+            showError(`❌ Fehler beim Lesen von ${file.name}`);
+            resolve(null);
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      const base64Results = await Promise.all(uploadPromises);
+      const validImages = base64Results.filter(result => result !== null) as string[];
+
+      if (validImages.length === 0) return;
+
+      // For new offers, temporarily store as base64 data in line items
+      // For existing offers, we would save to filesystem and database
+      setLineItems(items => items.map(item => {
+        if (item.id === lineItemId) {
+          const existingAttachments = item.attachments || [];
+          const newAttachments: OfferAttachment[] = validImages.map((base64Data, index) => ({
+            id: Date.now() + index, // Temporary ID for new attachments
+            offerId: offer?.id || 0,
+            lineItemId: lineItemId,
+            filename: `image_${Date.now()}_${index}.png`,
+            originalFilename: files[index].name,
+            fileType: files[index].type,
+            fileSize: files[index].size,
+            base64Data: base64Data,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }));
+
+          return {
+            ...item,
+            attachments: [...existingAttachments, ...newAttachments]
+          };
+        }
+        return item;
+      }));
+
+      showSuccess(`✅ ${validImages.length} Bild(er) erfolgreich hinzugefügt`);
+
+    } catch (error) {
+      console.error('Image upload error:', error);
+      showError('❌ Fehler beim Hochladen der Bilder');
+    }
+
+    // Reset file input
+    event.target.value = '';
+  };
+
+  const removeAttachment = (lineItemId: number, attachmentId: number) => {
+    setLineItems(items => items.map(item => {
+      if (item.id === lineItemId) {
+        return {
+          ...item,
+          attachments: (item.attachments || []).filter(att => att.id !== attachmentId)
+        };
+      }
+      return item;
+    }));
+  };
 
   const addLineItem = () => {
     // Use generateStableId for collision-free IDs
@@ -540,6 +627,51 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                       style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"12px", minHeight:"60px", resize:"vertical"}}
                       disabled={isSubmitting}
                     />
+                    
+                    {/* Anhänge-Sektion für Parent Items */}
+                    <div style={{marginTop: "8px", padding: "8px", backgroundColor: "rgba(0,0,0,.1)", borderRadius: "4px"}}>
+                      <label style={{fontSize: "12px", fontWeight: "500", marginBottom: "4px", display: "block"}}>
+                        📎 Anhänge (Screenshots, Bilder)
+                      </label>
+                      <div style={{display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap"}}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => handleImageUpload(parentItem.id, e)}
+                          style={{fontSize: "12px"}}
+                          disabled={isSubmitting}
+                        />
+                        <span style={{fontSize: "11px", color: "var(--muted)"}}>
+                          PNG, JPG bis 5MB pro Bild
+                        </span>
+                      </div>
+                      
+                      {/* Vorschau der hochgeladenen Bilder */}
+                      {parentItem.attachments && parentItem.attachments.length > 0 && (
+                        <div style={{marginTop: "8px", display: "flex", gap: "8px", flexWrap: "wrap"}}>
+                          {parentItem.attachments.map(attachment => (
+                            <div key={attachment.id} style={{position: "relative"}}>
+                              <img 
+                                src={attachment.base64Data || attachment.filePath} 
+                                alt={attachment.originalFilename}
+                                style={{width: "60px", height: "60px", objectFit: "cover", borderRadius: "4px", border: "1px solid rgba(255,255,255,.2)"}}
+                                title={`${attachment.originalFilename} (${Math.round(attachment.fileSize/1024)}KB)`}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeAttachment(parentItem.id, attachment.id)}
+                                style={{position: "absolute", top: "-4px", right: "-4px", background: "#ef4444", color: "white", border: "none", borderRadius: "50%", width: "16px", height: "16px", fontSize: "10px", cursor: "pointer"}}
+                                title="Bild entfernen"
+                                disabled={isSubmitting}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   {/* Sub-Items für dieses Parent gruppiert */}
@@ -605,6 +737,51 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                           style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"12px", minHeight:"40px", resize:"vertical"}}
                           disabled={isSubmitting}
                         />
+                        
+                        {/* Anhänge-Sektion für Sub Items */}
+                        <div style={{marginTop: "8px", padding: "6px", backgroundColor: "rgba(0,0,0,.05)", borderRadius: "4px"}}>
+                          <label style={{fontSize: "11px", fontWeight: "500", marginBottom: "4px", display: "block"}}>
+                            📎 Anhänge (Screenshots, Bilder)
+                          </label>
+                          <div style={{display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap"}}>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => handleImageUpload(subItem.id, e)}
+                              style={{fontSize: "11px"}}
+                              disabled={isSubmitting}
+                            />
+                            <span style={{fontSize: "10px", color: "var(--muted)"}}>
+                              PNG, JPG bis 5MB
+                            </span>
+                          </div>
+                          
+                          {/* Vorschau der hochgeladenen Bilder - kompakter für Sub-Items */}
+                          {subItem.attachments && subItem.attachments.length > 0 && (
+                            <div style={{marginTop: "6px", display: "flex", gap: "6px", flexWrap: "wrap"}}>
+                              {subItem.attachments.map(attachment => (
+                                <div key={attachment.id} style={{position: "relative"}}>
+                                  <img 
+                                    src={attachment.base64Data || attachment.filePath} 
+                                    alt={attachment.originalFilename}
+                                    style={{width: "40px", height: "40px", objectFit: "cover", borderRadius: "3px", border: "1px solid rgba(255,255,255,.2)"}}
+                                    title={`${attachment.originalFilename} (${Math.round(attachment.fileSize/1024)}KB)`}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeAttachment(subItem.id, attachment.id)}
+                                    style={{position: "absolute", top: "-3px", right: "-3px", background: "#ef4444", color: "white", border: "none", borderRadius: "50%", width: "14px", height: "14px", fontSize: "9px", cursor: "pointer"}}
+                                    title="Bild entfernen"
+                                    disabled={isSubmitting}
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                 </React.Fragment>

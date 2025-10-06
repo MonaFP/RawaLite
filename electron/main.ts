@@ -1222,6 +1222,29 @@ function generateTemplateHTML(options: any): string {
                   <td>
                     ${parentItem.title}
                     ${parentItem.description ? `<br><small>${convertMarkdownToHtml(parentItem.description)}</small>` : ''}
+                    ${parentItem.attachments && parentItem.attachments.length > 0 ? `
+                      <div style="margin-top: 8px;">
+                        <strong style="font-size: 11px; color: #666;">📎 Anhänge:</strong>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                          ${parentItem.attachments.map((attachment: any) => 
+                            attachment.base64Data ? `
+                              <div style="display: inline-block; text-align: center;">
+                                <img src="${attachment.base64Data}" 
+                                     alt="${attachment.originalFilename}" 
+                                     style="width: 80px; height: 60px; object-fit: cover; border: 1px solid #ddd; border-radius: 3px;" />
+                                <div style="font-size: 9px; color: #888; margin-top: 2px; max-width: 80px; word-wrap: break-word;">
+                                  ${attachment.originalFilename}
+                                </div>
+                              </div>
+                            ` : `
+                              <div style="font-size: 10px; color: #999; border: 1px dashed #ccc; padding: 4px; border-radius: 3px;">
+                                📎 ${attachment.originalFilename}
+                              </div>
+                            `
+                          ).join('')}
+                        </div>
+                      </div>
+                    ` : ''}
                   </td>
                   <td>${parentItem.quantity}</td>
                   <td>€${parentItem.unitPrice?.toFixed(2) || '0.00'}</td>
@@ -1236,6 +1259,29 @@ function generateTemplateHTML(options: any): string {
                     <td>
                       ↳ ${subItem.title}
                       ${subItem.description ? `<br><small>${convertMarkdownToHtml(subItem.description)}</small>` : ''}
+                      ${subItem.attachments && subItem.attachments.length > 0 ? `
+                        <div style="margin-top: 6px; margin-left: 16px;">
+                          <strong style="font-size: 10px; color: #666;">📎 Anhänge:</strong>
+                          <div style="display: flex; gap: 4px; margin-top: 3px; flex-wrap: wrap;">
+                            ${subItem.attachments.map((attachment: any) => 
+                              attachment.base64Data ? `
+                                <div style="display: inline-block; text-align: center;">
+                                  <img src="${attachment.base64Data}" 
+                                       alt="${attachment.originalFilename}" 
+                                       style="width: 60px; height: 45px; object-fit: cover; border: 1px solid #ddd; border-radius: 2px;" />
+                                  <div style="font-size: 8px; color: #888; margin-top: 1px; max-width: 60px; word-wrap: break-word;">
+                                    ${attachment.originalFilename}
+                                  </div>
+                                </div>
+                              ` : `
+                                <div style="font-size: 9px; color: #999; border: 1px dashed #ccc; padding: 2px; border-radius: 2px;">
+                                  📎 ${attachment.originalFilename}
+                                </div>
+                              `
+                            ).join('')}
+                          </div>
+                        </div>
+                      ` : ''}
                     </td>
                     <td>${subItem.quantity}</td>
                     <td>€${subItem.unitPrice?.toFixed(2) || '0.00'}</td>
@@ -1276,3 +1322,118 @@ function generateTemplateHTML(options: any): string {
     </html>
   `;
 }
+
+// 📁 File Management IPC Handlers for Attachments
+import { join, extname, basename } from 'path';
+
+// Save image file to user uploads directory
+ipcMain.handle('files:saveImage', async (event, imageData: string, filename: string, subDir?: string) => {
+  try {
+    console.log(`💾 Saving image: ${filename} to ${subDir || 'root'}`);
+    
+    // Get user uploads directory
+    const userDataPath = app.getPath('userData');
+    const uploadsDir = join(userDataPath, 'assets', 'uploads', subDir || '');
+    
+    // Ensure directory exists
+    await fs.mkdir(uploadsDir, { recursive: true });
+    
+    // Generate unique filename to prevent conflicts
+    const timestamp = Date.now();
+    const ext = extname(filename);
+    const baseName = basename(filename, ext);
+    const uniqueFilename = `${baseName}_${timestamp}${ext}`;
+    
+    const filePath = join(uploadsDir, uniqueFilename);
+    
+    // Convert base64 to buffer and save
+    const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+    
+    await fs.writeFile(filePath, buffer);
+    
+    console.log(`✅ Image saved successfully: ${filePath}`);
+    return {
+      success: true,
+      filePath: filePath
+    };
+    
+  } catch (error) {
+    console.error('❌ Failed to save image:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown file save error'
+    };
+  }
+});
+
+// Delete file from filesystem
+ipcMain.handle('files:deleteFile', async (event, filePath: string) => {
+  try {
+    console.log(`🗑️ Deleting file: ${filePath}`);
+    
+    // Security check - only allow deletion from uploads directory
+    const userDataPath = app.getPath('userData');
+    const uploadsDir = join(userDataPath, 'assets', 'uploads');
+    
+    if (!filePath.startsWith(uploadsDir)) {
+      throw new Error('File deletion only allowed from uploads directory');
+    }
+    
+    // Check if file exists before attempting deletion
+    await fs.access(filePath);
+    await fs.unlink(filePath);
+    
+    console.log(`✅ File deleted successfully: ${filePath}`);
+    return {
+      success: true
+    };
+    
+  } catch (error) {
+    console.error('❌ Failed to delete file:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown file deletion error'
+    };
+  }
+});
+
+// Get image as base64 for display/PDF export
+ipcMain.handle('files:getImageAsBase64', async (event, filePath: string) => {
+  try {
+    console.log(`📷 Reading image as base64: ${filePath}`);
+    
+    // Security check - only allow reading from uploads directory
+    const userDataPath = app.getPath('userData');
+    const uploadsDir = join(userDataPath, 'assets', 'uploads');
+    
+    if (!filePath.startsWith(uploadsDir)) {
+      throw new Error('File reading only allowed from uploads directory');
+    }
+    
+    // Read file and convert to base64
+    const buffer = await fs.readFile(filePath);
+    const ext = extname(filePath).toLowerCase();
+    
+    // Determine MIME type
+    let mimeType = 'image/jpeg';
+    if (ext === '.png') mimeType = 'image/png';
+    else if (ext === '.gif') mimeType = 'image/gif';
+    else if (ext === '.webp') mimeType = 'image/webp';
+    
+    const base64Data = `data:${mimeType};base64,${buffer.toString('base64')}`;
+    
+    console.log(`✅ Image read successfully: ${filePath} (${Math.round(buffer.length/1024)}KB)`);
+    return {
+      success: true,
+      base64Data: base64Data
+    };
+    
+  } catch (error) {
+    console.error('❌ Failed to read image:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown file read error'
+    };
+  }
+});

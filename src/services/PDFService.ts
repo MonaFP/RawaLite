@@ -47,8 +47,16 @@ export class PDFService {
         discountAmount: offer.discountAmount,
         subtotalBeforeDiscount: offer.subtotalBeforeDiscount,
         subtotal: offer.subtotal,
-        total: offer.total
+        total: offer.total,
+        lineItemsWithAttachments: offer.lineItems?.map(item => ({ 
+          id: item.id, 
+          title: item.title,
+          attachmentCount: item.attachments?.length || 0 
+        }))
       });
+      
+      // Process attachments - convert file paths to base64 for PDF embedding
+      const processedOffer = await this.processOfferAttachments(offer);
       
       // Generate theme data for PDF styling
       const pdfTheme = currentTheme ? this.getCurrentPDFTheme(currentTheme, customColors) : null;
@@ -58,7 +66,7 @@ export class PDFService {
       const templateData = {
         templateType: 'offer' as const,
         data: {
-          offer,
+          offer: processedOffer,
           customer,
           settings,
           currentDate: new Date().toLocaleDateString('de-DE'),
@@ -280,6 +288,58 @@ export class PDFService {
         pdfa2bSupported: false
       };
     }
+  }
+
+  /**
+   * Process offer attachments for PDF embedding
+   * Converts file paths to base64 data for embedding in PDF
+   */
+  private static async processOfferAttachments(offer: Offer): Promise<Offer> {
+    if (!offer.lineItems) return offer;
+
+    const processedLineItems = await Promise.all(
+      offer.lineItems.map(async (lineItem) => {
+        if (!lineItem.attachments || lineItem.attachments.length === 0) {
+          return lineItem;
+        }
+
+        const processedAttachments = await Promise.all(
+          lineItem.attachments.map(async (attachment) => {
+            // If already has base64 data, use it
+            if (attachment.base64Data) {
+              return attachment;
+            }
+
+            // If has file path, try to load as base64
+            if (attachment.filePath) {
+              try {
+                const result = await (window as any).rawalite?.files?.getImageAsBase64?.(attachment.filePath);
+                if (result?.success && result.base64Data) {
+                  return {
+                    ...attachment,
+                    base64Data: result.base64Data
+                  };
+                }
+              } catch (error) {
+                console.warn(`Failed to load attachment ${attachment.filename}:`, error);
+              }
+            }
+
+            return attachment;
+          })
+        );
+
+        return {
+          ...lineItem,
+          attachments: processedAttachments
+        };
+      })
+    );
+
+    return {
+      ...offer,
+      lineItems: processedLineItems
+    };
   }
 
   /**

@@ -1,4 +1,4 @@
-import type { PersistenceAdapter, Settings, Customer, Offer, Invoice, Package, Activity, Timesheet, TimesheetActivity } from "../persistence/adapter";
+import type { PersistenceAdapter, Settings, Customer, Offer, Invoice, Package, Activity, Timesheet, TimesheetActivity, OfferAttachment } from "../persistence/adapter";
 import { DbClient } from "../services/DbClient";
 import { FieldMapper, mapFromSQL, mapFromSQLArray, mapToSQL, convertSQLQuery } from "../lib/field-mapper";
 
@@ -405,17 +405,26 @@ export class SQLiteAdapter implements PersistenceAdapter {
       parentItemId: number | null;
     }>(lineItemQuery, [id]);
 
+    // Load attachments for each line item
+    const lineItemsWithAttachments = await Promise.all(
+      lineItems.map(async (item) => {
+        const attachments = await this.getOfferAttachments(id, item.id);
+        return {
+          id: item.id,
+          title: item.title,
+          description: item.description || undefined,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          total: item.total,
+          parentItemId: item.parentItemId || undefined,
+          attachments: attachments
+        };
+      })
+    );
+
     return {
       ...offer,
-      lineItems: lineItems.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description || undefined,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        total: item.total,
-        parentItemId: item.parentItemId || undefined
-      }))
+      lineItems: lineItemsWithAttachments
     };
   }
 
@@ -1021,6 +1030,98 @@ export class SQLiteAdapter implements PersistenceAdapter {
       { sql: `DELETE FROM timesheet_activities WHERE timesheet_id = ?`, params: [id] },
       { sql: `DELETE FROM timesheets WHERE id = ?`, params: [id] }
     ]);
+  }
+
+  // OFFER ATTACHMENTS
+  async createOfferAttachment(attachment: Omit<OfferAttachment, 'id' | 'createdAt' | 'updatedAt'>): Promise<OfferAttachment> {
+    const now = nowIso();
+    const mappedAttachment = mapToSQL({
+      ...attachment,
+      createdAt: now,
+      updatedAt: now
+    });
+
+    const result = await this.client.exec(
+      `INSERT INTO offer_attachments 
+       (offer_id, line_item_id, filename, original_filename, file_type, file_size, file_path, base64_data, description, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        mappedAttachment.offer_id,
+        mappedAttachment.line_item_id || null,
+        mappedAttachment.filename,
+        mappedAttachment.original_filename,
+        mappedAttachment.file_type,
+        mappedAttachment.file_size,
+        mappedAttachment.file_path || null,
+        mappedAttachment.base64_data || null,
+        mappedAttachment.description || null,
+        mappedAttachment.created_at,
+        mappedAttachment.updated_at
+      ]
+    );
+
+    const created = await this.client.query<any>(
+      `SELECT * FROM offer_attachments WHERE id = ?`,
+      [result.lastInsertRowid]
+    );
+
+    return mapFromSQL(created[0]) as OfferAttachment;
+  }
+
+  async getOfferAttachments(offerId: number, lineItemId?: number): Promise<OfferAttachment[]> {
+    let query = `SELECT * FROM offer_attachments WHERE offer_id = ?`;
+    const params = [offerId];
+
+    if (lineItemId !== undefined) {
+      query += ` AND line_item_id = ?`;
+      params.push(lineItemId);
+    }
+
+    query += ` ORDER BY created_at ASC`;
+
+    const rows = await this.client.query<any>(query, params);
+    return mapFromSQLArray(rows) as OfferAttachment[];
+  }
+
+  async deleteOfferAttachment(attachmentId: number): Promise<void> {
+    await this.client.exec(
+      `DELETE FROM offer_attachments WHERE id = ?`,
+      [attachmentId]
+    );
+  }
+
+  async updateOfferAttachment(id: number, patch: Partial<OfferAttachment>): Promise<OfferAttachment> {
+    const current = await this.client.query<any>(
+      `SELECT * FROM offer_attachments WHERE id = ?`,
+      [id]
+    );
+
+    if (current.length === 0) {
+      throw new Error(`Attachment with id ${id} not found`);
+    }
+
+    const next = { ...mapFromSQL(current[0]), ...patch, updatedAt: nowIso() };
+    const mappedNext = mapToSQL(next);
+
+    await this.client.exec(
+      `UPDATE offer_attachments SET 
+       filename = ?, original_filename = ?, file_type = ?, file_size = ?, 
+       file_path = ?, base64_data = ?, description = ?, updated_at = ?
+       WHERE id = ?`,
+      [
+        mappedNext.filename,
+        mappedNext.original_filename,
+        mappedNext.file_type,
+        mappedNext.file_size,
+        mappedNext.file_path || null,
+        mappedNext.base64_data || null,
+        mappedNext.description || null,
+        mappedNext.updated_at,
+        id
+      ]
+    );
+
+    return next as OfferAttachment;
   }
 
   // READY STATUS
