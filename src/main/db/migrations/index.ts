@@ -23,6 +23,7 @@ import * as migration011 from './011_extend_offer_line_items';
 import * as migration012 from './012_add_tax_office_field';
 import * as migration013 from './013_add_discount_system';
 import * as migration014 from './014_add_item_origin_system';
+import * as migration015 from './015_add_status_versioning';
 
 export const migrations: Migration[] = [
   {
@@ -108,6 +109,12 @@ export const migrations: Migration[] = [
     name: '014_add_item_origin_system',
     up: migration014.up,
     down: migration014.down
+  },
+  {
+    version: 15,
+    name: '015_add_status_versioning',
+    up: migration015.up,
+    down: migration015.down
   }
 ];
 

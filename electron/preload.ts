@@ -154,6 +154,59 @@ contextBridge.exposeInMainWorld('rawalite', {
     verifyUpdateFile: (filePath: string) => 
       ipcRenderer.invoke('updates:verifyFile', filePath) as Promise<boolean>,
   },
+  // 🔄 Status Update System API
+  status: {
+    // Update status for different entity types
+    updateOfferStatus: (params: { id: number; status: string; expectedVersion: number }) =>
+      ipcRenderer.invoke('status:updateOfferStatus', params) as Promise<{
+        id: number;
+        status: string;
+        version: number;
+        updated_at: string;
+        sent_at?: string | null;
+        accepted_at?: string | null;
+        rejected_at?: string | null;
+      }>,
+    updateInvoiceStatus: (params: { id: number; status: string; expectedVersion: number }) =>
+      ipcRenderer.invoke('status:updateInvoiceStatus', params) as Promise<{
+        id: number;
+        status: string;
+        version: number;
+        updated_at: string;
+        sent_at?: string | null;
+        paid_at?: string | null;
+        overdue_at?: string | null;
+        cancelled_at?: string | null;
+      }>,
+    updateTimesheetStatus: (params: { id: number; status: string; expectedVersion: number }) =>
+      ipcRenderer.invoke('status:updateTimesheetStatus', params) as Promise<{
+        id: number;
+        status: string;
+        version: number;
+        updated_at: string;
+        sent_at?: string | null;
+        accepted_at?: string | null;
+        rejected_at?: string | null;
+      }>,
+    
+    // Get status history for an entity
+    getHistory: (params: { entityType: 'offers' | 'invoices' | 'timesheets'; entityId: number }) =>
+      ipcRenderer.invoke('status:getHistory', params) as Promise<Array<{
+        id: number;
+        old_status: string | null;
+        new_status: string;
+        changed_at: string;
+        changed_by: string;
+      }>>,
+    
+    // Get entity with version for optimistic locking
+    getEntityForUpdate: (params: { entityType: 'offers' | 'invoices' | 'timesheets'; entityId: number }) =>
+      ipcRenderer.invoke('status:getEntityForUpdate', params) as Promise<{
+        id: number;
+        status: string;
+        version: number;
+      } | null>,
+  },
 });
 
 // 📄 PDF API (v1.7.5 Rollback) - Separate namespace for compatibility

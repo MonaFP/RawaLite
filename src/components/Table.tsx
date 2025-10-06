@@ -12,12 +12,14 @@ export interface TableProps<T>{
   data: T[];
   emptyMessage?: string;
   getRowKey?: (row: T, index: number) => string | number;
+  className?: string; // Support for custom CSS classes
+  containerClassName?: string; // Support for custom container classes
 }
 
-export function Table<T>({ columns, data, emptyMessage, getRowKey }: TableProps<T>){
+export function Table<T>({ columns, data, emptyMessage, getRowKey, className = "table", containerClassName = "card" }: TableProps<T>){
   return (
-    <div className="card">
-      <table className="table">
+    <div className={containerClassName}>
+      <table className={className}>
         <thead>
           <tr>
             {columns.map(c => (

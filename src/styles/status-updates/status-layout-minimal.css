@@ -1,0 +1,74 @@
+/**
+ * Status Updates - Layout CSS - MINIMAL FUNKTIONSFÄHIGE VERSION
+ * 
+ * Nur die essentiellen Regeln die für funktionierende Dropdowns notwendig sind
+ */
+
+/* Status-Card Container - minimal */
+.status-card {
+  background: rgba(255,255,255,0.95);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: visible !important;
+}
+
+/* Status-Table Container - minimal */
+.status-table-container {
+  overflow: visible !important;
+  position: relative;
+}
+
+/* Status-Table - DIE KRITISCHE REGEL */
+.status-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  
+  /* KRITISCH: overflow visible für Dropdown-Menüs */
+  overflow: visible !important;
+}
+
+/* Status-Table Header */
+.status-table th {
+  text-align: left;
+  padding: 12px;
+  background: rgba(0,0,0,.05);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(0,0,0,.1);
+}
+
+/* Status-Table Data Cells */
+.status-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  vertical-align: middle;
+}
+
+/* Status-Table Rows */
+.status-table tr:hover {
+  background: rgba(0,0,0,.02);
+}
+
+/* Status-Actions Container - minimal aber funktional */
+.status-actions-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow: visible !important;
+}
+
+/* Status-Dropdown Cell - KRITISCH */
+.status-actions-container .status-dropdown-cell {
+  flex-shrink: 0;
+  min-width: 100px;
+  overflow: visible !important;
+}
+
+.status-table .status-dropdown-cell {
+  overflow: visible !important;
+  position: relative;
+  z-index: 1000;
+}

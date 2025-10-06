@@ -8,6 +8,7 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 - **[LESSONS-LEARNED-v1-5-2-theme-navigation-system.md](./LESSONS-LEARNED-v1-5-2-theme-navigation-system.md)** - ✅ **COMPLETE:** v1.5.2 Beautiful Pastel Themes & Enhanced Navigation system implementation lessons
 - **[LESSONS-LEARNED-SUB-ITEM-POSITIONING-ISSUE.md](./solved/LESSONS-LEARNED-SUB-ITEM-POSITIONING-ISSUE.md)** - ✅ **SOLVED:** Sub-Item Visual Hierarchy Debug Journey
 - **[LESSONS-LEARNED-status-dropdown-css-spezifitaet.md](./LESSONS-LEARNED-status-dropdown-css-spezifitaet.md)** - 🔴 **UNGELÖST:** Status Dropdown CSS-Spezifitätsproblem trotz mehrerer Lösungsversuche
+- **[LESSONS-LEARNED-status-updates-css-refactoring.md](./LESSONS-LEARNED-status-updates-css-refactoring.md)** - ✅ **GELÖST:** Modulare CSS-Struktur für Status-Updates mit kompletter Isolation
 
 ### Database & Schema
 - **[DATABASE-SCHEMA-MIGRATION-FIX.md](./solved/LESSONS-LEARNED-database-schema-migration-fix.md)** - ✅ **SOLVED:** Critical fixes for NOT NULL constraint errors, schema mismatches, and missing table migrations (v1.0.1)
@@ -69,6 +70,7 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 | UI/Theme System Issues | v1.5.2 Development | ✅ Backup color restoration + 3-mode navigation | LESSONS-LEARNED-v1-5-2-theme-navigation-system.md |
 | Sub-Item Visual Hierarchy | UI Components | ✅ React.Fragment Gruppierung + SQLiteAdapter ID-Mapping | solved/LESSONS-LEARNED-SUB-ITEM-POSITIONING-ISSUE.md |
 | Status Dropdown CSS-Spezifität | UI Components | 🔴 UNGELÖST - CSS-Konflikte trotz mehrerer Lösungsversuche | LESSONS-LEARNED-status-dropdown-css-spezifitaet.md |
+| Status Updates CSS-Architektur | UI Components | ✅ GELÖST - Modulare CSS-Struktur mit kompletter Isolation | LESSONS-LEARNED-status-updates-css-refactoring.md |
 | Database Schema Migration Issues | Database | ✅ Migration 007+008 + Field-Mapper Fix | DATABASE-SCHEMA-MIGRATION-FIX.md |
 | Schema Mismatch | Database | Field-Mapper System | SCHEMA-CONSISTENCY-LESSONS.md |
 | Fehlende Nummernkreise | Production | ✅ Migration 006 | NUMMERNKREISE-PRODUCTION-BUG.md |

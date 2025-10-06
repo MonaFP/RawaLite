@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Table } from '../components/Table';
 import { InvoiceForm } from '../components/InvoiceForm';
+import { StatusControl } from '../components/StatusControl';
 import { SearchAndFilterBar, useTableSearch, FilterConfig } from '../components/SearchAndFilter';
 import { useInvoices } from '../hooks/useInvoices';
 import { useCustomers } from '../hooks/useCustomers';
@@ -121,16 +122,17 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
         const color = statusColors[row.status as keyof typeof statusColors] || '#6b7280';
         const text = statusTexts[row.status as keyof typeof statusTexts] || row.status;
         return (
-          <span style={{
-            padding: "4px 8px",
-            borderRadius: "12px",
-            fontSize: "12px",
-            fontWeight: "500",
-            backgroundColor: color + "20",
-            color: color
-          }}>
-            {text}
-          </span>
+          <div 
+            style={{
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              backgroundColor: color,
+              margin: '0 auto',
+              flexShrink: 0
+            }}
+            title={text} // Tooltip zeigt den Status-Text
+          />
         );
       }
     },
@@ -148,44 +150,94 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
       key: "id", 
       header: "Aktionen", 
       render: (row: Invoice) => (
-        <div style={{ display: "flex", gap: "4px" }}>
+        <div style={{display:"flex", gap:"4px", flexWrap:"wrap", minWidth:"0"}}>
           <button
-            className="btn btn-info"
+            className="btn btn-info responsive-btn"
             onClick={() => handlePreviewPDF(row)}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px"
-            }}
             title="PDF Vorschau anzeigen"
           >
-            👁️ Vorschau
+            <span className="btn-icon">👁️</span>
+            <span className="btn-text">Vorschau</span>
           </button>
           <button
-            className="btn btn-warning"
+            className="btn btn-warning responsive-btn"
             onClick={() => handleExportPDF(row)}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px"
-            }}
             title="PDF herunterladen"
           >
-            💾 PDF
+            <span className="btn-icon">💾</span>
+            <span className="btn-text">PDF</span>
           </button>
-          <button className="btn btn-secondary" onClick={() => { setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
-          <select
-            value={row.status}
-            onChange={(e) => handleStatusChange(row.id, e.target.value as Invoice['status'])}
-            className="status-dropdown"
+          <button 
+            className="btn btn-secondary responsive-btn"
+            onClick={() => { setCurrent(row); setMode("edit"); }}
           >
-            <option value="draft">Entwurf</option>
-            <option value="sent">Gesendet</option>
-            <option value="paid">Bezahlt</option>
-            <option value="overdue">Überfällig</option>
-            <option value="cancelled">Storniert</option>
-          </select>
-          <button className="btn btn-danger" onClick={() => { if (confirm("Diese Rechnung wirklich löschen?")) handleRemove(row.id); }}>Löschen</button>
+            <span className="btn-icon">✏️</span>
+            <span className="btn-text">Bearbeiten</span>
+          </button>
+          <button 
+            className="btn btn-danger responsive-btn"
+            onClick={() => { if (confirm("Diese Rechnung wirklich löschen?")) handleRemove(row.id); }}
+          >
+            <span className="btn-icon">🗑️</span>
+            <span className="btn-text">Löschen</span>
+          </button>
         </div>
       ) 
+    },
+    {
+      key: "statusControl",
+      header: "Status ändern",
+      render: (row: Invoice) => (
+        <StatusControl
+          row={{
+            id: row.id,
+            status: row.status as any,
+            version: (row as any).version || 0
+          }}
+          kind="invoice"
+          onUpdated={(updatedEntity) => {
+            // Update the invoice in the list with new status and version
+            const updatedInvoice = {
+              ...row,
+              status: updatedEntity.status,
+              version: updatedEntity.version,
+              updatedAt: updatedEntity.updated_at,
+              sentAt: updatedEntity.sent_at,
+              paidAt: updatedEntity.paid_at,
+              overdueAt: updatedEntity.overdue_at,
+              cancelledAt: updatedEntity.cancelled_at
+            };
+            
+            // Update the invoice via the hook (this will trigger a re-render)
+            updateInvoice(row.id, updatedInvoice);
+            
+            showSuccess(`Status erfolgreich geändert zu: ${updatedEntity.status}`);
+          }}
+          onError={(error) => {
+            showError(`Status-Änderung fehlgeschlagen: ${error.message}`);
+          }}
+          className="status-dropdown-override"
+          buttonStyle={{
+            backgroundColor: 'var(--card-bg)',
+            color: 'var(--text-primary)', 
+            padding: '8px 12px',
+            border: '1px solid var(--accent)',
+            borderRadius: '4px',
+            fontSize: '12px',
+            minWidth: '120px',
+            fontFamily: 'inherit',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          }}
+          dropdownStyle={{
+            backgroundColor: 'var(--card-bg)',
+            border: '1px solid var(--accent)',
+            borderRadius: '6px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            backdropFilter: 'blur(8px)'
+          } as React.CSSProperties}
+        />
+      )
     }
   ]), [customers]);
 
@@ -201,45 +253,7 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     setCurrent(null);
   }
 
-  async function handleStatusChange(invoiceId: number, newStatus: Invoice['status']) {
-    try {
-      const invoice = invoices.find(i => i.id === invoiceId);
-      if (!invoice) return;
-
-      // Prepare status date fields
-      const now = new Date().toISOString();
-      const statusDates: Partial<Invoice> = {};
-
-      switch (newStatus) {
-        case 'sent':
-          statusDates.sentAt = now;
-          break;
-        case 'paid':
-          statusDates.paidAt = now;
-          break;
-        case 'overdue':
-          statusDates.overdueAt = now;
-          break;
-        case 'cancelled':
-          statusDates.cancelledAt = now;
-          break;
-      }
-
-      await updateInvoice(invoiceId, { ...invoice, status: newStatus, ...statusDates });
-
-      // Success notification
-      const statusLabels = {
-        'draft': 'Entwurf',
-        'sent': 'Gesendet',
-        'paid': 'Bezahlt',
-        'overdue': 'Überfällig',
-        'cancelled': 'Storniert'
-      };
-      showSuccess(`Rechnungs-Status auf "${statusLabels[newStatus]}" geändert`);
-    } catch (error) {
-      showError('Fehler beim Ändern des Status');
-    }
-  }
+  // handleStatusChange function removed - replaced by StatusControl component
 
   async function handleRemove(id: number) {
     await deleteInvoice(id);
@@ -292,12 +306,15 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
 
   return (
     <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+      <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"24px"}}>
         <div>
-          <h2 style={{ margin: "0 0 4px 0" }}>{title}</h2>
-          <div style={{ opacity: 0.7 }}>Verwalte deine Rechnungen und exportiere sie als PDF.</div>
+          <h2 style={{margin:"0 0 4px 0"}}>{title}</h2>
+          <div style={{opacity:.7}}>Verwalte deine Rechnungen und exportiere sie als PDF.</div>
         </div>
-        <button className="btn" onClick={() => setMode(mode === "create" ? "list" : "create")}>
+        <button 
+          className={`btn ${mode === "create" ? "btn-secondary" : "btn-primary"}`}
+          onClick={() => setMode(mode === "create" ? "list" : "create")}
+        >
           {mode === "create" ? "Abbrechen" : "Neue Rechnung"}
         </button>
       </div>
@@ -317,18 +334,127 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
         totalCount={invoices.length}
       />
       
-      <Table<Invoice>
-        columns={columns as any}
-        data={filteredData}
-        emptyMessage="Keine Rechnungen gefunden."
-        getRowKey={(invoice) => `invoice-${invoice.id}-${invoice.status}-${invoice.updatedAt}`}
-      />
+      <div className="table-responsive">
+        <div className="table-card-view">
+          {/* Card Layout für Mobile (wird per CSS aktiviert) */}
+          <div className="table-cards">
+            {filteredData.map((invoice) => {
+              const customer = customers.find(c => c.id === invoice.customerId);
+              return (
+                <div key={`card-${invoice.id}`} className="table-card">
+                  <div className="table-card-header">
+                    <span className="table-card-title">
+                      {customer ? customer.name : 'Unbekannt'}
+                    </span>
+                    <span className="table-card-number">{invoice.invoiceNumber}</span>
+                  </div>
+                  <div className="table-card-content">
+                    <div className="table-card-row">
+                      <span className="table-card-label">Titel:</span>
+                      <span className="table-card-value">{invoice.title}</span>
+                    </div>
+                    <div className="table-card-row">
+                      <span className="table-card-label">Status:</span>
+                      <div className="table-card-value">
+                        <StatusControl
+                          kind="invoice"
+                          row={{ ...invoice, version: invoice.id }}
+                          onUpdated={() => {
+                            // Refresh invoices data
+                            window.location.reload();
+                          }}
+                          onError={(error) => showError(error.message)}
+                        />
+                      </div>
+                    </div>
+                    <div className="table-card-row">
+                      <span className="table-card-label">Betrag:</span>
+                      <span className="table-card-value">€{invoice.total?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div className="table-card-row">
+                      <span className="table-card-label">Fällig am:</span>
+                      <span className="table-card-value">{invoice.dueDate || '-'}</span>
+                    </div>
+                  </div>
+                  <div className="table-card-actions">
+                    <button
+                      className="responsive-btn"
+                      onClick={() => handlePreviewPDF(invoice)}
+                      title="Vorschau"
+                    >
+                      <span className="btn-icon">👁</span>
+                      <span className="btn-text">Vorschau</span>
+                    </button>
+                    <button
+                      className="responsive-btn"
+                      onClick={async () => {
+                        const customer = customers.find(c => c.id === invoice.customerId);
+                        if (!customer) {
+                          showError('Kunde nicht gefunden');
+                          return;
+                        }
+                        try {
+                          const logoData = settings?.companyData?.logo || null;
+                          const result = await PDFService.exportInvoiceToPDF(invoice, customer, settings, false, currentTheme, undefined, logoData);
+                          if (result.success) {
+                            showSuccess('PDF erfolgreich generiert');
+                          } else {
+                            showError(`PDF Export fehlgeschlagen: ${result.error}`);
+                          }
+                        } catch (error) {
+                          console.error('PDF Export failed:', error);
+                          showError('PDF Export fehlgeschlagen');
+                        }
+                      }}
+                      title="PDF"
+                    >
+                      <span className="btn-icon">📄</span>
+                      <span className="btn-text">PDF</span>
+                    </button>
+                    <button
+                      className="responsive-btn"
+                      onClick={() => {
+                        setCurrent(invoice);
+                        setMode("edit");
+                      }}
+                      title="Bearbeiten"
+                    >
+                      <span className="btn-icon">✏️</span>
+                      <span className="btn-text">Bearbeiten</span>
+                    </button>
+                    <button
+                      className="responsive-btn"
+                      onClick={async () => {
+                        if (confirm(`Rechnung ${invoice.invoiceNumber} wirklich löschen?`)) {
+                          await deleteInvoice(invoice.id);
+                        }
+                      }}
+                      title="Löschen"
+                      style={{ color: '#dc3545' }}
+                    >
+                      <span className="btn-icon">🗑️</span>
+                      <span className="btn-text">Löschen</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        <Table<Invoice>
+          columns={columns as any}
+          data={filteredData}
+          emptyMessage="Keine Rechnungen gefunden."
+          getRowKey={(invoice) => `invoice-${invoice.id}-${invoice.status}-${invoice.updatedAt}`}
+        />
+      </div>
 
       {mode === "create" && (
-        <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,.1)" }}>
-          <div style={{ marginBottom: "16px" }}>
-            <h3 style={{ margin: "0 0 4px 0" }}>Neue Rechnung</h3>
-            <div style={{ opacity: 0.7 }}>Erstelle eine neue Rechnung.</div>
+        <div style={{marginTop:"24px", paddingTop:"24px", borderTop:"1px solid rgba(0,0,0,.1)"}}>
+          <div style={{marginBottom:"16px"}}>
+            <h3 style={{margin:"0 0 4px 0"}}>Neue Rechnung</h3>
+            <div style={{opacity:.7}}>Erstelle eine neue Rechnung.</div>
           </div>
           <InvoiceForm
             customers={customers}
@@ -340,10 +466,10 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
       )}
 
       {mode === "edit" && current && (
-        <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,.1)" }}>
-          <div style={{ marginBottom: "16px" }}>
-            <h3 style={{ margin: "0 0 4px 0" }}>Rechnung bearbeiten</h3>
-            <div style={{ opacity: 0.7 }}>Bearbeite die Rechnung "{current.title}".</div>
+        <div style={{marginTop:"24px", paddingTop:"24px", borderTop:"1px solid rgba(0,0,0,.1)"}}>
+          <div style={{marginBottom:"16px"}}>
+            <h3 style={{margin:"0 0 4px 0"}}>Rechnung bearbeiten</h3>
+            <div style={{opacity:.7}}>Bearbeite die Rechnung "{current.title}".</div>
           </div>
           <InvoiceForm
             invoice={current}

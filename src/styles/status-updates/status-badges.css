@@ -1,0 +1,125 @@
+/**
+ * Status Updates - Badge CSS
+ * 
+ * Badge-Styles für Status-Anzeige (readonly Status-Anzeigen)
+ * Verwendet in Tabellen, Listen und Übersichten
+ */
+
+/* Basis-Badge für alle Status-Anzeigen */
+.status-badge-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Sizing */
+  padding: 4px 8px;
+  min-width: 60px;
+  height: 24px;
+  
+  /* Border und Background */
+  border: 1px solid transparent;
+  border-radius: var(--status-border-radius);
+  
+  /* Typography */
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  
+  /* Transition */
+  transition: var(--status-transition);
+}
+
+/* Spezifische Badge-Typen */
+.status-badge-offer {
+  /* Spezifische Styles für Angebote-Badges */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge-invoice {
+  /* Spezifische Styles für Rechnungen-Badges */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge-timesheet {
+  /* Spezifische Styles für Timesheet-Badges */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Status-spezifische Badge-Farben */
+.status-badge-base.status-state-draft {
+  color: var(--status-draft-color);
+  background-color: var(--status-draft-bg);
+  border-color: var(--status-draft-border);
+}
+
+.status-badge-base.status-state-sent {
+  color: var(--status-sent-color);
+  background-color: var(--status-sent-bg);
+  border-color: var(--status-sent-border);
+}
+
+.status-badge-base.status-state-accepted {
+  color: var(--status-accepted-color);
+  background-color: var(--status-accepted-bg);
+  border-color: var(--status-accepted-border);
+}
+
+.status-badge-base.status-state-rejected {
+  color: var(--status-rejected-color);
+  background-color: var(--status-rejected-bg);
+  border-color: var(--status-rejected-border);
+}
+
+.status-badge-base.status-state-paid {
+  color: var(--status-paid-color);
+  background-color: var(--status-paid-bg);
+  border-color: var(--status-paid-border);
+}
+
+.status-badge-base.status-state-overdue {
+  color: var(--status-overdue-color);
+  background-color: var(--status-overdue-bg);
+  border-color: var(--status-overdue-border);
+}
+
+/* Badge Varianten */
+.status-badge-small {
+  padding: 2px 6px;
+  height: 20px;
+  font-size: 10px;
+  min-width: 50px;
+}
+
+.status-badge-large {
+  padding: 6px 12px;
+  height: 32px;
+  font-size: 14px;
+  min-width: 80px;
+}
+
+/* Interactive Badge (hover effects) */
+.status-badge-interactive {
+  cursor: pointer;
+}
+
+.status-badge-interactive:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Badge mit Icon */
+.status-badge-with-icon {
+  padding-left: 6px;
+  gap: 4px;
+}
+
+.status-badge-icon {
+  font-size: 0.8em;
+  line-height: 1;
+}

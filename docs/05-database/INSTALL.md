@@ -44,7 +44,7 @@ pnpm test
 
 ```bash
 # Development Build
-pnpm dev              # Startet Vite + Electron im Dev-Modus
+pnpm dev:all              # Startet Vite + Electron im Dev-Modus
 
 # Production Build
 pnpm build            # TypeScript + Vite Production Build

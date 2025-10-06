@@ -1,7 +1,7 @@
 # RawaLite Documentation Index
 
-**Version:** 1.0.13  
-**Letzte Aktualisierung:** 04. Oktober 2025
+**Version:** 1.0.13+  
+**Letzte Aktualisierung:** 05. Oktober 2025
 
 ## 📚 Dokumentationsstruktur
 
@@ -10,12 +10,16 @@
 - `DOCUMENTATION-STRUCTURE-GUIDE.md` - Anleitung zur Dokumentationsorganisation
 - `INSTRUCTIONS-KI.md` - Richtlinien für KI-Entwicklung
 
+### 02-architecture/ - System Architecture
+- `TIMESHEETS-ARCHITECTURE.md` - **[NEU]** Vollständige Architektur-Dokumentation der TimesheetsPage
+
 ### 05-database/ - Datenbank-Design
 - `MIGRATION-013-DISCOUNT-SYSTEM.md` - **[NEU]** Vollständige Dokumentation Migration 013 mit Rollback-Strategien
 
 ### 08-ui/ - User Interface & Components
 - `SUB-ITEM-VISUAL-HIERARCHY-FIX-2025-10-04.md` - **[GELÖST]** Vollständige Sub-Item Visual Hierarchy Lösung
 - `SUB-ITEM-IMPLEMENTATION-PLAN.md` - **[ABGESCHLOSSEN]** Implementierungsplan erfolgreich umgesetzt
+- `UI-PATTERNS-table-forms.md` - **[NEU]** Table-like Forms Pattern für konsistente UI
 
 ### 09-pdf/ - PDF-Generation
 - `THEME-SYSTEM-FIXES.md` - **[NEU]** Lösung der Theme-Color-Probleme für alle 6 Themes
@@ -23,8 +27,16 @@
 ### 12-lessons/ - Lessons Learned
 - `DISCOUNT-SYSTEM-IMPLEMENTATION.md` - **[NEU]** Umfassende Dokumentation der Rabattsystem-Implementierung
 - `LESSONS-LEARNED-DISCOUNT-PROJECT.md` - **[NEU]** Erkenntnisse und Best Practices aus dem Rabattsystem-Projekt
+- `LESSONS-LEARNED-timesheets-redesign.md` - **[NEU]** Komplette Dokumentation des TimesheetsPage Redesigns
 
 ## 🆕 Neue Inhalte (Oktober 2025)
+
+### ✅ TimesheetsPage VOLLSTÄNDIG ÜBERARBEITET (05.10.2025):
+1. **Database Layer Fixes** - Korrekte SQL-Tabellennamen und Field-Mappings
+2. **Activities Tab Restoration** - Wiederherstellung der originalen UX-Struktur in Einstellungen
+3. **Zwei-Ebenen UI-System** - Leistungsnachweis erstellen vs. Positionen verwalten
+4. **Table-like Forms Pattern** - Konsistente, grid-basierte Formular-Layouts
+5. **Vollständige CRUD-Funktionalität** - Create, Read, Update, Delete mit proper state management
 
 ### ✅ Sub-Item System VOLLSTÄNDIG GELÖST:
 1. **React.Fragment-Gruppierung** - Parent-Items mit gruppierten Sub-Items (24px Einrückung)

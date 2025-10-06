@@ -4,6 +4,7 @@ import path from 'node:path'
 import { existsSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
 import { marked } from 'marked'
 import { UpdateManagerService } from '../src/main/services/UpdateManagerService'
+import { updateEntityStatus, getStatusHistory, getEntityForUpdate } from '../src/main/services/UpdateStatusService'
 // 🗄️ Database imports with correct named exports syntax
 import { getDb, prepare, exec, tx } from '../src/main/db/Database'
 import { runAllMigrations } from '../src/main/db/MigrationService'
@@ -318,6 +319,78 @@ ipcMain.handle('updates:getCurrentVersion', async () => {
 
 ipcMain.handle('updates:startDownload', async (event, updateInfo) => {
   return await updateManager.startDownload(updateInfo)
+})
+
+// === STATUS UPDATE SYSTEM ===
+// Handler for updating entity status with optimistic locking
+ipcMain.handle('status:updateOfferStatus', async (event, params: { id: number; status: string; expectedVersion: number }) => {
+  try {
+    const db = getDb()
+    const result = updateEntityStatus(db, 'offers', {
+      id: params.id,
+      newStatus: params.status as any,
+      expectedVersion: params.expectedVersion,
+      changedBy: 'user'
+    })
+    return result
+  } catch (error) {
+    console.error('Failed to update offer status:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('status:updateInvoiceStatus', async (event, params: { id: number; status: string; expectedVersion: number }) => {
+  try {
+    const db = getDb()
+    const result = updateEntityStatus(db, 'invoices', {
+      id: params.id,
+      newStatus: params.status as any,
+      expectedVersion: params.expectedVersion,
+      changedBy: 'user'
+    })
+    return result
+  } catch (error) {
+    console.error('Failed to update invoice status:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('status:updateTimesheetStatus', async (event, params: { id: number; status: string; expectedVersion: number }) => {
+  try {
+    const db = getDb()
+    const result = updateEntityStatus(db, 'timesheets', {
+      id: params.id,
+      newStatus: params.status as any,
+      expectedVersion: params.expectedVersion,
+      changedBy: 'user'
+    })
+    return result
+  } catch (error) {
+    console.error('Failed to update timesheet status:', error)
+    throw error
+  }
+})
+
+// Handler for getting status history
+ipcMain.handle('status:getHistory', async (event, params: { entityType: string; entityId: number }) => {
+  try {
+    const db = getDb()
+    return getStatusHistory(db, params.entityType as any, params.entityId)
+  } catch (error) {
+    console.error('Failed to get status history:', error)
+    throw error
+  }
+})
+
+// Handler for getting entity for update (with version for optimistic locking)
+ipcMain.handle('status:getEntityForUpdate', async (event, params: { entityType: string; entityId: number }) => {
+  try {
+    const db = getDb()
+    return getEntityForUpdate(db, params.entityType as any, params.entityId)
+  } catch (error) {
+    console.error('Failed to get entity for update:', error)
+    throw error
+  }
 })
 
 ipcMain.handle('updates:cancelDownload', async () => {

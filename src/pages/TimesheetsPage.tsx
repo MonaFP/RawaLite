@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Table } from '../components/Table';
 import { TimesheetForm } from '../components/TimesheetForm';
+import { StatusControl } from '../components/StatusControl';
 import { useTimesheets } from '../hooks/useTimesheets';
 import { useActivities } from '../hooks/useActivities';
 import { useCustomers } from '../hooks/useCustomers';
@@ -24,6 +25,24 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Timesheet | null>(null);
 
+  // Form state for create mode
+  const [createFormData, setCreateFormData] = useState({
+    customerId: '',
+    title: '',
+    startDate: '',
+    endDate: ''
+  });
+
+  // Form state for new position
+  const [newPosition, setNewPosition] = useState({
+    date: new Date().toISOString().split('T')[0],
+    activityId: '',
+    startTime: '09:00',
+    endTime: '17:00',
+    hours: 8,
+    hourlyRate: 50
+  });
+
   const columns = useMemo(() => ([
     { key: "timesheetNumber", header: "Nummer" },
     { 
@@ -40,30 +59,29 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
       header: "Status", 
       render: (row: Timesheet) => {
         const statusColors = {
-          draft: '#6b7280',
-          sent: '#3b82f6', 
-          accepted: '#10b981',
-          rejected: '#ef4444'
+          'draft': '#6c757d',
+          'sent': '#007bff', 
+          'accepted': '#28a745',
+          'rejected': '#dc3545'
         };
-        const statusTexts = {
-          draft: 'Entwurf',
-          sent: 'Versendet',
-          accepted: 'Akzeptiert',
-          rejected: 'Abgelehnt'
+        const statusLabels = {
+          'draft': 'Entwurf',
+          'sent': 'Versendet',
+          'accepted': 'Akzeptiert', 
+          'rejected': 'Abgelehnt'
         };
-        const color = statusColors[row.status as keyof typeof statusColors] || '#6b7280';
-        const text = statusTexts[row.status as keyof typeof statusTexts] || row.status;
         return (
-          <span style={{
-            padding: "4px 8px",
-            borderRadius: "12px",
-            fontSize: "12px",
-            fontWeight: "500",
-            backgroundColor: color + "20",
-            color: color
-          }}>
-            {text}
-          </span>
+          <div 
+            style={{
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              backgroundColor: statusColors[row.status],
+              margin: '0 auto',
+              flexShrink: 0
+            }}
+            title={statusLabels[row.status]} // Tooltip zeigt den Status-Text
+          />
         );
       }
     },
@@ -95,63 +113,75 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
       key: "id", 
       header: "Aktionen", 
       render: (row: Timesheet) => (
-        <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
           <button
-            className="btn btn-info"
+            className="responsive-btn btn btn-info"
             onClick={() => handlePreviewPDF(row)}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px"
-            }}
             title="PDF Vorschau anzeigen"
           >
-            👁️ Vorschau
+            <span className="btn-icon">👁️</span>
+            <span className="btn-text">Vorschau</span>
           </button>
           <button
-            className="btn btn-warning"
+            className="responsive-btn btn btn-warning"
             onClick={() => handleExportPDF(row)}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px"
-            }}
             title="PDF herunterladen"
           >
-            💾 PDF
+            <span className="btn-icon">💾</span>
+            <span className="btn-text">PDF</span>
           </button>
           <button 
-            className="btn btn-secondary" 
-            style={{ padding: "4px 8px", fontSize: "12px" }} 
+            className="responsive-btn btn btn-secondary" 
             onClick={() => { setCurrent(row); setMode("edit"); }}
           >
-            Bearbeiten
+            <span className="btn-icon">✏️</span>
+            <span className="btn-text">Bearbeiten</span>
           </button>
-          <select
-            value={row.status}
-            onChange={(e) => handleStatusChange(row.id, e.target.value as Timesheet['status'])}
-            className="status-dropdown"
-          >
-            <option value="draft">Entwurf</option>
-            <option value="sent">Versendet</option>
-            <option value="accepted">Akzeptiert</option>
-            <option value="rejected">Abgelehnt</option>
-          </select>
           <button 
-            className="btn btn-success" 
-            style={{ padding: "4px 8px", fontSize: "12px" }} 
+            className="responsive-btn btn btn-success" 
             onClick={() => handleDuplicate(row)}
             title="Kopie erstellen"
           >
-            📋 Kopie
+            <span className="btn-icon">📋</span>
+            <span className="btn-text">Kopie</span>
           </button>
           <button 
-            className="btn btn-danger" 
-            style={{ padding: "4px 8px", fontSize: "12px" }} 
+            className="responsive-btn btn btn-danger" 
             onClick={() => { if (confirm("Diesen Leistungsnachweis wirklich löschen?")) handleRemove(row.id); }}
           >
-            Löschen
+            <span className="btn-icon">🗑️</span>
+            <span className="btn-text">Löschen</span>
           </button>
         </div>
       ) 
+    },
+    { 
+      key: "statusUpdate", 
+      header: "Status ändern", 
+      render: (row: Timesheet) => (
+        <select
+          value={row.status}
+          onChange={(e) => handleStatusChange(row.id, e.target.value as Timesheet['status'])}
+          className="timesheets-status-dropdown"
+          style={{
+            backgroundColor: '#ffffff',
+            color: '#1f2937',
+            padding: '8px 12px',
+            border: '2px solid #007bff',
+            borderRadius: '4px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            minWidth: '120px',
+            position: 'relative',
+            zIndex: 9999
+          }}
+        >
+          <option value="draft">Entwurf</option>
+          <option value="sent">Versendet</option>
+          <option value="accepted">Akzeptiert</option>
+          <option value="rejected">Abgelehnt</option>
+        </select>
+      )
     }
   ]), [customers]);
 
@@ -216,6 +246,133 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
     }
   }
 
+  async function handleCreateTimesheet() {
+    if (!createFormData.customerId || !createFormData.title || !createFormData.startDate || !createFormData.endDate) {
+      showError('Bitte alle Felder ausfüllen');
+      return;
+    }
+
+    try {
+      const timesheetData = {
+        customerId: parseInt(createFormData.customerId),
+        title: createFormData.title,
+        startDate: createFormData.startDate,
+        endDate: createFormData.endDate,
+        notes: '',
+        status: 'draft' as const,
+        vatRate: 19,
+        subtotal: 0,
+        vatAmount: 0,
+        total: 0,
+        activities: [],
+        timesheetNumber: `LN-${new Date().getFullYear()}-${String(timesheets.length + 1).padStart(3, '0')}`
+      };
+      
+      await createTimesheet(timesheetData);
+      showSuccess('Leistungsnachweis erfolgreich erstellt');
+      setCreateFormData({ customerId: '', title: '', startDate: '', endDate: '' });
+      setMode("list");
+    } catch (error) {
+      showError('Fehler beim Erstellen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+    }
+  }
+
+  async function handleAddPosition() {
+    if (!current) return;
+    
+    if (!newPosition.activityId || !newPosition.date) {
+      showError('Bitte Tätigkeit und Datum auswählen');
+      return;
+    }
+
+    try {
+      const selectedActivity = activities?.find(a => a.id === parseInt(newPosition.activityId));
+      const hours = parseFloat(newPosition.hours.toString()) || 0;
+      const hourlyRate = parseFloat(newPosition.hourlyRate.toString()) || 0;
+      const total = hours * hourlyRate;
+
+      const newTimesheetActivity = {
+        id: Date.now(), // Temporary ID
+        timesheetId: current.id,
+        activityId: parseInt(newPosition.activityId),
+        title: selectedActivity?.title || 'Unbekannte Tätigkeit',
+        description: selectedActivity?.description || '',
+        date: newPosition.date,
+        startTime: newPosition.startTime,
+        endTime: newPosition.endTime,
+        hours: hours,
+        hourlyRate: hourlyRate,
+        total: total,
+        isBreak: false
+      };
+
+      const updatedActivities = [...(current.activities || []), newTimesheetActivity];
+      const newSubtotal = updatedActivities.reduce((sum, act) => sum + act.total, 0);
+      const newVatAmount = newSubtotal * (current.vatRate / 100);
+      const newTotal = newSubtotal + newVatAmount;
+
+      const updatedTimesheet = {
+        ...current,
+        activities: updatedActivities,
+        subtotal: newSubtotal,
+        vatAmount: newVatAmount,
+        total: newTotal
+      };
+
+      await updateTimesheet(current.id, updatedTimesheet);
+      setCurrent(updatedTimesheet);
+      setNewPosition({
+        date: new Date().toISOString().split('T')[0],
+        activityId: '',
+        startTime: '09:00',
+        endTime: '17:00',
+        hours: 8,
+        hourlyRate: 50
+      });
+      showSuccess('Position erfolgreich hinzugefügt');
+    } catch (error) {
+      showError('Fehler beim Hinzufügen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+    }
+  }
+
+  async function handleRemovePosition(activityId: number) {
+    if (!current) return;
+
+    try {
+      const updatedActivities = current.activities.filter(act => act.id !== activityId);
+      const newSubtotal = updatedActivities.reduce((sum, act) => sum + act.total, 0);
+      const newVatAmount = newSubtotal * (current.vatRate / 100);
+      const newTotal = newSubtotal + newVatAmount;
+
+      const updatedTimesheet = {
+        ...current,
+        activities: updatedActivities,
+        subtotal: newSubtotal,
+        vatAmount: newVatAmount,
+        total: newTotal
+      };
+
+      await updateTimesheet(current.id, updatedTimesheet);
+      setCurrent(updatedTimesheet);
+      showSuccess('Position erfolgreich entfernt');
+    } catch (error) {
+      showError('Fehler beim Entfernen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+    }
+  }
+
+  async function handleSaveTimesheet() {
+    if (!current) return;
+
+    try {
+      await updateTimesheet(current.id, current);
+      showSuccess('Leistungsnachweis erfolgreich gespeichert');
+      setMode("list");
+      setCurrent(null);
+    } catch (error) {
+      showError('Fehler beim Speichern: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+    }
+  }
+
   const handleExportPDF = async (timesheet: Timesheet) => {
     const customer = customers.find(c => c.id === timesheet.customerId);
     if (!customer) {
@@ -262,61 +419,446 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
   if (error) return <div className="card">Fehler: {error}</div>;
 
   return (
-    <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+    <div className="card page-timesheets">
+      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"16px"}}>
         <div>
-          <h2 style={{ margin: "0 0 4px 0" }}>{title}</h2>
-          <div style={{ opacity: 0.7 }}>Verwalte deine Leistungsnachweise und exportiere sie als PDF.</div>
+          <h2 style={{margin:"0 0 4px 0"}}>{title}</h2>
+          <div style={{opacity:.7}}>Verwalte deine Leistungsnachweise und exportiere sie als PDF.</div>
         </div>
         <button className="btn" onClick={() => setMode(mode === "create" ? "list" : "create")}>
           {mode === "create" ? "Abbrechen" : "Neuer Leistungsnachweis"}
         </button>
       </div>
       
-      <Table<Timesheet>
-        columns={columns as any}
-        data={timesheets}
-        emptyMessage="Noch keine Leistungsnachweise erstellt."
-      />
+      <div className="table-responsive">
+        <div className="table-card-view">
+          {/* Card Layout für Mobile (wird per CSS aktiviert) */}
+          <div className="table-cards">
+            {timesheets.map((timesheet) => {
+              const customer = customers.find(c => c.id === timesheet.customerId);
+              return (
+                <div key={`card-${timesheet.id}`} className="table-card">
+                  <div className="table-card-header">
+                    <span className="table-card-title">
+                      {customer ? customer.name : 'Unbekannt'}
+                    </span>
+                    <span className="table-card-number">{timesheet.timesheetNumber}</span>
+                  </div>
+                  <div className="table-card-content">
+                    <div className="table-card-row">
+                      <span className="table-card-label">Titel:</span>
+                      <span className="table-card-value">{timesheet.title}</span>
+                    </div>
+                    <div className="table-card-row">
+                      <span className="table-card-label">Zeitraum:</span>
+                      <span className="table-card-value">{timesheet.startDate} - {timesheet.endDate}</span>
+                    </div>
+                    <div className="table-card-row">
+                      <span className="table-card-label">Stunden:</span>
+                      <span className="table-card-value">
+                        {timesheet.activities.reduce((sum, act) => sum + act.hours, 0).toFixed(1)}h
+                      </span>
+                    </div>
+                    <div className="table-card-row">
+                      <span className="table-card-label">Status:</span>
+                      <div className="table-card-value">
+                        <StatusControl
+                          kind="timesheet"
+                          row={{ ...timesheet, version: timesheet.id }}
+                          onUpdated={() => {
+                            // Refresh timesheets data
+                            window.location.reload();
+                          }}
+                          onError={(error: Error) => showError(error.message)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="table-card-actions">
+                    <button
+                      className="responsive-btn"
+                      onClick={() => handlePreviewPDF(timesheet)}
+                      title="Vorschau"
+                    >
+                      <span className="btn-icon">👁</span>
+                      <span className="btn-text">Vorschau</span>
+                    </button>
+                    <button
+                      className="responsive-btn"
+                      onClick={async () => {
+                        const customer = customers.find(c => c.id === timesheet.customerId);
+                        if (!customer) {
+                          showError('Kunde nicht gefunden');
+                          return;
+                        }
+                        try {
+                          const logoData = settings?.companyData?.logo || null;
+                          const result = await PDFService.exportTimesheetToPDF(timesheet, customer, settings, false, currentTheme, undefined, logoData);
+                          if (result.success) {
+                            showSuccess('PDF erfolgreich generiert');
+                          } else {
+                            showError(`PDF Export fehlgeschlagen: ${result.error}`);
+                          }
+                        } catch (error) {
+                          console.error('PDF Export failed:', error);
+                          showError('PDF Export fehlgeschlagen');
+                        }
+                      }}
+                      title="PDF"
+                    >
+                      <span className="btn-icon">📄</span>
+                      <span className="btn-text">PDF</span>
+                    </button>
+                    <button
+                      className="responsive-btn"
+                      onClick={() => {
+                        setCurrent(timesheet);
+                        setMode("edit");
+                      }}
+                      title="Bearbeiten"
+                    >
+                      <span className="btn-icon">✏️</span>
+                      <span className="btn-text">Bearbeiten</span>
+                    </button>
+                    <button
+                      className="responsive-btn"
+                      onClick={() => handleDuplicate(timesheet)}
+                      title="Kopieren"
+                    >
+                      <span className="btn-icon">📋</span>
+                      <span className="btn-text">Kopieren</span>
+                    </button>
+                    <button
+                      className="responsive-btn"
+                      onClick={async () => {
+                        if (confirm(`Leistungsnachweis ${timesheet.timesheetNumber} wirklich löschen?`)) {
+                          await handleRemove(timesheet.id);
+                        }
+                      }}
+                      title="Löschen"
+                      style={{ color: '#dc3545' }}
+                    >
+                      <span className="btn-icon">🗑️</span>
+                      <span className="btn-text">Löschen</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        <Table<Timesheet>
+          columns={columns as any}
+          data={timesheets}
+          emptyMessage="Noch keine Leistungsnachweise erstellt."
+        />
+      </div>
 
       {mode === "create" && (
-        <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,.1)" }}>
-          <TimesheetForm
-            customers={customers}
-            onSave={async (timesheetData) => {
-              try {
-                await createTimesheet(timesheetData);
-                showSuccess('Leistungsnachweis erfolgreich erstellt');
-                setMode("list");
-              } catch (error) {
-                showError('Fehler beim Erstellen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
-              }
-            }}
-            onCancel={() => setMode("list")}
-          />
+        <div style={{marginTop:"24px", paddingTop:"24px", borderTop:"1px solid rgba(0,0,0,.1)"}}>
+          <div style={{marginBottom:"16px"}}>
+            <h3 style={{margin:"0 0 4px 0"}}>Neuer Leistungsnachweis</h3>
+            <div style={{opacity:.7}}>Erstelle einen neuen Leistungsnachweis (Grunddaten).</div>
+          </div>
+          
+          {/* Grunddaten als Tabelle */}
+          <div style={{border:"1px solid var(--color-border)", borderRadius:"8px", overflow:"hidden", marginBottom:"24px"}}>
+            <div style={{
+              display:"grid", 
+              gridTemplateColumns:"120px 1fr 120px 120px 100px", 
+              backgroundColor:"var(--color-table-header)", 
+              padding:"12px 16px", 
+              fontWeight:"600",
+              borderBottom:"1px solid var(--color-border)"
+            }}>
+              <div>Kunde</div>
+              <div>Titel</div>
+              <div>Von</div>
+              <div>Bis</div>
+              <div>Aktionen</div>
+            </div>
+            
+            <div style={{
+              display:"grid", 
+              gridTemplateColumns:"120px 1fr 120px 120px 100px", 
+              padding:"12px 16px",
+              alignItems:"center",
+              gap:"8px"
+            }}>
+              <select 
+                className="form-control" 
+                style={{fontSize:"14px"}}
+                value={createFormData.customerId}
+                onChange={(e) => setCreateFormData(prev => ({...prev, customerId: e.target.value}))}
+              >
+                <option value="">Wählen...</option>
+                {customers.map(customer => (
+                  <option key={customer.id} value={customer.id}>{customer.name}</option>
+                ))}
+              </select>
+              
+              <input 
+                type="text" 
+                placeholder="Titel eingeben..." 
+                className="form-control" 
+                style={{fontSize:"14px"}}
+                value={createFormData.title}
+                onChange={(e) => setCreateFormData(prev => ({...prev, title: e.target.value}))}
+              />
+              
+              <input 
+                type="date" 
+                className="form-control" 
+                style={{fontSize:"14px"}}
+                value={createFormData.startDate}
+                onChange={(e) => setCreateFormData(prev => ({...prev, startDate: e.target.value}))}
+              />
+              
+              <input 
+                type="date" 
+                className="form-control" 
+                style={{fontSize:"14px"}}
+                value={createFormData.endDate}
+                onChange={(e) => setCreateFormData(prev => ({...prev, endDate: e.target.value}))}
+              />
+              
+              <div style={{display:"flex", gap:"4px"}}>
+                <button 
+                  className="btn btn-success" 
+                  style={{padding:"4px 8px", fontSize:"12px"}}
+                  onClick={handleCreateTimesheet}
+                >
+                  Erstellen
+                </button>
+                <button 
+                  className="btn btn-secondary" 
+                  style={{padding:"4px 8px", fontSize:"12px"}}
+                  onClick={() => setMode("list")}
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {mode === "edit" && current && (
-        <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,.1)" }}>
-          <TimesheetForm
-            timesheet={current}
-            customers={customers}
-            onSave={async (timesheetData) => {
-              try {
-                await updateTimesheet(current.id, timesheetData);
-                showSuccess('Leistungsnachweis erfolgreich aktualisiert');
+        <div style={{marginTop:"24px", paddingTop:"24px", borderTop:"1px solid rgba(0,0,0,.1)"}}>
+          <div style={{marginBottom:"16px"}}>
+            <h3 style={{margin:"0 0 4px 0"}}>Leistungsnachweis bearbeiten: {current.title}</h3>
+            <div style={{opacity:.7}}>Positionen hinzufügen und verwalten (bis zu 31 Einträge möglich).</div>
+          </div>
+          
+          {/* Grunddaten (read-only) */}
+          <div style={{border:"1px solid var(--color-border)", borderRadius:"8px", overflow:"hidden", marginBottom:"16px"}}>
+            <div style={{
+              display:"grid", 
+              gridTemplateColumns:"120px 1fr 120px 120px 120px", 
+              backgroundColor:"var(--color-table-header)", 
+              padding:"12px 16px", 
+              fontWeight:"600",
+              borderBottom:"1px solid var(--color-border)"
+            }}>
+              <div>Kunde</div>
+              <div>Titel</div>
+              <div>Von</div>
+              <div>Bis</div>
+              <div>Summe</div>
+            </div>
+            
+            <div style={{
+              display:"grid", 
+              gridTemplateColumns:"120px 1fr 120px 120px 120px", 
+              padding:"12px 16px",
+              alignItems:"center",
+              gap:"8px",
+              backgroundColor:"var(--color-bg-secondary)"
+            }}>
+              <div style={{fontSize:"14px"}}>
+                {customers.find(c => c.id === current.customerId)?.name}
+              </div>
+              <div style={{fontSize:"14px"}}>
+                {current.title}
+              </div>
+              <div style={{fontSize:"14px"}}>
+                {new Date(current.startDate).toLocaleDateString('de-DE')}
+              </div>
+              <div style={{fontSize:"14px"}}>
+                {new Date(current.endDate).toLocaleDateString('de-DE')}
+              </div>
+              <div style={{fontSize:"14px", fontWeight:"600"}}>
+                €{current.total.toFixed(2)}
+              </div>
+            </div>
+          </div>
+
+          {/* Positionen/Activities */}
+          <div style={{marginBottom:"16px"}}>
+            <h4 style={{margin:"0 0 8px 0", fontSize:"16px"}}>Positionen ({current.activities?.length || 0}/31)</h4>
+            <div style={{opacity:.7, fontSize:"14px"}}>Einzelne Arbeitspositionen mit Datum, Zeiten und Tätigkeiten.</div>
+          </div>
+
+          <div style={{border:"1px solid var(--color-border)", borderRadius:"8px", overflow:"hidden"}}>
+            <div style={{
+              display:"grid", 
+              gridTemplateColumns:"100px 1fr 80px 80px 80px 100px 80px 100px", 
+              backgroundColor:"var(--color-table-header)", 
+              padding:"12px 16px", 
+              fontWeight:"600",
+              borderBottom:"1px solid var(--color-border)"
+            }}>
+              <div>Datum</div>
+              <div>Tätigkeit</div>
+              <div>Von</div>
+              <div>Bis</div>
+              <div>Stunden</div>
+              <div>Stundensatz</div>
+              <div>Summe</div>
+              <div>Aktionen</div>
+            </div>
+            
+            {/* Existing activities */}
+            {current.activities?.map((activity, index) => (
+              <div key={activity.id} style={{
+                display:"grid", 
+                gridTemplateColumns:"100px 1fr 80px 80px 80px 100px 80px 100px", 
+                padding:"8px 16px",
+                alignItems:"center",
+                gap:"8px",
+                borderBottom: index < current.activities.length - 1 ? "1px solid var(--color-border)" : "none"
+              }}>
+                <div style={{fontSize:"14px"}}>
+                  {new Date(activity.date).toLocaleDateString('de-DE')}
+                </div>
+                <div style={{fontSize:"14px"}}>
+                  {activity.title}
+                </div>
+                <div style={{fontSize:"14px"}}>
+                  {activity.startTime}
+                </div>
+                <div style={{fontSize:"14px"}}>
+                  {activity.endTime}
+                </div>
+                <div style={{fontSize:"14px"}}>
+                  {activity.hours}h
+                </div>
+                <div style={{fontSize:"14px"}}>
+                  €{activity.hourlyRate}
+                </div>
+                <div style={{fontSize:"14px", fontWeight:"600"}}>
+                  €{activity.total.toFixed(2)}
+                </div>
+                <div style={{display:"flex", gap:"4px"}}>
+                  <button 
+                    className="btn btn-danger" 
+                    style={{padding:"2px 6px", fontSize:"11px"}}
+                    onClick={() => handleRemovePosition(activity.id)}
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
+            
+            {/* Add new position row */}
+            <div style={{
+              display:"grid", 
+              gridTemplateColumns:"100px 1fr 80px 80px 80px 100px 80px 100px", 
+              padding:"8px 16px",
+              alignItems:"center",
+              gap:"8px",
+              borderTop:"1px solid var(--color-border)",
+              backgroundColor:"var(--color-bg-light)"
+            }}>
+              <input 
+                type="date" 
+                className="form-control" 
+                style={{fontSize:"12px", padding:"4px"}}
+                value={newPosition.date}
+                onChange={(e) => setNewPosition(prev => ({...prev, date: e.target.value}))}
+              />
+              
+              <select 
+                className="form-control" 
+                style={{fontSize:"12px", padding:"4px"}}
+                value={newPosition.activityId}
+                onChange={(e) => setNewPosition(prev => ({...prev, activityId: e.target.value}))}
+              >
+                <option value="">Tätigkeit wählen...</option>
+                {activities?.map(activity => (
+                  <option key={activity.id} value={activity.id}>{activity.title}</option>
+                ))}
+              </select>
+              
+              <input 
+                type="time" 
+                className="form-control" 
+                style={{fontSize:"12px", padding:"4px"}}
+                value={newPosition.startTime}
+                onChange={(e) => setNewPosition(prev => ({...prev, startTime: e.target.value}))}
+              />
+              
+              <input 
+                type="time" 
+                className="form-control" 
+                style={{fontSize:"12px", padding:"4px"}}
+                value={newPosition.endTime}
+                onChange={(e) => setNewPosition(prev => ({...prev, endTime: e.target.value}))}
+              />
+              
+              <input 
+                type="number" 
+                step="0.1"
+                className="form-control" 
+                style={{fontSize:"12px", padding:"4px"}}
+                placeholder="8.0"
+                value={newPosition.hours}
+                onChange={(e) => setNewPosition(prev => ({...prev, hours: parseFloat(e.target.value) || 0}))}
+              />
+              
+              <input 
+                type="number" 
+                step="0.01"
+                className="form-control" 
+                style={{fontSize:"12px", padding:"4px"}}
+                placeholder="50.00"
+                value={newPosition.hourlyRate}
+                onChange={(e) => setNewPosition(prev => ({...prev, hourlyRate: parseFloat(e.target.value) || 0}))}
+              />
+              
+              <div style={{fontSize:"12px", color:"var(--color-text-secondary)"}}>
+                €{(newPosition.hours * newPosition.hourlyRate).toFixed(2)}
+              </div>
+              
+              <button 
+                className="btn btn-success" 
+                style={{padding:"4px 8px", fontSize:"11px"}}
+                onClick={handleAddPosition}
+              >
+                + Hinzufügen
+              </button>
+            </div>
+          </div>
+
+          <div style={{marginTop:"16px", display:"flex", justifyContent:"space-between"}}>
+            <button 
+              className="btn btn-secondary"
+              onClick={() => {
                 setMode("list");
                 setCurrent(null);
-              } catch (error) {
-                showError('Fehler beim Aktualisieren: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
-              }
-            }}
-            onCancel={() => {
-              setMode("list");
-              setCurrent(null);
-            }}
-          />
+              }}
+            >
+              Zurück zur Übersicht
+            </button>
+            <button 
+              className="btn btn-success"
+              onClick={handleSaveTimesheet}
+            >
+              Leistungsnachweis speichern
+            </button>
+          </div>
         </div>
       )}
     </div>

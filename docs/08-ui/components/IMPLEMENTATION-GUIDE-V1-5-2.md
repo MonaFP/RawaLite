@@ -21,7 +21,7 @@ Complete step-by-step implementation guide for v1.5.2 features: Beautiful Pastel
 # Verify current setup
 pnpm typecheck        # Ensure TypeScript compilation
 pnpm validate:critical-fixes  # Verify no regressions
-pnpm dev              # Test development environment
+pnpm dev:all          # Test development environment
 ```
 
 ## 🎨 **Phase 1: Beautiful Pastel Themes**
@@ -798,13 +798,13 @@ console.log(useNavigation());
 ### **Development Commands**
 ```bash
 # Full development workflow
-pnpm validate:critical-fixes && pnpm typecheck && pnpm dev
+pnpm validate:critical-fixes && pnpm typecheck && pnpm dev:all
 
 # Production build
 pnpm validate:critical-fixes && pnpm build
 
 # Clean development restart
-pnpm clean && pnpm install && pnpm dev
+pnpm clean && pnpm install && pnpm dev:all
 ```
 
 ---

@@ -280,6 +280,313 @@ document.body.classList // in Main Process context
 
 ---
 
+### **FIX-008: StatusControl Component & Responsive Design**
+- **ID:** `status-control-responsive-design`
+- **Files:** `src/index.css`, `src/components/StatusControl.tsx`, `src/pages/AngebotePage.tsx`, `src/pages/RechnungenPage.tsx`, `src/pages/TimesheetsPage.tsx`
+- **Pattern:** Portal-based StatusControl component with responsive design and proper CSS isolation
+- **Location:** StatusControl component, responsive CSS media queries, Card-layout for mobile
+- **First Implemented:** v1.0.13
+- **Last Verified:** v1.0.13
+- **Status:** ✅ ACTIVE
+
+**Required StatusControl CSS Classes (index.css):**
+```css
+/* StatusControl Component Styles */
+.status-control-button {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.status-control-dropdown {
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 4px;
+  z-index: 9999;
+}
+
+.status-control-option {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  border-radius: 3px;
+  margin: 1px 0;
+  transition: all 0.15s ease;
+}
+
+/* Touch-optimized mobile styles */
+@media (max-width: 768px) {
+  .status-control-button {
+    min-height: 44px; /* Touch-friendly height */
+    min-width: 100px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  
+  .status-control-option {
+    min-height: 44px; /* Touch-friendly height */
+    padding: 12px 16px;
+    font-size: 14px;
+    margin: 2px 0;
+  }
+}
+```
+
+**Required Responsive Design CSS (index.css):**
+```css
+/* Card Layout für sehr kleine Bildschirme */
+@media (max-width: 480px) {
+  .table-card-view {
+    display: block;
+  }
+  
+  .table-card-view .table {
+    display: none; /* Verstecke normale Tabelle */
+  }
+}
+
+/* Desktop und Tablet: Verstecke Card-View komplett */
+@media (min-width: 481px) {
+  .table-card-view {
+    display: none !important;
+  }
+}
+```
+
+**Required Frontend Pattern:**
+```tsx
+// Portal-based StatusControl Component
+<StatusControl
+  kind="offer" // "offer" | "invoice" | "timesheet"
+  row={{ ...entity, version: entity.id }}
+  onUpdated={() => {
+    // Refresh data
+    window.location.reload();
+  }}
+  onError={(error: Error) => showError(error.message)}
+/>
+
+// Responsive Table Layout
+<div className="table-responsive">
+  <div className="table-card-view">
+    {/* Card Layout für Mobile */}
+    <div className="table-cards">
+      {data.map((item) => (
+        <div key={item.id} className="table-card">
+          {/* Card content */}
+        </div>
+      ))}
+    </div>
+  </div>
+  
+  <Table<Entity>
+    columns={columns}
+    data={data}
+    emptyMessage="Keine Einträge gefunden."
+  />
+</div>
+```
+
+**FORBIDDEN Patterns:**
+```tsx
+// ❌ Missing StatusControl component - using old select elements
+<select value={row.status} onChange={...} />
+
+// ❌ Missing responsive wrapper
+<Table columns={columns} data={data} />
+
+// ❌ Card-view always visible (incorrect CSS)
+.table-card-view { display: block; }
+
+// ❌ Missing touch-optimized button heights
+.status-control-button { min-height: 32px; } // Too small for touch
+
+// ❌ Missing CSS isolation for Portal components
+.status-dropdown { /* without !important overrides */ }
+```
+
+**Problem Solved:**
+- Complete refactor from select-based status dropdowns to Portal-based StatusControl component
+- Responsive design with Card-layout for mobile devices (≤480px)
+- Touch-optimized interface with 44px minimum button heights
+- CSS isolation through CSS classes instead of !important overrides
+- Proper media queries to prevent Card-layout from showing on desktop
+- Solution: Modern React component architecture with complete responsive design
+
+---
+
+### **FIX-009: Database-Driven Status Updates with Optimistic Locking**
+- **ID:** `database-status-updates-optimistic-locking`
+- **Files:** `src/main/services/UpdateStatusService.ts`, `src/migrations/015_add_status_versioning.ts`, `electron/main.ts`, `electron/preload.ts`
+- **Pattern:** Complete status update system using database transactions with version-based optimistic locking
+- **Location:** UpdateStatusService backend, Migration 015, IPC handlers for all entity types
+- **First Implemented:** v1.0.13
+- **Last Verified:** v1.0.13
+- **Status:** ✅ ACTIVE
+
+**Required Backend Service (UpdateStatusService.ts):**
+```typescript
+export class UpdateStatusService {
+  async updateEntityStatus(params: {
+    tableName: string;
+    id: number;
+    status: EntityStatus;
+    expectedVersion: number;
+  }): Promise<{ success: boolean; entity?: any; error?: string }> {
+    
+    return this.db.transaction(() => {
+      // Version-based optimistic locking check
+      const current = this.db.prepare(`
+        SELECT id, status, version, updated_at FROM ${tableName} 
+        WHERE id = ?
+      `).get(params.id);
+      
+      if (!current) {
+        throw new Error('Entity not found');
+      }
+      
+      if (current.version !== params.expectedVersion) {
+        throw new Error('Version conflict: Entity was modified by another user');
+      }
+      
+      // Update with version increment and status tracking
+      const result = this.db.prepare(`
+        UPDATE ${tableName} 
+        SET status = ?, 
+            version = version + 1,
+            updated_at = CURRENT_TIMESTAMP,
+            ${statusField} = CURRENT_TIMESTAMP
+        WHERE id = ? AND version = ?
+      `).run(params.status, params.id, params.expectedVersion);
+      
+      if (result.changes === 0) {
+        throw new Error('Update failed: Concurrent modification detected');
+      }
+      
+      return this.db.prepare(`SELECT * FROM ${tableName} WHERE id = ?`).get(params.id);
+    });
+  }
+}
+```
+
+**Required Database Migration (015_add_status_versioning.ts):**
+```sql
+-- Add version tracking and status history
+ALTER TABLE offers ADD COLUMN version INTEGER DEFAULT 1;
+ALTER TABLE invoices ADD COLUMN version INTEGER DEFAULT 1;
+ALTER TABLE timesheets ADD COLUMN version INTEGER DEFAULT 1;
+
+-- Status tracking fields
+ALTER TABLE offers ADD COLUMN sent_at TEXT;
+ALTER TABLE offers ADD COLUMN accepted_at TEXT;
+ALTER TABLE offers ADD COLUMN rejected_at TEXT;
+
+-- Triggers for automatic history tracking
+CREATE TRIGGER offers_status_history 
+AFTER UPDATE OF status ON offers
+BEGIN
+  INSERT INTO offers_status_history (offer_id, old_status, new_status, changed_at)
+  VALUES (NEW.id, OLD.status, NEW.status, CURRENT_TIMESTAMP);
+END;
+```
+
+**Required IPC Handlers (electron/main.ts):**
+```typescript
+// Status update IPC handlers for all entity types
+ipcMain.handle('status:update-offer-status', async (event, params) => {
+  return await updateStatusService.updateEntityStatus({
+    tableName: 'offers',
+    ...params
+  });
+});
+
+ipcMain.handle('status:update-invoice-status', async (event, params) => {
+  return await updateStatusService.updateEntityStatus({
+    tableName: 'invoices', 
+    ...params
+  });
+});
+
+ipcMain.handle('status:update-timesheet-status', async (event, params) => {
+  return await updateStatusService.updateEntityStatus({
+    tableName: 'timesheets',
+    ...params
+  });
+});
+```
+
+**Required Frontend Integration:**
+```tsx
+// StatusControl component using database-driven updates
+const handleStatusSelect = useCallback(async (newStatus: EntityStatus) => {
+  try {
+    const result = await (window as any).rawalite.status.updateOfferStatus({
+      id: row.id,
+      status: newStatus,
+      expectedVersion: row.version
+    });
+    
+    if (result.success) {
+      onUpdated?.(result.entity);
+    } else {
+      throw new Error(result.error || 'Status update failed');
+    }
+  } catch (error) {
+    // Handle version conflicts and other errors
+    setCurrentStatus(originalStatus); // Rollback optimistic update
+    onError?.(error);
+  }
+}, [row, onUpdated, onError]);
+```
+
+**FORBIDDEN Patterns:**
+```tsx
+// ❌ Direct state mutations without database updates
+setOffers(prev => prev.map(offer => 
+  offer.id === id ? { ...offer, status: newStatus } : offer
+));
+
+// ❌ Missing version-based optimistic locking
+const params = { id: row.id, status: newStatus }; // Missing expectedVersion
+
+// ❌ Frontend-only status updates without persistence
+const handleStatusChange = (id, status) => {
+  updateLocalState(id, status); // No database call
+};
+
+// ❌ Missing error handling for version conflicts
+await updateStatus(params); // No try/catch for conflicts
+```
+
+**Problem Solved:**
+- Previous system used frontend-only state updates without proper persistence
+- No optimistic locking led to data inconsistency in multi-user scenarios
+- Status changes were not properly tracked or audited
+- Race conditions could occur during concurrent status updates
+- Solution: Complete database-driven system with optimistic locking, proper error handling, and audit trails
+
+---
+
 ## 🔍 VALIDATION RULES FOR KI
 
 ### **BEFORE ANY FILE EDIT:**
@@ -306,11 +613,11 @@ document.body.classList // in Main Process context
 
 ## 📊 FIX HISTORY
 
-| Version | WriteStream Fix | File Flush Fix | Event Handler Fix | Port Fix | Offer FK Fix | Discount Schema | PDF Theme Fix | Status |
-|---------|----------------|----------------|-------------------|----------|--------------|-----------------|---------------|---------|
-| v1.0.11 | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Partial |
-| v1.0.12 | ❌ LOST | ❌ LOST | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | Regression |
-| v1.0.13 | ✅ Restored | ✅ Restored | ✅ Present | ✅ Present | ✅ Added | ✅ Added | ✅ Added | Complete |
+| Version | WriteStream Fix | File Flush Fix | Event Handler Fix | Port Fix | Offer FK Fix | Discount Schema | PDF Theme Fix | CSS Dropdown Fix | Status |
+|---------|----------------|----------------|-------------------|----------|--------------|-----------------|---------------|------------------|---------|
+| v1.0.11 | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Partial |
+| v1.0.12 | ❌ LOST | ❌ LOST | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Regression |
+| v1.0.13 | ✅ Restored | ✅ Restored | ✅ Present | ✅ Present | ✅ Added | ✅ Added | ✅ Added | ✅ Added | Complete |
 
 ---
 
@@ -339,6 +646,6 @@ document.body.classList // in Main Process context
 - Patterns evolve (with backward compatibility)
 - New validation rules are needed
 
-**Last Updated:** 2025-10-03 (Added FIX-006: Discount System Database Schema, FIX-007: PDF Theme System Parameter-Based)
+**Last Updated:** 2025-10-05 (Added FIX-008: Status Dropdown CSS Isolation - fixes table CSS inheritance blocking dropdown functionality)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/validate-critical-fixes.mjs`
