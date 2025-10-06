@@ -58,6 +58,23 @@ declare interface Window {
       readFile: (filePath: string, encoding?: string) => Promise<string | Uint8Array>;
       writeFile: (filePath: string, data: string | Uint8Array, encoding?: string) => Promise<boolean>;
     };
+    // File Management API for Attachments
+    files: {
+      saveImage: (imageData: string, filename: string, subDir?: string) => Promise<{
+        success: boolean;
+        filePath?: string;
+        error?: string;
+      }>;
+      deleteFile: (filePath: string) => Promise<{
+        success: boolean;
+        error?: string;
+      }>;
+      getImageAsBase64: (filePath: string) => Promise<{
+        success: boolean;
+        base64Data?: string;
+        error?: string;
+      }>;
+    };
     // Pfad-Management API (Phase 2)
     paths: {
       get(pathType: 'userData' | 'documents' | 'downloads'): Promise<string>;

@@ -66,6 +66,23 @@ export interface OfferLineItem {
   sourcePackageItemId?: number; // Reference to original package item
   sortOrder?: number;
   clientTempId?: string; // Frontend helper for temporary IDs
+  attachments?: OfferAttachment[]; // Neue Eigenschaft für Anhänge
+}
+
+// New interface for offer attachments (images, files)
+export interface OfferAttachment {
+  id: number;
+  offerId: number;
+  lineItemId?: number; // Optional - kann an gesamtes Angebot oder spezifische Position gehängt werden
+  filename: string;
+  originalFilename: string;
+  fileType: string; // MIME type (image/png, image/jpeg, etc.)
+  fileSize: number; // Size in bytes
+  filePath?: string; // File system path for larger files
+  base64Data?: string; // Base64 data for smaller images (< 1MB)
+  description?: string; // Optional description
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Discount interface for offers and invoices
