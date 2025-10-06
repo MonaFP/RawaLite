@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Table } from '../components/Table';
 import { TimesheetForm } from '../components/TimesheetForm';
 import { StatusControl } from '../components/StatusControl';
+import { SearchAndFilterBar, useTableSearch, FilterConfig } from '../components/SearchAndFilter';
 import { useTimesheets } from '../hooks/useTimesheets';
 import { useActivities } from '../hooks/useActivities';
 import { useCustomers } from '../hooks/useCustomers';
@@ -42,6 +43,71 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
     hours: 8,
     hourlyRate: 50
   });
+
+  // Search and Filter Configuration for Timesheets
+  const searchFieldMapping = useMemo(() => ({
+    timesheetNumber: 'timesheetNumber',
+    customer: (timesheet: Timesheet) => {
+      const customer = customers.find(c => c.id === timesheet.customerId);
+      return customer?.name || '';
+    },
+    title: 'title',
+    status: 'status',
+    startDate: 'startDate',
+    endDate: 'endDate',
+    total: 'total'
+  }), [customers]);
+
+  const filterConfigs: FilterConfig[] = useMemo(() => [
+    {
+      field: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: 'draft', label: 'Entwurf' },
+        { value: 'sent', label: 'Versendet' },
+        { value: 'accepted', label: 'Akzeptiert' },
+        { value: 'rejected', label: 'Abgelehnt' }
+      ]
+    },
+    {
+      field: 'startDate',
+      label: 'Startdatum',
+      type: 'dateRange'
+    },
+    {
+      field: 'endDate',
+      label: 'Enddatum',
+      type: 'dateRange'
+    },
+    {
+      field: 'total',
+      label: 'Gesamtbetrag',
+      type: 'numberRange',
+      min: 0,
+      step: 0.01
+    },
+    {
+      field: 'customerId',
+      label: 'Kunde',
+      type: 'select',
+      options: customers.map(customer => ({
+        value: customer.id,
+        label: customer.name
+      }))
+    }
+  ], [customers]);
+
+  const {
+    searchTerm,
+    setSearchTerm,
+    filters,
+    setFilter,
+    clearFilters,
+    clearAll,
+    filteredData,
+    activeFilterCount
+  } = useTableSearch(timesheets, searchFieldMapping);
 
   const columns = useMemo(() => ([
     { key: "timesheetNumber", header: "Nummer" },
@@ -430,11 +496,26 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
         </button>
       </div>
       
+      {/* Search and Filter Bar */}
+      <SearchAndFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Leistungsnachweise durchsuchen..."
+        filters={filters}
+        filterConfigs={filterConfigs}
+        onFilterChange={setFilter}
+        onClearFilters={clearFilters}
+        onClearAll={clearAll}
+        activeFilterCount={activeFilterCount}
+        resultCount={filteredData.length}
+        totalCount={timesheets.length}
+      />
+      
       <div className="table-responsive">
         <div className="table-card-view">
           {/* Card Layout für Mobile (wird per CSS aktiviert) */}
           <div className="table-cards">
-            {timesheets.map((timesheet) => {
+            {filteredData.map((timesheet) => {
               const customer = customers.find(c => c.id === timesheet.customerId);
               return (
                 <div key={`card-${timesheet.id}`} className="table-card">
@@ -550,8 +631,8 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
         
         <Table<Timesheet>
           columns={columns as any}
-          data={timesheets}
-          emptyMessage="Noch keine Leistungsnachweise erstellt."
+          data={filteredData}
+          emptyMessage="Keine Leistungsnachweise gefunden."
         />
       </div>
 

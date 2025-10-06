@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Table } from "../components/Table";
+import { SearchAndFilterBar, useTableSearch, FilterConfig } from "../components/SearchAndFilter";
 import type { Package } from "../persistence/adapter";
 import PackageForm, { PackageFormValues } from "../components/PackageForm";
 import { usePackages } from "../hooks/usePackages";
@@ -21,6 +22,51 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
   // Separate main packages and subpackages
   const mainPackages = packages.filter(p => !p.parentPackageId);
   const subPackages = packages.filter(p => p.parentPackageId);
+
+  // Search and Filter Configuration for Packages
+  const searchFieldMapping = useMemo(() => ({
+    internalTitle: 'internalTitle',
+    total: 'total',
+    lineItems: (pkg: Package) => pkg.lineItems.length.toString(),
+    type: (pkg: Package) => pkg.parentPackageId ? 'subpackage' : 'main'
+  }), []);
+
+  const filterConfigs: FilterConfig[] = useMemo(() => [
+    {
+      field: 'parentPackageId',
+      label: 'Typ',
+      type: 'select',
+      options: [
+        { value: 'null', label: 'Hauptpaket' },
+        { value: 'not-null', label: 'Subpaket' }
+      ]
+    },
+    {
+      field: 'total',
+      label: 'Preis',
+      type: 'numberRange',
+      min: 0,
+      step: 0.01
+    },
+    {
+      field: 'lineItems',
+      label: 'Anzahl Positionen',
+      type: 'numberRange',
+      min: 0,
+      step: 1
+    }
+  ], []);
+
+  const {
+    searchTerm,
+    setSearchTerm,
+    filters,
+    setFilter,
+    clearFilters,
+    clearAll,
+    filteredData,
+    activeFilterCount
+  } = useTableSearch(packages, searchFieldMapping);
 
   const columns = useMemo(()=>([
     { key: "internalTitle", header: "Bezeichnung" },
@@ -156,10 +202,25 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
         </button>
       </div>
       
+      {/* Search and Filter Bar */}
+      <SearchAndFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Pakete durchsuchen..."
+        filters={filters}
+        filterConfigs={filterConfigs}
+        onFilterChange={setFilter}
+        onClearFilters={clearFilters}
+        onClearAll={clearAll}
+        activeFilterCount={activeFilterCount}
+        resultCount={filteredData.length}
+        totalCount={packages.length}
+      />
+      
       <Table<Package>
         columns={columns as any}
-        data={packages}
-        emptyMessage="Noch keine Pakete definiert."
+        data={filteredData}
+        emptyMessage="Keine Pakete gefunden."
       />
 
       {mode === "create" && (
