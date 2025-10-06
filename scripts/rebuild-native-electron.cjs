@@ -34,11 +34,34 @@ try {
   console.warn('⚠️ [Rebuild] Could not update .npmrc:', error.message);
 }
 
-// Run rebuild
+// Run rebuild - try different approaches
 console.log('🚀 [Rebuild] Rebuilding better-sqlite3...');
-const r = spawnSync('pnpm', ['rebuild', 'better-sqlite3', '--verbose'], { stdio: 'inherit', shell: true });
 
-if (r.status === 0) {
+let rebuildSuccess = false;
+
+// First try: Standard rebuild
+console.log('🔄 [Rebuild] Attempt 1: Standard rebuild...');
+const r1 = spawnSync('pnpm', ['rebuild', 'better-sqlite3', '--verbose'], { stdio: 'inherit', shell: true });
+
+if (r1.status === 0) {
+  rebuildSuccess = true;
+  console.log('✅ [Rebuild] Standard rebuild successful');
+} else {
+  console.log('⚠️ [Rebuild] Standard rebuild failed, trying reinstall...');
+  
+  // Second try: Remove and reinstall
+  console.log('🔄 [Rebuild] Attempt 2: Remove and reinstall...');
+  const r2 = spawnSync('pnpm', ['remove', 'better-sqlite3'], { stdio: 'inherit', shell: true });
+  if (r2.status === 0) {
+    const r3 = spawnSync('pnpm', ['add', 'better-sqlite3'], { stdio: 'inherit', shell: true });
+    if (r3.status === 0) {
+      rebuildSuccess = true;
+      console.log('✅ [Rebuild] Reinstall successful');
+    }
+  }
+}
+
+if (rebuildSuccess) {
   console.log('✅ [Rebuild] better-sqlite3 rebuilt successfully for Electron');
   
   // Test the build (Note: ABI mismatch in Node context is expected when built for Electron)
@@ -65,7 +88,8 @@ if (r.status === 0) {
   }
   
 } else {
-  console.error('❌ [Rebuild] Rebuild failed with exit code:', r.status);
+  console.error('❌ [Rebuild] All rebuild attempts failed');
+  process.exit(1);
 }
 
-process.exit(r.status ?? 0);
+process.exit(0);
