@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Table } from '../components/Table';
 import { OfferForm } from '../components/OfferForm';
+import { StatusControl } from '../components/StatusControl';
 import { useOffers } from '../hooks/useOffers';
 import { useCustomers } from '../hooks/useCustomers';
 import { usePackages } from '../hooks/usePackages';
@@ -54,15 +55,17 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
         const color = statusColors[row.status as keyof typeof statusColors] || '#6b7280';
         const text = statusTexts[row.status as keyof typeof statusTexts] || row.status;
         return (
-          <span 
-            className="offer-status-badge"
+          <div 
             style={{
-              backgroundColor: color + "20",
-              color: color
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              backgroundColor: color,
+              margin: '0 auto',
+              flexShrink: 0
             }}
-          >
-            {text}
-          </span>
+            title={text} // Tooltip zeigt den Status-Text
+          />
         );
       }
     },
@@ -80,35 +83,93 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       key: "id", 
       header: "Aktionen", 
       render: (row: Offer) => (
-        <div className="offer-actions-container">
+        <div style={{display:"flex", gap:"4px", flexWrap:"wrap", minWidth:"0"}}>
           <button
-            className="btn btn-info"
+            className="btn btn-info responsive-btn"
             onClick={() => handlePreviewPDF(row)}
             title="PDF Vorschau anzeigen"
           >
-            👁️ Vorschau
+            <span className="btn-icon">👁️</span>
+            <span className="btn-text">Vorschau</span>
           </button>
           <button
-            className="btn btn-warning"
+            className="btn btn-warning responsive-btn"
             onClick={() => handleExportPDF(row)}
             title="PDF herunterladen"
           >
-            💾 PDF
+            <span className="btn-icon">💾</span>
+            <span className="btn-text">PDF</span>
           </button>
-          <button className="btn btn-secondary" onClick={() => { setCurrent(row); setMode("edit"); }}>Bearbeiten</button>
-          <select
-            value={row.status}
-            onChange={(e) => handleStatusChange(row.id, e.target.value as Offer['status'])}
-            className="offer-status-select"
+          <button 
+            className="btn btn-secondary responsive-btn"
+            onClick={() => { setCurrent(row); setMode("edit"); }}
           >
-            <option value="draft">Entwurf</option>
-            <option value="sent">Gesendet</option>
-            <option value="accepted">Angenommen</option>
-            <option value="rejected">Abgelehnt</option>
-          </select>
-          <button className="btn btn-danger" onClick={() => { if (confirm("Dieses Angebot wirklich löschen?")) handleRemove(row.id); }}>Löschen</button>
+            <span className="btn-icon">✏️</span>
+            <span className="btn-text">Bearbeiten</span>
+          </button>
+          <button 
+            className="btn btn-danger responsive-btn"
+            onClick={() => handleRemove(row.id)}
+          >
+            <span className="btn-icon">🗑️</span>
+            <span className="btn-text">Löschen</span>
+          </button>
         </div>
       ) 
+    },
+    {
+      key: "statusControl",
+      header: "Status ändern",
+      render: (row: Offer) => (
+        <StatusControl
+          row={{
+            id: row.id,
+            status: row.status as any,
+            version: (row as any).version || 0
+          }}
+          kind="offer"
+          onUpdated={(updatedEntity) => {
+            // Update the offer in the list with new status and version
+            const updatedOffer = {
+              ...row,
+              status: updatedEntity.status,
+              version: updatedEntity.version,
+              updatedAt: updatedEntity.updated_at,
+              sentAt: updatedEntity.sent_at,
+              acceptedAt: updatedEntity.accepted_at,
+              rejectedAt: updatedEntity.rejected_at
+            };
+            
+            // Update the offer via the hook (this will trigger a re-render)
+            updateOffer(row.id, updatedOffer);
+            
+            showSuccess(`Status erfolgreich geändert zu: ${updatedEntity.status}`);
+          }}
+          onError={(error) => {
+            showError(`Status-Änderung fehlgeschlagen: ${error.message}`);
+          }}
+          className="status-dropdown-override"
+          buttonStyle={{
+            backgroundColor: 'var(--card-bg)',
+            color: 'var(--text-primary)', 
+            padding: '8px 12px',
+            border: '1px solid var(--accent)',
+            borderRadius: '4px',
+            fontSize: '12px',
+            minWidth: '120px',
+            fontFamily: 'inherit',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          }}
+          dropdownStyle={{
+            backgroundColor: 'var(--card-bg)',
+            border: '1px solid var(--accent)',
+            borderRadius: '6px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            backdropFilter: 'blur(8px)'
+          } as React.CSSProperties}
+        />
+      )
     }
   ]), [customers]);
 
@@ -125,7 +186,8 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   }
 
   async function handleStatusChange(offerId: number, newStatus: Offer['status']) {
-    console.log('🔍 Status Change:', { offerId, newStatus, offersCount: offers.length });
+    console.log('�🔥🔥 OFFER STATUS CHANGE CALLED!', { offerId, newStatus, timestamp: new Date().toISOString() });
+    console.log('�🔍 Status Change:', { offerId, newStatus, offersCount: offers.length });
     try {
       const offer = offers.find(o => o.id === offerId);
       console.log('🔍 Found offer:', !!offer, offer ? { id: offer.id, currentStatus: offer.status } : 'not found');
@@ -217,10 +279,10 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
 
   return (
     <div className="card">
-      <div className="offer-page-header">
+      <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"24px"}}>
         <div>
-          <h2 className="offer-page-title">{title}</h2>
-          <div className="offer-page-subtitle">Verwalte deine Angebote und exportiere sie als PDF.</div>
+          <h2 style={{margin:"0 0 4px 0"}}>{title}</h2>
+          <div style={{opacity:.7}}>Verwalte deine Angebote und exportiere sie als PDF.</div>
         </div>
         <button 
           className={`btn ${mode === "create" ? "btn-secondary" : "btn-primary"}`}
@@ -230,18 +292,125 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
         </button>
       </div>
       
-      <Table<Offer>
-        columns={columns as any}
-        data={offers}
-        getRowKey={(offer) => `offer-${offer.id}-${offer.status}-${offer.updatedAt}`}
-        emptyMessage="Noch keine Angebote erstellt."
-      />
+      <div className="table-responsive">
+        <div className="table-card-view">
+          {/* Card Layout für Mobile (wird per CSS aktiviert) */}
+          <div className="table-cards">
+            {offers.map((offer) => {
+              const customer = customers.find(c => c.id === offer.customerId);
+              return (
+                <div key={`card-${offer.id}`} className="table-card">
+                  <div className="table-card-header">
+                    <span className="table-card-title">
+                      {customer ? customer.name : 'Unbekannt'}
+                    </span>
+                    <span className="table-card-number">{offer.offerNumber}</span>
+                  </div>
+                  <div className="table-card-content">
+                    <div className="table-card-row">
+                      <span className="table-card-label">Status:</span>
+                      <div className="table-card-value">
+                        <StatusControl
+                          kind="offer"
+                          row={{ ...offer, version: offer.id }}
+                          onUpdated={() => {
+                            // Refresh offers data
+                            window.location.reload();
+                          }}
+                          onError={(error) => showError(error.message)}
+                        />
+                      </div>
+                    </div>
+                    <div className="table-card-row">
+                      <span className="table-card-label">Betrag:</span>
+                      <span className="table-card-value">€{offer.total?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    {offer.validUntil && (
+                      <div className="table-card-row">
+                        <span className="table-card-label">Gültig bis:</span>
+                        <span className="table-card-value">{offer.validUntil}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="table-card-actions">
+                    <button
+                      className="responsive-btn"
+                      onClick={() => handlePreviewPDF(offer)}
+                      title="Vorschau"
+                    >
+                      <span className="btn-icon">👁</span>
+                      <span className="btn-text">Vorschau</span>
+                    </button>
+                    <button
+                      className="responsive-btn"
+                      onClick={async () => {
+                        const customer = customers.find(c => c.id === offer.customerId);
+                        if (!customer) {
+                          showError('Kunde nicht gefunden');
+                          return;
+                        }
+                        try {
+                          const logoData = settings?.companyData?.logo || null;
+                          const result = await PDFService.exportOfferToPDF(offer, customer, settings, false, currentTheme, undefined, logoData);
+                          if (result.success) {
+                            showSuccess('PDF erfolgreich generiert');
+                          } else {
+                            showError(`PDF Export fehlgeschlagen: ${result.error}`);
+                          }
+                        } catch (error) {
+                          console.error('PDF Export failed:', error);
+                          showError('PDF Export fehlgeschlagen');
+                        }
+                      }}
+                      title="PDF"
+                    >
+                      <span className="btn-icon">📄</span>
+                      <span className="btn-text">PDF</span>
+                    </button>
+                    <button
+                      className="responsive-btn"
+                      onClick={() => {
+                        setCurrent(offer);
+                        setMode("edit");
+                      }}
+                      title="Bearbeiten"
+                    >
+                      <span className="btn-icon">✏️</span>
+                      <span className="btn-text">Bearbeiten</span>
+                    </button>
+                    <button
+                      className="responsive-btn"
+                      onClick={async () => {
+                        if (confirm(`Angebot ${offer.offerNumber} wirklich löschen?`)) {
+                          await deleteOffer(offer.id);
+                        }
+                      }}
+                      title="Löschen"
+                      style={{ color: '#dc3545' }}
+                    >
+                      <span className="btn-icon">🗑️</span>
+                      <span className="btn-text">Löschen</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        <Table<Offer>
+          columns={columns as any}
+          data={offers}
+          getRowKey={(offer) => `offer-${offer.id}-${offer.status}-${offer.updatedAt}`}
+          emptyMessage="Noch keine Angebote erstellt."
+        />
+      </div>
 
       {mode === "create" && (
-        <div className="offer-form-section">
-          <div className="offer-form-header">
-            <h3 className="offer-form-title">Neues Angebot</h3>
-            <div className="offer-form-subtitle">Erstelle ein neues Angebot.</div>
+        <div style={{marginTop:"24px", paddingTop:"24px", borderTop:"1px solid rgba(0,0,0,.1)"}}>
+          <div style={{marginBottom:"16px"}}>
+            <h3 style={{margin:"0 0 4px 0"}}>Neues Angebot</h3>
+            <div style={{opacity:.7}}>Erstelle ein neues Angebot.</div>
           </div>
           <OfferForm
             customers={customers}
@@ -254,10 +423,10 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       )}
 
       {mode === "edit" && current && (
-        <div className="offer-form-section">
-          <div className="offer-form-header">
-            <h3 className="offer-form-title">Angebot bearbeiten</h3>
-            <div className="offer-form-subtitle">Bearbeite das Angebot "{current.title}".</div>
+        <div style={{marginTop:"24px", paddingTop:"24px", borderTop:"1px solid rgba(0,0,0,.1)"}}>
+          <div style={{marginBottom:"16px"}}>
+            <h3 style={{margin:"0 0 4px 0"}}>Angebot bearbeiten</h3>
+            <div style={{opacity:.7}}>Bearbeite das Angebot "{current.title}".</div>
           </div>
           <OfferForm
             offer={current}

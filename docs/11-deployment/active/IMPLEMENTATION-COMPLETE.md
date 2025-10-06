@@ -148,7 +148,7 @@ pnpm test:update-e2e             # ✅ End-to-End Workflow
 ```powershell
 pnpm typecheck                   # ✅ TypeScript Compilation
 pnpm build                       # ✅ Electron + Renderer Build
-pnpm dev                         # ✅ Development Server
+pnpm dev:all                    # ✅ Development Server
 ```
 
 ---

@@ -21,7 +21,7 @@ cd RawaLite
 pnpm install
 
 # 3. Entwicklung starten
-pnpm dev
+pnpm dev:all
 ```
 
 ### **2. Fix-Preservation System testen**
@@ -122,7 +122,7 @@ pnpm test:critical-fixes
 ### **Standard Development**
 ```bash
 # Normal entwickeln:
-pnpm dev                    # ✅ Wie gewohnt
+pnpm dev:all                    # ✅ Wie gewohnt
 git add .
 git commit -m "feature"     # ✅ Hook läuft automatisch
 git push                    # ✅ Wie gewohnt
@@ -203,7 +203,7 @@ pnpm safe:dist             # Mit kritischer Validation
 **Für neue Entwickler:**
 
 - [ ] Repository geklont und Dependencies installiert
-- [ ] `pnpm dev` erfolgreich ausgeführt  
+- [ ] `pnpm dev:all` erfolgreich ausgeführt  
 - [ ] `pnpm validate:critical-fixes` verstanden
 - [ ] `pnpm test:critical-fixes` ausgeführt
 - [ ] Test-Commit gemacht (Hook getestet)

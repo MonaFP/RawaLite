@@ -355,7 +355,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
       console.log('🔧 [SQLiteAdapter.listOffers] Mapped offer:', mappedOffer);
       
       // FIX: Use consistent field-mapping instead of manual aliases
-      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, itemType, sourcePackageId FROM offerLineItems WHERE offerId = ? ORDER BY id`);
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, itemType, sourcePackageId FROM offer_line_items WHERE offerId = ? ORDER BY id`);
       console.log('🔧 [SQLiteAdapter.listOffers] LineItem query:', lineItemQuery);
       
       const lineItems = await this.client.query<{
@@ -622,7 +622,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
       console.log('🔧 [SQLiteAdapter.listInvoices] Mapped invoice:', mappedInvoice);
       
       // FIX: Use consistent field-mapping instead of manual aliases
-      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoiceLineItems WHERE invoiceId = ? ORDER BY id`);
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoice_line_items WHERE invoiceId = ? ORDER BY id`);
       console.log('🔧 [SQLiteAdapter.listInvoices] LineItem query:', lineItemQuery);
       
       const lineItems = await this.client.query<{
@@ -661,7 +661,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (!rows[0]) return null;
 
     const invoice = mapFromSQL(rows[0]) as Omit<Invoice, "lineItems">;
-    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoiceLineItems WHERE invoiceId = ? ORDER BY id`);
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoice_line_items WHERE invoiceId = ? ORDER BY id`);
     const lineItems = await this.client.query<{
       id: number;
       title: string;
@@ -890,7 +890,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
       const mappedTimesheet = mapFromSQL(timesheet) as Omit<Timesheet, "activities">;
       const activitiesQuery = convertSQLQuery(`
         SELECT id, timesheetId, activityId, title, description, date, startTime, endTime, hours, hourlyRate, total, isBreak
-        FROM timesheetActivities
+        FROM timesheet_activities
         WHERE timesheetId = ?
         ORDER BY date ASC, startTime ASC
       `);
@@ -912,7 +912,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const timesheet = mapFromSQL(rows[0]) as Omit<Timesheet, "activities">;
     const activitiesQuery = convertSQLQuery(`
       SELECT id, timesheetId, activityId, title, description, date, startTime, endTime, hours, hourlyRate, total, isBreak
-      FROM timesheetActivities
+      FROM timesheet_activities
       WHERE timesheetId = ?
       ORDER BY date ASC, startTime ASC
     `);

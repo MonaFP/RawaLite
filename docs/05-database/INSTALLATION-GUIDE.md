@@ -175,10 +175,10 @@ npm install -g windows-build-tools
 #### Enable Verbose Logging
 ```bash
 # Development Mode mit Debug-Output
-DEBUG=* pnpm dev
+DEBUG=* pnpm dev:all
 
 # Specific sqlite3 debugging
-DEBUG=sqlite3* pnpm dev
+DEBUG=sqlite3* pnpm dev:all
 
 # Electron main process debugging  
 NODE_ENV=development pnpm electron:dev

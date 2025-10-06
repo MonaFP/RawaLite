@@ -40,6 +40,36 @@ const CRITICAL_FIXES = {
     file: 'electron/main.ts',
     pattern: /win\.loadURL\('http:\/\/localhost:5174'\)/,
     description: 'Port 5174 in electron main'
+  },
+  
+  'status-control-responsive-design': {
+    file: 'src/index.css',
+    pattern: /\.status-control-button\s*{[\s\S]*?min-width:\s*120px;[\s\S]*?}[\s\S]*?@media\s*\(max-width:\s*768px\)\s*{[\s\S]*?\.status-control-button\s*{[\s\S]*?min-height:\s*44px;/,
+    description: 'StatusControl component with responsive design and touch optimization'
+  },
+  
+  'responsive-card-layout': {
+    file: 'src/index.css',
+    pattern: /@media\s*\(max-width:\s*480px\)\s*{[\s\S]*?\.table-card-view\s*{[\s\S]*?display:\s*block;[\s\S]*?}[\s\S]*?@media\s*\(min-width:\s*481px\)\s*{[\s\S]*?\.table-card-view\s*{[\s\S]*?display:\s*none\s*!important;/,
+    description: 'Responsive card layout with proper media query isolation'
+  },
+  
+  'database-status-updates': {
+    file: 'src/main/services/UpdateStatusService.ts',
+    pattern: /export function updateEntityStatus[\s\S]*?expectedVersion[\s\S]*?BEGIN IMMEDIATE[\s\S]*?StatusUpdateConflictError/,
+    description: 'Database-driven status updates with optimistic locking'
+  },
+  
+  'status-migration-versioning': {
+    file: 'src/main/db/migrations/015_add_status_versioning.ts',
+    pattern: /ALTER TABLE offers ADD COLUMN version INTEGER NOT NULL DEFAULT 0[\s\S]*?CREATE TABLE offer_status_history/,
+    description: 'Migration 015: Status versioning and history tracking'
+  },
+  
+  'status-ipc-handlers': {
+    file: 'electron/main.ts',
+    pattern: /ipcMain\.handle\('status:updateOfferStatus'[\s\S]*?updateEntityStatus[\s\S]*?ipcMain\.handle\('status:updateInvoiceStatus'/,
+    description: 'IPC handlers for database-driven status updates'
   }
 };
 

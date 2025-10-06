@@ -1,0 +1,108 @@
+/**
+ * Status Updates - Theme Integration
+ * 
+ * Theme-spezifische Anpassungen für Status-Elemente
+ * Integration mit dem RawaLite 5-Theme-System (sage, sky, lavender, peach, rose)
+ */
+
+/* Theme-spezifische Status-Farben für bessere Integration */
+
+/* Sage Theme Status Colors */
+.theme-sage .status-dropdown-base:focus {
+  border-color: var(--sage-accent, #10b981);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.theme-sage .status-badge-interactive:hover {
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+/* Sky Theme Status Colors */
+.theme-sky .status-dropdown-base:focus {
+  border-color: var(--sky-accent, #0ea5e9);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.theme-sky .status-badge-interactive:hover {
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);
+}
+
+/* Lavender Theme Status Colors */
+.theme-lavender .status-dropdown-base:focus {
+  border-color: var(--lavender-accent, #8b5cf6);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.theme-lavender .status-badge-interactive:hover {
+  box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+}
+
+/* Peach Theme Status Colors */
+.theme-peach .status-dropdown-base:focus {
+  border-color: var(--peach-accent, #f97316);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.theme-peach .status-badge-interactive:hover {
+  box-shadow: 0 2px 4px rgba(249, 115, 22, 0.2);
+}
+
+/* Rose Theme Status Colors */
+.theme-rose .status-dropdown-base:focus {
+  border-color: var(--rose-accent, #f43f5e);
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.1);
+}
+
+.theme-rose .status-badge-interactive:hover {
+  box-shadow: 0 2px 4px rgba(244, 63, 94, 0.2);
+}
+
+/* Dark Mode Anpassungen (falls implementiert) */
+@media (prefers-color-scheme: dark) {
+  .status-dropdown-base {
+    background-color: #1f2937;
+    color: #f9fafb;
+    border-color: #374151;
+  }
+  
+  .status-dropdown-base:hover {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .status-badge-base {
+    /* Dark mode Badge-Anpassungen bei Bedarf */
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Theme-spezifische Status-Variable Overrides */
+.theme-sage {
+  --status-accent-color: var(--sage-accent, #10b981);
+}
+
+.theme-sky {
+  --status-accent-color: var(--sky-accent, #0ea5e9);
+}
+
+.theme-lavender {
+  --status-accent-color: var(--lavender-accent, #8b5cf6);
+}
+
+.theme-peach {
+  --status-accent-color: var(--peach-accent, #f97316);
+}
+
+.theme-rose {
+  --status-accent-color: var(--rose-accent, #f43f5e);
+}
+
+/* Theme-bewusste Status-Varianten */
+.status-themed-accent {
+  border-color: var(--status-accent-color, #3b82f6);
+}
+
+.status-themed-accent:focus {
+  border-color: var(--status-accent-color, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(var(--status-accent-rgb, 59, 130, 246), 0.1);
+}

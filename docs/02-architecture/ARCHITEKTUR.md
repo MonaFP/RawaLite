@@ -1,7 +1,7 @@
 # 🏗️ Architektur - RawaLite
 
 > **Technische Architektur & Designprinzipien** der RawaLite Desktop-Anwendung  
-> **Letzte Aktualisierung:** 01. Oktober 2025 | **Version:** 1.3.0
+> **Letzte Aktualisierung:** 06. Oktober 2025 | **Version:** 1.3.1
 
 ---
 
@@ -170,6 +170,33 @@ erDiagram
         int parentItemId FK
     }
     
+    ACTIVITIES {
+        int id PK
+        string name
+        string description
+        string category
+        real defaultHourlyRate
+        boolean isActive
+        datetime createdAt
+        datetime updatedAt
+    }
+    
+    TIMESHEETS {
+        int id PK
+        int activityId FK
+        int customerId FK
+        string title
+        string description
+        datetime startTime
+        datetime endTime
+        real duration
+        real hourlyRate
+        real total
+        string status
+        datetime createdAt
+        datetime updatedAt
+    }
+    
     SETTINGS {
         json companyData
         json numberingCircles
@@ -178,6 +205,8 @@ erDiagram
 
     CUSTOMERS ||--o{ OFFERS : "creates"
     CUSTOMERS ||--o{ INVOICES : "receives"
+    CUSTOMERS ||--o{ TIMESHEETS : "logs_time_for"
+    ACTIVITIES ||--o{ TIMESHEETS : "tracks_time"
     OFFERS ||--o{ OFFER_LINE_ITEMS : "contains"
     INVOICES ||--o{ INVOICE_LINE_ITEMS : "contains"
     PACKAGES ||--o{ PACKAGE_LINE_ITEMS : "contains"
@@ -223,11 +252,25 @@ interface PersistenceAdapter {
   createInvoice(data: CreateInvoiceData): Promise<Invoice>;
   updateInvoice(id: number, patch: Partial<Invoice>): Promise<Invoice>;
   deleteInvoice(id: number): Promise<void>;
+  
+  // ACTIVITIES - 5 Methods
+  listActivities(): Promise<Activity[]>;
+  getActivity(id: number): Promise<Activity | null>;
+  createActivity(data: CreateActivityData): Promise<Activity>;
+  updateActivity(id: number, patch: Partial<Activity>): Promise<Activity>;
+  deleteActivity(id: number): Promise<void>;
+  
+  // TIMESHEETS - 5 Methods
+  listTimesheets(): Promise<Timesheet[]>;
+  getTimesheet(id: number): Promise<Timesheet | null>;
+  createTimesheet(data: CreateTimesheetData): Promise<Timesheet>;
+  updateTimesheet(id: number, patch: Partial<Timesheet>): Promise<Timesheet>;
+  deleteTimesheet(id: number): Promise<void>;
 }
 
 // ✅ Current Implementation: SQLite mit Field-Mapper (100% komplett)
 class SQLiteAdapter implements PersistenceAdapter {
-  // ✅ Alle 24 Interface-Methoden implementiert (Stand: 01.10.2025)
+  // ✅ Alle 28 Interface-Methoden implementiert (Stand: 06.10.2025)
   // ✅ CamelCase ↔ Snake_Case Mapping via field-mapper.ts
   // ✅ IPC-only access für security (via DbClient)
   // ✅ LineItem Management für komplexe Entitäten (Offers/Invoices/Packages)
@@ -320,6 +363,8 @@ src/hooks/
 ├── useOffers.ts       # Offers CRUD + Number Generation
 ├── useInvoices.ts     # Invoices CRUD + Status Workflow
 ├── usePackages.ts     # Package Templates CRUD
+├── useActivities.ts   # Activities CRUD + Time Tracking
+├── useTimesheets.ts   # Timesheets CRUD + Duration Calc
 ├── useSettings.ts     # Settings Management
 └── useUnifiedSettings.ts # Unified Config Access
 ```
@@ -331,6 +376,8 @@ src/components/
 ├── OfferForm.tsx      # Offer Create/Edit Form (with Packages)
 ├── InvoiceForm.tsx    # Invoice Create/Edit Form (from Offers)
 ├── PackageForm.tsx    # Package Template Form
+├── ActivityForm.tsx   # Activity Create/Edit Form
+├── TimesheetForm.tsx  # Timesheet Entry Form with Timer
 ├── Table.tsx          # Generic Data Table Component
 ├── Header.tsx         # Page Header with Actions
 └── Sidebar.tsx        # Navigation with Live Statistics
@@ -465,6 +512,8 @@ const dashboardStats = useMemo(() => {
     totalOffers: offers.length,
     totalInvoices: invoices.length,
     totalPackages: packages.length,
+    totalActivities: activities.length,
+    totalTimesheets: timesheets.length,
     
     // Offer Pipeline Analytics
     pendingOffers: offers.filter(offer => offer.status === 'draft').length,
@@ -477,16 +526,23 @@ const dashboardStats = useMemo(() => {
     unpaidInvoices: invoices.filter(inv => ['draft', 'sent', 'overdue'].includes(inv.status)).length,
     overdueInvoices: invoices.filter(inv => inv.status === 'overdue').length,
     
+    // Time Tracking Analytics
+    activeTimesheets: timesheets.filter(ts => ts.status === 'running').length,
+    completedTimesheets: timesheets.filter(ts => ts.status === 'completed').length,
+    totalHoursLogged: timesheets.reduce((sum, ts) => sum + (ts.duration || 0), 0),
+    
     // Revenue Calculations
     totalOfferValue: offers.reduce((sum, offer) => sum + offer.total, 0),
     paidRevenue: invoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.total, 0),
     unpaidRevenue: invoices.filter(inv => inv.status !== 'paid').reduce((sum, inv) => sum + inv.total, 0),
+    timesheetRevenue: timesheets.filter(ts => ts.status === 'completed').reduce((sum, ts) => sum + (ts.total || 0), 0),
     
     // Conversion Metrics
     offerConversionRate: offers.length > 0 ? (acceptedOffers / offers.length) * 100 : 0,
-    averageOfferValue: offers.length > 0 ? totalOfferValue / offers.length : 0
+    averageOfferValue: offers.length > 0 ? totalOfferValue / offers.length : 0,
+    averageHourlyRate: timesheets.length > 0 ? timesheetRevenue / totalHoursLogged : 0
   };
-}, [customers, offers, invoices, packages]);
+}, [customers, offers, invoices, packages, activities, timesheets]);
 ```
 
 ### **Live Sidebar Statistics**
@@ -525,17 +581,29 @@ CREATE INDEX IF NOT EXISTS idx_line_items_offer ON offer_line_items(offerId);
 CREATE INDEX IF NOT EXISTS idx_line_items_invoice ON invoice_line_items(invoiceId);
 CREATE INDEX IF NOT EXISTS idx_line_items_package ON package_line_items(packageId);
 
+-- Time Tracking Performance Indices
+CREATE INDEX IF NOT EXISTS idx_activities_name ON activities(name);
+CREATE INDEX IF NOT EXISTS idx_activities_category ON activities(category);
+CREATE INDEX IF NOT EXISTS idx_timesheets_activity ON timesheets(activityId);
+CREATE INDEX IF NOT EXISTS idx_timesheets_customer ON timesheets(customerId);
+CREATE INDEX IF NOT EXISTS idx_timesheets_start ON timesheets(startTime);
+CREATE INDEX IF NOT EXISTS idx_timesheets_status ON timesheets(status);
+
 -- Optimized Business Intelligence Queries
 SELECT 
   c.id, c.number, c.name, c.email,
   COUNT(DISTINCT o.id) as offerCount,
   COUNT(DISTINCT i.id) as invoiceCount,
+  COUNT(DISTINCT t.id) as timesheetCount,
   COALESCE(SUM(CASE WHEN i.status = 'paid' THEN i.total END), 0) as paidRevenue,
   COALESCE(SUM(CASE WHEN i.status != 'paid' THEN i.total END), 0) as unpaidRevenue,
-  COALESCE(SUM(o.total), 0) as totalOfferValue
+  COALESCE(SUM(o.total), 0) as totalOfferValue,
+  COALESCE(SUM(t.total), 0) as timesheetRevenue,
+  COALESCE(SUM(t.duration), 0) as totalHours
 FROM customers c
 LEFT JOIN offers o ON c.id = o.customerId
 LEFT JOIN invoices i ON c.id = i.customerId
+LEFT JOIN timesheets t ON c.id = t.customerId
 WHERE c.name LIKE ? OR c.email LIKE ?
 GROUP BY c.id, c.number, c.name, c.email
 ORDER BY paidRevenue DESC
@@ -604,7 +672,7 @@ test('Customer Management Workflow', async ({ page }) => {
 
 ### **Multi-Stage Build Pipeline**
 ```bash
-# Development (pnpm dev)
+# Development (pnpm dev:all)
 ┌─────────────────────────────────────────┐
 │ Vite Dev Server (Hot Module Reload)    │
 │ ├── TypeScript Watch Mode              │

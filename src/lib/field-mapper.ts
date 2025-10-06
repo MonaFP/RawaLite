@@ -77,7 +77,10 @@ export class FieldMapper {
     'activityId': 'activity_id',
     'startDate': 'start_date',
     'endDate': 'end_date',
+    'startTime': 'start_time',
+    'endTime': 'end_time',
     'hourlyRate': 'hourly_rate',
+    'isBreak': 'is_break',
     
     // Numbering Circles & Numbers
     'lastNumber': 'last_number',

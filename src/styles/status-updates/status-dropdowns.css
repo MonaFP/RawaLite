@@ -1,0 +1,127 @@
+/**
+ * Status Updates - Dropdown CSS
+ * 
+ * Isolierte Dropdown-Styles für Status-Selects
+ * ÜBERSCHREIBT alle globalen select-Styles (.card select, etc.)
+ * Komplett eigenständig - keine Vererbung von globalen Regeln
+ */
+
+/* Basis-Dropdown für alle Status-Selects */
+.status-dropdown-base {
+  /* Reset und Override aller globalen select-Styles */
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  
+  /* Komplett eigene Styles */
+  display: inline-block;
+  width: auto;
+  min-width: 120px;
+  padding: 8px 32px 8px 12px;
+  
+  /* Border und Background */
+  border: 1px solid var(--status-draft-border);
+  border-radius: var(--status-border-radius);
+  background-color: #ffffff;
+  
+  /* Typography */
+  font-family: inherit;
+  font-size: var(--status-font-size);
+  font-weight: var(--status-font-weight);
+  color: #374151;
+  line-height: 1.4;
+  
+  /* Cursor und Transition */
+  cursor: pointer;
+  transition: var(--status-transition);
+  
+  /* Custom Dropdown Arrow */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+}
+
+/* Hover State */
+.status-dropdown-base:hover {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Focus State */
+.status-dropdown-base:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background-color: #ffffff;
+}
+
+/* Disabled State */
+.status-dropdown-base:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+}
+
+/* Spezifische Dropdown-Typen */
+.status-dropdown-offer {
+  /* Spezifische Styles für Angebote - bei Bedarf erweitern */
+  position: relative;
+}
+
+.status-dropdown-invoice {
+  /* Spezifische Styles für Rechnungen - bei Bedarf erweitern */
+  position: relative;
+}
+
+.status-dropdown-timesheet {
+  /* Spezifische Styles für Timesheets - bei Bedarf erweitern */
+  position: relative;
+}
+
+/* Status-spezifische Dropdown-Farben */
+.status-dropdown-base.status-state-draft {
+  border-color: var(--status-draft-border);
+}
+
+.status-dropdown-base.status-state-sent {
+  border-color: var(--status-sent-border);
+}
+
+.status-dropdown-base.status-state-accepted {
+  border-color: var(--status-accepted-border);
+}
+
+.status-dropdown-base.status-state-rejected {
+  border-color: var(--status-rejected-border);
+}
+
+.status-dropdown-base.status-state-paid {
+  border-color: var(--status-paid-border);
+}
+
+.status-dropdown-base.status-state-overdue {
+  border-color: var(--status-overdue-border);
+}
+
+/* WICHTIG: Override für globale .card select Regeln */
+.card .status-dropdown-base,
+.card .status-dropdown-base:focus,
+.card .status-dropdown-base:hover {
+  /* Diese Styles überschreiben die .card select Regeln */
+  background-color: rgba(17,24,39,.9) !important;
+  border: 1px solid rgba(255,255,255,.15) !important;
+  color: #d1d5db !important;
+  font-size: var(--status-font-size) !important;
+  padding: 8px 32px 8px 12px !important;
+  cursor: pointer !important;
+  z-index: 1000 !important; /* Ensure dropdown is above other elements */
+}
+
+.card .status-dropdown-base:focus {
+  border-color: var(--accent, #3b82f6) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  background-color: rgba(17,24,39,1) !important;
+}

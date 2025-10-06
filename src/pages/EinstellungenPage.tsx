@@ -9,6 +9,8 @@ import { UpdateDialog } from "../components/UpdateDialog";
 import { UpdateStatus } from "../components/UpdateStatus";
 import { ThemeSelector } from "../components/ThemeSelector";
 import { NavigationModeSelector } from "../components/NavigationModeSelector";
+import { useActivities } from "../hooks/useActivities";
+import type { Activity } from "../persistence/adapter";
 import VersionService from "../services/VersionService";
 
 interface EinstellungenPageProps {
@@ -18,9 +20,21 @@ interface EinstellungenPageProps {
 export default function EinstellungenPage({ title = "Einstellungen" }: EinstellungenPageProps) {
   const { settings, loading, error, updateCompanyData } = useUnifiedSettings();
   const { circles: numberingCircles, loading: numberingLoading, error: numberingError, updateCircle, getNextNumber } = useNumbering();
+  const { activities, loading: activitiesLoading, createActivity, updateActivity, deleteActivity } = useActivities();
   const { adapter } = usePersistence();
   const { showError, showSuccess } = useNotifications();
-  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'themes' | 'updates' | 'maintenance'>('company');
+
+  // State für Activity Dialog
+  const [showActivityDialog, setShowActivityDialog] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null);
+  const [activityFormData, setActivityFormData] = useState({
+    title: '',
+    description: '',
+    hourlyRate: 0
+  });
+  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'activities' | 'themes' | 'updates' | 'maintenance'>('company');
   const [companyFormData, setCompanyFormData] = useState<CompanyData>(() => ({
     ...defaultSettings.companyData,
     ...settings.companyData
@@ -31,6 +45,76 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const [importType, setImportType] = useState<'customers' | 'invoices' | 'offers'>('customers');
   const [selectedCSVFile, setSelectedCSVFile] = useState<File | null>(null);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+
+  // Activity Dialog Funktionen
+  const openCreateActivityDialog = () => {
+    setEditingActivity(null);
+    setActivityFormData({ title: '', description: '', hourlyRate: 0 });
+    setShowActivityDialog(true);
+  };
+
+  const openEditActivityDialog = (activity: any) => {
+    setEditingActivity(activity);
+    setActivityFormData({ 
+      title: activity.title, 
+      description: activity.description || '',
+      hourlyRate: activity.hourlyRate || 0
+    });
+    setShowActivityDialog(true);
+  };
+
+  const handleActivitySubmit = async () => {
+    try {
+      if (!activityFormData.title.trim()) {
+        showError('Bitte geben Sie einen Namen ein');
+        return;
+      }
+
+      if (editingActivity) {
+        // Edit existing activity
+        await updateActivity(editingActivity.id, {
+          title: activityFormData.title,
+          description: activityFormData.description,
+          hourlyRate: activityFormData.hourlyRate,
+          isActive: true
+        });
+        showSuccess('Tätigkeit erfolgreich bearbeitet');
+      } else {
+        // Create new activity
+        await createActivity({
+          title: activityFormData.title,
+          description: activityFormData.description,
+          hourlyRate: activityFormData.hourlyRate,
+          isActive: true
+        });
+        showSuccess('Tätigkeit erfolgreich erstellt');
+      }
+      
+      setShowActivityDialog(false);
+      setEditingActivity(null);
+      setActivityFormData({ title: '', description: '', hourlyRate: 0 });
+    } catch (error) {
+      showError('Fehler beim Speichern: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+    }
+  };
+
+  const openDeleteActivityDialog = (activity: Activity) => {
+    setActivityToDelete(activity);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteActivity = async () => {
+    if (!activityToDelete) return;
+    
+    try {
+      await deleteActivity(activityToDelete.id);
+      showSuccess('Tätigkeit erfolgreich gelöscht');
+      setShowDeleteConfirm(false);
+      setActivityToDelete(null);
+    } catch (error) {
+      showError('Fehler beim Löschen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+    }
+  };
 
   // A2: Stable Close Callback - verhindert Dialog Re-Renders durch Function Reference Changes
   const handleCloseUpdateDialog = useCallback(() => setUpdateDialogOpen(false), []);
@@ -1090,6 +1174,22 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
           Nummernkreise
         </button>
         <button
+          onClick={() => setActiveTab('activities')}
+          style={{
+            backgroundColor: activeTab === 'activities' ? "var(--accent)" : "rgba(255,255,255,0.8)",
+            color: activeTab === 'activities' ? "white" : "var(--text-secondary)",
+            border: activeTab === 'activities' ? "1px solid var(--accent)" : "1px solid rgba(0,0,0,.2)",
+            padding: "8px 16px",
+            borderRadius: "8px 8px 0 0",
+            cursor: "pointer",
+            borderBottom: activeTab === 'activities' ? "2px solid var(--accent)" : "2px solid transparent",
+            transition: "all 0.2s ease",
+            fontWeight: activeTab === 'activities' ? "600" : "500"
+          }}
+        >
+          ⚡ Tätigkeiten
+        </button>
+        <button
           onClick={() => setActiveTab('themes')}
           style={{
             backgroundColor: activeTab === 'themes' ? "var(--accent)" : "rgba(255,255,255,0.8)",
@@ -1795,7 +1895,98 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
         </div>
       )}
 
-      {/* Themes Tab - Farbthemes */}
+      {/* Activities Tab - Tätigkeiten */}
+        {activeTab === 'activities' && (
+          <div>
+            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"16px"}}>
+              <div>
+                <h2 style={{margin:"0 0 4px 0"}}>Tätigkeiten verwalten</h2>
+                <div style={{opacity:.7}}>Verwalte deine Standard-Tätigkeiten für Leistungsnachweise.</div>
+              </div>
+              <button 
+                className="btn btn-primary"
+                onClick={openCreateActivityDialog}
+              >
+                Neue Tätigkeit
+              </button>
+            </div>
+            
+            {activitiesLoading ? (
+              <div className="card">
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div className="loading-spinner" style={{ margin: '0 auto 1rem' }}></div>
+                  <p>Tätigkeiten werden geladen...</p>
+                </div>
+              </div>
+            ) : (
+              <div style={{border:"1px solid var(--color-border)", borderRadius:"8px", overflow:"hidden"}}>
+                <div style={{
+                  display:"grid", 
+                  gridTemplateColumns:"1fr 150px 120px", 
+                  backgroundColor:"var(--color-table-header)", 
+                  padding:"12px 16px", 
+                  fontWeight:"600",
+                  borderBottom:"1px solid var(--color-border)"
+                }}>
+                  <div>Tätigkeit</div>
+                  <div>Stundensatz</div>
+                  <div>Aktionen</div>
+                </div>
+                
+                {activities?.length === 0 ? (
+                  <div style={{
+                    padding:"32px 16px", 
+                    textAlign:"center", 
+                    color:"var(--color-text-secondary)"
+                  }}>
+                    Noch keine Tätigkeiten erstellt.
+                  </div>
+                ) : (
+                  activities?.map((activity, index) => (
+                    <div key={activity.id} style={{
+                      display:"grid", 
+                      gridTemplateColumns:"1fr 150px 120px", 
+                      padding:"12px 16px",
+                      alignItems:"center",
+                      gap:"8px",
+                      borderBottom: index < activities.length - 1 ? "1px solid var(--color-border)" : "none"
+                    }}>
+                      <div>
+                        <div style={{fontWeight:"500", fontSize:"14px"}}>{activity.title}</div>
+                        {activity.description && (
+                          <div style={{fontSize:"12px", color:"var(--color-text-secondary)", marginTop:"2px"}}>
+                            {activity.description}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div style={{fontSize:"14px"}}>
+                        {activity.hourlyRate ? `€${activity.hourlyRate}` : <em style={{opacity:0.6}}>Nicht festgelegt</em>}
+                      </div>
+                      
+                      <div style={{display:"flex", gap:"4px"}}>
+                        <button
+                          onClick={() => openEditActivityDialog(activity)}
+                          className="btn btn-secondary"
+                          style={{padding:"4px 8px", fontSize:"11px"}}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => openDeleteActivityDialog(activity)}
+                          className="btn btn-danger"
+                          style={{padding:"4px 8px", fontSize:"11px"}}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}      {/* Themes Tab - Farbthemes */}
       {activeTab === 'themes' && (
         <div>
           <ThemeSelector />
@@ -2037,6 +2228,116 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
         onClose={handleCloseUpdateDialog}
         autoCheckOnOpen={true}
       />
+
+      {/* Activity Dialog */}
+      {showActivityDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium mb-4">
+              {editingActivity ? 'Tätigkeit bearbeiten' : 'Neue Tätigkeit'}
+            </h3>
+            
+            <div className="mb-4">
+              <label htmlFor="activity-name" className="block text-sm font-medium text-gray-700 mb-1">
+                Name
+              </label>
+              <input
+                id="activity-name"
+                type="text"
+                value={activityFormData.title}
+                onChange={(e) => setActivityFormData(prev => ({ ...prev, title: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Name der Tätigkeit"
+                autoFocus
+              />
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="activity-description" className="block text-sm font-medium text-gray-700 mb-1">
+                Beschreibung
+              </label>
+              <textarea
+                id="activity-description"
+                value={activityFormData.description}
+                onChange={(e) => setActivityFormData(prev => ({ ...prev, description: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Beschreibung der Tätigkeit"
+                rows={3}
+              />
+            </div>
+
+            <div className="mb-6">
+              <label htmlFor="activity-hourlyRate" className="block text-sm font-medium text-gray-700 mb-1">
+                Stundensatz (€)
+              </label>
+              <input
+                id="activity-hourlyRate"
+                type="number"
+                min="0"
+                step="0.01"
+                value={activityFormData.hourlyRate}
+                onChange={(e) => setActivityFormData(prev => ({ ...prev, hourlyRate: parseFloat(e.target.value) || 0 }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowActivityDialog(false);
+                  setEditingActivity(null);
+                  setActivityFormData({ title: '', description: '', hourlyRate: 0 });
+                }}
+                className="px-4 py-2 text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={handleActivitySubmit}
+                disabled={!activityFormData.title.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {editingActivity ? 'Speichern' : 'Erstellen'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && activityToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium mb-4">
+              Tätigkeit löschen
+            </h3>
+            
+            <p className="text-gray-600 mb-6">
+              Möchten Sie die Tätigkeit <strong>"{activityToDelete.title}"</strong> wirklich löschen? 
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setActivityToDelete(null);
+                }}
+                className="px-4 py-2 text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={handleDeleteActivity}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              >
+                Löschen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

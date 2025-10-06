@@ -1,0 +1,98 @@
+/**
+ * Status Updates - Core CSS
+ * 
+ * Basis-Styles und CSS-Variablen für alle Status-bezogenen Elemente
+ * ISOLIERT von globalen Styles - keine Vererbung von .card oder anderen globalen Regeln
+ */
+
+/* CSS-Variablen nur für Status-Updates */
+:root {
+  /* Status Farben - State-basiert */
+  --status-draft-color: #6b7280;
+  --status-draft-bg: #f9fafb;
+  --status-draft-border: #d1d5db;
+
+  --status-sent-color: #3b82f6;
+  --status-sent-bg: #eff6ff;
+  --status-sent-border: #bfdbfe;
+
+  --status-accepted-color: #10b981;
+  --status-accepted-bg: #f0fdf4;
+  --status-accepted-border: #bbf7d0;
+
+  --status-rejected-color: #ef4444;
+  --status-rejected-bg: #fef2f2;
+  --status-rejected-border: #fecaca;
+
+  --status-paid-color: #059669;
+  --status-paid-bg: #ecfdf5;
+  --status-paid-border: #a7f3d0;
+
+  --status-overdue-color: #dc2626;
+  --status-overdue-bg: #fef2f2;
+  --status-overdue-border: #fca5a5;
+
+  /* Status Element Basis-Variablen */
+  --status-font-size: 14px;
+  --status-border-radius: 6px;
+  --status-transition: all 0.2s ease;
+  --status-font-weight: 500;
+}
+
+/* Basis-Klasse für alle Status-Elemente */
+.status-element-base {
+  font-family: inherit;
+  font-size: var(--status-font-size);
+  font-weight: var(--status-font-weight);
+  transition: var(--status-transition);
+  box-sizing: border-box;
+}
+
+/* State-Klassen für Status-spezifische Farben */
+.status-state-draft {
+  color: var(--status-draft-color);
+  background-color: var(--status-draft-bg);
+  border-color: var(--status-draft-border);
+}
+
+.status-state-sent {
+  color: var(--status-sent-color);
+  background-color: var(--status-sent-bg);
+  border-color: var(--status-sent-border);
+}
+
+.status-state-accepted {
+  color: var(--status-accepted-color);
+  background-color: var(--status-accepted-bg);
+  border-color: var(--status-accepted-border);
+}
+
+.status-state-rejected {
+  color: var(--status-rejected-color);
+  background-color: var(--status-rejected-bg);
+  border-color: var(--status-rejected-border);
+}
+
+.status-state-paid {
+  color: var(--status-paid-color);
+  background-color: var(--status-paid-bg);
+  border-color: var(--status-paid-border);
+}
+
+.status-state-overdue {
+  color: var(--status-overdue-color);
+  background-color: var(--status-overdue-bg);
+  border-color: var(--status-overdue-border);
+}
+
+/* Reset für Status-Elemente - überschreibt globale Styles */
+.status-element-reset {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
