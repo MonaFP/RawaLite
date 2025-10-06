@@ -587,6 +587,85 @@ await updateStatus(params); // No try/catch for conflicts
 
 ---
 
+### **FIX-011: ABI Management System**
+- **ID:** `abi-management-system`
+- **Files:** `scripts/rebuild-native-electron.cjs`, `package.json`, `.npmrc`
+- **Pattern:** Robust Electron ABI compilation with fallback recovery
+- **Location:** Scripts directory and package.json rebuild:electron script
+- **First Implemented:** v1.0.13
+- **Last Verified:** v1.0.13
+- **Status:** ✅ ACTIVE
+
+**Required Code Pattern (rebuild-native-electron.cjs):**
+```javascript
+// Robust rebuild with fallback strategy
+console.log('🚀 [Rebuild] Rebuilding better-sqlite3...');
+
+let rebuildSuccess = false;
+
+// First try: Standard rebuild
+console.log('🔄 [Rebuild] Attempt 1: Standard rebuild...');
+const r1 = spawnSync('pnpm', ['rebuild', 'better-sqlite3', '--verbose'], { stdio: 'inherit', shell: true });
+
+if (r1.status === 0) {
+  rebuildSuccess = true;
+  console.log('✅ [Rebuild] Standard rebuild successful');
+} else {
+  console.log('⚠️ [Rebuild] Standard rebuild failed, trying reinstall...');
+  
+  // Second try: Remove and reinstall
+  console.log('🔄 [Rebuild] Attempt 2: Remove and reinstall...');
+  const r2 = spawnSync('pnpm', ['remove', 'better-sqlite3'], { stdio: 'inherit', shell: true });
+  if (r2.status === 0) {
+    const r3 = spawnSync('pnpm', ['add', 'better-sqlite3'], { stdio: 'inherit', shell: true });
+    if (r3.status === 0) {
+      rebuildSuccess = true;
+      console.log('✅ [Rebuild] Reinstall successful');
+    }
+  }
+}
+```
+
+**Required .npmrc Configuration:**
+```properties
+runtime=electron
+target=31.7.7
+disturl=https://atom.io/download/atom-shell
+build_from_source=true
+```
+
+**Required package.json Script:**
+```json
+{
+  "scripts": {
+    "rebuild:electron": "node scripts/rebuild-native-electron.cjs",
+    "postinstall": "node scripts/sync-npmrc.cjs && node scripts/rebuild-native-electron.cjs",
+    "preinstall": "node scripts/check-electron-abi.cjs || true"
+  }
+}
+```
+
+**Expected Behavior:**
+- ✅ better-sqlite3 compiled for Electron ABI 125
+- ✅ Node.js test fails with ABI mismatch (EXPECTED)
+- ✅ Electron loads better-sqlite3 successfully
+- ✅ Automatic recovery from permission/lock issues
+
+**FORBIDDEN Patterns:**
+```bash
+npx electron-rebuild  # ❌ Compiles for Node.js ABI instead of Electron
+npm rebuild           # ❌ Uses npm instead of pnpm
+```
+
+**Problem Solved:**
+- ABI mismatches between Node.js v22.18.0 (ABI 127) and Electron v31.7.7 (ABI 125)
+- Permission and file lock issues during rebuild processes
+- Inconsistent native module compilation across development environments
+- Documentation with dangerous npx electron-rebuild commands that compile for wrong runtime
+- Solution: Robust fallback strategy with proper runtime targeting and automatic recovery mechanisms
+
+---
+
 ## 🔍 VALIDATION RULES FOR KI
 
 ### **BEFORE ANY FILE EDIT:**
@@ -613,11 +692,11 @@ await updateStatus(params); // No try/catch for conflicts
 
 ## 📊 FIX HISTORY
 
-| Version | WriteStream Fix | File Flush Fix | Event Handler Fix | Port Fix | Offer FK Fix | Discount Schema | PDF Theme Fix | CSS Dropdown Fix | Status |
-|---------|----------------|----------------|-------------------|----------|--------------|-----------------|---------------|------------------|---------|
-| v1.0.11 | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Partial |
-| v1.0.12 | ❌ LOST | ❌ LOST | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Regression |
-| v1.0.13 | ✅ Restored | ✅ Restored | ✅ Present | ✅ Present | ✅ Added | ✅ Added | ✅ Added | ✅ Added | Complete |
+| Version | WriteStream Fix | File Flush Fix | Event Handler Fix | Port Fix | Offer FK Fix | Discount Schema | PDF Theme Fix | CSS Dropdown Fix | Status Updates | ABI Management | Status |
+|---------|----------------|----------------|-------------------|----------|--------------|-----------------|---------------|------------------|----------------|----------------|---------|
+| v1.0.11 | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Partial |
+| v1.0.12 | ❌ LOST | ❌ LOST | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Regression |
+| v1.0.13 | ✅ Restored | ✅ Restored | ✅ Present | ✅ Present | ✅ Added | ✅ Added | ✅ Added | ✅ Added | ✅ Added | ✅ Added | Complete |
 
 ---
 
@@ -646,6 +725,6 @@ await updateStatus(params); // No try/catch for conflicts
 - Patterns evolve (with backward compatibility)
 - New validation rules are needed
 
-**Last Updated:** 2025-10-05 (Added FIX-008: Status Dropdown CSS Isolation - fixes table CSS inheritance blocking dropdown functionality)
+**Last Updated:** 2025-10-06 (Added FIX-011: ABI Management System - prevents Node.js vs Electron better-sqlite3 compilation conflicts)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/validate-critical-fixes.mjs`

@@ -43,8 +43,8 @@ cd RawaLite
 # Clean Install mit Native Dependencies
 pnpm install --frozen-lockfile
 
-# Native Module Rebuild für Electron
-npx electron-rebuild
+# Native Module Rebuild für Electron (über unser Script)
+pnpm run rebuild:electron
 
 # Verify Dependencies
 pnpm ls better-sqlite3       # Should show version 12.4.1
@@ -129,12 +129,12 @@ PRAGMA integrity_check;      # Should return "ok"
 ```bash
 # Problem: Native module not compiled for Electron
 # Solution: Rebuild native dependencies
-npx electron-rebuild
+pnpm run rebuild:electron
 
 # Alternative: Force clean rebuild
 rm -rf node_modules/.cache
 pnpm install --frozen-lockfile
-npx electron-rebuild
+pnpm run rebuild:electron
 ```
 
 #### ❌ "Cannot open database because the directory does not exist"

@@ -13,7 +13,7 @@
     "postinstall": "node scripts/sync-npmrc.cjs && node scripts/rebuild-native-electron.cjs",
     "preinstall": "node scripts/check-electron-abi.cjs || true",
     "prerebuild": "node scripts/sync-npmrc.cjs && node scripts/rebuild-native-electron.cjs",
-    "rebuild:electron": "electron-rebuild",
+    "rebuild:electron": "node scripts/rebuild-native-electron.cjs",
     "clean": "node -e \"const fs=require('fs');const p=['dist','build','.vite','node_modules/.vite','.cache','out','.tsbuildinfo'];p.forEach(d=>{try{if(fs.existsSync(d)){fs.rmSync(d,{recursive:true,force:true})}}catch(e){console.warn('Skipped locked:',d)}});\"",
     "clean:release": "node -e \"const fs=require('fs');try{if(fs.existsSync('release')){fs.rmSync('release',{recursive:true,force:true});console.log('✅ Removed release/')}}catch(e){console.warn('⚠️ Release cleanup failed:',e.message)}\"",
     "clean:release:force": "node -e \"const fs=require('fs');const path=require('path');function forceRemove(p){try{if(fs.existsSync(p)){const stat=fs.lstatSync(p);if(stat.isDirectory()){fs.readdirSync(p).forEach(f=>forceRemove(path.join(p,f)));fs.rmdirSync(p)}else{fs.unlinkSync(p)}}}catch(e){}}forceRemove('release');console.log('✅ Force removed release/')\"",
