@@ -41,10 +41,10 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
       header: "Status", 
       render: (row: Offer) => {
         const statusColors = {
-          draft: '#6b7280',
-          sent: '#3b82f6',
-          accepted: '#10b981',
-          rejected: '#ef4444'
+          draft: '#6b7280',     // Harmonisches Grau - konsistent mit Dashboard
+          sent: '#f59e0b',      // Warmes Orange statt knalliges Blau
+          accepted: '#22c55e',  // Harmonisches Grün - konsistent mit Dashboard
+          rejected: '#ef4444'   // Harmonisches Rot - konsistent mit Dashboard
         };
         const statusTexts = {
           draft: 'Entwurf',

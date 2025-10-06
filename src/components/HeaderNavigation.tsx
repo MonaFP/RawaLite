@@ -44,14 +44,39 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title }) => 
       width: '100%',
       padding: '0 16px'
     }}>
-      {/* Page Title */}
+      {/* App Logo + Page Title */}
       <div style={{
-        fontSize: '1.2rem',
-        fontWeight: '600',
-        color: 'white',
-        textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px'
       }}>
-        {getPageTitle()}
+        {/* App Logo */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <img 
+            src="/rawalite-logo.png" 
+            alt="RawaLite" 
+            style={{ 
+              height: '32px',
+              width: 'auto',
+              objectFit: 'contain',
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+            }} 
+          />
+        </div>
+        
+        {/* Page Title */}
+        <div style={{
+          fontSize: '1.2rem',
+          fontWeight: '600',
+          color: 'white',
+          textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+        }}>
+          {getPageTitle()}
+        </div>
       </div>
 
       {/* Navigation Menu - NUR das Menü! */}

@@ -13,20 +13,29 @@ export default function Sidebar(){
 
   // Statistiken berechnen
   const stats = {
-    // Angebote
+    // Angebote - alle Status
     totalOffers: offers.length,
-    pendingOffers: offers.filter(offer => offer.status === 'draft').length,
+    draftOffers: offers.filter(offer => offer.status === 'draft').length,
+    sentOffers: offers.filter(offer => offer.status === 'sent').length,
     acceptedOffers: offers.filter(offer => offer.status === 'accepted').length,
+    rejectedOffers: offers.filter(offer => offer.status === 'rejected').length,
+    pendingOffers: offers.filter(offer => offer.status === 'draft').length, // Für Kompatibilität
     
-    // Rechnungen
+    // Rechnungen - alle Status
     totalInvoices: invoices.length,
+    draftInvoices: invoices.filter(invoice => invoice.status === 'draft').length,
+    sentInvoices: invoices.filter(invoice => invoice.status === 'sent').length,
     paidInvoices: invoices.filter(invoice => invoice.status === 'paid').length,
+    overdueInvoices: invoices.filter(invoice => invoice.status === 'overdue').length,
+    cancelledInvoices: invoices.filter(invoice => invoice.status === 'cancelled').length,
     unpaidInvoices: invoices.filter(invoice => invoice.status === 'draft' || invoice.status === 'sent' || invoice.status === 'overdue').length,
     
-    // Leistungsnachweise
+    // Leistungsnachweise - alle Status
     totalTimesheets: timesheets.length,
     draftTimesheets: timesheets.filter(timesheet => timesheet.status === 'draft').length,
+    sentTimesheets: timesheets.filter(timesheet => timesheet.status === 'sent').length,
     acceptedTimesheets: timesheets.filter(timesheet => timesheet.status === 'accepted').length,
+    rejectedTimesheets: timesheets.filter(timesheet => timesheet.status === 'rejected').length,
     
     // Finanzen
     totalOfferValue: offers.reduce((sum, offer) => sum + offer.total, 0),
@@ -226,10 +235,22 @@ export default function Sidebar(){
               fontSize: "10px",
               color: "rgba(255,255,255,0.5)",
               display: "flex",
-              justifyContent: "space-between"
+              flexDirection: "column",
+              gap: "2px"
             }}>
-              <span>{stats.paidInvoices} Bezahlt</span>
-              <span>{stats.unpaidInvoices} Offen</span>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "#22c55e" }}>{stats.paidInvoices} Bezahlt</span>
+                <span style={{ color: "#f59e0b" }}>{stats.unpaidInvoices} Offen</span>
+              </div>
+              {stats.overdueInvoices > 0 && (
+                <div style={{ 
+                  color: "#ef4444",
+                  fontWeight: "600",
+                  textAlign: "center"
+                }}>
+                  🚨 {stats.overdueInvoices} Überfällig
+                </div>
+              )}
             </div>
           </div>
 

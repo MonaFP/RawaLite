@@ -106,11 +106,11 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
       header: "Status", 
       render: (row: Invoice) => {
         const statusColors = {
-          draft: '#6b7280',
-          sent: '#3b82f6',
-          paid: '#10b981',
-          overdue: '#ef4444',
-          cancelled: '#ef4444'
+          draft: '#6b7280',     // Harmonisches Grau - konsistent mit Dashboard
+          sent: '#f59e0b',      // Warmes Orange statt knalliges Blau  
+          paid: '#22c55e',      // Harmonisches Grün - konsistent mit Dashboard
+          overdue: '#ef4444',   // Harmonisches Rot - konsistent mit Dashboard
+          cancelled: '#6b7280'  // Harmonisches Grau - konsistent mit Dashboard
         };
         const statusTexts = {
           draft: 'Entwurf',

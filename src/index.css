@@ -825,6 +825,235 @@ body{
   .page-timesheets .table th:nth-child(9), .page-timesheets .table td:nth-child(9) { width: 18%; } /* Status ändern */
 }
 
+/* ====== RESPONSIVE TIMESHEET EDIT FORMS ====== */
+
+/* Grunddaten-Tabelle responsive */
+.timesheet-grunddaten-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr 120px 120px 100px;
+  padding: 12px 16px;
+  align-items: center;
+  gap: 8px;
+}
+
+.timesheet-grunddaten-header {
+  display: grid;
+  grid-template-columns: 120px 1fr 120px 120px 100px;
+  background-color: var(--color-table-header);
+  padding: 12px 16px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Create-Formular spezifisch - Flexibles Layout */
+.timesheet-create-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  align-items: center;
+  gap: 12px;
+}
+
+.timesheet-create-header {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: var(--color-table-header);
+  padding: 12px 16px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+  gap: 12px;
+}
+
+/* Flexible Größen für Form-Felder */
+.timesheet-create-grid > *:nth-child(1),
+.timesheet-create-header > *:nth-child(1) {
+  min-width: 150px;
+  flex: 0 0 auto;
+}
+
+.timesheet-create-grid > *:nth-child(2),
+.timesheet-create-header > *:nth-child(2) {
+  min-width: 200px;
+  flex: 1 1 auto;
+}
+
+.timesheet-create-grid > *:nth-child(3),
+.timesheet-create-header > *:nth-child(3),
+.timesheet-create-grid > *:nth-child(4),
+.timesheet-create-header > *:nth-child(4) {
+  min-width: 120px;
+  flex: 0 0 auto;
+}
+
+/* Aktionen-Spalte bleibt in derselben Zeile */
+.timesheet-create-grid .timesheet-actions,
+.timesheet-create-header .timesheet-actions {
+  min-width: 160px;
+  flex: 0 0 auto;
+}
+
+/* Positionen-Tabelle responsive */
+.timesheet-positionen-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr 80px 80px 80px 100px 80px 100px;
+  padding: 8px 16px;
+  align-items: center;
+  gap: 8px;
+}
+
+.timesheet-positionen-header {
+  display: grid;
+  grid-template-columns: 100px 1fr 80px 80px 80px 100px 80px 100px;
+  background-color: var(--color-table-header);
+  padding: 12px 16px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Mobile Responsive für Timesheet Forms */
+@media (max-width: 768px) {
+  /* Grunddaten Mobile - Vertikal gestapelt */
+  .timesheet-grunddaten-header,
+  .timesheet-grunddaten-grid,
+  .timesheet-create-header,
+  .timesheet-create-grid {
+    display: none; /* Grid ausblenden */
+  }
+  
+  .timesheet-grunddaten-mobile,
+  .timesheet-create-mobile {
+    display: block; /* Mobile Version einblenden */
+    padding: 16px;
+  }
+  
+  .timesheet-grunddaten-mobile .form-group,
+  .timesheet-create-mobile .form-group {
+    margin-bottom: 12px;
+  }
+  
+  .timesheet-grunddaten-mobile label,
+  .timesheet-create-mobile label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+  
+  .timesheet-grunddaten-mobile .form-control,
+  .timesheet-create-mobile .form-control {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 16px; /* Touch-friendly */
+    border-radius: 6px;
+    box-sizing: border-box; /* Verhindert Überlappung */
+  }
+  
+  /* Mobile Aktionen-Bereich */
+  .timesheet-create-mobile .timesheet-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .timesheet-create-mobile .btn {
+    white-space: nowrap; /* Verhindert Textumbruch in Buttons */
+    min-width: 0; /* Ermöglicht Flexbox-Shrinking */
+  }
+  
+  /* Positionen Mobile - Card Layout */
+  .timesheet-positionen-header,
+  .timesheet-positionen-grid {
+    display: none; /* Grid ausblenden */
+  }
+  
+  .timesheet-positionen-mobile {
+    display: block; /* Mobile Version einblenden */
+  }
+  
+  .timesheet-position-card {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background-color: var(--color-bg-secondary);
+  }
+  
+  .timesheet-position-card .position-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  
+  .timesheet-position-card .position-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 14px;
+  }
+  
+  .timesheet-position-card .position-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+  }
+  
+  /* Add Position Form Mobile */
+  .timesheet-add-position-mobile {
+    display: block;
+    padding: 16px;
+    background-color: var(--color-bg-light);
+    border-top: 1px solid var(--color-border);
+  }
+  
+  .timesheet-add-position-mobile .form-group {
+    margin-bottom: 12px;
+  }
+  
+  .timesheet-add-position-mobile label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+  
+  .timesheet-add-position-mobile .form-control {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 16px; /* Touch-friendly */
+    border-radius: 6px;
+  }
+  
+  .timesheet-add-position-mobile .time-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .timesheet-add-position-mobile .add-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin-top: 8px;
+  }
+}
+
+/* Desktop - Mobile Elemente ausblenden */
+@media (min-width: 769px) {
+  .timesheet-grunddaten-mobile,
+  .timesheet-create-mobile,
+  .timesheet-positionen-mobile,
+  .timesheet-add-position-mobile {
+    display: none;
+  }
+}
+
 /* Medium Tablet (900px - 1200px) - Zusätzliche Anpassungen für Status ändern */
 @media (max-width: 1000px) {
   /* Angebote & Rechnungen */

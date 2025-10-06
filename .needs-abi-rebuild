@@ -1,0 +1,6 @@
+ABI mismatch detected at 2025-10-06T06:47:36.243Z
+The module '\\?\C:\Users\ramon\Desktop\RawaLite\node_modules\.pnpm\better-sqlite3@12.4.1\node_modules\better-sqlite3\build\Release\better_sqlite3.node'
+was compiled against a different Node.js version using
+NODE_MODULE_VERSION 125. This version of Node.js requires
+NODE_MODULE_VERSION 127. Please try re-compiling or re-installing
+the module (for instance, using `npm rebuild` or `npm install`).

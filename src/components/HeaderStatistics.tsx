@@ -5,6 +5,7 @@ import { useCustomers } from '../hooks/useCustomers';
 import { useOffers } from '../hooks/useOffers';
 import { useInvoices } from '../hooks/useInvoices';
 import { usePackages } from '../hooks/usePackages';
+import { useTimesheets } from '../hooks/useTimesheets';
 
 interface HeaderStatisticsProps {
   title?: string;
@@ -17,6 +18,7 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title }) => 
   const { offers } = useOffers();
   const { invoices } = useInvoices();
   const { packages } = usePackages();
+  const { timesheets } = useTimesheets();
   
   // Statistiken berechnen
   const stats = {
@@ -24,14 +26,28 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title }) => 
     totalOffers: offers.length,
     totalInvoices: invoices.length,
     totalPackages: packages.length,
+    totalTimesheets: timesheets.length,
     
-    // Angebote Statistiken
-    pendingOffers: offers.filter(offer => offer.status === 'draft').length,
+    // Angebote Statistiken - alle Status
+    draftOffers: offers.filter(offer => offer.status === 'draft').length,
+    sentOffers: offers.filter(offer => offer.status === 'sent').length,
     acceptedOffers: offers.filter(offer => offer.status === 'accepted').length,
+    rejectedOffers: offers.filter(offer => offer.status === 'rejected').length,
+    pendingOffers: offers.filter(offer => offer.status === 'draft').length, // Für Kompatibilität
     
-    // Rechnungen Statistiken
+    // Rechnungen Statistiken - alle Status
+    draftInvoices: invoices.filter(invoice => invoice.status === 'draft').length,
+    sentInvoices: invoices.filter(invoice => invoice.status === 'sent').length,
     paidInvoices: invoices.filter(invoice => invoice.status === 'paid').length,
+    overdueInvoices: invoices.filter(invoice => invoice.status === 'overdue').length,
+    cancelledInvoices: invoices.filter(invoice => invoice.status === 'cancelled').length,
     unpaidInvoices: invoices.filter(invoice => invoice.status === 'draft' || invoice.status === 'sent' || invoice.status === 'overdue').length,
+    
+    // Leistungsnachweise Statistiken - alle Status
+    draftTimesheets: timesheets.filter(timesheet => timesheet.status === 'draft').length,
+    sentTimesheets: timesheets.filter(timesheet => timesheet.status === 'sent').length,
+    acceptedTimesheets: timesheets.filter(timesheet => timesheet.status === 'accepted').length,
+    rejectedTimesheets: timesheets.filter(timesheet => timesheet.status === 'rejected').length,
     
     // Finanzielle Übersicht
     paidAmount: invoices.filter(inv => inv.status === 'paid').reduce((sum, invoice) => sum + invoice.total, 0),
@@ -65,15 +81,39 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title }) => 
       padding: '12px 24px',
       gap: '16px'
     }}>
-      {/* Page Title */}
+      {/* App Logo + Page Title */}
       <div style={{
-        fontSize: '1.2rem',
-        fontWeight: '600',
-        color: 'white',
-        textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-        minWidth: '150px'
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        minWidth: '200px'
       }}>
-        {getPageTitle()}
+        {/* App Logo */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <img 
+            src="/rawalite-logo.png" 
+            alt="RawaLite" 
+            style={{ 
+              height: '36px',
+              width: 'auto',
+              objectFit: 'contain',
+              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+            }} 
+          />
+        </div>
+        
+        {/* Page Title */}
+        <div style={{
+          fontSize: '1.2rem',
+          fontWeight: '600',
+          color: 'white',
+          textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+        }}>
+          {getPageTitle()}
+        </div>
       </div>
 
       {/* Company Logo/Name */}
@@ -235,6 +275,59 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title }) => 
             marginBottom: '4px'
           }}>Rechnungen</div>
           <div style={{
+            fontSize: '0.7rem',
+            lineHeight: '1.2'
+          }}>
+            <div style={{ marginBottom: '1px' }}>
+              <span style={{
+                color: '#22c55e',
+                fontWeight: '600'
+              }}>
+                {stats.paidInvoices}
+              </span>
+              <span style={{
+                color: 'rgba(255,255,255,0.6)',
+                margin: '0 1px'
+              }}>/</span>
+              <span style={{
+                color: '#f59e0b',
+                fontWeight: '500'
+              }}>
+                {stats.unpaidInvoices}
+              </span>
+            </div>
+            {stats.overdueInvoices > 0 && (
+              <div style={{
+                color: '#ef4444',
+                fontWeight: '600',
+                fontSize: '0.65rem'
+              }}>
+                🚨 {stats.overdueInvoices} überfällig
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Leistungsnachweise */}
+        <div style={{
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '8px',
+          padding: '10px 16px',
+          border: '1px solid rgba(255,255,255,0.2)',
+          textAlign: 'center',
+          minWidth: '95px',
+          width: '95px'
+        }}>
+          <div style={{
+            fontSize: '1.1rem',
+            marginBottom: '4px'
+          }}>⏱️</div>
+          <div style={{
+            fontSize: '0.75rem',
+            color: 'rgba(255,255,255,0.8)',
+            marginBottom: '4px'
+          }}>Leistungsn.</div>
+          <div style={{
             fontSize: '0.8rem',
             lineHeight: '1.2'
           }}>
@@ -242,17 +335,17 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title }) => 
               color: '#22c55e',
               fontWeight: '600'
             }}>
-              {stats.paidInvoices}
+              {stats.acceptedTimesheets}
             </span>
             <span style={{
               color: 'rgba(255,255,255,0.6)',
               margin: '0 2px'
             }}>/</span>
             <span style={{
-              color: '#f59e0b',
+              color: 'rgba(255,255,255,0.7)',
               fontWeight: '500'
             }}>
-              {stats.unpaidInvoices}
+              {stats.draftTimesheets}
             </span>
           </div>
         </div>

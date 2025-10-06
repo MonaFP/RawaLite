@@ -4,6 +4,7 @@ import { useCustomers } from '../hooks/useCustomers';
 import { useOffers } from '../hooks/useOffers';
 import { useInvoices } from '../hooks/useInvoices';
 import { usePackages } from '../hooks/usePackages';
+import { useTimesheets } from '../hooks/useTimesheets';
 
 interface CompactSidebarProps {
   className?: string;
@@ -15,6 +16,7 @@ export const CompactSidebar: React.FC<CompactSidebarProps> = ({ className }) => 
   const { offers } = useOffers();
   const { invoices } = useInvoices();
   const { packages } = usePackages();
+  const { timesheets } = useTimesheets();
   
   // Statistiken berechnen
   const stats = {
@@ -22,14 +24,28 @@ export const CompactSidebar: React.FC<CompactSidebarProps> = ({ className }) => 
     totalOffers: offers.length,
     totalInvoices: invoices.length,
     totalPackages: packages.length,
+    totalTimesheets: timesheets.length,
     
-    // Angebote Statistiken
-    pendingOffers: offers.filter(offer => offer.status === 'draft').length,
+    // Angebote Statistiken - alle Status
+    draftOffers: offers.filter(offer => offer.status === 'draft').length,
+    sentOffers: offers.filter(offer => offer.status === 'sent').length,
     acceptedOffers: offers.filter(offer => offer.status === 'accepted').length,
+    rejectedOffers: offers.filter(offer => offer.status === 'rejected').length,
+    pendingOffers: offers.filter(offer => offer.status === 'draft').length, // Für Kompatibilität
     
-    // Rechnungen Statistiken
+    // Rechnungen Statistiken - alle Status
+    draftInvoices: invoices.filter(invoice => invoice.status === 'draft').length,
+    sentInvoices: invoices.filter(invoice => invoice.status === 'sent').length,
     paidInvoices: invoices.filter(invoice => invoice.status === 'paid').length,
+    overdueInvoices: invoices.filter(invoice => invoice.status === 'overdue').length,
+    cancelledInvoices: invoices.filter(invoice => invoice.status === 'cancelled').length,
     unpaidInvoices: invoices.filter(invoice => invoice.status === 'draft' || invoice.status === 'sent' || invoice.status === 'overdue').length,
+    
+    // Leistungsnachweise Statistiken - alle Status
+    draftTimesheets: timesheets.filter(timesheet => timesheet.status === 'draft').length,
+    sentTimesheets: timesheets.filter(timesheet => timesheet.status === 'sent').length,
+    acceptedTimesheets: timesheets.filter(timesheet => timesheet.status === 'accepted').length,
+    rejectedTimesheets: timesheets.filter(timesheet => timesheet.status === 'rejected').length,
     
     // Finanzielle Übersicht
     paidAmount: invoices.filter(inv => inv.status === 'paid').reduce((sum, invoice) => sum + invoice.total, 0),
@@ -176,7 +192,7 @@ export const CompactSidebar: React.FC<CompactSidebarProps> = ({ className }) => 
           marginBottom: '2px'
         }}>Angebote</div>
         <div style={{
-          fontSize: '10px',
+          fontSize: '9px',
           lineHeight: '1.2'
         }}>
           <div style={{
@@ -187,11 +203,26 @@ export const CompactSidebar: React.FC<CompactSidebarProps> = ({ className }) => 
             ✓ {stats.acceptedOffers} Angenommen
           </div>
           <div style={{
+            color: '#f59e0b',
+            fontWeight: '500',
+            marginBottom: '1px'
+          }}>
+            📤 {stats.sentOffers} Versendet
+          </div>
+          <div style={{
             color: 'rgba(255,255,255,0.5)',
             fontWeight: '500'
           }}>
-            📝 {stats.pendingOffers} Entwürfe
+            📝 {stats.draftOffers} Entwürfe
           </div>
+          {stats.rejectedOffers > 0 && (
+            <div style={{
+              color: '#ef4444',
+              fontWeight: '500'
+            }}>
+              ❌ {stats.rejectedOffers} Abgelehnt
+            </div>
+          )}
         </div>
       </div>
 
@@ -213,7 +244,7 @@ export const CompactSidebar: React.FC<CompactSidebarProps> = ({ className }) => 
           marginBottom: '2px'
         }}>Rechnungen</div>
         <div style={{
-          fontSize: '10px',
+          fontSize: '9px',
           lineHeight: '1.2'
         }}>
           <div style={{
@@ -224,11 +255,85 @@ export const CompactSidebar: React.FC<CompactSidebarProps> = ({ className }) => 
             ✓ {stats.paidInvoices} Bezahlt
           </div>
           <div style={{
+            color: '#ef4444',
+            fontWeight: '600',
+            marginBottom: '1px'
+          }}>
+            🚨 {stats.overdueInvoices} Überfällig
+          </div>
+          <div style={{
             color: '#f59e0b',
+            fontWeight: '500',
+            marginBottom: '1px'
+          }}>
+            📤 {stats.sentInvoices} Versendet
+          </div>
+          <div style={{
+            color: 'rgba(255,255,255,0.5)',
             fontWeight: '500'
           }}>
-            ⏳ {stats.unpaidInvoices} Offen
+            📝 {stats.draftInvoices} Entwürfe
           </div>
+          {stats.cancelledInvoices > 0 && (
+            <div style={{
+              color: '#6b7280',
+              fontWeight: '500'
+            }}>
+              ❌ {stats.cancelledInvoices} Storniert
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Leistungsnachweise */}
+      <div style={{
+        background: 'rgba(255,255,255,0.02)',
+        borderRadius: '8px',
+        padding: '8px',
+        border: '1px solid rgba(255,255,255,0.08)',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          fontSize: '0.9rem',
+          marginBottom: '4px'
+        }}>⏱️</div>
+        <div style={{
+          fontSize: '9px',
+          color: 'rgba(255,255,255,0.6)',
+          marginBottom: '2px'
+        }}>Leistungsnachweise</div>
+        <div style={{
+          fontSize: '9px',
+          lineHeight: '1.2'
+        }}>
+          <div style={{
+            color: '#22c55e',
+            fontWeight: '600',
+            marginBottom: '1px'
+          }}>
+            ✓ {stats.acceptedTimesheets} Akzeptiert
+          </div>
+          <div style={{
+            color: '#f59e0b',
+            fontWeight: '500',
+            marginBottom: '1px'
+          }}>
+            📤 {stats.sentTimesheets} Versendet
+          </div>
+          <div style={{
+            color: '#6b7280',
+            fontWeight: '500'
+          }}>
+            📝 {stats.draftTimesheets} Entwürfe
+          </div>
+          {stats.rejectedTimesheets > 0 && (
+            <div style={{
+              color: '#ef4444',
+              fontWeight: '500'
+            }}>
+              ❌ {stats.rejectedTimesheets} Abgelehnt
+            </div>
+          )}
         </div>
       </div>
 
