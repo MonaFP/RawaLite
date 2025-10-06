@@ -52,6 +52,12 @@ contextBridge.exposeInMainWorld('rawalite', {
   paths: {
     get: (pathType: 'userData' | 'documents' | 'downloads') => 
       ipcRenderer.invoke('paths:get', pathType) as Promise<string>,
+    getAppPath: () => 
+      ipcRenderer.invoke('paths:getAppPath') as Promise<string>,
+    getCwd: () => 
+      ipcRenderer.invoke('paths:getCwd') as Promise<string>,
+    getPackageJsonPath: () => 
+      ipcRenderer.invoke('paths:getPackageJsonPath') as Promise<string>,
   },
   // 🔧 Filesystem API für PATHS + SQLite/Dexie Support
   fs: {
@@ -84,7 +90,27 @@ contextBridge.exposeInMainWorld('rawalite', {
     writeFile: (filePath: string, data: string | Uint8Array, encoding?: string) => 
       ipcRenderer.invoke('fs:writeFile', filePath, data, encoding) as Promise<boolean>,
   },
-  // � Numbering Circles API
+  // 📁 File Management API for Attachments
+  files: {
+    saveImage: (imageData: string, filename: string, subDir?: string) => 
+      ipcRenderer.invoke('files:saveImage', imageData, filename, subDir) as Promise<{
+        success: boolean;
+        filePath?: string;
+        error?: string;
+      }>,
+    deleteFile: (filePath: string) => 
+      ipcRenderer.invoke('files:deleteFile', filePath) as Promise<{
+        success: boolean;
+        error?: string;
+      }>,
+    getImageAsBase64: (filePath: string) => 
+      ipcRenderer.invoke('files:getImageAsBase64', filePath) as Promise<{
+        success: boolean;
+        base64Data?: string;
+        error?: string;
+      }>,
+  },
+  // 🔢 Numbering Circles API
   nummernkreis: {
     getAll: () => 
       ipcRenderer.invoke('nummernkreis:getAll') as Promise<{

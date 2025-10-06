@@ -408,7 +408,14 @@ export class SQLiteAdapter implements PersistenceAdapter {
     // Load attachments for each line item
     const lineItemsWithAttachments = await Promise.all(
       lineItems.map(async (item) => {
+        console.log(`🔍 [DB] Loading attachments for line item ${item.id} in offer ${id}`);
         const attachments = await this.getOfferAttachments(id, item.id);
+        console.log(`🔍 [DB] Found ${attachments.length} attachments for line item ${item.id}`);
+        if (attachments.length > 0) {
+          attachments.forEach((att, index) => {
+            console.log(`🔍 [DB] Attachment ${index + 1}: ${att.originalFilename} (base64 length: ${att.base64Data?.length || 'NULL'})`);
+          });
+        }
         return {
           id: item.id,
           title: item.title,
@@ -500,6 +507,41 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
       // Map sub-item ID as well for potential nested sub-items
       idMapping[item.id] = Number(itemResult.lastInsertRowid);
+    }
+
+    // Process attachments for all line items
+    if (data.lineItems) {
+      for (const item of data.lineItems) {
+        if (item.attachments && item.attachments.length > 0) {
+          const dbLineItemId = idMapping[item.id];
+          console.log(`📎 Processing ${item.attachments.length} attachments for line item ${item.id} (DB ID: ${dbLineItemId})`);
+          
+          for (const attachment of item.attachments) {
+            // Only create attachments with negative IDs (new attachments)
+            if (attachment.id < 0) {
+              console.log(`📎 DEBUG: Creating attachment:`, {
+                filename: attachment.filename,
+                originalFilename: attachment.originalFilename,
+                fileType: attachment.fileType,
+                fileSize: attachment.fileSize,
+                hasBase64: !!attachment.base64Data
+              });
+              
+              await this.createOfferAttachment({
+                offerId: Number(offerId),
+                lineItemId: dbLineItemId,
+                filename: attachment.filename,
+                originalFilename: attachment.originalFilename,
+                fileType: attachment.fileType,
+                fileSize: attachment.fileSize,
+                base64Data: attachment.base64Data,
+                description: attachment.description
+              });
+              console.log(`📎 Created attachment: ${attachment.originalFilename}`);
+            }
+          }
+        }
+      }
     }
 
     const newOffer = await this.getOffer(offerId);
@@ -600,6 +642,32 @@ export class SQLiteAdapter implements PersistenceAdapter {
         idMapping[item.id] = Number(subItemResult.lastInsertRowid);
         
         console.log(`🔧 Sub-Item inserted with parent_item_id: ${resolvedParentId}`);
+      }
+
+      // Process attachments for all line items
+      // First, delete all existing attachments for this offer
+      await this.client.exec(`DELETE FROM offer_attachments WHERE offer_id = ?`, [id]);
+      
+      for (const item of patch.lineItems) {
+        if (item.attachments && item.attachments.length > 0) {
+          const dbLineItemId = idMapping[item.id];
+          console.log(`📎 UPDATE: Processing ${item.attachments.length} attachments for line item ${item.id} (DB ID: ${dbLineItemId})`);
+          
+          for (const attachment of item.attachments) {
+            // Create all attachments (both new and existing ones being re-saved)
+            await this.createOfferAttachment({
+              offerId: id,
+              lineItemId: dbLineItemId,
+              filename: attachment.filename,
+              originalFilename: attachment.originalFilename,
+              fileType: attachment.fileType,
+              fileSize: attachment.fileSize,
+              base64Data: attachment.base64Data,
+              description: attachment.description
+            });
+            console.log(`📎 UPDATE: Created attachment: ${attachment.originalFilename}`);
+          }
+        }
       }
     }
 

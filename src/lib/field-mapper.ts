@@ -68,6 +68,14 @@ export class FieldMapper {
     'invoiceId': 'invoice_id',
     'vatRate': 'vat_rate',
     'vatAmount': 'vat_amount',
+    
+    // OfferAttachment Felder (KRITISCH für Image-Upload)
+    'lineItemId': 'line_item_id',
+    'originalFilename': 'original_filename',
+    'fileType': 'file_type',
+    'fileSize': 'file_size',
+    'filePath': 'file_path',
+    'base64Data': 'base64_data',
     'itemType': 'item_type',
     'sourcePackageId': 'source_package_id',
     

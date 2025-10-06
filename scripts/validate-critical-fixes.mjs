@@ -55,7 +55,7 @@ const CRITICAL_FIXES = {
   },
   
   'database-status-updates': {
-    file: 'src/main/services/UpdateStatusService.ts',
+    file: 'src/main/services/EntityStatusService.ts',
     pattern: /export function updateEntityStatus[\s\S]*?expectedVersion[\s\S]*?BEGIN IMMEDIATE[\s\S]*?StatusUpdateConflictError/,
     description: 'Database-driven status updates with optimistic locking'
   },

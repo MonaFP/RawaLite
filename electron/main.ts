@@ -4,7 +4,7 @@ import path from 'node:path'
 import { existsSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
 import { marked } from 'marked'
 import { UpdateManagerService } from '../src/main/services/UpdateManagerService'
-import { updateEntityStatus, getStatusHistory, getEntityForUpdate } from '../src/main/services/UpdateStatusService'
+import { updateEntityStatus, getStatusHistory, getEntityForUpdate } from '../src/main/services/EntityStatusService'
 // 🗄️ Database imports with correct named exports syntax
 import { getDb, prepare, exec, tx } from '../src/main/db/Database'
 import { runAllMigrations } from '../src/main/db/MigrationService'
@@ -94,6 +94,37 @@ ipcMain.handle('paths:get', async (event, pathType: 'userData' | 'documents' | '
     }
   } catch (error) {
     console.error(`Failed to get path ${pathType}:`, error)
+    throw error
+  }
+})
+
+// 📁 App-specific Path Handlers for PATHS System Integration
+ipcMain.handle('paths:getAppPath', async () => {
+  try {
+    return app.getAppPath()
+  } catch (error) {
+    console.error('Failed to get app path:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('paths:getCwd', async () => {
+  try {
+    return process.cwd()
+  } catch (error) {
+    console.error('Failed to get current working directory:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('paths:getPackageJsonPath', async () => {
+  try {
+    const packageJsonPath = app.isPackaged
+      ? path.join(app.getAppPath(), 'package.json')
+      : path.join(process.cwd(), 'package.json')
+    return packageJsonPath
+  } catch (error) {
+    console.error('Failed to get package.json path:', error)
     throw error
   }
 })
@@ -291,6 +322,9 @@ app.whenReady().then(async () => {
     // Run pending migrations
     console.log('🔄 Running database migrations...')
     await runAllMigrations()
+    
+    // Initialize Update History Service with database
+    updateManager.initializeHistoryService(getDb())
     
     // Create main window
     createWindow()
@@ -798,6 +832,7 @@ ipcMain.handle('pdf:generate', async (event, options: {
       };
 
       console.log(`✅ PDF generation completed: ${options.options.filename} (${Math.round(fileSize/1024)}KB)`);
+      
       return result;
 
     } finally {
@@ -839,6 +874,35 @@ function generateTemplateHTML(options: any): string {
   const { templateType, data, theme } = options;
   const entity = data[templateType] || data.offer || data.invoice || data.timesheet;
   const { customer, settings } = data;
+  
+  // 🔍 DEBUG: Log line items and attachments
+  if (templateType === 'offer' && entity.lineItems) {
+    console.log('🔍 [PDF DEBUG] Offer line items received:', entity.lineItems.length);
+    entity.lineItems.forEach((item: any, index: number) => {
+      console.log(`🔍 [PDF DEBUG] Item ${index + 1}: ${item.title}`);
+      if (item.attachments && item.attachments.length > 0) {
+        console.log(`🔍 [PDF DEBUG] - Has ${item.attachments.length} attachments:`);
+        item.attachments.forEach((att: any, attIndex: number) => {
+          console.log(`🔍 [PDF DEBUG]   - Attachment ${attIndex + 1}: ${att.originalFilename} (base64: ${!!att.base64Data})`);
+          if (att.base64Data) {
+            console.log(`🔍 [PDF DEBUG]     - Base64 length: ${att.base64Data.length} chars`);
+            console.log(`🔍 [PDF DEBUG]     - Base64 prefix: ${att.base64Data.substring(0, 50)}...`);
+            
+            // Test if base64 is valid
+            try {
+              const base64Data = att.base64Data.replace(/^data:[^;]+;base64,/, '');
+              const buffer = Buffer.from(base64Data, 'base64');
+              console.log(`🔍 [PDF DEBUG]     - Decoded buffer size: ${buffer.length} bytes`);
+            } catch (error) {
+              console.log(`🔍 [PDF DEBUG]     - ERROR decoding base64:`, (error as Error).message);
+            }
+          }
+        });
+      } else {
+        console.log(`🔍 [PDF DEBUG] - No attachments`);
+      }
+    });
+  }
   
   // Base HTML template with proper styling
   const currentDate = data.currentDate || new Date().toLocaleDateString('de-DE');
@@ -1224,24 +1288,70 @@ function generateTemplateHTML(options: any): string {
                     ${parentItem.description ? `<br><small>${convertMarkdownToHtml(parentItem.description)}</small>` : ''}
                     ${parentItem.attachments && parentItem.attachments.length > 0 ? `
                       <div style="margin-top: 8px;">
-                        <strong style="font-size: 11px; color: #666;">📎 Anhänge:</strong>
+                        <strong style="font-size: 11px; color: #666;">📎 Anhänge (${parentItem.attachments.length}):</strong>
                         <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
-                          ${parentItem.attachments.map((attachment: any) => 
-                            attachment.base64Data ? `
-                              <div style="display: inline-block; text-align: center;">
-                                <img src="${attachment.base64Data}" 
-                                     alt="${attachment.originalFilename}" 
-                                     style="width: 80px; height: 60px; object-fit: cover; border: 1px solid #ddd; border-radius: 3px;" />
-                                <div style="font-size: 9px; color: #888; margin-top: 2px; max-width: 80px; word-wrap: break-word;">
-                                  ${attachment.originalFilename}
+                          ${parentItem.attachments.map((attachment: any) => {
+                            console.log('🖼️ [PDF TEMPLATE] Processing attachment:', attachment.filename, 'has base64:', !!attachment.base64Data);
+                            
+                            if (attachment.base64Data) {
+                              try {
+                                // Direkte Verwendung der Base64-Daten als Data-URL (OHNE temporäre Dateien)
+                                let dataUrl = attachment.base64Data;
+                                
+                                // Stelle sicher, dass die Data-URL korrekt formatiert ist
+                                if (!dataUrl.startsWith('data:')) {
+                                  const mimeType = attachment.fileType || 'image/png';
+                                  dataUrl = `data:${mimeType};base64,${dataUrl}`;
+                                }
+                                
+                                console.log('🖼️ [PDF TEMPLATE] Using data URL directly for:', attachment.originalFilename);
+                                console.log('🖼️ [PDF TEMPLATE] Data URL length:', dataUrl.length);
+                                
+                                // Verkürze die Base64-Daten für kleinere Bilder (falls zu groß)
+                                const maxDataUrlLength = 2000000; // 2MB limit
+                                if (dataUrl.length > maxDataUrlLength) {
+                                  console.log('🖼️ [PDF TEMPLATE] Image too large, showing placeholder');
+                                  return `
+                                    <div style="display: inline-block; text-align: center; margin: 4px; padding: 8px; border: 1px dashed #ccc; border-radius: 3px;">
+                                      <div style="font-size: 24px; margin-bottom: 4px;">📷</div>
+                                      <div style="font-size: 9px; color: #888; max-width: 80px; word-wrap: break-word;">
+                                        ${attachment.originalFilename}
+                                      </div>
+                                      <div style="font-size: 8px; color: #999;">
+                                        (${Math.round(dataUrl.length/1024)}KB)
+                                      </div>
+                                    </div>
+                                  `;
+                                }
+                                
+                                return `
+                                  <div style="display: inline-block; text-align: center; margin: 4px;">
+                                    <img src="${dataUrl}" 
+                                         alt="${attachment.originalFilename}" 
+                                         style="width: 60px; height: 45px; object-fit: cover; border: 1px solid #ddd; border-radius: 3px; display: block;" 
+                                         onerror="this.style.display='none'; this.nextElementSibling.innerHTML='❌ Fehler';" />
+                                    <div style="font-size: 9px; color: #888; margin-top: 2px; max-width: 60px; word-wrap: break-word;">
+                                      ${attachment.originalFilename}
+                                    </div>
+                                  </div>
+                                `;
+                              } catch (error) {
+                                console.error('🖼️ [PDF TEMPLATE] Error creating temp image:', error);
+                                return `
+                                  <div style="font-size: 10px; color: #999; border: 1px dashed #ccc; padding: 4px; border-radius: 3px;">
+                                    📎 ${attachment.originalFilename} (Fehler beim Laden)
+                                  </div>
+                                `;
+                              }
+                            } else {
+                              console.log('🖼️ [PDF TEMPLATE] No base64 data for:', attachment.originalFilename);
+                              return `
+                                <div style="font-size: 10px; color: #999; border: 1px dashed #ccc; padding: 4px; border-radius: 3px;">
+                                  📎 ${attachment.originalFilename} (nicht verfügbar)
                                 </div>
-                              </div>
-                            ` : `
-                              <div style="font-size: 10px; color: #999; border: 1px dashed #ccc; padding: 4px; border-radius: 3px;">
-                                📎 ${attachment.originalFilename}
-                              </div>
-                            `
-                          ).join('')}
+                              `;
+                            }
+                          }).join('')}
                         </div>
                       </div>
                     ` : ''}
@@ -1263,22 +1373,49 @@ function generateTemplateHTML(options: any): string {
                         <div style="margin-top: 6px; margin-left: 16px;">
                           <strong style="font-size: 10px; color: #666;">📎 Anhänge:</strong>
                           <div style="display: flex; gap: 4px; margin-top: 3px; flex-wrap: wrap;">
-                            ${subItem.attachments.map((attachment: any) => 
-                              attachment.base64Data ? `
-                                <div style="display: inline-block; text-align: center;">
-                                  <img src="${attachment.base64Data}" 
-                                       alt="${attachment.originalFilename}" 
-                                       style="width: 60px; height: 45px; object-fit: cover; border: 1px solid #ddd; border-radius: 2px;" />
-                                  <div style="font-size: 8px; color: #888; margin-top: 1px; max-width: 60px; word-wrap: break-word;">
-                                    ${attachment.originalFilename}
+                            ${subItem.attachments.map((attachment: any) => {
+                              if (attachment.base64Data) {
+                                // Extract base64 data without data URL prefix
+                                const base64Data = attachment.base64Data.replace(/^data:[^;]+;base64,/, '');
+                                
+                                try {
+                                  // Create temporary file for the image
+                                  const tempDir = path.join(os.tmpdir(), 'rawalite-pdf-images');
+                                  if (!existsSync(tempDir)) {
+                                    mkdirSync(tempDir, { recursive: true });
+                                  }
+                                  
+                                  const tempImagePath = path.join(tempDir, `${attachment.filename}_${Date.now()}.${attachment.fileType.split('/')[1] || 'png'}`);
+                                  
+                                  // Write base64 to temporary file
+                                  writeFileSync(tempImagePath, base64Data, 'base64');
+                                  
+                                  return `
+                                    <div style="display: inline-block; text-align: center;">
+                                      <img src="file://${tempImagePath}" 
+                                           alt="${attachment.originalFilename}" 
+                                           style="width: 60px; height: 45px; object-fit: cover; border: 1px solid #ddd; border-radius: 2px;" />
+                                      <div style="font-size: 8px; color: #888; margin-top: 1px; max-width: 60px; word-wrap: break-word;">
+                                        ${attachment.originalFilename}
+                                      </div>
+                                    </div>
+                                  `;
+                                } catch (error) {
+                                  console.error('🖼️ [PDF] Error creating temp image for sub-item:', error);
+                                  return `
+                                    <div style="font-size: 9px; color: #999; border: 1px dashed #ccc; padding: 2px; border-radius: 2px;">
+                                      📎 ${attachment.originalFilename} (Fehler)
+                                    </div>
+                                  `;
+                                }
+                              } else {
+                                return `
+                                  <div style="font-size: 9px; color: #999; border: 1px dashed #ccc; padding: 2px; border-radius: 2px;">
+                                    📎 ${attachment.originalFilename}
                                   </div>
-                                </div>
-                              ` : `
-                                <div style="font-size: 9px; color: #999; border: 1px dashed #ccc; padding: 2px; border-radius: 2px;">
-                                  📎 ${attachment.originalFilename}
-                                </div>
-                              `
-                            ).join('')}
+                                `;
+                              }
+                            }).join('')}
                           </div>
                         </div>
                       ` : ''}

@@ -9,6 +9,7 @@ PDF-Generierung, Rechnungs-/Angebots-Templates und PDF-Workflows.
 
 #### 📋 Root-Dateien
 - **PDF-LAYOUT-OPTIMIZATIONS-V1-5-2.md** → Layout-Verbesserungen mit minimalen Rändern und Header
+- **IMAGE-UPLOAD-FEATURE.md** → ✅ **COMPLETE:** Image Upload System für Angebote mit PDF-Integration
 
 #### ✅ solved/
 Gelöste PDF-Generation Probleme

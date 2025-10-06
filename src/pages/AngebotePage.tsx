@@ -25,6 +25,55 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Offer | null>(null);
 
+  // Hilfsfunktion zum Laden eines Angebots mit Anhängen
+  const loadOfferWithAttachments = async (offerId: number) => {
+    console.log('🔄 Loading offer with attachments...', offerId);
+    
+    // 1. Angebot aus DB laden
+    const offerRows = await window.rawalite.db.query('SELECT * FROM offers WHERE id = ?', [offerId]);
+    if (!offerRows || offerRows.length === 0) {
+      throw new Error('Angebot nicht gefunden');
+    }
+    const offerFromDb = offerRows[0];
+    
+    // 2. Line Items laden
+    const lineItemRows = await window.rawalite.db.query(
+      'SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id FROM offer_line_items WHERE offer_id = ? ORDER BY id', 
+      [offerId]
+    );
+    
+    // 3. Anhänge für jedes Line Item laden mit Feldmappings
+    for (const lineItem of lineItemRows) {
+      const attachmentRows = await window.rawalite.db.query(
+        'SELECT id, offer_id, line_item_id, original_filename, file_type, file_size, base64_data FROM offer_attachments WHERE line_item_id = ?',
+        [lineItem.id]
+      );
+      
+      // Feldmappings für Anhänge (snake_case -> camelCase)
+      lineItem.attachments = (attachmentRows || []).map((attachment: any) => ({
+        id: attachment.id,
+        offerId: attachment.offer_id,
+        lineItemId: attachment.line_item_id,
+        originalFilename: attachment.original_filename,
+        filename: attachment.original_filename, // Alias für Template-Kompatibilität
+        fileType: attachment.file_type,
+        fileSize: attachment.file_size,
+        base64Data: attachment.base64_data
+      }));
+      
+      console.log(`📎 Line Item ${lineItem.id}: Found ${lineItem.attachments.length} attachments`);
+      lineItem.attachments.forEach((att: any, index: number) => {
+        console.log(`📎   - Attachment ${index + 1}: ${att.originalFilename} (${att.fileType}, ${att.base64Data ? 'has base64' : 'no base64'})`);
+      });
+    }
+    
+    // 4. Komplettes Angebot mit Anhängen zusammenbauen
+    return {
+      ...offerFromDb,
+      lineItems: lineItemRows
+    };
+  };
+
   const columns = useMemo(() => ([
     { key: "offerNumber", header: "Nummer" },
     { 
@@ -240,8 +289,11 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
     }
 
     try {
+      const offerWithAttachments = await loadOfferWithAttachments(offer.id);
+      console.log('📋 Loaded offer for PDF export:', offerWithAttachments);
+      
       const logoData = settings?.companyData?.logo || null;
-      const result = await PDFService.exportOfferToPDF(offer, customer, settings, false, currentTheme, undefined, logoData); // false = direct download
+      const result = await PDFService.exportOfferToPDF(offerWithAttachments, customer, settings, false, currentTheme, undefined, logoData);
       if (result.success) {
         showSuccess(`PDF erfolgreich erstellt: ${result.filePath}`);
       } else {
@@ -261,8 +313,11 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
     }
 
     try {
+      const offerWithAttachments = await loadOfferWithAttachments(offer.id);
+      console.log('📋 Loaded offer for PDF preview:', offerWithAttachments);
+      
       const logoData = settings?.companyData?.logo || null;
-      const result = await PDFService.exportOfferToPDF(offer, customer, settings, true, currentTheme, undefined, logoData); // true = preview only
+      const result = await PDFService.exportOfferToPDF(offerWithAttachments, customer, settings, true, currentTheme, undefined, logoData);
       if (result.success) {
         showSuccess('PDF Vorschau geöffnet');
       } else {
@@ -350,8 +405,9 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
                           return;
                         }
                         try {
+                          const offerWithAttachments = await loadOfferWithAttachments(offer.id);
                           const logoData = settings?.companyData?.logo || null;
-                          const result = await PDFService.exportOfferToPDF(offer, customer, settings, false, currentTheme, undefined, logoData);
+                          const result = await PDFService.exportOfferToPDF(offerWithAttachments, customer, settings, false, currentTheme, undefined, logoData);
                           if (result.success) {
                             showSuccess('PDF erfolgreich generiert');
                           } else {

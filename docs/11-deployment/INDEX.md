@@ -8,7 +8,13 @@ Electron Auto-Updater, Update-Mechanismen und Versions-Management für RawaLite.
 ### 📁 Struktur
 
 #### 📋 Root-Dateien
-- `IMPLEMENTATION-PLAN-custom-updater.md` - Vollständiger Implementierungsplan für Custom In-App Updater
+- **[UPDATE-SYSTEM-ARCHITECTURE.md](UPDATE-SYSTEM-ARCHITECTURE.md)** - 🎯 **AKTUELLE SYSTEM DOKUMENTATION**
+  - Vollständige Update System Architecture (v1.0.13+)
+  - Klare Trennung: App-Updates vs Entity-Status Updates
+  - UpdateManagerService, GitHubApiService, UpdateHistoryService
+  - Path Compliance, Critical Fixes, Validation Scripts
+  - **PRODUCTION READY** ✅
+- `IMPLEMENTATION-PLAN-custom-updater.md` - Legacy Implementierungsplan für Custom In-App Updater
   - **Milestone-basierte Umsetzung** (4 Phasen, 1 Woche)
   - **GitHub CLI Integration** für Rate-Limit-Schutz
   - **Verification Scripts** für jeden Meilenstein

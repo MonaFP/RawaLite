@@ -21,6 +21,7 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 
 ### Frontend & State Management
 - **[UPDATE-BUTTON-FIX-LESSONS.md](../00-standards/debugging/solved/LESSONS-LEARNED-update-button-fix.md)** - ✅ **SOLVED:** Update Button Funktionalitätsfehler durch Async State Race Condition
+- **[LESSONS-LEARNED-IMAGE-UPLOAD-SYSTEM.md](./LESSONS-LEARNED-IMAGE-UPLOAD-SYSTEM.md)** - ✅ **COMPLETE:** Image Upload System für Angebote mit PDF-Integration
 
 ### Documentation & Project Management
 - **[DOCUMENTATION-REORGANIZATION-LESSONS.md](./solved/DOCUMENTATION-REORGANIZATION-LESSONS.md)** - KI-optimierte Dokumentationsstruktur mit lückenloser 00-12 Nummerierung
@@ -71,6 +72,7 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 | Sub-Item Visual Hierarchy | UI Components | ✅ React.Fragment Gruppierung + SQLiteAdapter ID-Mapping | solved/LESSONS-LEARNED-SUB-ITEM-POSITIONING-ISSUE.md |
 | Status Dropdown CSS-Spezifität | UI Components | 🔴 UNGELÖST - CSS-Konflikte trotz mehrerer Lösungsversuche | LESSONS-LEARNED-status-dropdown-css-spezifitaet.md |
 | Status Updates CSS-Architektur | UI Components | ✅ GELÖST - Modulare CSS-Struktur mit kompletter Isolation | LESSONS-LEARNED-status-updates-css-refactoring.md |
+| Image Upload System | PDF & Frontend | ✅ COMPLETE - Database-only Base64 storage + Data-URL PDF integration | LESSONS-LEARNED-IMAGE-UPLOAD-SYSTEM.md |
 | Database Schema Migration Issues | Database | ✅ Migration 007+008 + Field-Mapper Fix | DATABASE-SCHEMA-MIGRATION-FIX.md |
 | Schema Mismatch | Database | Field-Mapper System | SCHEMA-CONSISTENCY-LESSONS.md |
 | Fehlende Nummernkreise | Production | ✅ Migration 006 | NUMMERNKREISE-PRODUCTION-BUG.md |

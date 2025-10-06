@@ -83,7 +83,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
     isKleinunternehmer
   );
 
-  // 📷 Image Upload Functions
+  // 📷 Image Upload Functions - Database-First Approach
   const handleImageUpload = async (lineItemId: number, event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -96,18 +96,15 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           return null;
         }
 
-        // Validate file size (max 5MB)
-        const maxSizeMB = 5;
-        const fileSizeMB = file.size / (1024 * 1024);
-        if (file.size > maxSizeMB * 1024 * 1024) {
-          showError(`❌ ${file.name}: Datei zu groß (${fileSizeMB.toFixed(2)} MB). Maximum: ${maxSizeMB} MB`);
-          return null;
-        }
+        // No file size validation - store any size in database
 
         // Convert to base64
-        return new Promise<string | null>((resolve) => {
+        return new Promise<{ base64Data: string; file: File } | null>((resolve) => {
           const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
+          reader.onload = () => resolve({ 
+            base64Data: reader.result as string,
+            file: file
+          });
           reader.onerror = () => {
             showError(`❌ Fehler beim Lesen von ${file.name}`);
             resolve(null);
@@ -116,25 +113,24 @@ export const OfferForm: React.FC<OfferFormProps> = ({
         });
       });
 
-      const base64Results = await Promise.all(uploadPromises);
-      const validImages = base64Results.filter(result => result !== null) as string[];
+      const results = await Promise.all(uploadPromises);
+      const validImages = results.filter(result => result !== null) as { base64Data: string; file: File }[];
 
       if (validImages.length === 0) return;
 
-      // For new offers, temporarily store as base64 data in line items
-      // For existing offers, we would save to filesystem and database
+      // Store directly in line items state (will be saved to DB when offer is saved)
       setLineItems(items => items.map(item => {
         if (item.id === lineItemId) {
           const existingAttachments = item.attachments || [];
-          const newAttachments: OfferAttachment[] = validImages.map((base64Data, index) => ({
-            id: Date.now() + index, // Temporary ID for new attachments
+          const newAttachments: OfferAttachment[] = validImages.map((imageData, index) => ({
+            id: -(Date.now() + index), // Negative ID for new attachments (will get positive ID from DB)
             offerId: offer?.id || 0,
             lineItemId: lineItemId,
-            filename: `image_${Date.now()}_${index}.png`,
-            originalFilename: files[index].name,
-            fileType: files[index].type,
-            fileSize: files[index].size,
-            base64Data: base64Data,
+            filename: `${imageData.file.name.replace(/\.[^/.]+$/, "")}_${Date.now()}_${index}${imageData.file.name.match(/\.[^/.]+$/)?.[0] || '.png'}`,
+            originalFilename: imageData.file.name,
+            fileType: imageData.file.type,
+            fileSize: imageData.file.size,
+            base64Data: imageData.base64Data, // Store base64 directly
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           }));
@@ -147,7 +143,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
         return item;
       }));
 
-      showSuccess(`✅ ${validImages.length} Bild(er) erfolgreich hinzugefügt`);
+      showSuccess(`✅ ${validImages.length} Bild(er) hinzugefügt (werden beim Speichern in DB gesichert)`);
 
     } catch (error) {
       console.error('Image upload error:', error);
@@ -643,7 +639,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                           disabled={isSubmitting}
                         />
                         <span style={{fontSize: "11px", color: "var(--muted)"}}>
-                          PNG, JPG bis 5MB pro Bild
+                          PNG, JPG (DB-Speicherung)
                         </span>
                       </div>
                       
@@ -753,7 +749,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                               disabled={isSubmitting}
                             />
                             <span style={{fontSize: "10px", color: "var(--muted)"}}>
-                              PNG, JPG bis 5MB
+                              PNG, JPG (DB-Speicherung)
                             </span>
                           </div>
                           

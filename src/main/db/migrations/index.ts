@@ -25,6 +25,7 @@ import * as migration013 from './013_add_discount_system';
 import * as migration014 from './014_add_item_origin_system';
 import * as migration015 from './015_add_status_versioning';
 import * as migration016 from './016_add_offer_attachments';
+import * as migration017 from './017_add_update_history';
 
 export const migrations: Migration[] = [
   {
@@ -122,6 +123,12 @@ export const migrations: Migration[] = [
     name: '016_add_offer_attachments',
     up: migration016.up,
     down: migration016.down
+  },
+  {
+    version: 17,
+    name: '017_add_update_history',
+    up: migration017.up,
+    down: migration017.down
   }
 ];
 
