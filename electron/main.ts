@@ -455,7 +455,7 @@ ipcMain.handle('updates:openDownloadFolder', async () => {
 ipcMain.handle('updates:verifyFile', async (event, filePath) => {
   // Basic file existence check
   try {
-    await require('fs').promises.access(filePath)
+    await fs.access(filePath)
     return true
   } catch {
     return false

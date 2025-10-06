@@ -13,7 +13,9 @@ import { createHash } from 'crypto';
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { spawn } from 'child_process';
-import { app } from 'electron';
+import { PATHS } from '@db/config';
+import { app, dialog, shell } from 'electron';
+import { createReadStream } from 'fs';
 
 import { githubApiService } from './GitHubApiService';
 import UpdateHistoryService from './UpdateHistoryService';
@@ -697,9 +699,9 @@ export class UpdateManagerService {
   private async calculateFileHash(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const hash = createHash('sha256');
-      const stream = require('fs').createReadStream(filePath);
+      const stream = createReadStream(filePath);
 
-      stream.on('data', (data: Buffer) => hash.update(data));
+      stream.on('data', (data: string | Buffer) => hash.update(data));
       stream.on('end', () => resolve(hash.digest('hex')));
       stream.on('error', reject);
     });
