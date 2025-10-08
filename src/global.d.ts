@@ -123,7 +123,7 @@ declare interface Window {
       cancelDownload(): Promise<void>;
       
       // Installation operations
-      installUpdate(filePath: string): Promise<void>;
+      installUpdate(filePath: string, options?: { silent?: boolean; restartAfter?: boolean }): Promise<void>;
       restartApp(): Promise<void>;
       
       // Configuration
