@@ -76,6 +76,12 @@ const CRITICAL_FIXES = {
     file: 'scripts/rebuild-native-electron.cjs',
     pattern: /console\.log\('🔄 \[Rebuild\] Attempt 1: Standard rebuild\.\.\.'\);[\s\S]*?const r1 = spawnSync\('pnpm', \['rebuild', 'better-sqlite3', '--verbose'\][\s\S]*?console\.log\('🔄 \[Rebuild\] Attempt 2: Remove and reinstall\.\.\.'\);/,
     description: 'ABI Management System with fallback recovery for better-sqlite3'
+  },
+  
+  'vite-asset-import-pattern': {
+    file: 'src/components/NavigationOnlySidebar.tsx',
+    pattern: /import logoUrl from ['"][.\/]*assets\/rawalite-logo\.png['"];[\s\S]*?src={logoUrl}/,
+    description: 'Vite asset import pattern for production logo loading'
   }
 };
 
@@ -169,6 +175,11 @@ function validateAntiPatterns() {
       file: 'package.json',
       pattern: /"rebuild:electron":\s*"electron-rebuild"/,
       description: 'Dangerous npx electron-rebuild (compiles for Node.js ABI instead of Electron)'
+    },
+    'absolute-logo-paths': {
+      file: 'src/components/NavigationOnlySidebar.tsx',
+      pattern: /src=['"][\/]rawalite-logo\.png['"]/,
+      description: 'Absolute logo paths that fail in production Electron builds'
     }
   };
   

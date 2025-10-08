@@ -666,6 +666,82 @@ npm rebuild           # ❌ Uses npm instead of pnpm
 
 ---
 
+### **FIX-013: Vite Asset Import Pattern for Production Logo Loading**
+- **ID:** `vite-asset-import-pattern`
+- **Files:** `src/components/NavigationOnlySidebar.tsx`, `src/components/CompactSidebar.tsx`, `src/components/Sidebar.tsx`
+- **Pattern:** Vite asset imports instead of absolute paths for production compatibility
+- **Location:** Logo import statements and img src attributes
+- **First Implemented:** v1.0.23
+- **Last Verified:** v1.0.23
+- **Status:** ✅ ACTIVE
+
+**Required Code Pattern:**
+```typescript
+// NavigationOnlySidebar.tsx
+import logoUrl from '../assets/rawalite-logo.png';
+
+const NavigationOnlySidebar: React.FC<Props> = () => {
+  return (
+    <div className="navigation-only-sidebar">
+      <div className="logo">
+        <img src={logoUrl} alt="RawaLite" className="logo-image" />
+      </div>
+    </div>
+  );
+};
+
+// CompactSidebar.tsx
+import logoUrl from '../assets/rawalite-logo.png';
+
+const CompactSidebar: React.FC<Props> = () => {
+  return (
+    <div className="compact-sidebar">
+      <div className="logo">
+        <img src={logoUrl} alt="RawaLite" className="logo-image" />
+      </div>
+    </div>
+  );
+};
+
+// Sidebar.tsx
+import rawaliteLogo from '../assets/rawalite-logo.png';
+
+const Sidebar: React.FC<Props> = () => {
+  return (
+    <div className="sidebar">
+      <div className="logo">
+        <img src={rawaliteLogo} alt="RawaLite" className="logo-image" />
+      </div>
+    </div>
+  );
+};
+```
+
+**Vite Asset Processing Result:**
+```
+dist-web/assets/rawalite-logo-D3IvfwpA.png    810.30 kB
+```
+
+**FORBIDDEN Patterns:**
+```typescript
+// ❌ Absolute paths that fail in production Electron
+<img src="/rawalite-logo.png" alt="RawaLite" />
+
+// ❌ Direct file system access in renderer process
+<img src="./public/rawalite-logo.png" alt="RawaLite" />
+
+// ❌ require() for assets in React components  
+const logoUrl = require('../assets/rawalite-logo.png');
+```
+
+**Problem Solved:**
+- Logo assets not displaying in production Electron builds (v1.0.22 and earlier)
+- Dev-prod discrepancy: absolute paths work in Vite dev server but fail in Electron static file loading
+- Race condition between asset loading and app initialization in production
+- Solution: Vite asset import system provides proper bundling, cache-busting, and production compatibility
+
+---
+
 ## 🔍 VALIDATION RULES FOR KI
 
 ### **BEFORE ANY FILE EDIT:**
@@ -761,6 +837,6 @@ stmt.run(sessionId, eventType, eventData, notes, durationMs, timestamp); // ❌ 
 - Patterns evolve (with backward compatibility)
 - New validation rules are needed
 
-**Last Updated:** 2025-10-07 (Added FIX-012: SQLite Parameter Binding - prevents TypeError when binding undefined values to SQLite parameters)
+**Last Updated:** 2025-10-08 (Added FIX-013: Vite Asset Import Pattern - ensures logo assets display correctly in production builds)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/validate-critical-fixes.mjs`
