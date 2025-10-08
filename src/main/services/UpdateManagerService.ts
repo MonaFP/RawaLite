@@ -13,7 +13,6 @@ import { createHash } from 'crypto';
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { spawn } from 'child_process';
-import { PATHS } from '@db/config';
 import { app, dialog, shell } from 'electron';
 import { createReadStream } from 'fs';
 

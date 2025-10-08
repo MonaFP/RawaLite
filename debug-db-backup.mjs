@@ -1,15 +1,17 @@
 // Node-context database debugger using sql.js
-// Alternative to debug-db.cjs that doesn't require better-sqlite3 ABI compatibility
+// Alternative to better-sqlite3 that doesn't require ABI compatibility
 // Uses sql.js for read-only database inspection in Node.js context
 
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { createRequire } from 'node:module';
+const requireModule = createRequire(import.meta.url);
 
 async function initSqlJs() {
   try {
     // Try to load sql.js
-    const initSqlJs = require('sql.js');
+    const initSqlJs = requireModule('sql.js');
     return await initSqlJs();
   } catch (error) {
     console.error('❌ sql.js not available. Please install:');
@@ -36,29 +38,7 @@ async function debugDatabase() {
     if (!fs.existsSync(dbPath)) {
       console.log('❌ Database not found at expected location');
       console.log('💡 Make sure RawaLite has been run at least once');
-      
-      // Try alternative paths
-      const altPaths = [
-        path.join(os.homedir(), 'AppData', 'Local', 'rawalite', 'database', 'rawalite.db'),
-        path.join(process.cwd(), 'rawalite.db'),
-        path.join(process.cwd(), 'src', 'rawalite.db')
-      ];
-      
-      console.log('\n🔍 Checking alternative locations:');
-      for (const altPath of altPaths) {
-        if (fs.existsSync(altPath)) {
-          console.log(`✅ Found alternative: ${altPath}`);
-          dbPath = altPath;
-          break;
-        } else {
-          console.log(`❌ Not found: ${altPath}`);
-        }
-      }
-      
-      if (!fs.existsSync(dbPath)) {
-        console.log('\n💡 To create a database, start RawaLite normally');
-        process.exit(1);
-      }
+      process.exit(1);
     }
 
     // Load database

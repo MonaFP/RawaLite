@@ -4,8 +4,9 @@
  * Löst File-Locking Probleme durch komplettes Cleanup vor Build
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
 
 console.log('🧹 Build-Cleanup: Starting comprehensive cleanup...');
 
@@ -14,7 +15,6 @@ function cleanDirectory(dir) {
     try {
       // Forceful removal for Windows file-locking issues
       if (process.platform === 'win32') {
-        const { execSync } = require('child_process');
         console.log(`🗑️ Windows cleanup: ${dir}`);
         execSync(`rmdir /s /q "${dir}"`, { stdio: 'ignore' });
       } else {

@@ -4,8 +4,9 @@
  * Überprüft ob better-sqlite3 korrekt gepackt wurde
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
 
 console.log('🔍 Post-Build: Verifying native modules...');
 
