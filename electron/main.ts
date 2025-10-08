@@ -1,7 +1,8 @@
 // electron/main.ts
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron'
 import path from 'node:path'
 import { existsSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
 import { marked } from 'marked'
 import { UpdateManagerService } from '../src/main/services/UpdateManagerService'
 import { updateEntityStatus, getStatusHistory, getEntityForUpdate } from '../src/main/services/EntityStatusService'

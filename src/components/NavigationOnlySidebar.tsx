@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import logoUrl from '../assets/rawalite-logo.png';
 
 export const NavigationOnlySidebar: React.FC = () => {
   const location = useLocation();
@@ -73,7 +74,7 @@ export const NavigationOnlySidebar: React.FC = () => {
           gap: '4px'
         }}>
           <img
-            src="/rawalite-logo.png"
+            src={logoUrl}
             alt="NavigationOnlySidebar"
             style={{
               width: "100%", 
