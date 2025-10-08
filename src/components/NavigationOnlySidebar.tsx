@@ -60,44 +60,29 @@ export const NavigationOnlySidebar: React.FC = () => {
       {/* Logo Section */}
       <div style={{
         display: 'flex',
+        justifyContent: 'center',
         alignItems: 'center',
-        gap: '12px',
         marginBottom: '24px',
         padding: '12px 8px',
         borderBottom: '1px solid rgba(255,255,255,0.08)'
       }}>
         <div style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '10px',
-          background: 'radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2))',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '20px',
-          fontWeight: 'bold',
-          color: 'white',
-          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          gap: '4px'
         }}>
-          Rw
-        </div>
-        
-        <div>
-          <div style={{
-            fontSize: '1.1rem',
-            fontWeight: '700',
-            color: 'rgba(255,255,255,0.95)',
-            lineHeight: '1.2'
-          }}>
-            RawaLite
-          </div>
-          <div style={{
-            fontSize: '0.75rem',
-            color: 'rgba(255,255,255,0.6)',
-            fontWeight: '500'
-          }}>
-            Navigation
-          </div>
+          <img
+            src="/rawalite-logo.png"
+            alt="NavigationOnlySidebar"
+            style={{
+              width: "100%", 
+              maxWidth: "120px",
+              height: "auto", 
+              objectFit: "contain",
+              filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))"
+            }}
+          />
         </div>
       </div>
 

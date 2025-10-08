@@ -39,6 +39,11 @@ SQLite Database, Schema-Konsistenz, Field-Mapping, Migrations und Persistierung.
   - Dual Sub-Item System: standalone/individual_sub/package_import
   - ID Mapping System für Frontend↔Database Konsistenz
   - FOREIGN KEY Constraint Resolution
+- ✅ **[LESSONS-LEARNED-migration-017-platform-default-fix.md](LESSONS-LEARNED-migration-017-platform-default-fix.md)** - **Migration 017 Platform DEFAULT Value Fix (v1.0.14)**
+  - SQLite DEFAULT-Wert Constraint Problem gelöst
+  - Update History System erfolgreich implementiert
+  - Konstante vs komplexe DEFAULT-Werte in Migrations
+  - Development Environment Recovery Workflow
 
 #### 🔄 migration/
 - **solved/**: Gelöste Migration-Probleme

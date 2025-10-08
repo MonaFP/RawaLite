@@ -355,6 +355,14 @@ ipcMain.handle('updates:startDownload', async (event, updateInfo) => {
   return await updateManager.startDownload(updateInfo)
 })
 
+ipcMain.handle('updates:getProgressStatus', async () => {
+  return updateManager.getCurrentProgress()
+})
+
+ipcMain.handle('updates:getUpdateInfo', async () => {
+  return updateManager.getCurrentUpdateInfo()
+})
+
 // === STATUS UPDATE SYSTEM ===
 // Handler for updating entity status with optimistic locking
 ipcMain.handle('status:updateOfferStatus', async (event, params: { id: number; status: string; expectedVersion: number }) => {

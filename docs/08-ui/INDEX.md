@@ -11,6 +11,7 @@ UI-Komponenten, Theme-System, CSS-Frameworks und Design-Patterns für RawaLite v
 - **V1-5-2-BEAUTIFUL-PASTEL-THEMES.md** → 5 dezente Pastel-Themes mit original Backup-Farben
 - **V1-5-2-ENHANCED-NAVIGATION.md** → 3-Modus Enhanced Navigation System (Header Statistics, Header Navigation, Full Sidebar)
 - **V1-5-2-HEADERSTATISTICS-COMPONENT.md** → Unified HeaderStatistics mit 95px Cards und Company Data
+- **LOGO-MANAGEMENT-WORKFLOW.md** → Complete workflow for logo identification, debugging, and fixing across navigation modes
 
 #### 📄 components/
 - **TIMESHEETFORM-COMPONENT.md** → Vollständige TimesheetForm Implementation mit Activity Templates, Time Calculation, und Validation

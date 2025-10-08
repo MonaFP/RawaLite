@@ -46,11 +46,7 @@ export function up(db: Database): void {
       file_hash TEXT,
       
       -- System context
-      platform TEXT DEFAULT (CASE 
-        WHEN EXISTS (SELECT 1 FROM pragma_compile_options WHERE compile_options = 'ENABLE_COLUMN_METADATA') 
-        THEN 'unknown' 
-        ELSE 'unknown' 
-      END),
+      platform TEXT DEFAULT 'unknown',
       
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))

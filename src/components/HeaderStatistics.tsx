@@ -88,22 +88,7 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title }) => 
         gap: '16px',
         minWidth: '200px'
       }}>
-        {/* App Logo */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center'
-        }}>
-          <img 
-            src="/rawalite-logo.png" 
-            alt="RawaLite" 
-            style={{ 
-              height: '36px',
-              width: 'auto',
-              objectFit: 'contain',
-              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
-            }} 
-          />
-        </div>
+        {/* App Logo entfernt - LOGO-D komplett weg */}
         
         {/* Page Title */}
         <div style={{
@@ -128,40 +113,38 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title }) => 
         minWidth: '180px'
       }}>
         {/* Logo */}
-        {settings.companyData.logo ? (
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '6px',
-            overflow: 'hidden',
-            border: '1px solid rgba(255,255,255,0.3)'
-          }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '4px'
+        }}>
+          {settings.companyData.logo ? (
             <img
               src={settings.companyData.logo}
-              alt="Logo"
+              alt="HeaderStatistics-Company"
               style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
+                width: '50px',
+                height: '50px',
+                objectFit: 'contain'
               }}
             />
-          </div>
-        ) : (
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '6px',
-            background: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            color: 'white'
-          }}>
-            {settings.companyData.name ? settings.companyData.name.charAt(0).toUpperCase() : 'R'}
-          </div>
-        )}
+          ) : (
+            <div style={{
+              width: '50px',
+              height: '50px',
+              background: 'rgba(255,255,255,0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: 'white'
+            }}>
+              F
+            </div>
+          )}
+        </div>
         
         {/* Company Name */}
         <div style={{

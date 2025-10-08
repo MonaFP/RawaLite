@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
 import { usePersistence } from "../contexts/PersistenceContext";
 import { useNotifications } from "../contexts/NotificationContext";
@@ -29,6 +29,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const [editingActivity, setEditingActivity] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null);
+  const [currentVersion, setCurrentVersion] = useState('1.0.20');
   const [activityFormData, setActivityFormData] = useState({
     title: '',
     description: '',
@@ -45,6 +46,23 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const [importType, setImportType] = useState<'customers' | 'invoices' | 'offers'>('customers');
   const [selectedCSVFile, setSelectedCSVFile] = useState<File | null>(null);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+
+  // Version laden beim Component Mount
+  useEffect(() => {
+    const loadVersion = async () => {
+      try {
+        console.log('EinstellungenPage: Loading current version...');
+        const version = await window.rawalite.updates.getCurrentVersion();
+        console.log('EinstellungenPage: Version loaded successfully:', version);
+        setCurrentVersion(version || '1.0.20');
+      } catch (error) {
+        console.error('EinstellungenPage: Failed to load current version:', error);
+        console.log('EinstellungenPage: Using fallback version 1.0.20');
+        // Fallback bleibt '1.0.20'
+      }
+    };
+    loadVersion();
+  }, []);
 
   // Activity Dialog Funktionen
   const openCreateActivityDialog = () => {
@@ -1855,7 +1873,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
               borderRadius: "8px",
               border: "1px solid rgba(255,255,255,0.1)"
             }}>
-              <p style={{ margin: "0 0 8px 0", fontWeight: "500" }}>RawaLite Version 1.0.0</p>
+              <p style={{ margin: "0 0 8px 0", fontWeight: "500" }}>RawaLite Version {currentVersion}</p>
               <p style={{ margin: "0", fontSize: "14px", opacity: 0.7 }}>
                 Letzte Überprüfung: Beim nächsten Update-Check
               </p>

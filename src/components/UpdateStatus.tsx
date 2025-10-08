@@ -41,10 +41,20 @@ export function UpdateStatus({ onUpdateAvailable }: UpdateStatusProps) {
       
       setCheckResult(result);
       
-      // Check if update is available
-      if (result.hasUpdate && onUpdateAvailable) {
-        console.log('🎉 [UpdateStatus] Update available! Triggering callback...');
-        onUpdateAvailable();
+      // Check if update is available - open manager window instead of callback
+      if (result.hasUpdate) {
+        console.log('🎉 [UpdateStatus] Update available! Opening Update Manager...');
+        
+        try {
+          const managerResult = await window.rawalite.updates.openManager();
+          console.log('✅ [UpdateStatus] Update Manager opened:', managerResult);
+        } catch (managerError) {
+          console.error('🚨 [UpdateStatus] Failed to open Update Manager:', managerError);
+          // Fallback to callback if available
+          if (onUpdateAvailable) {
+            onUpdateAvailable();
+          }
+        }
       }
       
     } catch (err) {
