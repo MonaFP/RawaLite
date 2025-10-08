@@ -9,10 +9,11 @@ files:
 extraResources:
   - from: dist-web
     to: .
+    filter:
+      - "**/*"
+      - "!favicon.ico"
   - from: public/rawalite-logo.png
     to: rawalite-logo.png
-  - from: public/favicon.ico
-    to: favicon.ico
   - from: public/icon.png
     to: icon.png
 buildDependenciesFromSource: false
