@@ -5,6 +5,7 @@ import { useOffers } from '../hooks/useOffers';
 import { useInvoices } from '../hooks/useInvoices';
 import { usePackages } from '../hooks/usePackages';
 import { useTimesheets } from '../hooks/useTimesheets';
+import logoUrl from '../assets/rawalite-logo.png';
 
 interface CompactSidebarProps {
   className?: string;
@@ -78,7 +79,7 @@ export const CompactSidebar: React.FC<CompactSidebarProps> = ({ className }) => 
           gap: '4px'
         }}>
           <img
-            src="/rawalite-logo.png"
+            src={logoUrl}
             alt="CompactSidebar-App"
             style={{
               width: "100%", 

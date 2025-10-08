@@ -10,7 +10,11 @@ extraResources:
   - from: dist-web
     to: .
   - from: public/rawalite-logo.png
-    to: assets/rawalite-logo.png
+    to: rawalite-logo.png
+  - from: public/favicon.ico
+    to: favicon.ico
+  - from: public/icon.png
+    to: icon.png
 buildDependenciesFromSource: false
 nodeGypRebuild: false
 asarUnpack:

@@ -53,7 +53,7 @@ artefakte: [017_add_update_history.ts, migration logs, dev session logs]
 - **Datum:** 2025-10-07  
 - **Durchgeführt von:** GitHub Copilot KI  
 - **Beschreibung:** Fix implementiert - platform DEFAULT 'unknown' (konstanter Wert)  
-- **Hypothese:** Einfacher konstanter DEFAULT-Wert wird Migration reparieren  
+- **Hypothese:** Robuster konstanter DEFAULT-Wert wird Migration reparieren  
 - **Ergebnis:** ✅ **BESTÄTIGT** - Source-Fix erfolgreich implementiert  
 - **Quelle:** replace_string_in_file operation erfolgreich  
 - **Tags:** [SOURCE-FIX], [CONSTANT-DEFAULT]  

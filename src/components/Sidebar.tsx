@@ -3,7 +3,7 @@ import { useUnifiedSettings } from "../hooks/useUnifiedSettings";
 import { useOffers } from "../hooks/useOffers";
 import { useInvoices } from "../hooks/useInvoices";
 import { useTimesheets } from "../hooks/useTimesheets";
-// import rawaliteLogo from '../assets/rawalite-logo.png';
+import rawaliteLogo from '../assets/rawalite-logo.png';
 
 export default function Sidebar(){
   const { settings, loading, error } = useUnifiedSettings();
@@ -65,7 +65,7 @@ export default function Sidebar(){
           position: "relative"
         }}>
           <img 
-            src="/rawalite-logo.png" 
+            src={rawaliteLogo} 
             alt="Sidebar-App" 
             style={{ 
               width: "100%", 
