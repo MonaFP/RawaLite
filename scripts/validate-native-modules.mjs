@@ -1,12 +1,12 @@
 import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
+const requireModule = createRequire(import.meta.url);
 
 const critical = ['better-sqlite3']; // ggf. erweitern
 let fail = false;
 
 for (const mod of critical) {
   try {
-    require(mod);
+    requireModule(mod);
     console.log(`[guard:native] OK: ${mod}`);
   } catch (e) {
     fail = true;

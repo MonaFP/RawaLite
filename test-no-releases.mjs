@@ -1,5 +1,5 @@
 // Quick test to verify the "no releases found" scenario
-const { spawn } = require('child_process');
+import { spawn } from 'child_process';
 
 async function testNoReleasesScenario() {
   console.log('🧪 Testing: No Releases Found Scenario');
