@@ -11,6 +11,8 @@ import { getDb, prepare, exec, tx } from '../src/main/db/Database'
 import { runAllMigrations } from '../src/main/db/MigrationService'
 import { createHotBackup, createVacuumBackup, checkIntegrity, restoreFromBackup, cleanOldBackups } from '../src/main/db/BackupService'
 
+console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
+
 const isDev = !app.isPackaged            // zuverlässig für Dev/Prod
 
 function createWindow() {
@@ -75,6 +77,52 @@ function createWindow() {
     shell.openExternal(url)
     return { action: 'deny' }
   })
+}
+
+// Create Update Manager Window
+function createUpdateManagerWindow() {
+  // Projekt-Root ermitteln:
+  const rootPath = isDev ? process.cwd() : app.getAppPath()
+
+  // Preload: im Dev aus <root>/dist-electron, im Prod neben main.cjs
+  const preloadPath = isDev
+    ? path.join(rootPath, 'dist-electron', 'preload.js')
+    : path.join(__dirname, 'preload.js')
+
+  // Icon-Pfad definieren
+  let iconPath: string;
+  if (isDev) {
+    iconPath = path.join(rootPath, 'public', 'rawalite-logo.png');
+  } else {
+    iconPath = path.join(process.resourcesPath, 'assets', 'icon.png');
+  }
+
+  const updateWin = new BrowserWindow({
+    width: 600,
+    height: 700,
+    icon: iconPath,
+    webPreferences: {
+      preload: preloadPath,
+      contextIsolation: true,
+      sandbox: true,
+    },
+    title: 'RawaLite Update Manager',
+    resizable: false,
+    alwaysOnTop: true,
+    parent: BrowserWindow.getFocusedWindow() || undefined,
+    modal: true
+  })
+
+  if (isDev) {
+    // Vite-Dev-Server mit Update Manager Route
+    updateWin.loadURL('http://localhost:5174/update-manager')
+  } else {
+    // Production: Load Update Manager Page
+    const htmlPath = path.join(process.resourcesPath, 'index.html')
+    updateWin.loadFile(htmlPath, { hash: 'update-manager' })
+  }
+
+  return updateWin
 }
 
 // 🗂️ IPC Handler für Pfad-Management (Phase 2)
@@ -313,6 +361,11 @@ ipcMain.handle('backup:cleanup', async (event, backupDir: string, keepCount: num
   }
 })
 
+// === UPDATE SYSTEM INTEGRATION ===
+import { registerUpdateIpc } from './ipc/updates';
+
+let updateManager: UpdateManagerService;
+
 // Initialize database and run migrations when app is ready
 app.whenReady().then(async () => {
   try {
@@ -324,13 +377,24 @@ app.whenReady().then(async () => {
     console.log('🔄 Running database migrations...')
     await runAllMigrations()
     
-    // Initialize Update History Service with database
-    updateManager.initializeHistoryService(getDb())
+    // Initialize UpdateManager and register IPC
+    updateManager = new UpdateManagerService();
+    updateManager.initializeHistoryService(getDb());
+    registerUpdateIpc(updateManager); // <-- IMPORTANT: Guaranteed to be called
+    
+    // Setup Update Event Forwarding to UI
+    updateManager.onUpdateEvent((event) => {
+      // Forward all UpdateManager events to renderer process
+      const allWindows = BrowserWindow.getAllWindows();
+      allWindows.forEach(window => {
+        window.webContents.send('updates:event', event);
+      });
+    });
     
     // Create main window
     createWindow()
     
-    console.log('✅ Application ready with database initialized')
+    console.log('✅ Application ready with database and UpdateManager initialized')
   } catch (error) {
     console.error('❌ Failed to initialize application:', error)
     app.quit()
@@ -338,40 +402,6 @@ app.whenReady().then(async () => {
 })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
-
-// === UPDATE SYSTEM INTEGRATION ===
-const updateManager = new UpdateManagerService()
-
-// Setup Update Event Forwarding to UI
-updateManager.onUpdateEvent((event) => {
-  // Forward all UpdateManager events to renderer process
-  const allWindows = BrowserWindow.getAllWindows();
-  allWindows.forEach(window => {
-    window.webContents.send('updates:event', event);
-  });
-});
-
-// Update IPC Handlers
-ipcMain.handle('updates:check', async () => {
-  return await updateManager.checkForUpdates()
-})
-
-ipcMain.handle('updates:getCurrentVersion', async () => {
-  // Use app.getVersion() instead of private method
-  return app.getVersion()
-})
-
-ipcMain.handle('updates:startDownload', async (event, updateInfo) => {
-  return await updateManager.startDownload(updateInfo)
-})
-
-ipcMain.handle('updates:getProgressStatus', async () => {
-  return updateManager.getCurrentProgress()
-})
-
-ipcMain.handle('updates:getUpdateInfo', async () => {
-  return updateManager.getCurrentUpdateInfo()
-})
 
 // === STATUS UPDATE SYSTEM ===
 // Handler for updating entity status with optimistic locking
@@ -442,47 +472,6 @@ ipcMain.handle('status:getEntityForUpdate', async (event, params: { entityType: 
   } catch (error) {
     console.error('Failed to get entity for update:', error)
     throw error
-  }
-})
-
-ipcMain.handle('updates:cancelDownload', async () => {
-  return await updateManager.cancelDownload()
-})
-
-ipcMain.handle('updates:installUpdate', async (event, filePath, options = {}) => {
-  // For manual installation via UI, don't use silent mode by default
-  const installOptions = { 
-    silent: false, // Show installer GUI for user confirmation
-    restartAfter: false, // Don't auto-restart, let user decide
-    ...options 
-  };
-  return await updateManager.installUpdate(filePath, installOptions)
-})
-
-ipcMain.handle('updates:restartApp', async () => {
-  return await updateManager.restartApplication()
-})
-
-ipcMain.handle('updates:getConfig', async () => {
-  return updateManager.getConfig()
-})
-
-ipcMain.handle('updates:setConfig', async (event, config) => {
-  return updateManager.setConfig(config)
-})
-
-ipcMain.handle('updates:openDownloadFolder', async () => {
-  // Simple implementation - open downloads folder
-  shell.showItemInFolder(app.getPath('downloads'))
-})
-
-ipcMain.handle('updates:verifyFile', async (event, filePath) => {
-  // Basic file existence check
-  try {
-    await fs.access(filePath)
-    return true
-  } catch {
-    return false
   }
 })
 

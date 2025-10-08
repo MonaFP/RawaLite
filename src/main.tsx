@@ -21,6 +21,7 @@ import RechnungenPage from "./pages/RechnungenPage";
 import TimesheetsPage from "./pages/TimesheetsPage";
 import EinstellungenPage from "./pages/EinstellungenPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import { UpdateManagerPage } from "./pages/UpdateManagerPage";
 
 // Router configuration - conditional based on environment
 const routerConfig = [
@@ -65,6 +66,11 @@ const routerConfig = [
         element: <NotFoundPage />,
       },
     ],
+  },
+  // Separate Update Manager Window Route
+  {
+    path: "/update-manager",
+    element: <UpdateManagerPage />,
   },
 ];
 

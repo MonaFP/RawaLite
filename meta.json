@@ -1,10 +1,20 @@
 {
   "inputs": {
-    "src/main/services/GitHubCliService.ts": {
-      "bytes": 10282,
+    "node_modules/.pnpm/marked@16.4.0/node_modules/marked/lib/marked.esm.js": {
+      "bytes": 39843,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/services/RateLimitManager.ts": {
+      "bytes": 3703,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/services/GitHubApiService.ts": {
+      "bytes": 9780,
       "imports": [
         {
-          "path": "child_process",
+          "path": "events",
           "kind": "import-statement",
           "external": true
         },
@@ -19,7 +29,18 @@
           "external": true
         },
         {
-          "path": "stream/promises",
+          "path": "src/main/services/RateLimitManager.ts",
+          "kind": "import-statement",
+          "original": "./RateLimitManager"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/main/services/UpdateHistoryService.ts": {
+      "bytes": 7575,
+      "imports": [
+        {
+          "path": "crypto",
           "kind": "import-statement",
           "external": true
         }
@@ -27,12 +48,33 @@
       "format": "esm"
     },
     "src/types/update.types.ts": {
-      "bytes": 8411,
+      "bytes": 8434,
       "imports": [],
       "format": "esm"
     },
+    "electron/windows/updateManager.ts": {
+      "bytes": 1777,
+      "imports": [
+        {
+          "path": "electron",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:fs",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/main/services/UpdateManagerService.ts": {
-      "bytes": 15609,
+      "bytes": 26834,
       "imports": [
         {
           "path": "crypto",
@@ -60,9 +102,19 @@
           "external": true
         },
         {
-          "path": "src/main/services/GitHubCliService.ts",
+          "path": "fs",
           "kind": "import-statement",
-          "original": "./GitHubCliService"
+          "external": true
+        },
+        {
+          "path": "src/main/services/GitHubApiService.ts",
+          "kind": "import-statement",
+          "original": "./GitHubApiService"
+        },
+        {
+          "path": "src/main/services/UpdateHistoryService.ts",
+          "kind": "import-statement",
+          "original": "./UpdateHistoryService"
         },
         {
           "path": "src/types/update.types.ts",
@@ -70,11 +122,26 @@
           "original": "../../types/update.types"
         },
         {
+          "path": "electron/windows/updateManager.ts",
+          "kind": "dynamic-import",
+          "original": "../../../electron/windows/updateManager"
+        },
+        {
+          "path": "fs",
+          "kind": "require-call",
+          "external": true
+        },
+        {
           "path": "fs",
           "kind": "require-call",
           "external": true
         }
       ],
+      "format": "esm"
+    },
+    "src/main/services/EntityStatusService.ts": {
+      "bytes": 8328,
+      "imports": [],
       "format": "esm"
     },
     "src/main/db/Database.ts": {
@@ -113,8 +180,83 @@
       "imports": [],
       "format": "esm"
     },
+    "src/main/db/migrations/002_customers_schema_fix.ts": {
+      "bytes": 4468,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/003_fix_settings_schema.ts": {
+      "bytes": 8456,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/005_add_packages_numbering.ts": {
+      "bytes": 1441,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/006_fix_missing_circles.ts": {
+      "bytes": 2252,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/007_fix_packages_invoice_schema.ts": {
+      "bytes": 7600,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/008_fix_offers_schema.ts": {
+      "bytes": 4600,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/009_add_timesheets.ts": {
+      "bytes": 5208,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/010_add_timesheets_numbering.ts": {
+      "bytes": 1001,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/011_extend_offer_line_items.ts": {
+      "bytes": 3618,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/012_add_tax_office_field.ts": {
+      "bytes": 2829,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/013_add_discount_system.ts": {
+      "bytes": 4971,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/014_add_item_origin_system.ts": {
+      "bytes": 8415,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/015_add_status_versioning.ts": {
+      "bytes": 10431,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/016_add_offer_attachments.ts": {
+      "bytes": 2562,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/main/db/migrations/017_add_update_history.ts": {
+      "bytes": 3106,
+      "imports": [],
+      "format": "esm"
+    },
     "src/main/db/migrations/index.ts": {
-      "bytes": 844,
+      "bytes": 3438,
       "imports": [
         {
           "path": "src/main/db/migrations/000_init.ts",
@@ -125,6 +267,81 @@
           "path": "src/main/db/migrations/001_settings_restructure.ts",
           "kind": "import-statement",
           "original": "./001_settings_restructure"
+        },
+        {
+          "path": "src/main/db/migrations/002_customers_schema_fix.ts",
+          "kind": "import-statement",
+          "original": "./002_customers_schema_fix"
+        },
+        {
+          "path": "src/main/db/migrations/003_fix_settings_schema.ts",
+          "kind": "import-statement",
+          "original": "./003_fix_settings_schema"
+        },
+        {
+          "path": "src/main/db/migrations/005_add_packages_numbering.ts",
+          "kind": "import-statement",
+          "original": "./005_add_packages_numbering"
+        },
+        {
+          "path": "src/main/db/migrations/006_fix_missing_circles.ts",
+          "kind": "import-statement",
+          "original": "./006_fix_missing_circles"
+        },
+        {
+          "path": "src/main/db/migrations/007_fix_packages_invoice_schema.ts",
+          "kind": "import-statement",
+          "original": "./007_fix_packages_invoice_schema"
+        },
+        {
+          "path": "src/main/db/migrations/008_fix_offers_schema.ts",
+          "kind": "import-statement",
+          "original": "./008_fix_offers_schema"
+        },
+        {
+          "path": "src/main/db/migrations/009_add_timesheets.ts",
+          "kind": "import-statement",
+          "original": "./009_add_timesheets"
+        },
+        {
+          "path": "src/main/db/migrations/010_add_timesheets_numbering.ts",
+          "kind": "import-statement",
+          "original": "./010_add_timesheets_numbering"
+        },
+        {
+          "path": "src/main/db/migrations/011_extend_offer_line_items.ts",
+          "kind": "import-statement",
+          "original": "./011_extend_offer_line_items"
+        },
+        {
+          "path": "src/main/db/migrations/012_add_tax_office_field.ts",
+          "kind": "import-statement",
+          "original": "./012_add_tax_office_field"
+        },
+        {
+          "path": "src/main/db/migrations/013_add_discount_system.ts",
+          "kind": "import-statement",
+          "original": "./013_add_discount_system"
+        },
+        {
+          "path": "src/main/db/migrations/014_add_item_origin_system.ts",
+          "kind": "import-statement",
+          "original": "./014_add_item_origin_system"
+        },
+        {
+          "path": "src/main/db/migrations/015_add_status_versioning.ts",
+          "kind": "import-statement",
+          "original": "./015_add_status_versioning"
+        },
+        {
+          "path": "src/main/db/migrations/016_add_offer_attachments.ts",
+          "kind": "import-statement",
+          "original": "./016_add_offer_attachments"
+        },
+        {
+          "path": "src/main/db/migrations/017_add_update_history.ts",
+          "kind": "import-statement",
+          "original": "./017_add_update_history"
         }
       ],
       "format": "esm"
@@ -186,8 +403,24 @@
       ],
       "format": "esm"
     },
+    "electron/ipc/updates.ts": {
+      "bytes": 2307,
+      "imports": [
+        {
+          "path": "electron",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../src/main/services/UpdateManagerService",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "electron/main.ts": {
-      "bytes": 9635,
+      "bytes": 61304,
       "imports": [
         {
           "path": "electron",
@@ -205,19 +438,24 @@
           "external": true
         },
         {
+          "path": "node:fs/promises",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node_modules/.pnpm/marked@16.4.0/node_modules/marked/lib/marked.esm.js",
+          "kind": "import-statement",
+          "original": "marked"
+        },
+        {
           "path": "src/main/services/UpdateManagerService.ts",
           "kind": "import-statement",
           "original": "../src/main/services/UpdateManagerService"
         },
         {
-          "path": "electron",
+          "path": "src/main/services/EntityStatusService.ts",
           "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "node:fs/promises",
-          "kind": "import-statement",
-          "external": true
+          "original": "../src/main/services/EntityStatusService"
         },
         {
           "path": "src/main/db/Database.ts",
@@ -235,8 +473,28 @@
           "original": "../src/main/db/BackupService"
         },
         {
-          "path": "fs",
-          "kind": "require-call",
+          "path": "node:fs/promises",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "electron/ipc/updates.ts",
+          "kind": "import-statement",
+          "original": "./ipc/updates"
+        },
+        {
+          "path": "electron",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:os",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "path",
+          "kind": "import-statement",
           "external": true
         }
       ],
@@ -244,14 +502,18 @@
     }
   },
   "outputs": {
-    "dist-electron/main.cjs.map": {
-      "imports": [],
-      "exports": [],
-      "inputs": {},
-      "bytes": 114516
-    },
     "dist-electron/main.cjs": {
       "imports": [
+        {
+          "path": "electron",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:path",
+          "kind": "require-call",
+          "external": true
+        },
         {
           "path": "electron",
           "kind": "require-call",
@@ -293,7 +555,12 @@
           "external": true
         },
         {
-          "path": "child_process",
+          "path": "fs",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "events",
           "kind": "require-call",
           "external": true
         },
@@ -308,17 +575,17 @@
           "external": true
         },
         {
+          "path": "crypto",
+          "kind": "require-call",
+          "external": true
+        },
+        {
           "path": "fs",
           "kind": "require-call",
           "external": true
         },
         {
-          "path": "electron",
-          "kind": "require-call",
-          "external": true
-        },
-        {
-          "path": "node:fs/promises",
+          "path": "fs",
           "kind": "require-call",
           "external": true
         },
@@ -373,7 +640,27 @@
           "external": true
         },
         {
-          "path": "fs",
+          "path": "node:fs/promises",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "electron",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:os",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "path",
           "kind": "require-call",
           "external": true
         }
@@ -381,17 +668,32 @@
       "exports": [],
       "entryPoint": "electron/main.ts",
       "inputs": {
+        "electron/windows/updateManager.ts": {
+          "bytesInOutput": 1933
+        },
         "electron/main.ts": {
-          "bytesInOutput": 8828
+          "bytesInOutput": 51923
+        },
+        "node_modules/.pnpm/marked@16.4.0/node_modules/marked/lib/marked.esm.js": {
+          "bytesInOutput": 50985
         },
         "src/main/services/UpdateManagerService.ts": {
-          "bytesInOutput": 12730
+          "bytesInOutput": 22302
         },
-        "src/main/services/GitHubCliService.ts": {
-          "bytesInOutput": 7513
+        "src/main/services/GitHubApiService.ts": {
+          "bytesInOutput": 7171
+        },
+        "src/main/services/RateLimitManager.ts": {
+          "bytesInOutput": 2760
+        },
+        "src/main/services/UpdateHistoryService.ts": {
+          "bytesInOutput": 5063
         },
         "src/types/update.types.ts": {
           "bytesInOutput": 570
+        },
+        "src/main/services/EntityStatusService.ts": {
+          "bytesInOutput": 5123
         },
         "src/main/db/Database.ts": {
           "bytesInOutput": 2551
@@ -402,17 +704,65 @@
         "src/main/db/migrations/001_settings_restructure.ts": {
           "bytesInOutput": 5421
         },
+        "src/main/db/migrations/002_customers_schema_fix.ts": {
+          "bytesInOutput": 3642
+        },
+        "src/main/db/migrations/003_fix_settings_schema.ts": {
+          "bytesInOutput": 6920
+        },
+        "src/main/db/migrations/005_add_packages_numbering.ts": {
+          "bytesInOutput": 1196
+        },
+        "src/main/db/migrations/006_fix_missing_circles.ts": {
+          "bytesInOutput": 1905
+        },
+        "src/main/db/migrations/007_fix_packages_invoice_schema.ts": {
+          "bytesInOutput": 6202
+        },
+        "src/main/db/migrations/008_fix_offers_schema.ts": {
+          "bytesInOutput": 3819
+        },
+        "src/main/db/migrations/009_add_timesheets.ts": {
+          "bytesInOutput": 4549
+        },
+        "src/main/db/migrations/010_add_timesheets_numbering.ts": {
+          "bytesInOutput": 786
+        },
+        "src/main/db/migrations/011_extend_offer_line_items.ts": {
+          "bytesInOutput": 2915
+        },
+        "src/main/db/migrations/012_add_tax_office_field.ts": {
+          "bytesInOutput": 2342
+        },
+        "src/main/db/migrations/013_add_discount_system.ts": {
+          "bytesInOutput": 3941
+        },
+        "src/main/db/migrations/014_add_item_origin_system.ts": {
+          "bytesInOutput": 6777
+        },
+        "src/main/db/migrations/015_add_status_versioning.ts": {
+          "bytesInOutput": 8621
+        },
+        "src/main/db/migrations/016_add_offer_attachments.ts": {
+          "bytesInOutput": 1774
+        },
+        "src/main/db/migrations/017_add_update_history.ts": {
+          "bytesInOutput": 2492
+        },
         "src/main/db/migrations/index.ts": {
-          "bytesInOutput": 341
+          "bytesInOutput": 1587
         },
         "src/main/db/MigrationService.ts": {
-          "bytesInOutput": 3090
+          "bytesInOutput": 3094
         },
         "src/main/db/BackupService.ts": {
-          "bytesInOutput": 8339
+          "bytesInOutput": 8341
+        },
+        "electron/ipc/updates.ts": {
+          "bytesInOutput": 2315
         }
       },
-      "bytes": 55156
+      "bytes": 236153
     }
   }
 }

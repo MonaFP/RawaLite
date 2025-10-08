@@ -525,9 +525,20 @@ export class UpdateManagerService {
     this.emit({ type: 'user-consent-denied' });
   }
 
+  /**
+   * Open Update Manager Window
+   */
+  async openManager(): Promise<void> {
+    const { getOrCreateUpdateManagerWindow } = await import('../../../electron/windows/updateManager');
+    getOrCreateUpdateManagerWindow();
+  }
+
   // Private helper methods
 
-  private async getCurrentVersion(): Promise<string> {
+  /**
+   * Get Current Version (made public for IPC)
+   */
+  async getCurrentVersion(): Promise<string> {
     try {
       const packageJsonPath = app.isPackaged
         ? join(app.getAppPath(), 'package.json')
