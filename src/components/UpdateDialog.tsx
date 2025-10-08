@@ -330,6 +330,53 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
+  const [needsRestart, setNeedsRestart] = useState(false);
+
+  // Subscribe to Update Events from Main Process
+  useEffect(() => {
+    if (!window.rawalite?.updates?.onUpdateEvent) return;
+
+    const unsubscribe = window.rawalite.updates.onUpdateEvent((event) => {
+      console.log('🔔 UpdateDialog received event:', event);
+      
+      switch (event.type) {
+        case 'download-progress':
+          if (event.progress) {
+            setDownloadProgress({
+              downloaded: event.progress.downloaded || 0,
+              total: event.progress.total || 1000,
+              percentage: event.progress.percentage || 0,
+              speed: event.progress.speed || 0,
+              eta: event.progress.eta || 0
+            });
+          }
+          break;
+          
+        case 'download-completed':
+          setIsDownloading(false);
+          if (event.filePath) {
+            setDownloadedFilePath(event.filePath);
+          }
+          break;
+          
+        case 'installation-completed':
+          setIsInstalling(false);
+          setNeedsRestart(true);
+          break;
+          
+        case 'installation-failed':
+          setIsInstalling(false);
+          setError(event.error || 'Installation failed');
+          break;
+          
+        case 'error':
+          setError(event.message || 'Unknown error occurred');
+          break;
+      }
+    });
+
+    return unsubscribe;
+  }, []);
 
   // Update functions using window.rawalite.updates API
   const checkForUpdates = async () => {
@@ -437,7 +484,11 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
     
     try {
       logApiCall('UpdateDialog', 'installUpdate', { filePath: downloadedFilePath });
-      await window.rawalite.updates.installUpdate(downloadedFilePath);
+      // Install with GUI mode (not silent) so user can see the installer
+      await window.rawalite.updates.installUpdate(downloadedFilePath, { 
+        silent: false, 
+        restartAfter: false 
+      });
       logApiResponse('UpdateDialog', 'installUpdate', { success: true });
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Installation fehlgeschlagen';
@@ -545,7 +596,6 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
   };
 
   const canRetry = Boolean(error) && !isChecking && !isDownloading && !isInstalling;
-  const needsRestart = isInstalling;
   const downloadCompleted = Boolean(downloadedFilePath) && !isDownloading && hasUpdate;
 
   return (

@@ -185,8 +185,8 @@ contextBridge.exposeInMainWorld('rawalite', {
       } | null>,
     
     // Installation operations
-    installUpdate: (filePath: string) => 
-      ipcRenderer.invoke('updates:installUpdate', filePath) as Promise<void>,
+    installUpdate: (filePath: string, options?: { silent?: boolean; restartAfter?: boolean }) => 
+      ipcRenderer.invoke('updates:installUpdate', filePath, options) as Promise<void>,
     restartApp: () => 
       ipcRenderer.invoke('updates:restartApp') as Promise<void>,
     

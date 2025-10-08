@@ -665,29 +665,72 @@ export class UpdateManagerService {
 
   private async runInstaller(filePath: string, options: InstallationOptions): Promise<void> {
     return new Promise((resolve, reject) => {
+      debugLog('UpdateManagerService', 'runInstaller_start', {
+        filePath,
+        options,
+        fileExists: require('fs').existsSync(filePath)
+      });
+
+      // Check if file exists before trying to run it
+      if (!require('fs').existsSync(filePath)) {
+        const error = `Installer file not found: ${filePath}`;
+        debugLog('UpdateManagerService', 'runInstaller_file_not_found', { filePath }, error);
+        reject(new Error(error));
+        return;
+      }
+
       const args: string[] = [];
 
+      // For manual installation, DON'T use silent flags - show the installer GUI
       if (options.silent) {
         args.push('/S', '/SILENT', '/VERYSILENT', '/SP-', '/SUPPRESSMSGBOXES');
+        debugLog('UpdateManagerService', 'runInstaller_silent_mode', { args });
+      } else {
+        debugLog('UpdateManagerService', 'runInstaller_gui_mode', { args });
       }
 
       if (options.additionalArgs) {
         args.push(...options.additionalArgs);
       }
 
+      debugLog('UpdateManagerService', 'runInstaller_spawn', { filePath, args });
+
+      // For GUI installation, detach the process and don't capture stdio
+      const shouldDetach = !options.silent;
+      
       const process = spawn(filePath, args, {
-        detached: false,
-        stdio: 'pipe'
+        detached: shouldDetach,
+        stdio: shouldDetach ? 'ignore' : 'pipe'
       });
+
+      // If detached (GUI mode), resolve immediately after spawn
+      if (shouldDetach) {
+        debugLog('UpdateManagerService', 'runInstaller_detached_mode', { 
+          message: 'Process started in detached mode for GUI installation' 
+        });
+        resolve();
+        return;
+      }
 
       let stderr = '';
 
       process.stderr?.on('data', (data: Buffer) => {
         stderr += data.toString();
+        debugLog('UpdateManagerService', 'runInstaller_stderr', { stderr: data.toString() });
+      });
+
+      process.stdout?.on('data', (data: Buffer) => {
+        debugLog('UpdateManagerService', 'runInstaller_stdout', { stdout: data.toString() });
       });
 
       process.on('close', (code) => {
         clearTimeout(timeout); // Cleanup timeout first
+        debugLog('UpdateManagerService', 'runInstaller_close', { 
+          exitCode: code, 
+          stderr: stderr,
+          success: code === 0
+        });
+        
         if (code === 0) {
           resolve();
         } else {
@@ -697,14 +740,17 @@ export class UpdateManagerService {
 
       process.on('error', (error) => {
         clearTimeout(timeout);
+        debugLog('UpdateManagerService', 'runInstaller_error', { error: error.message }, error.message);
         reject(error);
       });
 
-      // Timeout for installation
+      // Timeout for installation (increased for manual installation)
+      const timeoutMs = options.silent ? UPDATE_CONSTANTS.INSTALLATION_TIMEOUT : UPDATE_CONSTANTS.INSTALLATION_TIMEOUT * 3;
       const timeout = setTimeout(() => {
+        debugLog('UpdateManagerService', 'runInstaller_timeout', { timeoutMs });
         process.kill();
         reject(new Error('Installation timeout'));
-      }, UPDATE_CONSTANTS.INSTALLATION_TIMEOUT);
+      }, timeoutMs);
     });
   }
 

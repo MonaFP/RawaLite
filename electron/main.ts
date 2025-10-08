@@ -342,6 +342,15 @@ app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) creat
 // === UPDATE SYSTEM INTEGRATION ===
 const updateManager = new UpdateManagerService()
 
+// Setup Update Event Forwarding to UI
+updateManager.onUpdateEvent((event) => {
+  // Forward all UpdateManager events to renderer process
+  const allWindows = BrowserWindow.getAllWindows();
+  allWindows.forEach(window => {
+    window.webContents.send('updates:event', event);
+  });
+});
+
 // Update IPC Handlers
 ipcMain.handle('updates:check', async () => {
   return await updateManager.checkForUpdates()
@@ -440,8 +449,14 @@ ipcMain.handle('updates:cancelDownload', async () => {
   return await updateManager.cancelDownload()
 })
 
-ipcMain.handle('updates:installUpdate', async (event, filePath) => {
-  return await updateManager.installUpdate(filePath)
+ipcMain.handle('updates:installUpdate', async (event, filePath, options = {}) => {
+  // For manual installation via UI, don't use silent mode by default
+  const installOptions = { 
+    silent: false, // Show installer GUI for user confirmation
+    restartAfter: false, // Don't auto-restart, let user decide
+    ...options 
+  };
+  return await updateManager.installUpdate(filePath, installOptions)
 })
 
 ipcMain.handle('updates:restartApp', async () => {

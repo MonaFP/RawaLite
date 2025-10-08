@@ -20,9 +20,9 @@ if errorlevel 1 (
 )
 
 echo [3/4] Lokale ausführbare Version bereitstellen...
-if exist "release\win-unpacked" (
+if exist "dist-release\win-unpacked" (
     echo Vorherige Installation gefunden - wird gelöscht...
-    rmdir /s /q "release\win-unpacked" 2>nul
+    rmdir /s /q "dist-release\win-unpacked" 2>nul
     timeout /t 2 /nobreak >nul
 )
 
@@ -33,12 +33,12 @@ if errorlevel 1 (
 
 echo [4/4] RawaLite starten...
 echo.
-if exist "release\win-unpacked\RawaLite.exe" (
+if exist "dist-release\win-unpacked\RawaLite.exe" (
     echo ✅ Production-Installation erfolgreich!
     echo RawaLite wird gestartet...
     echo.
-    echo DEBUG: App-Pfad: release\win-unpacked\RawaLite.exe
-    start "" "release\win-unpacked\RawaLite.exe"
+    echo DEBUG: App-Pfad: dist-release\win-unpacked\RawaLite.exe
+    start "" "dist-release\win-unpacked\RawaLite.exe"
     echo.
     echo 🚀 App gestartet! Installation abgeschlossen.
     echo ℹ️  Die App läuft jetzt im Hintergrund.
@@ -48,13 +48,13 @@ if exist "release\win-unpacked\RawaLite.exe" (
     echo Fertig! 🎉
 ) else (
     echo ❌ FEHLER: RawaLite.exe nicht gefunden!
-    echo Expected: release\win-unpacked\RawaLite.exe
-    dir "release\win-unpacked\" 2>nul | findstr "RawaLite"
+    echo Expected: dist-release\win-unpacked\RawaLite.exe
+    dir "dist-release\win-unpacked\" 2>nul | findstr "RawaLite"
     echo.
     echo Fallback: Versuche direkten Installer...
-    if exist "release\RawaLite Setup 1.0.0.exe" (
+    if exist "dist-release\RawaLite Setup *.exe" (
         echo ✅ Installer gefunden - wird ausgeführt...
-        start "" "release\RawaLite Setup 1.0.0.exe"
+        for %%f in ("dist-release\RawaLite Setup *.exe") do start "" "%%f"
         echo Installer gestartet. Folgen Sie den Anweisungen.
         pause
     ) else (
