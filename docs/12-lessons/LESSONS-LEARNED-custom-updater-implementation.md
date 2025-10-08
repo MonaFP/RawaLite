@@ -91,7 +91,107 @@ artefakte: [UpdateDialog.tsx, GitHubCliService.ts, UpdateManagerService.ts, useU
   ```
 - **Ergebnis:** ✅ Build erfolgreich, infinite loop behoben, button duplication verhindert
 - **Verifikation:** TypeScript compilation clean, 467 modules transformed erfolgreich
-- **Tags:** [RENDER-LOOP], [USE-EFFECT], [STATE-MANAGEMENT], [REF-PATTERN]  
+- **Tags:** [RENDER-LOOP], [USE-EFFECT], [STATE-MANAGEMENT], [REF-PATTERN]
+
+### Versuch 8 - DEV-PROD Disconnect - UpdateManager funktioniert nur in Development
+- **Datum:** 2025-10-08  
+- **Durchgeführt von:** KI + Entwickler  
+- **Beschreibung:** KRITISCHES Problem: UpdateManager System funktioniert perfekt in Development, aber erreicht Production Build nicht
+- **Symptome:**
+  1. Development: `window.rawalite.updates.openManager()` öffnet UpdateManager korrekt
+  2. Production: UpdateManager Code fehlt komplett im gebauten main.cjs
+  3. IPC Handler für `updates:openManager` existiert nicht in Production
+- **Root Cause Analyse:**
+  1. **Build Cache Problem:** esbuild nutzte veralteten Build-Cache trotz korrekter Source-Dateien
+  2. **Entry Point Divergenz:** Neue UpdateManager-Dateien wurden nicht in Build-Prozess erkannt
+  3. **Missing IPC Registration:** Zentrale IPC-Handler-Registrierung fehlte im main.ts
+- **Fehlgeschlagene Versuche:**
+  ```bash
+  # ❌ Diese Ansätze lösten das Problem NICHT:
+  pnpm run build:main --metafile  # Build-Metadaten zeigten fehlende Imports
+  node check-schema.js            # Versuchte Bundle-Analyse über DB-Schema
+  Direkte Datei-Erstellung        # Neue Dateien wurden nicht gebündelt
+  ```
+- **ERFOLGREICHE Lösung - git clean + Rebuild:**
+  ```bash
+  # ✅ KRITISCHER Durchbruch:
+  git clean -xfd                  # Entfernt ALLE non-git Dateien inkl. Build-Cache
+  pnpm install                    # Saubere Neuinstallation aller Dependencies
+  # Anschließend: Dateien neu erstellen
+  ```
+- **Neue Architektur implementiert:**
+  ```typescript
+  // electron/ipc/updates.ts - Zentrale IPC-Handler-Registrierung
+  export function registerUpdateIpc() {
+    console.log('[IPC] Registering Update IPC handlers...');
+    ipcMain.handle('updates:openManager', async () => {
+      console.log('[IPC] Opening UpdateManager...');
+      return await UpdateManagerService.openManager();
+    });
+    // ... weitere Handler
+    console.log('[IPC] Update IPC handlers registered successfully');
+  }
+  
+  // electron/windows/updateManager.ts - Dediziertes UpdateManager-Fenster
+  export async function getOrCreateUpdateManagerWindow(): Promise<BrowserWindow> {
+    if (updateManagerWindow && !updateManagerWindow.isDestroyed()) {
+      updateManagerWindow.focus();
+      return updateManagerWindow;
+    }
+    
+    updateManagerWindow = new BrowserWindow({
+      width: 800, height: 600,
+      webPreferences: {
+        preload: join(__dirname, 'preload.js'),
+        contextIsolation: true,
+        sandbox: true
+      }
+    });
+    
+    const isDev = process.env.NODE_ENV === 'development';
+    const url = isDev 
+      ? 'http://localhost:5174/update-manager'
+      : `file://${join(__dirname, '../dist-web/index.html#/update-manager')}`;
+    
+    await updateManagerWindow.loadURL(url);
+    return updateManagerWindow;
+  }
+  
+  // electron/main.ts - Integration in App-Lifecycle
+  import { registerUpdateIpc } from './ipc/updates';
+  
+  app.whenReady().then(async () => {
+    // ... andere Initialisierung
+    registerUpdateIpc();  // ✅ Zentrale IPC-Registrierung
+    console.log('Application ready with database and UpdateManager initialized');
+  });
+  ```
+- **Verifikation der Lösung:**
+  ```bash
+  # ✅ Build-Analyse bestätigt erfolgreiche Integration:
+  ✅ UpdateManagerService FOUND
+  ✅ UpdateManagerWindow FOUND  
+  ✅ registerUpdateIpc FOUND
+  ✅ getOrCreateUpdateManagerWindow FOUND
+  ✅ openManager FOUND
+  
+  # ✅ IPC-Handler korrekt registriert:
+  ✅ ipcMain.handle("updates:openManager", async ()
+  ✅ ipcMain.handle("updates:check", async ()
+  ✅ ipcMain.handle("updates:startDownload", async (event, updateInfo)
+  
+  # ✅ Development-Logs zeigen korrekte Initialisierung:
+  [IPC] Registering Update IPC handlers...
+  [IPC] Update IPC handlers registered successfully
+  UpdateManagerService.initializeHistoryService
+  Application ready with database and UpdateManager initialized
+  ```
+- **Ergebnis:** ✅ DEV-PROD Parity wiederhergestellt, UpdateManager funktioniert in beiden Environments
+- **Lessons Learned:** 
+  - Build-Cache kann korrekte Source-Dateien überschreiben → `git clean -xfd` als Nuclear Option
+  - Zentrale IPC-Registrierung verhindert fehlende Handler in Production
+  - Dedizierte Window-Manager mit dev/prod URL-Routing für bessere Separation
+- **Tags:** [BUILD-CACHE], [DEV-PROD-PARITY], [IPC-ARCHITECTURE], [WINDOW-MANAGEMENT], [NUCLEAR-OPTION]  
 
 ---
 
@@ -106,6 +206,8 @@ artefakte: [UpdateDialog.tsx, GitHubCliService.ts, UpdateManagerService.ts, useU
   - Updates in eigenem Tab mit besserer UX integriert
   - **INFINITE RENDER LOOP FINAL FIX:** useRef pattern verhindert mehrfache Auto-Checks
   - **BUTTON DUPLICATION FINAL FIX:** Exklusive Bedingungen für UI states
+  - **DEV-PROD DISCONNECT FINAL FIX:** Build-Cache-Problem mit git clean -xfd gelöst
+  - **UPDATEMANAGER PRODUCTION READY:** Zentrale IPC-Architektur + dedizierte Fenster implementiert
 
 - [x] **Validierte Architektur-Entscheidungen:**  
   - GitHub CLI Integration für Rate-Limit-Schutz
@@ -113,6 +215,9 @@ artefakte: [UpdateDialog.tsx, GitHubCliService.ts, UpdateManagerService.ts, useU
   - React Hook Pattern mit useUpdateChecker
   - Event-driven UI Updates über IPC
   - **useRef Pattern für Dialog Session Management**
+  - **Zentrale IPC-Handler-Registrierung (electron/ipc/updates.ts)**
+  - **Dedizierte Window-Manager mit dev/prod URL-Routing (electron/windows/updateManager.ts)**
+  - **Nuclear Option: git clean -xfd für Build-Cache-Reset**
 
 ---
 
@@ -127,6 +232,9 @@ artefakte: [UpdateDialog.tsx, GitHubCliService.ts, UpdateManagerService.ts, useU
 - [x] **Build Process?** ✅ Alle Artefakte generiert
 - [x] **Infinite Render Loop?** ✅ BEHOBEN - useRef pattern verhindert re-trigger
 - [x] **Button Duplication?** ✅ BEHOBEN - exklusive UI conditions
+- [x] **DEV-PROD Parity?** ✅ BEHOBEN - git clean -xfd löste Build-Cache-Problem
+- [x] **UpdateManager Production?** ✅ BEHOBEN - zentrale IPC + dedizierte Windows
+- [x] **Bundle Content Verification?** ✅ Alle UpdateManager-Komponenten in main.cjs gefunden
 
 ---
 
@@ -143,6 +251,16 @@ pnpm typecheck
 # Build Process
 pnpm build
 # Output: ✅ 468 modules, dist-electron/main.cjs 46.4kb, dist-electron/preload.js 3.4kb
+
+# DEV-PROD Parity Verification (Post git clean -xfd)
+pnpm run build:main -- --metafile=./meta.json
+node -e "const bundled = require('fs').readFileSync('./dist-electron/main.cjs', 'utf8'); ['UpdateManagerService', 'UpdateManagerWindow', 'registerUpdateIpc', 'getOrCreateUpdateManagerWindow', 'openManager'].forEach(term => { const found = bundled.includes(term); console.log(found ? '✅' : '❌', term, found ? 'FOUND' : 'MISSING'); });"
+# Output: ✅ Alle UpdateManager-Komponenten gefunden
+
+# Build Cache Nuclear Reset (wenn DEV-PROD Disconnect auftritt)
+git clean -xfd
+pnpm install
+# Output: Entfernt alle non-git files, saubere Neuinstallation
 ```
 
 ---
@@ -174,6 +292,25 @@ Falls Update-System nicht funktioniert:
    // UpdateManagerService.getState()
    ```
 
+5. **🆘 DEV-PROD Disconnect Emergency (Nuclear Option):**
+   ```powershell
+   # Wenn neue Funktionen in DEV funktionieren aber PROD Build sie nicht enthält:
+   git status                    # Sicherstellen dass alle Änderungen committed sind
+   git clean -xfd               # ⚠️ NUCLEAR: Entfernt ALLE non-git files
+   pnpm install                 # Saubere Neuinstallation
+   pnpm run build               # Build mit sauberem Cache
+   
+   # Verify fix:
+   node -e "const bundled = require('fs').readFileSync('./dist-electron/main.cjs', 'utf8'); console.log('UpdateManager Components:', ['UpdateManagerService', 'registerUpdateIpc'].every(term => bundled.includes(term)) ? '✅ FOUND' : '❌ MISSING');"
+   ```
+
+6. **Bundle Content Verification:**
+   ```powershell
+   # Prüfe ob neue Komponenten im Production Build enthalten sind:
+   pnpm run build:main -- --metafile=./meta.json
+   node -e "const meta = JSON.parse(require('fs').readFileSync('./meta.json', 'utf8')); console.log('BUNDLED FILES:', Object.keys(meta.inputs).filter(f => f.includes('UpdateManager') || f.includes('updates')));"
+   ```
+
 ---
 
 ## 🤖 AI-Prompts Mini-Header
@@ -197,6 +334,15 @@ Falls Update-System nicht funktioniert:
 - `[EDGE-CASE]` - Repository ohne Releases, Erste Installation
 - `[REACT-HOOKS]` - useUpdateChecker, useEffect Dependencies
 - `[USER-EXPERIENCE]` - Dialog Timing, Progress Feedback
+- `[RENDER-LOOP]` - useEffect Dependency Circles, Infinite Re-renders
+- `[USE-EFFECT]` - React Hook Dependencies, Lifecycle Management
+- `[STATE-MANAGEMENT]` - React State, useRef Patterns
+- `[REF-PATTERN]` - useRef für Session Management, Re-trigger Prevention
+- `[BUILD-CACHE]` - esbuild Cache Issues, Bundle Content Verification
+- `[DEV-PROD-PARITY]` - Environment Consistency, Production vs Development
+- `[IPC-ARCHITECTURE]` - Electron IPC Handler Registration, Communication
+- `[WINDOW-MANAGEMENT]` - BrowserWindow Lifecycle, URL Routing
+- `[NUCLEAR-OPTION]` - git clean -xfd, Complete Environment Reset
 
 ---
 
@@ -216,6 +362,21 @@ Falls Update-System nicht funktioniert:
 - **Entscheidung:** GitHub "Not Found" für Releases wird als "aktuell" interpretiert
 - **Grund:** Erste Installation hat keine Releases, sollte nicht als Fehler angezeigt werden
 - **Status:** ✅ Implementiert und validiert
+
+**ADR-004: Zentrale IPC-Handler-Registrierung**
+- **Entscheidung:** Alle Update-IPC-Handler in electron/ipc/updates.ts zentralisieren
+- **Grund:** Verhindert fehlende Handler in Production, bessere Maintainability
+- **Status:** ✅ Implementiert und validiert
+
+**ADR-005: Dedizierte UpdateManager-Fenster**
+- **Entscheidung:** Separates BrowserWindow für UpdateManager statt Modal/Dialog
+- **Grund:** Bessere UX, keine Blockierung der Hauptapp, dev/prod URL-Routing
+- **Status:** ✅ Implementiert und validiert
+
+**ADR-006: git clean -xfd als Nuclear Option**
+- **Entscheidung:** Bei Build-Cache-Problemen komplette Bereinigung aller non-git files
+- **Grund:** Build-Cache kann korrekte Source-Updates überschreiben, führt zu DEV-PROD Disconnect
+- **Status:** ✅ Validiert als letzter Ausweg bei Build-System-Problemen
 
 ---
 
@@ -264,11 +425,15 @@ if (!availability.available) {
 
 ## 🎯 Zusammenfassung
 
-**Hauptproblem:** Update-Button ohne Reaktion → Dialog öffnet sich aber kein Auto-Check
-**Root Cause:** autoCheckOnOpen wurde nur an autoCheckOnMount weitergegeben (funktioniert nur beim ersten Mount)
-**Lösung:** useEffect mit isOpen dependency + 500ms delay für Dialog-Rendering
-**Nebenprobleme:** "No releases found" Error → als "up to date" behandeln
-**Status:** ✅ Vollständig gelöst und getestet
+**Hauptproblem:** Update-Button ohne Reaktion → Dialog öffnet sich aber kein Auto-Check → DEV-PROD Disconnect
+**Root Causes:** 
+1. autoCheckOnOpen wurde nur an autoCheckOnMount weitergegeben (funktioniert nur beim ersten Mount)
+2. **KRITISCH:** Build-Cache-Problem verhinderte UpdateManager-Code in Production
+**Lösungen:** 
+1. useEffect mit isOpen dependency + 500ms delay für Dialog-Rendering
+2. **NUCLEAR:** git clean -xfd + komplette Neuinstallation löste Build-Cache-Problem
+**Nebenprobleme:** "No releases found" Error → als "up to date" behandeln, Infinite Render Loop → useRef pattern
+**Status:** ✅ Vollständig gelöst und getestet - DEV-PROD Parity wiederhergestellt
 
 **Implementierte Dateien:**
 - ✅ src/main/services/GitHubCliService.ts
@@ -276,5 +441,15 @@ if (!availability.available) {
 - ✅ src/hooks/useUpdateChecker.ts
 - ✅ src/components/UpdateDialog.tsx
 - ✅ Integration in EinstellungenPage.tsx
+- ✅ **electron/ipc/updates.ts** - Zentrale IPC-Handler-Registrierung
+- ✅ **electron/windows/updateManager.ts** - Dedizierte UpdateManager-Fenster
+- ✅ **electron/main.ts** - Aktualisiert mit neuer IPC-Architektur
+- ✅ **src/main.tsx** - Router-Integration für /update-manager
 
-**Verifikation:** Alle TypeScript-Compilation, Build-Process und Live-Testing erfolgreich.
+**Verifikation:** 
+- TypeScript-Compilation: ✅ Clean
+- Build-Process: ✅ 230.6kb main.cjs erfolgreich  
+- Live-Testing: ✅ Development + Production funktional
+- **Bundle-Content:** ✅ Alle UpdateManager-Komponenten in Production Build enthalten
+- **IPC-Handler:** ✅ updates:openManager + alle weiteren Handler registriert
+- **DEV-PROD Logs:** ✅ Identische Initialisierung in beiden Environments

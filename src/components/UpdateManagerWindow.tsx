@@ -45,11 +45,14 @@ interface ProgressBarProps {
   height?: number;
 }
 
-function ProgressBar({ progress, color = '#3b82f6', height = 8 }: ProgressBarProps) {
+function ProgressBar({ progress, color = 'var(--accent, var(--sidebar-green))', height = 8 }: ProgressBarProps) {
   return (
     <div 
-      className="bg-gray-200 rounded-full overflow-hidden"
-      style={{ height }}
+      className="rounded-full overflow-hidden"
+      style={{ 
+        height,
+        background: 'rgba(0,0,0,0.1)'
+      }}
     >
       <div
         className="transition-all duration-300 ease-out rounded-full h-full"
@@ -95,6 +98,43 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
       return () => clearTimeout(timer);
     }
   }, [autoCheckOnMount]);
+
+  // Progress polling for downloads
+  useEffect(() => {
+    if (!isDownloading || !window.rawalite?.updates) return;
+
+    const pollProgress = async () => {
+      try {
+        // @ts-ignore - TypeScript types sind nicht aktuell, aber API existiert in preload.ts
+        const progressStatus = await window.rawalite.updates.getProgressStatus();
+        if (progressStatus && progressStatus.status === 'downloading') {
+          console.log('UpdateManagerWindow: Progress update:', progressStatus);
+          setDownloadProgress({
+            downloaded: progressStatus.downloaded,
+            total: progressStatus.total, 
+            percentage: progressStatus.percentage,
+            speed: progressStatus.speed,
+            eta: progressStatus.eta
+          });
+        } else if (progressStatus && progressStatus.status === 'completed') {
+          console.log('UpdateManagerWindow: Download completed via progress poll');
+          setIsDownloading(false);
+        }
+      } catch (err) {
+        console.error('UpdateManagerWindow: Failed to get progress status:', err);
+      }
+    };
+
+    // Poll progress every 500ms during downloads
+    const progressInterval = setInterval(pollProgress, 500);
+    
+    // Initial poll
+    pollProgress();
+
+    return () => {
+      clearInterval(progressInterval);
+    };
+  }, [isDownloading]);
 
   // Update functions using window.rawalite.updates API
   const checkForUpdates = async () => {
@@ -223,22 +263,56 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
     if (error) {
       return (
         <div className="text-center py-8">
-          <div className="text-red-500 text-4xl mb-4">⚠</div>
-          <h3 className="text-lg font-semibold text-red-600 mb-2">Fehler aufgetreten</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <div className="text-4xl mb-4" style={{ color: 'var(--danger, #ef4444)' }}>⚠</div>
+          <h3 
+            className="text-lg font-semibold mb-2"
+            style={{ color: 'var(--danger, #ef4444)' }}
+          >
+            Fehler aufgetreten
+          </h3>
+          <p 
+            className="mb-4"
+            style={{ color: 'var(--text-secondary, #374151)' }}
+          >
+            {error}
+          </p>
           <div className="flex space-x-3 justify-center">
             <button
               onClick={() => {
                 clearError();
                 checkForUpdates();
               }}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700"
+              className="px-4 py-2 rounded-lg font-medium"
+              style={{
+                background: 'var(--danger, #ef4444)',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.9'}
+              onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
             >
               Erneut versuchen
             </button>
             <button
               onClick={clearError}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg"
+              className="px-4 py-2 rounded-lg"
+              style={{
+                color: 'var(--text-secondary, #374151)',
+                border: '1px solid rgba(0,0,0,.2)',
+                background: 'transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.color = 'var(--text-primary, #1e293b)';
+                (e.target as HTMLElement).style.borderColor = 'var(--accent, var(--sidebar-green))';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.color = 'var(--text-secondary, #374151)';
+                (e.target as HTMLElement).style.borderColor = 'rgba(0,0,0,.2)';
+              }}
             >
               Schließen
             </button>
@@ -251,11 +325,26 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
     if (isChecking) {
       return (
         <div className="text-center py-8">
-          <div className="animate-spin text-blue-500 text-3xl mb-4">⟳</div>
-          <h3 className="text-lg font-semibold mb-2">Nach Updates suchen...</h3>
-          <p className="text-gray-600 text-sm">Prüfe GitHub für neue Versionen</p>
+          <div 
+            className="animate-spin text-3xl mb-4"
+            style={{ color: 'var(--accent, var(--sidebar-green))' }}
+          >
+            ⟳
+          </div>
+          <h3 
+            className="text-lg font-semibold mb-2"
+            style={{ color: 'var(--text-primary, #1e293b)' }}
+          >
+            Nach Updates suchen...
+          </h3>
+          <p 
+            className="text-sm"
+            style={{ color: 'var(--text-secondary, #374151)' }}
+          >
+            Prüfe GitHub für neue Versionen
+          </p>
           <div className="mt-4">
-            <ProgressBar progress={50} color="#3b82f6" height={4} />
+            <ProgressBar progress={50} color="var(--accent, var(--sidebar-green))" height={4} />
           </div>
         </div>
       );
@@ -265,11 +354,26 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
     if (isInstalling) {
       return (
         <div className="text-center py-8">
-          <div className="animate-spin text-green-500 text-3xl mb-4">⟳</div>
-          <h3 className="text-lg font-semibold mb-2">Update wird installiert...</h3>
-          <p className="text-gray-600 text-sm">Bitte warten Sie einen Moment</p>
+          <div 
+            className="animate-spin text-3xl mb-4"
+            style={{ color: 'var(--ok, #22c55e)' }}
+          >
+            ⟳
+          </div>
+          <h3 
+            className="text-lg font-semibold mb-2"
+            style={{ color: 'var(--text-primary, #1e293b)' }}
+          >
+            Update wird installiert...
+          </h3>
+          <p 
+            className="text-sm"
+            style={{ color: 'var(--text-secondary, #374151)' }}
+          >
+            Bitte warten Sie einen Moment
+          </p>
           <div className="mt-4">
-            <ProgressBar progress={75} color="#10b981" height={4} />
+            <ProgressBar progress={75} color="var(--ok, #22c55e)" height={4} />
           </div>
         </div>
       );
@@ -279,15 +383,37 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
     if (needsRestart) {
       return (
         <div className="text-center py-8">
-          <div className="text-green-500 text-4xl mb-4">✓</div>
-          <h3 className="text-lg font-semibold text-green-600 mb-2">Update erfolgreich installiert!</h3>
-          <p className="text-gray-600 mb-4">
+          <div 
+            className="text-4xl mb-4"
+            style={{ color: 'var(--ok, #22c55e)' }}
+          >
+            ✓
+          </div>
+          <h3 
+            className="text-lg font-semibold mb-2"
+            style={{ color: 'var(--ok, #22c55e)' }}
+          >
+            Update erfolgreich installiert!
+          </h3>
+          <p 
+            className="mb-4"
+            style={{ color: 'var(--text-secondary, #374151)' }}
+          >
             Die Anwendung muss neu gestartet werden, um das Update zu verwenden.
           </p>
           <div className="flex space-x-3 justify-center">
             <button
               onClick={restartApp}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700"
+              className="px-4 py-2 rounded-lg font-medium"
+              style={{
+                background: 'var(--ok, #22c55e)',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.9'}
+              onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
             >
               Jetzt neu starten
             </button>
@@ -300,12 +426,36 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
     if (downloadedFilePath && !isDownloading) {
       return (
         <div className="text-center py-8">
-          <div className="text-green-500 text-4xl mb-4">✓</div>
-          <h3 className="text-lg font-semibold mb-2">Download abgeschlossen</h3>
-          <p className="text-gray-600 mb-4">Das Update kann jetzt installiert werden.</p>
+          <div 
+            className="text-4xl mb-4"
+            style={{ color: 'var(--ok, #22c55e)' }}
+          >
+            ✓
+          </div>
+          <h3 
+            className="text-lg font-semibold mb-2"
+            style={{ color: 'var(--text-primary, #1e293b)' }}
+          >
+            Download abgeschlossen
+          </h3>
+          <p 
+            className="mb-4"
+            style={{ color: 'var(--text-secondary, #374151)' }}
+          >
+            Das Update kann jetzt installiert werden.
+          </p>
           <button
             onClick={installUpdate}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700"
+            className="px-4 py-2 rounded-lg font-medium"
+            style={{
+              background: 'var(--ok, #22c55e)',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.9'}
+            onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
           >
             Update installieren
           </button>
@@ -318,15 +468,23 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
       return (
         <div className="py-8">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Update wird heruntergeladen...</h3>
+            <h3 
+              className="text-lg font-semibold"
+              style={{ color: 'var(--text-primary, #1e293b)' }}
+            >
+              Update wird heruntergeladen...
+            </h3>
           </div>
           <div className="space-y-2">
-            <ProgressBar progress={downloadProgress.percentage} />
-            <div className="flex justify-between text-sm text-gray-600">
+            <ProgressBar 
+              progress={downloadProgress.percentage} 
+              color="var(--accent, var(--sidebar-green))" 
+            />
+            <div className="flex justify-between text-sm" style={{ color: 'var(--text-secondary, #374151)' }}>
               <span>{formatBytes(downloadProgress.downloaded)} / {formatBytes(downloadProgress.total)}</span>
               <span>{downloadProgress.percentage.toFixed(1)}%</span>
             </div>
-            <div className="flex justify-between text-xs text-gray-500">
+            <div className="flex justify-between text-xs" style={{ color: 'var(--text-secondary, #374151)', opacity: 0.8 }}>
               <span>Geschwindigkeit: {formatBytes(downloadProgress.speed)}/s</span>
               <span>Verbleibend: {formatTime(downloadProgress.eta)}</span>
             </div>
@@ -340,25 +498,51 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
       return (
         <div className="py-4">
           <div className="text-center mb-6">
-            <div className="text-green-500 text-4xl mb-2">🎉</div>
-            <h3 className="text-lg font-semibold text-green-600">
+            <div className="text-4xl mb-2">🎉</div>
+            <h3 
+              className="text-lg font-semibold"
+              style={{ color: 'var(--ok, #22c55e)' }}
+            >
               Update verfügbar: Version {updateInfo.version}
             </h3>
-            <p className="text-sm text-gray-600">
+            <p 
+              className="text-sm"
+              style={{ color: 'var(--text-secondary, #374151)' }}
+            >
               Veröffentlicht am {new Date(updateInfo.publishedAt).toLocaleDateString('de-DE')}
             </p>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div 
+            className="border rounded-lg p-4 mb-4"
+            style={{ 
+              background: 'rgba(var(--accent-rgb, 30, 58, 46), 0.1)',
+              borderColor: 'var(--accent, var(--sidebar-green))'
+            }}
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-blue-900">{updateInfo.name}</p>
-                <p className="text-sm text-blue-700">
+                <p 
+                  className="font-medium"
+                  style={{ color: 'var(--text-primary, #1e293b)' }}
+                >
+                  {updateInfo.name}
+                </p>
+                <p 
+                  className="text-sm"
+                  style={{ color: 'var(--text-secondary, #374151)' }}
+                >
                   Größe: {formatBytes(updateInfo.fileSize)}
                 </p>
               </div>
               {updateInfo.isPrerelease && (
-                <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
+                <span 
+                  className="text-xs px-2 py-1 rounded"
+                  style={{
+                    background: 'var(--warn, #f59e0b)',
+                    color: 'white'
+                  }}
+                >
                   Pre-Release
                 </span>
               )}
@@ -367,9 +551,23 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
 
           {updateInfo.releaseNotes && (
             <div className="mb-4">
-              <details className="bg-gray-50 border rounded p-3">
-                <summary className="cursor-pointer font-medium text-gray-700">Release Notes anzeigen</summary>
-                <div className="mt-2 text-sm whitespace-pre-wrap max-h-40 overflow-y-auto">
+              <details 
+                className="border rounded p-3"
+                style={{ 
+                  background: 'rgba(0,0,0,0.02)',
+                  borderColor: 'rgba(0,0,0,.12)'
+                }}
+              >
+                <summary 
+                  className="cursor-pointer font-medium"
+                  style={{ color: 'var(--text-primary, #1e293b)' }}
+                >
+                  Release Notes anzeigen
+                </summary>
+                <div 
+                  className="mt-2 text-sm whitespace-pre-wrap max-h-40 overflow-y-auto"
+                  style={{ color: 'var(--text-secondary, #374151)' }}
+                >
                   {updateInfo.releaseNotes}
                 </div>
               </details>
@@ -379,13 +577,37 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
           <div className="flex space-x-3">
             <button
               onClick={startDownload}
-              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700"
+              className="flex-1 px-4 py-2 rounded-lg font-medium"
+              style={{
+                background: 'var(--accent, var(--sidebar-green))',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.9'}
+              onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
             >
               Update herunterladen
             </button>
             <button
               onClick={() => setHasUpdate(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg"
+              className="px-4 py-2 rounded-lg"
+              style={{
+                color: 'var(--text-secondary, #374151)',
+                border: '1px solid rgba(0,0,0,.2)',
+                background: 'transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.color = 'var(--text-primary, #1e293b)';
+                (e.target as HTMLElement).style.borderColor = 'var(--accent, var(--sidebar-green))';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.color = 'var(--text-secondary, #374151)';
+                (e.target as HTMLElement).style.borderColor = 'rgba(0,0,0,.2)';
+              }}
             >
               Überspringen
             </button>
@@ -398,14 +620,36 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
     if (!hasUpdate && !isChecking) {
       return (
         <div className="text-center py-8">
-          <div className="text-green-500 text-4xl mb-4">✓</div>
-          <h3 className="text-lg font-semibold text-green-600 mb-2">Version ist aktuell</h3>
-          <p className="text-gray-600 mb-4">
+          <div 
+            className="text-4xl mb-4"
+            style={{ color: 'var(--ok, #22c55e)' }}
+          >
+            ✓
+          </div>
+          <h3 
+            className="text-lg font-semibold mb-2"
+            style={{ color: 'var(--ok, #22c55e)' }}
+          >
+            Version ist aktuell
+          </h3>
+          <p 
+            className="mb-4"
+            style={{ color: 'var(--text-secondary, #374151)' }}
+          >
             Sie verwenden bereits die neueste Version ({currentVersion}).
           </p>
           <button
             onClick={checkForUpdates}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700"
+            className="px-4 py-2 rounded-lg font-medium"
+            style={{
+              background: 'var(--accent, var(--sidebar-green))',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.9'}
+            onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
           >
             🔄 Erneut prüfen
           </button>
@@ -416,13 +660,30 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
     // Default: Initial State
     return (
       <div className="text-center py-8">
-        <h3 className="text-lg font-semibold mb-2">Update-Manager</h3>
-        <p className="text-gray-600 mb-4">
+        <h3 
+          className="text-lg font-semibold mb-2"
+          style={{ color: 'var(--text-primary, #1e293b)' }}
+        >
+          Update-Manager
+        </h3>
+        <p 
+          className="mb-4"
+          style={{ color: 'var(--text-secondary, #374151)' }}
+        >
           Aktuelle Version: {currentVersion}
         </p>
         <button
           onClick={checkForUpdates}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700"
+          className="px-4 py-2 rounded-lg font-medium"
+          style={{
+            background: 'var(--accent, var(--sidebar-green))',
+            color: 'white',
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.9'}
+          onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
         >
           🔄 Nach Updates suchen
         </button>
@@ -431,31 +692,83 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div 
+      className="min-h-screen p-6" 
+      style={{ 
+        background: 'var(--main-bg, linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%))',
+        color: 'var(--text-primary, #1e293b)'
+      }}
+    >
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div 
+          className="rounded-lg shadow-sm p-6 mb-6"
+          style={{ 
+            background: 'var(--card-bg, rgba(255,255,255,0.98))',
+            boxShadow: '0 10px 30px rgba(0,0,0,.15), 0 1px 8px rgba(0,0,0,.08)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(0,0,0,.12)'
+          }}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                <span className="text-blue-600 text-xl">⚡</span>
+              <div 
+                className="w-12 h-12 rounded-lg flex items-center justify-center mr-3 overflow-hidden"
+                style={{ 
+                  background: 'var(--accent, var(--sidebar-green))',
+                  color: 'white'
+                }}
+              >
+                <img 
+                  src="/rawalite-logo.png" 
+                  alt="RawaLite Logo" 
+                  className="w-10 h-10 object-contain"
+                  onError={(e) => {
+                    // Fallback zum Lightning-Symbol wenn Logo nicht lädt
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    (e.target as HTMLImageElement).nextElementSibling!.textContent = '⚡';
+                  }}
+                />
+                <span className="text-xl" style={{ display: 'none' }}>⚡</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">RawaLite</h1>
-                <p className="text-sm text-gray-500">Update Manager</p>
+                <h1 
+                  className="text-xl font-bold"
+                  style={{ color: 'var(--text-primary, #1e293b)' }}
+                >
+                  RawaLite
+                </h1>
+                <p 
+                  className="text-sm"
+                  style={{ color: 'var(--text-secondary, #374151)' }}
+                >
+                  Update Manager
+                </p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div 
+          className="rounded-lg shadow-sm p-6"
+          style={{ 
+            background: 'var(--card-bg, rgba(255,255,255,0.98))',
+            boxShadow: '0 10px 30px rgba(0,0,0,.15), 0 1px 8px rgba(0,0,0,.08)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(0,0,0,.12)',
+            color: 'var(--text-primary, #1e293b)'
+          }}
+        >
           {renderContent()}
         </div>
 
         {/* Footer */}
         <div className="text-center mt-6">
-          <p className="text-xs text-gray-500">
+          <p 
+            className="text-xs"
+            style={{ color: 'var(--text-secondary, #374151)', opacity: 0.7 }}
+          >
             Aktuelle Version: {currentVersion}
           </p>
         </div>
