@@ -71,42 +71,24 @@ export const CompactSidebar: React.FC<CompactSidebarProps> = ({ className }) => 
         borderBottom: '1px solid rgba(255,255,255,0.08)'
       }}>
         {/* Logo */}
-        {settings.companyData.logo ? (
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            overflow: 'hidden',
-            border: '2px solid rgba(255,255,255,0.2)',
-            background: 'rgba(255,255,255,0.05)'
-          }}>
-            <img
-              src={settings.companyData.logo}
-              alt="Firmenlogo"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
-              }}
-            />
-          </div>
-        ) : (
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            background: 'radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2))',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '20px',
-            fontWeight: 'bold',
-            color: 'white',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-          }}>
-            {settings.companyData.name ? settings.companyData.name.charAt(0).toUpperCase() : 'R'}
-          </div>
-        )}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '4px'
+        }}>
+          <img
+            src="/rawalite-logo.png"
+            alt="CompactSidebar-App"
+            style={{
+              width: "100%", 
+              maxWidth: "120px",
+              height: "auto", 
+              objectFit: "contain",
+              filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))"
+            }}
+          />
+        </div>
         
         {/* Version */}
         <div style={{

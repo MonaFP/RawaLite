@@ -626,24 +626,37 @@ export class UpdateManagerService {
   }
 
   private async verifyInstaller(filePath: string): Promise<FileVerificationResult> {
+    console.log('🔍 [DEBUG] verifyInstaller - Checking file:', filePath);
+    
     try {
       const stats = await fs.stat(filePath);
+      console.log('🔍 [DEBUG] verifyInstaller - File stats:', {
+        isFile: stats.isFile(),
+        size: stats.size,
+        path: filePath,
+        endsWithExe: filePath.endsWith('.exe')
+      });
       
       if (!stats.isFile()) {
+        console.log('❌ [DEBUG] verifyInstaller - Not a file');
         return { valid: false, error: 'Not a file' };
       }
 
       if (stats.size === 0) {
+        console.log('❌ [DEBUG] verifyInstaller - File is empty');
         return { valid: false, error: 'File is empty' };
       }
 
       // Check if it's an executable
       if (!filePath.endsWith('.exe')) {
+        console.log('❌ [DEBUG] verifyInstaller - Not an .exe file:', filePath);
         return { valid: false, error: 'Not an executable file' };
       }
 
+      console.log('✅ [DEBUG] verifyInstaller - File is valid');
       return { valid: true, actualSize: stats.size };
     } catch (error) {
+      console.log('❌ [DEBUG] verifyInstaller - Error:', error);
       return {
         valid: false,
         error: error instanceof Error ? error.message : 'File verification failed'
@@ -713,6 +726,75 @@ export class UpdateManagerService {
 
   private emit(event: UpdateEvent): void {
     this.eventEmitter.emit(event);
+  }
+
+  /**
+   * Get current progress status for progress window
+   */
+  getCurrentProgress(): {
+    percentage: number;
+    downloaded: number;
+    total: number;
+    speed: number;
+    eta: number;
+    status: 'idle' | 'downloading' | 'completed' | 'error';
+  } | null {
+    if (!this.state.downloadStatus || !this.state.downloadStatus.progress) {
+      return {
+        percentage: 0,
+        downloaded: 0,
+        total: 0,
+        speed: 0,
+        eta: 0,
+        status: this.state.currentPhase === 'downloading' ? 'downloading' : 
+                this.state.currentPhase === 'completed' ? 'completed' :
+                this.state.currentPhase === 'error' ? 'error' : 'idle'
+      };
+    }
+
+    const progress = this.state.downloadStatus.progress;
+    return {
+      percentage: progress.percentage,
+      downloaded: progress.downloaded,
+      total: progress.total,
+      speed: progress.speed,
+      eta: progress.eta,
+      status: this.state.downloadStatus.status === 'completed' ? 'completed' :
+              this.state.downloadStatus.status === 'failed' ? 'error' :
+              this.state.downloading ? 'downloading' : 'idle'
+    };
+  }
+
+  /**
+   * Get current update info for progress window
+   */
+  getCurrentUpdateInfo(): {
+    version: string;
+    name: string;
+    releaseNotes: string;
+    publishedAt: string;
+    downloadUrl: string;
+    assetName: string;
+    fileSize: number;
+    isPrerelease: boolean;
+  } | null {
+    if (!this.state.checkResult || !this.state.checkResult.latestRelease) {
+      return null;
+    }
+
+    const release = this.state.checkResult.latestRelease;
+    const asset = release.assets?.[0];
+
+    return {
+      version: release.tag_name || this.state.checkResult.latestVersion || 'Unknown',
+      name: release.name || `Update to ${release.tag_name}`,
+      releaseNotes: release.body || 'No release notes available',
+      publishedAt: release.published_at || new Date().toISOString(),
+      downloadUrl: asset?.browser_download_url || '',
+      assetName: asset?.name || 'RawaLite Setup.exe',
+      fileSize: asset?.size || 0,
+      isPrerelease: release.prerelease || false
+    };
   }
 }
 

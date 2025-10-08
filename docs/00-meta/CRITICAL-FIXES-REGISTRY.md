@@ -700,6 +700,42 @@ npm rebuild           # ❌ Uses npm instead of pnpm
 
 ---
 
+### **FIX-012: SQLite Parameter Binding Null Conversion**
+- **ID:** `sqlite-undefined-null-binding`
+- **File:** `src/main/services/UpdateHistoryService.ts`
+- **Pattern:** Explicit undefined to null conversion for SQLite compatibility
+- **Location:** ~Line 35 in `addEntry()` method
+- **First Implemented:** v1.0.14
+- **Last Verified:** v1.0.14
+- **Status:** ✅ ACTIVE
+
+**Required Code Pattern:**
+```typescript
+// Convert undefined values to null for SQLite binding compatibility
+const stmt = this.db.prepare(`
+  INSERT INTO update_history (session_id, event_type, event_data, notes, duration_ms, created_at)
+  VALUES (?, ?, ?, ?, ?, ?)
+`);
+
+stmt.run(
+  sessionId,
+  eventType,
+  eventData !== undefined ? JSON.stringify(eventData) : null,
+  notes !== undefined ? notes : null,
+  durationMs !== undefined ? durationMs : null,
+  new Date().toISOString()
+);
+```
+
+**Problem:** SQLite binding TypeError "can only bind numbers, strings, bigints, buffers, and null"
+**Solution:** Explicit !== undefined checks and null conversion
+**FORBIDDEN Pattern:**
+```typescript
+stmt.run(sessionId, eventType, eventData, notes, durationMs, timestamp); // ❌ undefined values cause TypeError
+```
+
+---
+
 ## 🚨 EMERGENCY PROCEDURES
 
 ### **If Critical Fix Lost:**
@@ -725,6 +761,6 @@ npm rebuild           # ❌ Uses npm instead of pnpm
 - Patterns evolve (with backward compatibility)
 - New validation rules are needed
 
-**Last Updated:** 2025-10-06 (Added FIX-011: ABI Management System - prevents Node.js vs Electron better-sqlite3 compilation conflicts)
+**Last Updated:** 2025-10-07 (Added FIX-012: SQLite Parameter Binding - prevents TypeError when binding undefined values to SQLite parameters)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/validate-critical-fixes.mjs`

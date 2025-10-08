@@ -61,14 +61,15 @@ export default function Sidebar(){
           width: "100%", 
           textAlign: "center", 
           padding: "16px 8px",
-          marginBottom: "16px"
+          marginBottom: "16px",
+          position: "relative"
         }}>
           <img 
             src="/rawalite-logo.png" 
-            alt="RawaLite" 
+            alt="Sidebar-App" 
             style={{ 
               width: "100%", 
-              maxWidth: "180px",
+              maxWidth: "120px",
               height: "auto", 
               objectFit: "contain",
               filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" // Schöner Schatten für bessere Sichtbarkeit
@@ -96,15 +97,16 @@ export default function Sidebar(){
         border: "1px solid rgba(255,255,255,0.08)"
       }}>
         {/* Firmenlogo oder Platzhalter */}
-        {!loading && settings.companyData?.logo ? (
-          <div style={{ 
-            width: "100%", 
-            textAlign: "center",
-            marginBottom: "12px"
-          }}>
+        <div style={{ 
+          width: "100%", 
+          textAlign: "center",
+          marginBottom: "12px",
+          position: "relative"
+        }}>
+          {!loading && settings.companyData?.logo ? (
             <img 
               src={settings.companyData.logo} 
-              alt="Firmenlogo" 
+              alt="Sidebar-Company" 
               style={{ 
                 maxWidth: "100%", 
                 maxHeight: "60px", 
@@ -117,33 +119,30 @@ export default function Sidebar(){
                 e.currentTarget.style.display = 'none';
               }}
             />
-          </div>
-        ) : (
-          <div style={{ 
-            width: "100%", 
-            textAlign: "center",
-            marginBottom: "12px",
-            padding: "16px 10px",
-            backgroundColor: "rgba(255,255,255,0.02)",
-            borderRadius: "8px",
-            border: "1px solid rgba(255,255,255,0.1)"
-          }}>
+          ) : (
             <div style={{ 
-              fontSize: "20px", 
-              marginBottom: "4px",
-              opacity: 0.4 
+              padding: "16px 10px",
+              backgroundColor: "rgba(255,255,255,0.02)",
+              borderRadius: "8px",
+              border: "1px solid rgba(255,255,255,0.1)"
             }}>
-              ⚪
+              <div style={{ 
+                fontSize: "20px", 
+                marginBottom: "4px",
+                opacity: 0.4 
+              }}>
+                ⚪
+              </div>
+              <div style={{ 
+                fontSize: "10px", 
+                color: "rgba(255,255,255,0.4)",
+                fontWeight: "normal"
+              }}>
+                J
+              </div>
             </div>
-            <div style={{ 
-              fontSize: "10px", 
-              color: "rgba(255,255,255,0.4)",
-              fontWeight: "normal"
-            }}>
-              Kein Logo
-            </div>
-          </div>
-        )}
+          )}
+        </div>
         
         {/* Firmenname oder Platzhalter */}
         <div style={{ 

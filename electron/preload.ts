@@ -149,11 +149,40 @@ contextBridge.exposeInMainWorld('rawalite', {
     getCurrentVersion: () => 
       ipcRenderer.invoke('updates:getCurrentVersion') as Promise<string>,
     
+    // Update Manager Window
+    openManager: () =>
+      ipcRenderer.invoke('updates:openManager') as Promise<{
+        success: boolean;
+        windowId?: number;
+      }>,
+    
     // Download operations
     startDownload: (updateInfo: any) => 
-      ipcRenderer.invoke('updates:startDownload', updateInfo) as Promise<void>,
+      ipcRenderer.invoke('updates:startDownload', updateInfo) as Promise<string>,
     cancelDownload: () => 
       ipcRenderer.invoke('updates:cancelDownload') as Promise<void>,
+    
+    // Progress tracking for dedicated progress window
+    getProgressStatus: () =>
+      ipcRenderer.invoke('updates:getProgressStatus') as Promise<{
+        percentage: number;
+        downloaded: number;
+        total: number;
+        speed: number;
+        eta: number;
+        status: 'idle' | 'downloading' | 'completed' | 'error';
+      } | null>,
+    getUpdateInfo: () =>
+      ipcRenderer.invoke('updates:getUpdateInfo') as Promise<{
+        version: string;
+        name: string;
+        releaseNotes: string;
+        publishedAt: string;
+        downloadUrl: string;
+        assetName: string;
+        fileSize: number;
+        isPrerelease: boolean;
+      } | null>,
     
     // Installation operations
     installUpdate: (filePath: string) => 

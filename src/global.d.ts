@@ -112,6 +112,12 @@ declare interface Window {
       }>;
       getCurrentVersion(): Promise<string>;
       
+      // Update Manager Window
+      openManager(): Promise<{
+        success: boolean;
+        windowId?: number;
+      }>;
+      
       // Download operations
       startDownload(updateInfo: any): Promise<string>; // Returns file path
       cancelDownload(): Promise<void>;

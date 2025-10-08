@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 
 interface HeaderNavigationProps {
   title?: string;
@@ -7,6 +8,7 @@ interface HeaderNavigationProps {
 
 export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title }) => {
   const location = useLocation();
+  const { settings } = useUnifiedSettings();
   
   // Dynamic title based on current route
   const getPageTitle = () => {
@@ -44,28 +46,57 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title }) => 
       width: '100%',
       padding: '0 16px'
     }}>
-      {/* App Logo + Page Title */}
+      {/* Firmenname + Logo + Page Title */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         gap: '16px'
       }}>
-        {/* App Logo */}
+        {/* Firmenname */}
+        <div style={{
+          fontSize: '1rem',
+          fontWeight: '600',
+          color: 'white',
+          textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+        }}>
+          {settings.companyData?.name || 'Firma'}
+        </div>
+        
+        {/* Company Logo */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          flexDirection: 'column',
+          gap: '4px',
+          padding: '8px 0'
         }}>
-          <img 
-            src="/rawalite-logo.png" 
-            alt="RawaLite" 
-            style={{ 
-              height: '32px',
-              width: 'auto',
-              objectFit: 'contain',
-              filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
-            }} 
-          />
+          {settings.companyData?.logo ? (
+            <img 
+              src={settings.companyData.logo} 
+              alt="HeaderNavigation-Company" 
+              style={{ 
+                height: '40px',
+                width: 'auto',
+                objectFit: 'contain',
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+              }} 
+            />
+          ) : (
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '8px',
+              background: 'rgba(255,255,255,0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              color: 'white'
+            }}>
+              G
+            </div>
+          )}
         </div>
         
         {/* Page Title */}

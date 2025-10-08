@@ -10,7 +10,7 @@ extraResources:
   - from: dist-web
     to: .
   - from: public/rawalite-logo.png
-    to: rawalite-logo.png
+    to: assets/rawalite-logo.png
 buildDependenciesFromSource: false
 nodeGypRebuild: false
 asarUnpack:
@@ -18,18 +18,18 @@ asarUnpack:
   - "node_modules/bindings/**/*"
   - "**/*.node"
 electronVersion: "31.7.7"
-icon: assets/icon.png
+icon: public/rawalite-logo.png
 win:
   target:
     - target: nsis
       arch:
         - x64
   requestedExecutionLevel: asInvoker
-  icon: assets/icon.ico
+  icon: public/rawalite-logo.png
   verifyUpdateCodeSignature: false
-  signtoolOptions:
-    certificateFile: rawalite-codesign.pfx
-    certificatePassword: rawalite2025
+  # Code signing: Enable via RAWALITE_SIGN=true environment variable
+  # For development builds: Just run "pnpm dist" (no signing)
+  # For update-enabled releases: Run "RAWALITE_SIGN=true pnpm dist"
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
@@ -40,10 +40,10 @@ mac:
       arch:
         - x64
         - arm64
-  icon: assets/icon.png
+  icon: public/rawalite-logo.png
 linux:
   target:
     - target: AppImage
       arch:
         - x64
-  icon: assets/icon.png
+  icon: public/rawalite-logo.png

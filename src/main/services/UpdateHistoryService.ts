@@ -87,22 +87,28 @@ export class UpdateHistoryService {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const result = stmt.run(
+    // CRITICAL FIX: Ensure all undefined values are converted to null for SQLite compatibility
+    // SQLite3 can only bind numbers, strings, bigints, buffers, and null - NOT undefined
+    
+    // DEBUG: Log all values before binding to identify undefined issue
+    const bindValues = [
       this.currentSessionId,
-      entry.event_type,
-      entry.current_version,
-      entry.target_version,
-      entry.success,
-      entry.error_message,
-      entry.error_code,
-      entry.progress_percent,
-      entry.duration_ms,
-      entry.user_action,
-      entry.download_url,
-      entry.file_size_bytes,
-      entry.file_hash,
-      entry.platform || process.platform
-    );
+      entry.event_type !== undefined ? entry.event_type : null,
+      entry.current_version !== undefined ? entry.current_version : null,
+      entry.target_version !== undefined ? entry.target_version : null,
+      entry.success !== undefined ? (entry.success ? 1 : 0) : null,
+      entry.error_message !== undefined ? entry.error_message : null,
+      entry.error_code !== undefined ? entry.error_code : null,
+      entry.progress_percent !== undefined ? entry.progress_percent : null,
+      entry.duration_ms !== undefined ? entry.duration_ms : null,
+      entry.user_action !== undefined ? entry.user_action : null,
+      entry.download_url !== undefined ? entry.download_url : null,
+      entry.file_size_bytes !== undefined ? entry.file_size_bytes : null,
+      entry.file_hash !== undefined ? entry.file_hash : null,
+      entry.platform !== undefined ? entry.platform : process.platform
+    ];
+    
+    const result = stmt.run(...bindValues);
 
     return result.lastInsertRowid as number;
   }
