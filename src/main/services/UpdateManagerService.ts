@@ -647,7 +647,12 @@ export class UpdateManagerService {
 
     // ✅ CRITICAL FIX: Validate asset exists before creating UpdateInfo
     if (!asset || !asset.browser_download_url) {
-      throw new Error(`No valid setup asset found in release ${release.tag_name}. Assets: ${release.assets.map((a: any) => a.name).join(', ')}`);
+      throw new Error(`No valid setup asset found in release ${release.tag_name}. Assets: ${release.assets.map((a: any) => a.name).join(', ')}
+      
+🔧 SOLUTION FOR USERS:
+1. Download manually from: https://github.com/MonaFP/RawaLite/releases/tag/${release.tag_name}
+2. Wait for automatic build pipeline to complete (usually 5-10 minutes after release)
+3. Try update check again later`);
     }
 
     return {
