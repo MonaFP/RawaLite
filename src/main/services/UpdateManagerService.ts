@@ -641,8 +641,11 @@ export class UpdateManagerService {
   }
 
   private createUpdateInfo(release: any): UpdateInfo {
+    // Enhanced asset matching for multiple naming patterns
     const asset = release.assets.find((a: any) => 
-      a.name.includes('.exe') && a.name.includes('Setup')
+      (a.name.includes('.exe') && a.name.includes('Setup')) ||
+      a.name.match(/RawaLite.*Setup.*\.exe$/i) ||
+      a.name.match(/RawaLite-Setup-.*\.exe$/i)
     );
 
     // 🔄 BACKWARD COMPATIBILITY FIX: Graceful degradation instead of throwing
@@ -656,17 +659,18 @@ export class UpdateManagerService {
       });
       
       // Return fallback UpdateInfo instead of throwing
+      const version = release.tag_name.replace(/^v/, '');
       return {
-        version: release.tag_name.replace(/^v/, ''),
+        version: version,
         name: release.name || `Update ${release.tag_name}`,
         releaseNotes: release.body || `Update to version ${release.tag_name}
 
 ⚠️ Asset not yet available - build in progress.
 Manual download: https://github.com/MonaFP/RawaLite/releases/tag/${release.tag_name}`,
         publishedAt: release.published_at || new Date().toISOString(),
-        downloadUrl: '', // Empty string for v1.0.32 compatibility
-        assetName: 'RawaLite Setup.exe', // Default fallback name
-        fileSize: 0, // Zero fallback
+        downloadUrl: `https://github.com/MonaFP/RawaLite/releases/download/v${version}/RawaLite-Setup-${version}.exe`, // v1.0.32 compatibility
+        assetName: `RawaLite-Setup-${version}.exe`, // Corrected fallback name
+        fileSize: 106080500, // Expected size fallback for v1.0.34
         isPrerelease: release.prerelease || false
       };
     }
@@ -968,14 +972,15 @@ Manual download: https://github.com/MonaFP/RawaLite/releases/tag/${release.tag_n
       });
       
       // Provide fallback data that older versions can handle
+      const version = release.tag_name?.replace(/^v/, '') || this.state.checkResult.latestVersion || 'Unknown';
       return {
-        version: release.tag_name || this.state.checkResult.latestVersion || 'Unknown',
+        version: version,
         name: release.name || `Update to ${release.tag_name}`,
         releaseNotes: release.body || 'No release notes available',
         publishedAt: release.published_at || new Date().toISOString(),
-        downloadUrl: '', // Empty string fallback (v1.0.32 compatible)
-        assetName: 'RawaLite Setup.exe', // Default name fallback
-        fileSize: 0, // Zero size fallback
+        downloadUrl: `https://github.com/MonaFP/RawaLite/releases/download/v${version}/RawaLite-Setup-${version}.exe`, // v1.0.32 compatibility
+        assetName: `RawaLite-Setup-${version}.exe`, // Corrected fallback name
+        fileSize: 106080500, // Expected size fallback for v1.0.34
         isPrerelease: release.prerelease || false
       };
     }
