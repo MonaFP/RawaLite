@@ -2,11 +2,19 @@ import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import logoUrl from '../assets/rawalite-logo.png';
 import SidebarUpdateWidget from './SidebarUpdateWidget';
-import { UpdateDialog } from './UpdateDialog';
 
 export const NavigationOnlySidebar: React.FC = () => {
   const location = useLocation();
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+
+  // 🎯 NEW: Open UpdateManager via IPC instead of old UpdateDialog
+  const handleUpdateClick = async () => {
+    try {
+      await (window as any).rawalite?.updates?.openManager();
+      console.log('✅ UpdateManager opened via IPC');
+    } catch (error) {
+      console.error('❌ Failed to open UpdateManager:', error);
+    }
+  };
 
   const navigationItems = [
     {
@@ -165,15 +173,8 @@ export const NavigationOnlySidebar: React.FC = () => {
       {/* Smart Update Widget */}
       <SidebarUpdateWidget 
         checkOnMount={true}
-        onUpdateClick={() => setUpdateDialogOpen(true)}
+        onUpdateClick={handleUpdateClick}
         position="sidebar"
-      />
-
-      {/* Update Dialog */}
-      <UpdateDialog 
-        isOpen={updateDialogOpen}
-        onClose={() => setUpdateDialogOpen(false)}
-        autoCheckOnOpen={false}
       />
 
       <style>{`
