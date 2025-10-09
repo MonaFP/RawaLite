@@ -982,6 +982,58 @@ nsis:
 
 ---
 
-**Last Updated:** 2025-10-09 (Added FIX-015: Universal UpdateManager Asset Compatibility - solves v1.0.32 → v1.0.36 update path by supporting both legacy dot-separated and current dash-separated asset naming patterns)
+### **FIX-014: GitHub Release Asset Validation**
+- **ID:** `github-release-asset-validation`
+- **Files:** Release workflows, GitHub Actions, all release procedures
+- **Pattern:** Mandatory asset validation before release completion
+- **Location:** All release procedures and workflows
+- **First Implemented:** v1.0.37
+- **Last Verified:** v1.0.37
+- **Status:** ✅ ACTIVE
+
+**Required Validation Pattern:**
+```bash
+# MANDATORY after every release creation:
+gh release view vX.X.X --json assets
+
+# REQUIRED response (assets MUST exist):
+{
+  "assets": [
+    {
+      "name": "RawaLite-Setup-X.X.X.exe",
+      "size": 106000000  // Must be >100MB
+    }
+  ]
+}
+
+# FORBIDDEN response (triggers "Failed to parse URL from" error):
+{
+  "assets": []
+}
+```
+
+**Required Emergency Response:**
+```bash
+# If assets: [] detected - IMMEDIATE action required:
+gh release delete vX.X.X --yes
+pnpm clean && pnpm build && pnpm dist
+gh release create vX.X.X --generate-notes dist-release/RawaLite-Setup-X.X.X.exe
+```
+
+**FORBIDDEN Patterns:**
+```bash
+# ❌ Ignoring empty assets
+gh release create vX.X.X --generate-notes  # Without asset verification
+
+# ❌ Assuming GitHub Actions worked
+# Always verify: gh release view vX.X.X --json assets
+
+# ❌ Releasing without assets causes UpdateManager failure
+# "Failed to parse URL from" error in production
+```
+
+---
+
+**Last Updated:** 2025-10-09 (Added FIX-014: GitHub Release Asset Validation - prevents "Failed to parse URL from" errors by mandating asset verification)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/validate-critical-fixes.mjs`
