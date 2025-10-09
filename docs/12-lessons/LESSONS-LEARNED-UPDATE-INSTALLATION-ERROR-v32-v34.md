@@ -197,20 +197,183 @@ Prüfe **was tatsächlich heruntergeladen** wird:
 #### **STEP 4: v1.0.32 vs v1.0.34 Code-Diff**
 Vergleiche Download-Logic zwischen den Versionen.
 
-### **IMMEDIATE NEXT ACTION:**
-**Debug-Logging aktivieren** um exakten FilePath und Download-URL von v1.0.32 zu sehen.
+## ✅ **VERSUCH 8: FINAL SOLUTION - ROOT CAUSE GEFIXED**
 
-### **NO-ACTION-REQUIRED ANALYSIS:**
-Das Problem ist **NICHT**:
-- ❌ WriteStream Race Condition (Critical Fix aktiv)
-- ❌ File System Flush Delay (Critical Fix aktiv)
-- ❌ Asset nicht verfügbar (101MB Asset existiert)
-- ❌ GitHub API Problem (API returns correct data)
+**Datum:** 2025-10-09 18:05  
+**Status:** ✅ **GELÖST** - Root Cause identifiziert und behoben  
+**Durchgeführt von:** GitHub Copilot AI  
+**Release:** v1.0.35 mit korrigierten Backward Compatibility Fixes
 
-Das Problem **IST wahrscheinlich**:
-- ✅ **URL-Building Diskrepanz** zwischen v1.0.32 und v1.0.34 Asset-Namen
-- ✅ **Path-Construction Problem** in v1.0.32 Download-Logic
-- ✅ **Content-Type Problem** - Download lädt HTML statt EXE
+### **ROOT CAUSE IDENTIFIZIERT:**
+**Problem war NICHT Asset-Name, sondern leere downloadUrl Fallbacks!**
+
+#### **Was falsch war:**
+```typescript
+// ❌ IM CODE (v1.0.34):
+downloadUrl: '', // Empty string fallback (v1.0.32 compatible)
+assetName: 'RawaLite Setup.exe', // Default name fallback
+fileSize: 0, // Zero size fallback
+
+// ✅ IN DOCUMENTATION:
+downloadUrl: `https://github.com/${meta.repository}/releases/download/v${meta.version}/RawaLite Setup ${meta.version}.exe`
+```
+
+#### **Was passiert ist:**
+1. **Asset-Matching funktionierte** - v1.0.34 Asset wurde gefunden
+2. **Aber Fallback-Logic wurde trotzdem ausgelöst** (warum?)
+3. **Leere downloadUrl** → Download schlägt fehl
+4. **Falscher assetName** (`RawaLite Setup.exe` ohne Version)
+5. **verifyInstaller()** prüft Pfad ohne `.exe` → Error "Not an executable file"
+
+### **FIXES IMPLEMENTIERT in v1.0.35:**
+
+#### **1. Korrekte Fallback-URLs:**
+```typescript
+// ✅ FIXED:
+downloadUrl: `https://github.com/MonaFP/RawaLite/releases/download/v${version}/RawaLite-Setup-${version}.exe`
+assetName: `RawaLite-Setup-${version}.exe`
+fileSize: 106080500, // Correct expected size
+```
+
+#### **2. Enhanced Asset-Matching:**
+```typescript
+// ✅ IMPROVED:
+const asset = release.assets.find((a: any) => 
+  (a.name.includes('.exe') && a.name.includes('Setup')) ||
+  a.name.match(/RawaLite.*Setup.*\.exe$/i) ||
+  a.name.match(/RawaLite-Setup-.*\.exe$/i)
+);
+```
+
+#### **3. Proper Version Handling:**
+```typescript
+// ✅ FIXED:
+const version = release.tag_name.replace(/^v/, '');
+// Ensures 'v1.0.35' → '1.0.35' for URL building
+```
+
+### **VALIDATION:**
+- ✅ **Critical Fixes:** 12/12 bestanden + tests passed
+- ✅ **Build System:** v1.0.35 erfolgreich gebaut
+- ✅ **GitHub Release:** Verfügbar mit korrekten Assets
+- ✅ **Asset-Namen:** `RawaLite-Setup-1.0.35.exe` (konsistent)
+
+### **TECHNICAL DETAILS:**
+- **File:** `src/main/services/UpdateManagerService.ts`
+- **Methods:** `createUpdateInfo()` + `getCurrentUpdateInfo()` Fallbacks
+- **Commit:** `c5f62af0` - "🔧 CRITICAL FIX: v1.0.32 Backward Compatibility"
+- **Release:** v1.0.35 with working fallback URLs
+
+### **READY FOR TESTING:**
+**UpdateManager v1.0.32 → v1.0.35 sollte jetzt funktionieren!**
+
+## ❌ **VERSUCH 9: v1.0.35 FEHLSCHLAG - PROBLEM PERSISTIERT**
+
+**Datum:** 2025-10-09 18:30  
+**Status:** ❌ **NOCH NICHT GELÖST** - Problem ist unverändert  
+**Durchgeführt von:** GitHub Copilot AI  
+**User Feedback:** "unverändert"
+
+### **Situation:**
+Trotz aller Fixes in v1.0.35 tritt **derselbe Fehler** auf:
+```
+Error invoking remote method 'updates:installUpdate': 
+Error: Installer verification failed: Not an executable file
+```
+
+### **Was bereits implementiert wurde (aber nicht half):**
+- ✅ **Asset-Namen korrigiert:** `RawaLite-Setup-1.0.35.exe`
+- ✅ **Fallback-URLs implementiert:** Korrekte GitHub Download-URLs
+- ✅ **Enhanced Asset-Matching:** Mehrere Naming-Patterns
+- ✅ **File-Size Fallbacks:** 106MB statt 0
+- ✅ **Version-Handling:** Proper `v1.0.35` → `1.0.35` conversion
+
+### **CRITICAL INSIGHT:**
+**Das Problem liegt NICHT in den Fallback-URLs!** 
+
+#### **Warum die Fallbacks irrelevant sind:**
+Wenn v1.0.32 bereits den **korrekten Asset** von v1.0.35 findet (mit Enhanced Asset-Matching), dann werden die **Fallback-URLs gar nicht verwendet**.
+
+Das bedeutet:
+1. **Asset-Matching funktioniert** → `RawaLite-Setup-1.0.35.exe` wird gefunden
+2. **Download-URL ist korrekt** → GitHub Asset-URL wird verwendet
+3. **Download läuft** → Datei wird heruntergeladen
+4. **ABER:** `verifyInstaller()` schlägt trotzdem fehl → "Not an executable file"
+
+### **NEUE ROOT CAUSE HYPOTHESEN:**
+
+#### **🔴 HYPOTHESIS A: File-Extension Problem in v1.0.32**
+```typescript
+// v1.0.32 verifyInstaller() möglicherweise:
+if (!filePath.endsWith('.exe')) {
+    return { valid: false, error: 'Not an executable file' };
+}
+```
+
+**Problem:** v1.0.32 Download-Logic erstellt temp-path OHNE `.exe` Extension!
+
+#### **🔴 HYPOTHESIS B: GitHub Redirect Problem**
+```
+URL: https://github.com/MonaFP/RawaLite/releases/download/v1.0.35/RawaLite-Setup-1.0.35.exe
+REDIRECT: → https://objects.githubusercontent.com/github-production-release-asset-2e65be/...
+```
+
+**Problem:** v1.0.32 folgt GitHub-Redirect, aber speichert temp-file ohne `.exe`!
+
+#### **🔴 HYPOTHESIS C: Content-Type Detection Problem**
+```
+HTTP Header: Content-Type: application/octet-stream
+v1.0.32: Erwartet Content-Type: application/x-msdownload
+```
+
+**Problem:** v1.0.32 speichert basierend auf Content-Type, nicht filename!
+
+### **ACTIONABLE DEBUGGING STRATEGY:**
+
+#### **STEP 1: Temp-File Path Investigation**
+**Needed:** Der **exakte temp-file path** den v1.0.32 an `verifyInstaller()` weitergibt:
+```
+🔍 [DEBUG] verifyInstaller - Checking file: C:\Users\...\Temp\???
+```
+**Frage:** Endet der Pfad mit `.exe` oder nicht?
+
+#### **STEP 2: Download-Content Verification**
+**Needed:** Was wird tatsächlich heruntergeladen?
+```powershell
+# Manual test:
+curl -L -o "test-download.exe" "https://github.com/MonaFP/RawaLite/releases/download/v1.0.35/RawaLite-Setup-1.0.35.exe"
+file test-download.exe
+```
+**Frage:** Ist es wirklich eine .exe oder HTML-Content?
+
+#### **STEP 3: v1.0.32 Download-Logic Review**
+**Needed:** Vergleich der temp-file creation zwischen v1.0.32 und v1.0.35:
+- Wie baut v1.0.32 den temp-file path?
+- Verwendet es asset.name oder eine eigene Logic?
+- Fügt es `.exe` extension hinzu oder nicht?
+
+### **CRITICAL QUESTIONS:**
+1. **Wo wird temp-file erstellt?** GitHubApiService oder UpdateManagerService?
+2. **Basiert filename auf asset.name?** Oder auf URL?
+3. **Gibt es HTTP Content-Disposition header handling?**
+4. **Hat v1.0.32 andere temp-path logic als v1.0.35?**
+
+### **IMMEDIATE DEBUGGING NEEDED:**
+```typescript
+// In v1.0.32 verifyInstaller(), add debug:
+console.log('🔍 [DEBUG] verifyInstaller - Checking file:', filePath);
+console.log('🔍 [DEBUG] File exists:', fs.existsSync(filePath));
+console.log('🔍 [DEBUG] Ends with .exe:', filePath.endsWith('.exe'));
+```
+
+### **ROOT CAUSE VERMUTUNG:**
+**v1.0.32 Download-Logic erstellt temp-files OHNE `.exe` extension, aber verifyInstaller() erwartet `.exe`!**
+
+Das würde erklären:
+- ✅ Asset wird gefunden
+- ✅ Download startet
+- ✅ Datei wird heruntergeladen  
+- ❌ verifyInstaller() schlägt fehl → temp-file heißt nicht `*.exe`
 
 ---
 
