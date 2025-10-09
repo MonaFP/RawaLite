@@ -82,6 +82,12 @@ const CRITICAL_FIXES = {
     file: 'src/components/NavigationOnlySidebar.tsx',
     pattern: /import logoUrl from ['"][.\/]*assets\/rawalite-logo\.png['"];[\s\S]*?src={logoUrl}/,
     description: 'Vite asset import pattern for production logo loading'
+  },
+  
+  'universal-asset-compatibility': {
+    file: 'src/main/services/UpdateManagerService.ts',
+    pattern: /RawaLite\\\.Setup\\\.\\d\+\\\.\\d\+\\\.\\d\+\\\.exe/,
+    description: 'Universal asset compatibility for v1.0.32 backward compatibility'
   }
 };
 

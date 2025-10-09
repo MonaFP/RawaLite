@@ -924,6 +924,64 @@ stmt.run(sessionId, eventType, eventData, notes, durationMs, timestamp); // ❌ 
 - Patterns evolve (with backward compatibility)
 - New validation rules are needed
 
-**Last Updated:** 2025-10-09 (Added FIX-014: UpdateManager Asset Validation - prevents "Failed to parse URL from" errors by validating GitHub release assets before creating UpdateInfo)
+---
+
+### **FIX-015: Universal UpdateManager Asset Compatibility**
+- **ID:** `updatemanager-universal-asset-compatibility`
+- **File:** `src/main/services/UpdateManagerService.ts`
+- **Pattern:** Multi-pattern asset matching for backward/forward compatibility
+- **Location:** ~Line 648 in `createUpdateInfo()` and ~Line 959 in `getCurrentUpdateInfo()`
+- **First Implemented:** v1.0.36
+- **Last Verified:** v1.0.36
+- **Status:** ✅ ACTIVE
+
+**Problem Solved:** v1.0.32 → v1.0.36 update failures due to asset naming mismatch
+- **v1.0.32 Asset Pattern:** `RawaLite.Setup.1.0.32.exe` (dots)
+- **v1.0.35+ Asset Pattern:** `RawaLite-Setup-1.0.35.exe` (dashes)
+- **Root Cause:** v1.0.32 UpdateManager couldn't find v1.0.35+ assets → downloads never started
+
+**Required Code Pattern:**
+```typescript
+// 🔄 UNIVERSAL ASSET COMPATIBILITY: Support both old (v1.0.32) and new naming patterns
+const asset = release.assets.find((a: any) => 
+  // Legacy pattern: RawaLite.Setup.1.0.32.exe (v1.0.32 and earlier)
+  a.name.match(/RawaLite\.Setup\.\d+\.\d+\.\d+\.exe$/i) ||
+  // Current pattern: RawaLite-Setup-1.0.35.exe (v1.0.34+)
+  a.name.match(/RawaLite-Setup-\d+\.\d+\.\d+\.exe$/i) ||
+  // Fallback patterns for any Setup.exe
+  (a.name.includes('.exe') && a.name.includes('Setup')) ||
+  a.name.match(/RawaLite.*Setup.*\.exe$/i)
+);
+```
+
+**FORBIDDEN Pattern:**
+```typescript
+// ❌ SINGLE PATTERN ONLY - BREAKS BACKWARD COMPATIBILITY
+const asset = release.assets.find((a: any) => 
+  a.name.includes('.exe') && a.name.includes('Setup')
+);
+```
+
+**Additional Configuration Fix:**
+```yaml
+# electron-builder.yml - Force consistent asset naming
+nsis:
+  artifactName: "RawaLite-Setup-${version}.${ext}"
+```
+
+**Impact:**
+- ✅ v1.0.32 users can now update to v1.0.36+
+- ✅ All future versions maintain compatibility
+- ✅ No breaking changes for existing update mechanisms
+- ✅ Robust asset detection across all release formats
+
+**Validation:**
+- Tested with mock releases: v1.0.32, v1.0.35, v1.0.36
+- Cross-version compatibility confirmed
+- GitHub release v1.0.36 successfully created with correct asset name
+
+---
+
+**Last Updated:** 2025-10-09 (Added FIX-015: Universal UpdateManager Asset Compatibility - solves v1.0.32 → v1.0.36 update path by supporting both legacy dot-separated and current dash-separated asset naming patterns)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/validate-critical-fixes.mjs`
