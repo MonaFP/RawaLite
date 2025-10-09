@@ -947,6 +947,11 @@ function generateTemplateHTML(options: any): string {
       <strong>Datum:</strong> ${currentDate}<br>
       <strong>Betreff:</strong> ${entity.title || 'Leistungsnachweis'}
     `;
+    console.log('📊 PDF Timesheet Activities Debug:', {
+      hasActivities: !!entity.activities,
+      activitiesCount: entity.activities?.length || 0,
+      activities: entity.activities
+    });
   }
 
   // Extract theme colors with fallback to default
@@ -1288,14 +1293,66 @@ function generateTemplateHTML(options: any): string {
       <table>
         <thead>
           <tr>
-            <th>Position</th>
-            <th>Menge</th>
-            <th>Einzelpreis</th>
-            <th>Gesamt</th>
+            ${templateType === 'timesheet' ? `
+              <th>Datum</th>
+              <th>Tätigkeiten</th>
+              <th>Stunden</th>
+              <th>Stundensatz</th>
+              <th>Gesamt</th>
+            ` : `
+              <th>Position</th>
+              <th>Menge</th>
+              <th>Einzelpreis</th>
+              <th>Gesamt</th>
+            `}
           </tr>
         </thead>
         <tbody>
-          ${entity.lineItems?.length > 0 ? (() => {
+          ${templateType === 'timesheet' && entity.activities?.length > 0 ? (() => {
+            // Import timesheet grouping logic inline (simplified version)
+            const groupActivitiesByDate = (activities: any[]) => {
+              const groups = new Map();
+              activities.forEach(activity => {
+                const date = activity.date;
+                if (!groups.has(date)) {
+                  groups.set(date, { date, activities: [], totalHours: 0, totalAmount: 0 });
+                }
+                const group = groups.get(date);
+                group.activities.push(activity);
+                group.totalHours += activity.hours || 0;
+                group.totalAmount += activity.total || 0;
+              });
+              return Array.from(groups.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            };
+
+            const dayGroups = groupActivitiesByDate(entity.activities);
+            
+            return dayGroups.map((group: any) => {
+              const formattedDate = new Date(group.date).toLocaleDateString('de-DE');
+              const activitiesList = group.activities.map((a: any) => a.title).join(', ');
+              const avgHourlyRate = group.activities.length > 0 ? group.activities[0].hourlyRate : 0;
+              
+              return `
+                <tr style="background-color: #f8f9fa; border-top: 2px solid ${primaryColor};">
+                  <td style="font-weight: bold; color: ${primaryColor};">
+                    📅 ${formattedDate}
+                  </td>
+                  <td style="font-weight: bold;">
+                    ${activitiesList}
+                  </td>
+                  <td style="font-weight: bold; color: ${primaryColor};">
+                    ${group.totalHours.toFixed(1)}h
+                  </td>
+                  <td style="font-weight: bold;">
+                    €${avgHourlyRate.toFixed(2)}
+                  </td>
+                  <td style="font-weight: bold; color: ${primaryColor};">
+                    €${group.totalAmount.toFixed(2)}
+                  </td>
+                </tr>
+              `;
+            }).join('');
+          })() : entity.lineItems?.length > 0 ? (() => {
             const lineItems = entity.lineItems;
             // Parent-First + Grouped Sub-Items Logic (same as frontend)
             const parentItems = lineItems.filter((item: any) => !item.parentItemId);
@@ -1451,7 +1508,7 @@ function generateTemplateHTML(options: any): string {
               
               return html;
             }).join('');
-          })() : '<tr><td colspan="4">Keine Positionen</td></tr>'}
+          })() : templateType === 'timesheet' ? '<tr><td colspan="5">Keine Aktivitäten</td></tr>' : '<tr><td colspan="4">Keine Positionen</td></tr>'}
         </tbody>
       </table>
 
