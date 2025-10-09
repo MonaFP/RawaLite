@@ -26,27 +26,34 @@ Arbeite diese Phasen systematisch ab und validiere jeden Schritt:
 
 ### PHASE 4: Post-Release Verification  
 - [ ] 🧪 **UpdateManager Test:** Simuliere Update-Check und Download-Fähigkeit
-- [ ] 📱 **User Communication:** GitHub Release-Link für Testuser bereitstellen
+- [ ] � **Backward Compatibility:** Teste ältere Version → neue Version Updates ⚠️ NEW REQUIREMENT
+- [ ] �📱 **User Communication:** GitHub Release-Link für Testuser bereitstellen
 - [ ] 📚 **Documentation:** Updates in CRITICAL-FIXES-REGISTRY.md falls nötig
 - [ ] 🎉 **Success Confirmation:** Bestätige funktionalen Release für End-User
+
+### ⚠️ CRITICAL COMPATIBILITY CHECKS (NEW)
+- [ ] **Asset Naming:** Verwende IMMER `RawaLite-Setup-X.X.X.exe` Format (nicht Punkte!)
+- [ ] **Version Compatibility:** Teste mindestens N-2 Versionen → neue Version  
+- [ ] **Error Messages:** Prüfe ob ältere Versionen hilfreiche Fehlermeldungen bekommen
+- [ ] **API Changes:** Keine Breaking Changes in GitHub Release API Structure
 
 ## CURRENT PROJECT STATE
 - **Repository:** MonaFP/RawaLite
 - **Branch:** main  
 - **Package Manager:** pnpm (⚠️ NIEMALS npm verwenden!)
-- **Critical Fixes:** 14 active fixes (siehe CRITICAL-FIXES-REGISTRY.md)
+- **Critical Fixes:** 12 active fixes (siehe CRITICAL-FIXES-REGISTRY.md) ⚠️ OUTDATED COUNT
 - **GitHub Actions:** .github/workflows/release.yml vorhanden
-- **Current Version:** 1.0.33 (aus package.json)
+- **Current Version:** 1.0.34 (aus package.json) ⚠️ OUTDATED
 
 ## RELEASE TYPES
-- **patch** (1.0.33 → 1.0.34): Bugfixes, Critical Fixes, kleine Verbesserungen
-- **minor** (1.0.33 → 1.1.0): Neue Features, größere Verbesserungen  
-- **major** (1.0.33 → 2.0.0): Breaking Changes, Architektur-Änderungen
+- **patch** (1.0.34 → 1.0.35): Bugfixes, Critical Fixes, kleine Verbesserungen
+- **minor** (1.0.34 → 1.1.0): Neue Features, größere Verbesserungen  
+- **major** (1.0.34 → 2.0.0): Breaking Changes, Architektur-Änderungen
 
 ## CRITICAL VALIDATION COMMANDS
 ```bash
 # Diese Befehle MÜSSEN vor Release erfolgreich sein:
-pnpm validate:critical-fixes  # Muss "14/14 fixes validated successfully" zeigen
+pnpm validate:critical-fixes  # Muss "12/12 fixes validated successfully" zeigen ⚠️ UPDATED COUNT
 pnpm test                     # Muss "All tests passing" zeigen  
 git status                    # Muss "working tree clean" zeigen
 ```
@@ -54,9 +61,9 @@ git status                    # Muss "working tree clean" zeigen
 ## EXPECTED OUTPUTS
 - ✅ **Neuer Git Tag:** vX.X.X im Repository
 - ✅ **GitHub Release:** Mit automatisch generierten Release Notes
-- ✅ **Build Assets:** RawaLite.Setup.X.X.X.exe + latest.yml verfügbar
+- ✅ **Build Assets:** RawaLite-Setup-X.X.X.exe + latest.yml verfügbar ⚠️ FIXED NAMING
 - ✅ **UpdateManager:** Funktional für Testuser (Download + Installation)
-- ✅ **Critical Fixes:** Alle 14 Fixes validiert und dokumentiert
+- ✅ **Critical Fixes:** Alle 12 Fixes validiert und dokumentiert ⚠️ UPDATED COUNT
 
 ## ERROR HANDLING STRATEGIES
 - **Critical Fixes Failed:** STOP sofort → Identifiziere fehlenden Fix in CRITICAL-FIXES-REGISTRY.md
@@ -64,6 +71,7 @@ git status                    # Muss "working tree clean" zeigen
 - **Git Issues:** Resolve conflicts → Clean working tree → Retry
 - **GitHub Actions Failed:** Fallback zu manueller Asset-Erstellung via `pnpm dist`
 - **Asset Validation Failed:** Verwende dist-release/ backup für manuellen Upload
+- **Backward Compatibility Failed:** STOP → Analysiere Breaking Changes → Fix oder Revert ⚠️ NEW
 
 ## MANUAL FALLBACK PROCEDURES
 Falls GitHub Actions fehlschlägt:
@@ -72,7 +80,8 @@ Falls GitHub Actions fehlschlägt:
 pnpm clean:release:force
 pnpm build
 pnpm dist  # May require native module rebuild
-gh release upload vX.X.X dist-release/*.exe dist-release/*.yml
+# ⚠️ CRITICAL: Verwende korrekte Asset-Namen!
+gh release upload vX.X.X "dist-release/RawaLite Setup X.X.X.exe" --name "RawaLite-Setup-X.X.X.exe"
 ```
 
 ## SUCCESS CRITERIA

@@ -645,40 +645,14 @@ export class UpdateManagerService {
       a.name.includes('.exe') && a.name.includes('Setup')
     );
 
-    // 🔄 BACKWARD COMPATIBILITY FIX: Graceful degradation instead of throwing
-    // This allows older clients (v1.0.32) to handle missing assets gracefully
-    if (!asset || !asset.browser_download_url) {
-      debugLog('UpdateManagerService', 'createUpdateInfo_fallback', {
-        releaseTag: release.tag_name,
-        reason: 'backward_compatibility_v1032',
-        availableAssets: release.assets?.map((a: any) => a.name) || [],
-        fallbackAction: 'providing_empty_download_url'
-      });
-      
-      // Return fallback UpdateInfo instead of throwing
-      return {
-        version: release.tag_name.replace(/^v/, ''),
-        name: release.name || `Update ${release.tag_name}`,
-        releaseNotes: release.body || `Update to version ${release.tag_name}
-
-⚠️ Asset not yet available - build in progress.
-Manual download: https://github.com/MonaFP/RawaLite/releases/tag/${release.tag_name}`,
-        publishedAt: release.published_at || new Date().toISOString(),
-        downloadUrl: '', // Empty string for v1.0.32 compatibility
-        assetName: 'RawaLite Setup.exe', // Default fallback name
-        fileSize: 0, // Zero fallback
-        isPrerelease: release.prerelease || false
-      };
-    }
-
     return {
       version: release.tag_name.replace(/^v/, ''),
       name: release.name,
       releaseNotes: release.body,
       publishedAt: release.published_at,
-      downloadUrl: asset.browser_download_url,
-      assetName: asset.name,
-      fileSize: asset.size,
+      downloadUrl: asset?.browser_download_url || '',
+      assetName: asset?.name || '',
+      fileSize: asset?.size || 0,
       isPrerelease: release.prerelease
     };
   }
@@ -953,41 +927,16 @@ Manual download: https://github.com/MonaFP/RawaLite/releases/tag/${release.tag_n
     }
 
     const release = this.state.checkResult.latestRelease;
-    const asset = release.assets?.find((a: any) => 
-      a.name.includes('.exe') && a.name.includes('Setup')
-    ) || release.assets?.[0];
-
-    // 🔄 BACKWARD COMPATIBILITY FIX: Graceful degradation for older clients (v1.0.32)
-    // Instead of returning null (which breaks v1.0.32), provide fallback values
-    if (!asset || !asset.browser_download_url) {
-      debugLog('UpdateManagerService', 'getCurrentUpdateInfo_no_asset_fallback', { 
-        releaseTag: release.tag_name,
-        assetsFound: release.assets?.length || 0,
-        assetNames: release.assets?.map((a: any) => a.name) || [],
-        fallbackReason: 'backward_compatibility_v1032'
-      });
-      
-      // Provide fallback data that older versions can handle
-      return {
-        version: release.tag_name || this.state.checkResult.latestVersion || 'Unknown',
-        name: release.name || `Update to ${release.tag_name}`,
-        releaseNotes: release.body || 'No release notes available',
-        publishedAt: release.published_at || new Date().toISOString(),
-        downloadUrl: '', // Empty string fallback (v1.0.32 compatible)
-        assetName: 'RawaLite Setup.exe', // Default name fallback
-        fileSize: 0, // Zero size fallback
-        isPrerelease: release.prerelease || false
-      };
-    }
+    const asset = release.assets?.[0];
 
     return {
       version: release.tag_name || this.state.checkResult.latestVersion || 'Unknown',
       name: release.name || `Update to ${release.tag_name}`,
       releaseNotes: release.body || 'No release notes available',
       publishedAt: release.published_at || new Date().toISOString(),
-      downloadUrl: asset.browser_download_url,
-      assetName: asset.name,
-      fileSize: asset.size,
+      downloadUrl: asset?.browser_download_url || '',
+      assetName: asset?.name || 'RawaLite Setup.exe',
+      fileSize: asset?.size || 0,
       isPrerelease: release.prerelease || false
     };
   }
