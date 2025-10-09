@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Invoice, InvoiceLineItem, Customer, Offer } from '../persistence/adapter';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { usePersistence } from '../contexts/PersistenceContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { calculateDocumentTotals, validateDiscount, formatCurrency } from '../lib/discount-calculator';
 
 interface InvoiceFormProps {
@@ -21,6 +22,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
 }) => {
   const { adapter } = usePersistence();
   const { settings } = useUnifiedSettings();
+  const { showError, showSuccess } = useNotifications();
   const [customerId, setCustomerId] = useState(invoice?.customerId?.toString() || '');
   const [offerId, setOfferId] = useState(invoice?.offerId?.toString() || '');
   const [title, setTitle] = useState(invoice?.title || '');
@@ -34,6 +36,21 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   // Discount system state
   const [discountType, setDiscountType] = useState<'none' | 'percentage' | 'fixed'>(invoice?.discountType || 'none');
   const [discountValue, setDiscountValue] = useState(invoice?.discountValue || 0);
+  
+  // 🎯 Stable ID generation system consistent with OfferForm
+  const generateStableId = (itemType: 'parent' | 'sub', formType: 'invoice' = 'invoice') => {
+    const baseRanges = {
+      offer: { parent: -1000, sub: -2000 },
+      invoice: { parent: -3000, sub: -4000 },
+      package: { parent: -5000, sub: -6000 }
+    };
+    
+    const base = baseRanges[formType][itemType];
+    const uniqueId = base - lineItems.length - 1;
+    
+    console.log(`🎯 Generated stable ID: ${uniqueId} (${formType}/${itemType}, base: ${base}, items: ${lineItems.length})`);
+    return uniqueId;
+  };
 
   // Check if Kleinunternehmer mode is enabled
   const isKleinunternehmer = settings?.companyData?.kleinunternehmer || false;
@@ -48,8 +65,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   );
 
   const addLineItem = () => {
+    // Use generateStableId for collision-free IDs consistent with OfferForm
+    const newId = generateStableId('parent', 'invoice');
     const newItem: InvoiceLineItem = {
-      id: Date.now(),
+      id: newId,
       title: '',
       description: '',
       quantity: 1,
@@ -61,8 +80,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   };
 
   const addSubItem = (parentId: number) => {
+    // Use generateStableId for collision-free sub-item IDs consistent with OfferForm
+    const newId = generateStableId('sub', 'invoice');
     const newItem: InvoiceLineItem = {
-      id: Date.now(),
+      id: newId,
       title: '',
       description: '',
       quantity: 1,
@@ -119,7 +140,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!customerId || !title.trim()) {
@@ -150,7 +171,16 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       status: invoice?.status || 'draft'
     };
 
-    onSave(invoiceData);
+    try {
+      await onSave(invoiceData);
+      
+      // 🎯 SUCCESS FEEDBACK: Show positive confirmation like other forms
+      showSuccess(`Rechnung wurde erfolgreich ${invoice ? 'aktualisiert' : 'erstellt'}.`);
+      
+    } catch (error) {
+      // 🎯 ERROR FEEDBACK: Show error message
+      showError(`Fehler beim ${invoice ? 'Aktualisieren' : 'Erstellen'} der Rechnung: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
+    }
   };
 
   const parentItems = lineItems.filter(item => !item.parentItemId);
