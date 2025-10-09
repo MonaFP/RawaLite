@@ -34,7 +34,7 @@ export function getOrCreateUpdateManagerWindow(): BrowserWindow {
     minimizable: false,
     maximizable: false,
     title: 'RawaLite Update Manager',
-    backgroundColor: '#111111',
+    backgroundColor: 'transparent', // ✅ VISUAL FIX: Allow CSS theme control instead of hardcoded #111111
     autoHideMenuBar: true,
     icon: iconPath,
     webPreferences: {
@@ -46,9 +46,19 @@ export function getOrCreateUpdateManagerWindow(): BrowserWindow {
   });
 
   if (isDev) {
-    const devUrl = 'http://localhost:5174/#/update-manager';
-    console.log('[UpdateManagerWindow] Loading Dev URL:', devUrl);
-    win.loadURL(devUrl);
+    // In Development: Load production HTML instead of localhost (Vite may not be running)
+    const htmlPath = path.join(rootPath, 'dist-web', 'index.html');
+    console.log('[UpdateManagerWindow] Loading Production HTML in Dev:', htmlPath);
+    
+    if (existsSync(htmlPath)) {
+      win.loadFile(htmlPath, { hash: 'update-manager' });
+      // Enable DevTools for debugging in development
+      win.webContents.openDevTools({ mode: 'detach' });
+    } else {
+      console.error('[UpdateManagerWindow] No production build found. Fallback to localhost');
+      const devUrl = 'http://localhost:5174/#/update-manager';
+      win.loadURL(devUrl);
+    }
   } else {
     const htmlPath = path.join(process.resourcesPath, 'index.html');
     console.log('[UpdateManagerWindow] Loading Prod HTML:', htmlPath);
@@ -59,6 +69,34 @@ export function getOrCreateUpdateManagerWindow(): BrowserWindow {
     console.log('[UpdateManagerWindow] Window closed');
     win = null; 
   });
+
+  // Development debugging
+  if (isDev) {
+    win.webContents.once('dom-ready', () => {
+      win?.webContents.executeJavaScript(`
+        console.log('🛠️ UpdateManager Window Ready (Development Mode)');
+        console.log('IPC Bridge Test:', {
+          rawaliteAvailable: !!window.rawalite,
+          updatesAvailable: !!window.rawalite?.updates,
+          getProgressStatusAvailable: !!window.rawalite?.updates?.getProgressStatus
+        });
+        console.log('CSS Variables Test:', {
+          accent: getComputedStyle(document.documentElement).getPropertyValue('--accent'),
+          textPrimary: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
+          mainBg: getComputedStyle(document.documentElement).getPropertyValue('--main-bg')
+        });
+        
+        // Test basic IPC call
+        if (window.rawalite?.updates?.getCurrentVersion) {
+          window.rawalite.updates.getCurrentVersion().then(version => {
+            console.log('✅ IPC Test Success - Current Version:', version);
+          }).catch(err => {
+            console.error('❌ IPC Test Failed:', err);
+          });
+        }
+      `);
+    });
+  }
 
   return win;
 }

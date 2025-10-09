@@ -54,6 +54,11 @@ SQLite Database, Schema-Konsistenz, Field-Mapping, Migrations und Persistierung.
 
 #### ✅ solved/
 Gelöste Database-Probleme und bewährte Patterns:
+- **[ACTIVITY-TEMPLATES-IMPLEMENTATION.md](solved/ACTIVITY-TEMPLATES-IMPLEMENTATION.md)** - ✅ **Activity Templates System vollständig implementiert (Oktober 2025)**
+  - Migration 009: 6 Default Activities (Beratung €85, Entwicklung €95, etc.)
+  - SQLiteAdapter CRUD: createActivity, updateActivity, deleteActivity, listActivities
+  - UI Integration: TimesheetForm mit Template-Dropdown und Auto-Fill
+  - Performance: <5ms Activity queries, vollständige TypeScript Integration
 - **[LESSONS-LEARNED-SCHEMA-CONSISTENCY.md](LESSONS-LEARNED-SCHEMA-CONSISTENCY.md)** - Umfassende Schema-Konsistenz-Reparatur
 - **[FIELD_MAPPER_MISMATCHES_PLAN.md](solved/FIELD_MAPPER_MISMATCHES_PLAN.md)** - Field-Mapper Implementierung (abgeschlossen)
 - **[NUMBERING-CIRCLES-INTEGRATION.md](solved/NUMBERING-CIRCLES-INTEGRATION.md)** - Database-driven Nummernkreise Integration

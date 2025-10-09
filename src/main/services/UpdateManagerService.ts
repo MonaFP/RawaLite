@@ -17,6 +17,7 @@ import { app, dialog, shell } from 'electron';
 import { createReadStream } from 'fs';
 
 import { githubApiService } from './GitHubApiService';
+import { mockProgressService } from './MockProgressService';
 import UpdateHistoryService from './UpdateHistoryService';
 import type {
   UpdateCheckResult,
@@ -183,8 +184,44 @@ export class UpdateManagerService {
         user_action: 'manual' // TODO: Detect automatic vs manual
       });
 
-      // Check for updates using new GitHub API service
-      const updateCheck = await githubApiService.checkForUpdate(currentVersion);
+      // ✅ DEVELOPMENT: Mock update detection for testing
+      const isDev = !app.isPackaged;
+      const isUpdateManagerDev = process.argv.includes('--update-manager-dev');
+      
+      let updateCheck;
+      
+      if (isDev && isUpdateManagerDev) {
+        // Mock update for development testing
+        debugLog('UpdateManagerService', 'using_mock_update_check', { reason: 'development_mode' });
+        
+        updateCheck = {
+          hasUpdate: true,
+          currentVersion: currentVersion,
+          latestVersion: `${currentVersion}-MOCK`,
+          latestRelease: {
+            tag_name: `v${currentVersion}-MOCK`,
+            name: 'Mock Update for Development Testing',
+            body: '🛠️ **DEVELOPMENT MODE - MOCK UPDATE**\n\nThis is a simulated update for testing the UpdateManager progress display and download functionality.\n\n✅ Features:\n- Mock progress simulation\n- Realistic download speeds\n- Error handling testing\n- UI/UX validation',
+            published_at: new Date().toISOString(),
+            prerelease: false,
+            assets: [{
+              name: `RawaLite-Setup-${currentVersion}-MOCK.exe`,
+              size: 52428800, // 50MB mock
+              browser_download_url: 'https://mock.download.url/setup.exe',
+              content_type: 'application/octet-stream',
+              download_count: 0
+            }]
+          }
+        };
+        
+        debugLog('UpdateManagerService', 'mock_update_available', { 
+          mockVersion: updateCheck.latestVersion,
+          mockSize: '50MB'
+        });
+      } else {
+        // Real update check with GitHub API
+        updateCheck = await githubApiService.checkForUpdate(currentVersion);
+      }
 
       const result: UpdateCheckResult = {
         hasUpdate: updateCheck.hasUpdate,
@@ -269,7 +306,18 @@ export class UpdateManagerService {
       this.setState({ 
         downloading: true, 
         currentPhase: 'downloading',
-        userConsentGiven: true
+        userConsentGiven: true,
+        // ✅ SAFETY FIX: Initialize downloadStatus.progress for getCurrentProgress() API
+        downloadStatus: {
+          status: 'downloading',
+          progress: {
+            downloaded: 0,
+            total: 0,
+            percentage: 0,
+            speed: 0,
+            eta: 0
+          }
+        }
       });
 
       // Log download started
@@ -313,14 +361,54 @@ export class UpdateManagerService {
       
       debugLog('UpdateManagerService', 'setup_asset_prepared', { setupAsset });
 
-      // Download with progress tracking
-      debugLog('UpdateManagerService', 'github_download_start', { asset: setupAsset, targetPath });
-      await githubApiService.downloadAsset(setupAsset, targetPath, (progress) => {
-        debugLog('UpdateManagerService', 'download_progress', { progress });
-        this.emit({ type: 'download-progress', progress });
-      });
+      // ✅ DEVELOPMENT: Check for --update-manager-dev flag or development mode
+      const isDev = !app.isPackaged;
+      const isUpdateManagerDev = process.argv.includes('--update-manager-dev');
+      
+      if (isDev && isUpdateManagerDev) {
+        debugLog('UpdateManagerService', 'using_mock_download', { reason: 'development_mode' });
+        
+        // Use Mock Progress Service for development - MUCH SLOWER for testing
+        await mockProgressService.startMockDownload(50, 0.3, (progress) => { // ✅ 0.3 MB/s for ~3 minutes duration
+          debugLog('UpdateManagerService', 'mock_download_progress', { progress });
+          
+          // ✅ Store progress in state for getCurrentProgress() API
+          this.setState({
+            downloadStatus: {
+              ...this.state.downloadStatus,
+              progress: progress,
+              status: 'downloading'
+            }
+          });
+          
+          this.emit({ type: 'download-progress', progress });
+        });
+        
+        // ✅ CREATE MOCK FILE: Create a dummy file for verification
+        const fs = require('fs').promises;
+        await fs.writeFile(targetPath, Buffer.alloc(setupAsset.size, 0)); // Create file with correct size
+        
+        debugLog('UpdateManagerService', 'mock_download_complete', { targetPath });
+      } else {
+        // Real download with GitHub API
+        debugLog('UpdateManagerService', 'github_download_start', { asset: setupAsset, targetPath });
+        await githubApiService.downloadAsset(setupAsset, targetPath, (progress) => {
+          debugLog('UpdateManagerService', 'download_progress', { progress });
+          
+          // ✅ CRITICAL FIX: Store progress in state for getCurrentProgress() API
+          this.setState({
+            downloadStatus: {
+              ...this.state.downloadStatus,
+              progress: progress,
+              status: 'downloading'
+            }
+          });
+          
+          this.emit({ type: 'download-progress', progress });
+        });
 
-      debugLog('UpdateManagerService', 'github_download_complete', { targetPath });
+        debugLog('UpdateManagerService', 'github_download_complete', { targetPath });
+      }
 
       // Verify download
       this.setState({ currentPhase: 'verifying' });

@@ -15,9 +15,10 @@ const titles: Record<string,string> = {
 interface HeaderProps {
   title?: string;
   right?: React.ReactNode;
+  miniVersion?: boolean;
 }
 
-export default function Header({ title: propTitle, right }: HeaderProps = {}){
+export default function Header({ title: propTitle, right, miniVersion = false }: HeaderProps = {}){
   const { pathname } = useLocation();
   const { mode } = useNavigation();
   const versionInfo = VersionService.getAppVersion();
@@ -30,32 +31,38 @@ export default function Header({ title: propTitle, right }: HeaderProps = {}){
   };
   
   return (
-    <header className="header">
+    <header className={`header ${miniVersion ? 'header-mini' : ''}`}>
       <div className="title">{getPageTitle()}</div>
       
-      {/* Im Sidebar-Modus zeigen wir zusätzliche Informationen */}
-      {mode === 'sidebar' && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          fontSize: '0.9rem',
-          color: 'rgba(255,255,255,0.8)'
-        }}>
-          <span>📍 {pathname}</span>
-          <span>🕒 {new Date().toLocaleDateString('de-DE', { 
-            weekday: 'short', 
-            day: '2-digit', 
-            month: '2-digit',
-            year: 'numeric'
-          })}</span>
-        </div>
-      )}
-      
-      {right && <div className="header-right">{right}</div>}
-      
-      <div style={{opacity:.7}}>
-        v{versionInfo.version} {versionInfo.buildEnvironment !== 'production' ? `(${versionInfo.buildEnvironment})` : ''}
+      {/* Header Controls - Focus Mode Toggle und weitere Controls */}
+      <div className="header-controls">
+        
+        {/* Im Sidebar-Modus zeigen wir zusätzliche Informationen (außer Mini-Version) */}
+        {mode === 'sidebar' && !miniVersion && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            fontSize: '0.9rem',
+            color: 'rgba(255,255,255,0.8)'
+          }}>
+            <span>📍 {pathname}</span>
+            <span>🕒 {new Date().toLocaleDateString('de-DE', { 
+              weekday: 'short', 
+              day: '2-digit', 
+              month: '2-digit',
+              year: 'numeric'
+            })}</span>
+          </div>
+        )}
+        
+        {right && <div className="header-right">{right}</div>}
+        
+        {!miniVersion && (
+          <div style={{opacity:.7}}>
+            v{versionInfo.version} {versionInfo.buildEnvironment !== 'production' ? `(${versionInfo.buildEnvironment})` : ''}
+          </div>
+        )}
       </div>
     </header>
   );

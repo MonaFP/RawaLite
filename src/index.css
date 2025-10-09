@@ -4,6 +4,7 @@
 @import url('./styles/status-updates/status-dropdowns.css');
 @import url('./styles/status-updates/status-badges.css');
 @import url('./styles/status-updates/status-themes.css');
+@import url('./styles/focus-mode.css');
 
 :root{
   --bg:#0f172a;        /* slate-900 */
@@ -103,35 +104,57 @@ body{
 .app{
   display:grid;
   grid-template-columns: 240px 1fr;
-  grid-template-rows: 56px 1fr;
+  grid-template-rows: auto auto 1fr;
   grid-template-areas:
     "sidebar header"
+    "sidebar focus-bar"
     "sidebar main";
   min-height:100%;
+}
+
+/* Header - nur der eigentliche Header */
+.header {
+  grid-area: header;
+}
+
+/* Focus Bar - direkt unter dem Header als zweite Zeile */
+.focus-bar-area {
+  grid-area: focus-bar;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* 🧭 Enhanced Navigation - Header Mode (200px Sidebar) */
 [data-navigation-mode="header"] .app {
   grid-template-columns: 200px 1fr;
+  grid-template-rows: auto auto 1fr;
   grid-template-areas:
     "sidebar header"
+    "sidebar focus-bar"
     "sidebar main";
 }
 
 /* 🧭 Enhanced Navigation - Sidebar Mode (240px Sidebar) */
 [data-navigation-mode="sidebar"] .app {
   grid-template-columns: 240px 1fr;
-  grid-template-rows: 80px 1fr; /* Höherer Header für Statistiken */
+  grid-template-rows: auto auto 1fr;
   grid-template-areas:
     "sidebar header"
+    "sidebar focus-bar"
     "sidebar main";
 }
 
 /* 🧭 Enhanced Navigation - Full Sidebar Mode (240px Sidebar) */
 [data-navigation-mode="full-sidebar"] .app {
   grid-template-columns: 240px 1fr;
+  grid-template-rows: auto auto 1fr;
   grid-template-areas:
     "sidebar header"
+    "sidebar focus-bar"
     "sidebar main";
 }
 
@@ -188,6 +211,12 @@ body{
 .header .title{ 
   font-weight:600; 
   color: white;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .header > *:last-child {

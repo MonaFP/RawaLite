@@ -20,6 +20,8 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 - **[IPC-ARCHITECTURE-LESSONS.md](./solved/IPC-ARCHITECTURE-LESSONS.md)** - Unified IPC Architecture für Window.rawalite Integration
 
 ### Frontend & State Management
+- **[HOOK-SYNCHRONISATION-STATUS-UPDATES.md](./HOOK-SYNCHRONISATION-STATUS-UPDATES.md)** - ✅ **SOLVED:** Status-Update Hook-Synchronisation Problem - Event Bus Pattern für Cross-Component State Invalidation
+- **[LESSONS-LEARNED-status-update-refresh-problems.md](./LESSONS-LEARNED-status-update-refresh-problems.md)** - ✅ **SOLVED:** Status Updates + PDF Anmerkungen Problem - Hook-Synchronisation + Notes Transfer Fix
 - **[UPDATE-BUTTON-FIX-LESSONS.md](../00-standards/debugging/solved/LESSONS-LEARNED-update-button-fix.md)** - ✅ **SOLVED:** Update Button Funktionalitätsfehler durch Async State Race Condition
 - **[LESSONS-LEARNED-IMAGE-UPLOAD-SYSTEM.md](./LESSONS-LEARNED-IMAGE-UPLOAD-SYSTEM.md)** - ✅ **COMPLETE:** Image Upload System für Angebote mit PDF-Integration
 

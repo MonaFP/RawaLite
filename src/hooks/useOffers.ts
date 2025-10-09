@@ -1,7 +1,8 @@
 // Echter Database-Hook mit SQLite-Verbindung
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { usePersistence } from '../contexts/PersistenceContext';
 import { useUnifiedSettings } from './useUnifiedSettings';
+import { useHookInvalidation } from './useHookEventBus';
 import type { Offer } from '../persistence/adapter';
 
 export const useOffers = () => {
@@ -12,11 +13,26 @@ export const useOffers = () => {
   const [error, setError] = useState<string | undefined>(undefined);
 
   // Load offers from database
+  const loadOffers = useCallback(async () => {
+    if (!ready || !adapter) return;
+    
+    try {
+      setLoading(true);
+      const data = await adapter.listOffers();
+      setOffers(data);
+      setError(undefined);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load offers');
+    } finally {
+      setLoading(false);
+    }
+  }, [ready, adapter]);
+
   useEffect(() => {
     if (!ready || !adapter) return;
     
     let active = true;
-    const loadOffers = async () => {
+    const loadOffersWrapper = async () => {
       try {
         setLoading(true);
         const data = await adapter.listOffers();
@@ -35,9 +51,23 @@ export const useOffers = () => {
       }
     };
 
-    loadOffers();
+    loadOffersWrapper();
     return () => { active = false; };
   }, [ready, adapter]);
+
+  // Listen for status updates from other components
+  useHookInvalidation('offer-updated', useCallback((payload) => {
+    console.log('🔄 Offer hook invalidated by status update:', payload);
+    loadOffers();
+  }, [loadOffers]));
+
+  // Listen for any entity status changes (broader invalidation)
+  useHookInvalidation('entity-status-changed', useCallback((payload) => {
+    if (payload.entityType === 'offer') {
+      console.log('🔄 Offer hook invalidated by entity status change:', payload);
+      loadOffers();
+    }
+  }, [loadOffers]));
 
   const createOffer = async (data: Omit<Offer, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!adapter) throw new Error('Database not ready');

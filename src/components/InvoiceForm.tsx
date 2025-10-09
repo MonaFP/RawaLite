@@ -112,6 +112,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       setLineItems(newItems);
       setCustomerId(offer.customerId.toString());
       setTitle(offer.title);
+      setNotes(offer.notes || ''); // ✅ FIX: Notes aus Angebot übernehmen
       setVatRate(offer.vatRate);
     } catch (error) {
       console.error('Error adding offer:', error);

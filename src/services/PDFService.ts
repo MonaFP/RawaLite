@@ -130,6 +130,12 @@ export class PDFService {
   ): Promise<PDFResult> {
     try {
       console.log(`📄 Exporting invoice ${invoice.invoiceNumber} to PDF (preview: ${isPreview})`);
+      console.log('🔍 Invoice notes debug:', {
+        hasNotes: !!invoice.notes,
+        notesLength: invoice.notes?.length || 0,
+        notesContent: invoice.notes ? (invoice.notes.substring(0, 100) + (invoice.notes.length > 100 ? '...' : '')) : 'undefined',
+        fullNotes: invoice.notes
+      });
       
       // Generate theme data for PDF styling
       const pdfTheme = currentTheme ? this.getCurrentPDFTheme(currentTheme, customColors) : null;
