@@ -113,14 +113,20 @@ server: { port: 5174 },
 win.loadURL('http://localhost:5174')
 ```
 
-### **FIX-005: Offer Foreign Key Constraint Fix**
-- **ID:** `offer-foreign-key-constraint-fix`
-- **Files:** `src/adapters/SQLiteAdapter.ts`, `src/main/db/migrations/011_extend_offer_line_items.ts`, `src/components/OfferForm.tsx`
+### **FIX-005: Offer & Invoice Foreign Key Constraint Fix**
+- **ID:** `offer-invoice-foreign-key-constraint-fix`
+- **Files:** `src/adapters/SQLiteAdapter.ts`, `src/main/db/migrations/011_extend_offer_line_items.ts`, `src/components/OfferForm.tsx`, `src/components/InvoiceForm.tsx`
 - **Pattern:** ID mapping system for parent-child relationships + database schema extension
-- **Location:** SQLiteAdapter updateOffer/createOffer methods, Migration 011, OfferForm parent-child rendering
-- **First Implemented:** v1.0.13
-- **Last Verified:** v1.0.13
+- **Location:** SQLiteAdapter updateOffer/updateInvoice/createOffer/createInvoice methods, Migration 011, OfferForm & InvoiceForm parent-child rendering
+- **First Implemented:** v1.0.13 (OfferForm), v1.0.37 (InvoiceForm)
+- **Last Verified:** v1.0.37
 - **Status:** ✅ ACTIVE
+
+**Problem Details:**
+- **Scope:** Offer & Invoice line item updates causing FOREIGN KEY constraint failures
+- **Root Cause:** Parent-child relationship violations in offer/invoice line items - negative temporary IDs conflicting with database auto-increment
+- **Impact:** Complete inability to save offers/invoices with line items
+- **Symptoms:** "FOREIGN KEY constraint failed" errors during offer/invoice creation/update operations
 
 **Required Database Schema (Migration 011):**
 ```sql
@@ -148,8 +154,24 @@ offer.lineItems.forEach(item => {
 });
 ```
 
-**Required Frontend Structure (OfferForm):**
+**Required Frontend Structure (OfferForm & InvoiceForm):**
 ```typescript
+// ID mapping in handleSubmit to prevent FOREIGN KEY constraints
+const idMapping: Record<number, number> = {};
+const processedLineItems = offer.lineItems.map(item => {
+  if (item.id < 0) {
+    const newId = Math.abs(item.id);
+    idMapping[item.id] = newId;
+    return { ...item, id: newId };
+  }
+  return item;
+}).map(item => ({
+  ...item,
+  parentItemId: item.parentItemId && item.parentItemId < 0 
+    ? idMapping[item.parentItemId] 
+    : item.parentItemId
+}));
+
 // Parent-first rendering with grouped sub-items
 {lineItems
   .filter(item => !item.parentItemId)
@@ -276,6 +298,70 @@ const themeColors = { 'lavender': '#DDA0DD' }; // Missing others
 
 // ❌ Cross-process DOM access
 document.body.classList // in Main Process context
+```
+
+---
+
+### **FIX-008: Update Manager Sidebar Integration**
+- **ID:** `update-manager-sidebar-integration`
+- **Files:** `src/components/NavigationOnlySidebar.tsx`, `electron/ipc/updates.ts`, `electron/preload.ts`
+- **Pattern:** IPC-based UpdateManager integration instead of legacy UpdateDialog component
+- **Location:** NavigationOnlySidebar update click handler, IPC updates:openManager handler, preload updates API
+- **First Implemented:** v1.0.37
+- **Last Verified:** v1.0.37
+- **Status:** ✅ ACTIVE
+
+**Problem Details:**
+- **Scope:** Sidebar update button opening legacy UpdateDialog instead of modern UpdateManager
+- **Root Cause:** NavigationOnlySidebar using deprecated UpdateDialog component instead of IPC-based UpdateManager
+- **Impact:** Inconsistent update experience - modern update checking but legacy update installation UI
+- **Symptoms:** Update button in sidebar opens old dialog instead of UpdateManager window
+
+**Required IPC Integration (NavigationOnlySidebar.tsx):**
+```typescript
+// ✅ Modern IPC-based UpdateManager integration
+const handleUpdateClick = () => {
+  window.rawalite.updates.openManager();
+};
+
+// ✅ Button with IPC handler
+<button 
+  onClick={handleUpdateClick}
+  className="update-button"
+>
+  Update installieren
+</button>
+```
+
+**Required IPC Handler (electron/ipc/updates.ts):**
+```typescript
+// ✅ IPC handler for opening UpdateManager
+ipcMain.handle('updates:openManager', async () => {
+  // UpdateManager opening logic
+  return true;
+});
+```
+
+**Required Preload API (electron/preload.ts):**
+```typescript
+// ✅ Exposed updates API with openManager
+updates: {
+  openManager: () => ipcRenderer.invoke('updates:openManager'),
+  // ... other update methods
+}
+```
+
+**FORBIDDEN Patterns:**
+```typescript
+// ❌ Direct UpdateDialog component usage in sidebar
+import { UpdateDialog } from '../components/UpdateDialog';
+<UpdateDialog />
+
+// ❌ Mixed update paradigms
+// Using both UpdateDialog and UpdateManager in same context
+
+// ❌ Missing IPC integration
+// Direct component rendering instead of IPC-based window management
 ```
 
 ---

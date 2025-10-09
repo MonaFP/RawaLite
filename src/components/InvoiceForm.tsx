@@ -150,6 +150,26 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       return;
     }
 
+    // 🎯 CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance
+    // This prevents "FOREIGN KEY constraint failed" errors by mapping negative IDs
+    const idMapping: Record<number, number> = {};
+    const processedLineItems = lineItems.map(item => {
+      if (item.id < 0) {
+        // Generate new positive ID for database insertion
+        const newId = Date.now() + Math.random();
+        idMapping[item.id] = newId;
+        return { ...item, id: newId };
+      }
+      return item;
+    });
+
+    // Fix parent-child references using ID mapping
+    processedLineItems.forEach(item => {
+      if (item.parentItemId && item.parentItemId < 0) {
+        item.parentItemId = idMapping[item.parentItemId] || item.parentItemId;
+      }
+    });
+
     const invoiceData: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'> = {
       invoiceNumber: invoice?.invoiceNumber || '',
       customerId: parseInt(customerId),
@@ -157,7 +177,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       title,
       notes,
       dueDate,
-      lineItems,
+      lineItems: processedLineItems, // Use processed items with mapped IDs
       // Use new discount calculator results
       subtotal: totals.subtotalAfterDiscount,
       vatRate,
