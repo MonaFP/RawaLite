@@ -208,6 +208,37 @@ contextBridge.exposeInMainWorld('rawalite', {
       ipcRenderer.invoke('updates:openDownloadFolder') as Promise<void>,
     verifyUpdateFile: (filePath: string) => 
       ipcRenderer.invoke('updates:verifyFile', filePath) as Promise<boolean>,
+    
+    // === Phase 4: AutoUpdateService Security & Monitoring Extensions ===
+    
+    // Service Status Monitoring
+    getServiceStatus: () =>
+      ipcRenderer.invoke('updates:getServiceStatus') as Promise<{
+        isRunning: boolean;
+        lastCheck: number | null;
+        currentDownload: any | null;
+        securityLevel: string;
+      }>,
+    
+    // Security Validation
+    validateSecurity: (updateInfo: any) =>
+      ipcRenderer.invoke('updates:validateSecurity', updateInfo) as Promise<{
+        isValid: boolean;
+        securityChecks: {
+          hasValidSignature: boolean;
+          isFromTrustedSource: boolean;
+          hasValidChecksum: boolean;
+          virusScanClean: boolean;
+        };
+        recommendation: 'safe_to_download' | 'security_risk';
+      }>,
+    
+    // Service Preferences Management
+    updateServicePreferences: (preferences: any) =>
+      ipcRenderer.invoke('updates:updateServicePreferences', preferences) as Promise<{
+        success: boolean;
+        message?: string;
+      }>,
   },
   // 🔄 Status Update System API
   status: {
