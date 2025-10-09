@@ -177,6 +177,27 @@ export interface TimesheetActivity {
   isBreak: boolean; // Pause oder produktive Zeit
 }
 
+// NEW: Einzelne Tätigkeit innerhalb einer Position (ohne Uhrzeiten)
+export interface PositionActivity {
+  id: string; // Temporary ID für UI
+  title: string;
+  description?: string;
+  hours: number; // Direkte Stunden-Eingabe
+  hourlyRate: number;
+  amount: number; // hours * hourlyRate
+}
+
+// NEW: Position gruppiert nach Datum mit mehreren Tätigkeiten
+export interface TimesheetPosition {
+  id: string;
+  date: string; // YYYY-MM-DD
+  activities: PositionActivity[];
+  totalHours: number; // sum(activities.hours)
+  totalAmount: number; // sum(activities.amount)
+  activitiesSummary: string; // "Beratung, Dokumentation, Meeting"
+  isExpanded: boolean; // UI State
+}
+
 export interface Timesheet {
   id: number;
   timesheetNumber: string;
@@ -185,7 +206,10 @@ export interface Timesheet {
   status: 'draft' | 'sent' | 'accepted' | 'rejected';
   startDate: string;
   endDate: string;
+  // LEGACY: Keep for backwards compatibility during migration
   activities: TimesheetActivity[];
+  // NEW: Positions structure
+  positions?: TimesheetPosition[];
   subtotal: number;
   vatRate: number;
   vatAmount: number;

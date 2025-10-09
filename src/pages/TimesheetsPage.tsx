@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Table } from '../components/Table';
 import { TimesheetForm } from '../components/TimesheetForm';
+import { TimesheetDayGroupComponent } from '../components/TimesheetDayGroupComponent';
 import { StatusControl } from '../components/StatusControl';
 import { SearchAndFilterBar, useTableSearch, FilterConfig } from '../components/SearchAndFilter';
 import { useTimesheets } from '../hooks/useTimesheets';
@@ -10,7 +11,17 @@ import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { PDFService } from '../services/PDFService';
-import type { Timesheet } from '../persistence/adapter';
+import { 
+  groupActivitiesByDate, 
+  toggleDayGroupExpansion,
+  updateActivityInDayGroups,
+  removeActivityFromDayGroups,
+  addActivityToDayGroups,
+  flattenDayGroups,
+  createNewActivityForDate,
+  type TimesheetDayGroup 
+} from '../utils/timesheetGrouping';
+import type { Timesheet, TimesheetActivity } from '../persistence/adapter';
 
 interface TimesheetsPageProps {
   title?: string;
@@ -43,6 +54,21 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
     hours: 8,
     hourlyRate: 50
   });
+
+  // State for day grouping view
+  const [dayGroups, setDayGroups] = useState<TimesheetDayGroup[]>([]);
+  const [groupingEnabled, setGroupingEnabled] = useState(false);
+
+  // Update day groups when current timesheet changes or grouping is enabled
+  React.useEffect(() => {
+    if (current?.activities) {
+      if (groupingEnabled) {
+        setDayGroups(groupActivitiesByDate(current.activities));
+      } else {
+        setDayGroups([]);
+      }
+    }
+  }, [current?.activities, groupingEnabled]);
 
   // Search and Filter Configuration for Timesheets
   const searchFieldMapping = useMemo(() => ({
@@ -425,6 +451,110 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
       showError('Fehler beim Entfernen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
     }
   }
+
+  // Day group handlers
+  const handleToggleGroupExpansion = (date: string) => {
+    setDayGroups(prev => toggleDayGroupExpansion(prev, date));
+  };
+
+  const handleDayGroupActivityUpdate = async (activityId: number, updates: Partial<TimesheetActivity>) => {
+    if (!current) return;
+
+    try {
+      const updatedActivities = current.activities.map(act => 
+        act.id === activityId ? { ...act, ...updates } : act
+      );
+
+      // Recalculate totals
+      const newSubtotal = updatedActivities.reduce((sum, act) => sum + act.total, 0);
+      const newVatAmount = newSubtotal * (current.vatRate / 100);
+      const newTotal = newSubtotal + newVatAmount;
+
+      const updatedTimesheet = {
+        ...current,
+        activities: updatedActivities,
+        subtotal: newSubtotal,
+        vatAmount: newVatAmount,
+        total: newTotal
+      };
+
+      await updateTimesheet(current.id, updatedTimesheet);
+      setCurrent(updatedTimesheet);
+      
+      // Update day groups
+      setDayGroups(prev => updateActivityInDayGroups(prev, activityId, updates));
+      
+      showSuccess('Aktivität erfolgreich aktualisiert');
+    } catch (error) {
+      showError('Fehler beim Aktualisieren: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+    }
+  };
+
+  const handleDayGroupActivityRemove = async (activityId: number) => {
+    if (!current) return;
+
+    try {
+      const updatedActivities = current.activities.filter(act => act.id !== activityId);
+      const newSubtotal = updatedActivities.reduce((sum, act) => sum + act.total, 0);
+      const newVatAmount = newSubtotal * (current.vatRate / 100);
+      const newTotal = newSubtotal + newVatAmount;
+
+      const updatedTimesheet = {
+        ...current,
+        activities: updatedActivities,
+        subtotal: newSubtotal,
+        vatAmount: newVatAmount,
+        total: newTotal
+      };
+
+      await updateTimesheet(current.id, updatedTimesheet);
+      setCurrent(updatedTimesheet);
+      
+      // Update day groups
+      setDayGroups(prev => removeActivityFromDayGroups(prev, activityId));
+      
+      showSuccess('Aktivität erfolgreich entfernt');
+    } catch (error) {
+      showError('Fehler beim Entfernen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+    }
+  };
+
+  const handleDayGroupActivityAdd = async (date: string, activityData: Partial<TimesheetActivity>) => {
+    if (!current) return;
+
+    try {
+      const baseActivity = createNewActivityForDate(date, current.id);
+      const newActivity = {
+        ...baseActivity,
+        ...activityData,
+        id: Date.now() // Generate temporary ID
+      };
+      const updatedActivities = [...current.activities, newActivity];
+
+      // Recalculate totals
+      const newSubtotal = updatedActivities.reduce((sum, act) => sum + act.total, 0);
+      const newVatAmount = newSubtotal * (current.vatRate / 100);
+      const newTotal = newSubtotal + newVatAmount;
+
+      const updatedTimesheet = {
+        ...current,
+        activities: updatedActivities,
+        subtotal: newSubtotal,
+        vatAmount: newVatAmount,
+        total: newTotal
+      };
+
+      await updateTimesheet(current.id, updatedTimesheet);
+      setCurrent(updatedTimesheet);
+      
+      // Update day groups
+      setDayGroups(prev => addActivityToDayGroups(prev, newActivity));
+      
+      showSuccess('Aktivität erfolgreich hinzugefügt');
+    } catch (error) {
+      showError('Fehler beim Hinzufügen: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler'));
+    }
+  };
 
   async function handleSaveTimesheet() {
     if (!current) return;
@@ -829,9 +959,47 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
 
           {/* Positionen/Activities */}
           <div style={{marginBottom:"16px"}}>
-            <h4 style={{margin:"0 0 8px 0", fontSize:"16px"}}>Positionen ({current.activities?.length || 0}/31)</h4>
-            <div style={{opacity:.7, fontSize:"14px"}}>Einzelne Arbeitspositionen mit Datum, Zeiten und Tätigkeiten.</div>
+            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"8px"}}>
+              <h4 style={{margin:"0", fontSize:"16px"}}>Positionen ({current.activities?.length || 0}/31)</h4>
+              <button
+                className="btn btn-secondary"
+                style={{padding:"6px 12px", fontSize:"12px"}}
+                onClick={() => {
+                  const newGroupingEnabled = !groupingEnabled;
+                  setGroupingEnabled(newGroupingEnabled);
+                  if (newGroupingEnabled && current?.activities) {
+                    setDayGroups(groupActivitiesByDate(current.activities));
+                  }
+                }}
+              >
+                {groupingEnabled ? '📋 Listansicht' : '📅 Tagesgruppenansicht'}
+              </button>
+            </div>
+            <div style={{opacity:.7, fontSize:"14px"}}>
+              {groupingEnabled 
+                ? 'Aktivitäten nach Datum gruppiert mit erweiterbaren Tagesgruppen.'
+                : 'Einzelne Arbeitspositionen mit Datum, Zeiten und Tätigkeiten.'
+              }
+            </div>
           </div>
+
+          {groupingEnabled ? (
+            /* Day Grouped View */
+            <div style={{marginBottom:"16px"}}>
+              {dayGroups.map(group => (
+                <TimesheetDayGroupComponent
+                  key={group.date}
+                  dayGroup={group}
+                  onToggleExpansion={() => handleToggleGroupExpansion(group.date)}
+                  onActivityUpdate={handleDayGroupActivityUpdate}
+                  onActivityRemove={handleDayGroupActivityRemove}
+                  onActivityAdd={() => handleDayGroupActivityAdd(group.date, {})}
+                  availableActivities={activities?.map(a => ({ id: a.id, title: a.title, hourlyRate: a.hourlyRate || 50 })) || []}
+                />
+              ))}
+            </div>
+          ) : (
+            /* Traditional List View */
 
           <div style={{border:"1px solid var(--color-border)", borderRadius:"8px", overflow:"hidden"}}>
             {/* Desktop Positionen-Header */}
@@ -1067,6 +1235,7 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
               </button>
             </div>
           </div>
+          )}
 
           <div style={{marginTop:"16px", display:"flex", justifyContent:"space-between"}}>
             <button 
