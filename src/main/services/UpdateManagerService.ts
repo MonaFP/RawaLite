@@ -645,14 +645,19 @@ export class UpdateManagerService {
       a.name.includes('.exe') && a.name.includes('Setup')
     );
 
+    // ✅ CRITICAL FIX: Validate asset exists before creating UpdateInfo
+    if (!asset || !asset.browser_download_url) {
+      throw new Error(`No valid setup asset found in release ${release.tag_name}. Assets: ${release.assets.map((a: any) => a.name).join(', ')}`);
+    }
+
     return {
       version: release.tag_name.replace(/^v/, ''),
       name: release.name,
       releaseNotes: release.body,
       publishedAt: release.published_at,
-      downloadUrl: asset?.browser_download_url || '',
-      assetName: asset?.name || '',
-      fileSize: asset?.size || 0,
+      downloadUrl: asset.browser_download_url,
+      assetName: asset.name,
+      fileSize: asset.size,
       isPrerelease: release.prerelease
     };
   }
@@ -927,16 +932,28 @@ export class UpdateManagerService {
     }
 
     const release = this.state.checkResult.latestRelease;
-    const asset = release.assets?.[0];
+    const asset = release.assets?.find((a: any) => 
+      a.name.includes('.exe') && a.name.includes('Setup')
+    ) || release.assets?.[0];
+
+    // ✅ CRITICAL FIX: Return null if no valid asset found instead of empty URL
+    if (!asset || !asset.browser_download_url) {
+      debugLog('UpdateManagerService', 'getCurrentUpdateInfo_no_asset', { 
+        releaseTag: release.tag_name,
+        assetsFound: release.assets?.length || 0,
+        assetNames: release.assets?.map((a: any) => a.name) || []
+      });
+      return null;
+    }
 
     return {
       version: release.tag_name || this.state.checkResult.latestVersion || 'Unknown',
       name: release.name || `Update to ${release.tag_name}`,
       releaseNotes: release.body || 'No release notes available',
       publishedAt: release.published_at || new Date().toISOString(),
-      downloadUrl: asset?.browser_download_url || '',
-      assetName: asset?.name || 'RawaLite Setup.exe',
-      fileSize: asset?.size || 0,
+      downloadUrl: asset.browser_download_url,
+      assetName: asset.name,
+      fileSize: asset.size,
       isPrerelease: release.prerelease || false
     };
   }

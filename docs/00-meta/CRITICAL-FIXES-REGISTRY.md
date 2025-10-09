@@ -742,6 +742,92 @@ const logoUrl = require('../assets/rawalite-logo.png');
 
 ---
 
+### **FIX-014: UpdateManager Asset Validation**
+- **ID:** `updatemanager-asset-validation`
+- **File:** `src/main/services/UpdateManagerService.ts`
+- **Pattern:** Mandatory asset validation before creating UpdateInfo
+- **Location:** ~Line 642 in `createUpdateInfo()` method and ~Line 940 in `getCurrentUpdateInfo()` method
+- **First Implemented:** v1.0.33
+- **Last Verified:** v1.0.33
+- **Status:** ✅ ACTIVE
+
+**Required Code Pattern:**
+```typescript
+// createUpdateInfo() method - MUST validate asset exists
+private createUpdateInfo(release: any): UpdateInfo {
+  const asset = release.assets.find((a: any) => 
+    a.name.includes('.exe') && a.name.includes('Setup')
+  );
+
+  // ✅ CRITICAL FIX: Validate asset exists before creating UpdateInfo
+  if (!asset || !asset.browser_download_url) {
+    throw new Error(`No valid setup asset found in release ${release.tag_name}. Assets: ${release.assets.map((a: any) => a.name).join(', ')}`);
+  }
+
+  return {
+    version: release.tag_name.replace(/^v/, ''),
+    name: release.name,
+    releaseNotes: release.body,
+    publishedAt: release.published_at,
+    downloadUrl: asset.browser_download_url, // ✅ Never empty string
+    assetName: asset.name,
+    fileSize: asset.size,
+    isPrerelease: release.prerelease
+  };
+}
+
+// getCurrentUpdateInfo() method - MUST return null if no valid asset
+getCurrentUpdateInfo(): UpdateInfo | null {
+  // ... existing checks ...
+  
+  const asset = release.assets?.find((a: any) => 
+    a.name.includes('.exe') && a.name.includes('Setup')
+  ) || release.assets?.[0];
+
+  // ✅ CRITICAL FIX: Return null if no valid asset found instead of empty URL
+  if (!asset || !asset.browser_download_url) {
+    debugLog('UpdateManagerService', 'getCurrentUpdateInfo_no_asset', { 
+      releaseTag: release.tag_name,
+      assetsFound: release.assets?.length || 0,
+      assetNames: release.assets?.map((a: any) => a.name) || []
+    });
+    return null;
+  }
+
+  return {
+    // ... other fields ...
+    downloadUrl: asset.browser_download_url, // ✅ Never empty string
+    assetName: asset.name,
+    fileSize: asset.size,
+    // ... other fields ...
+  };
+}
+```
+
+**FORBIDDEN Patterns:**
+```typescript
+// ❌ Using fallback empty strings for URLs
+downloadUrl: asset?.browser_download_url || '',
+
+// ❌ Missing asset validation before URL usage
+return {
+  downloadUrl: asset?.browser_download_url || '', // CAUSES "Failed to parse URL from" ERROR
+  assetName: asset?.name || '',
+  fileSize: asset?.size || 0
+};
+
+// ❌ Not checking asset existence
+const asset = release.assets?.[0]; // No .find() with proper filter
+```
+
+**Problem Solved:**
+- Previous code used empty string (`''`) as fallback for missing download URLs
+- Empty URLs caused "Failed to parse URL from" errors in fetch() calls
+- Missing asset validation led to runtime errors during download attempts
+- Solution: Mandatory asset validation with descriptive error messages, proper asset filtering for .exe Setup files, and null returns instead of invalid data
+
+---
+
 ## 🔍 VALIDATION RULES FOR KI
 
 ### **BEFORE ANY FILE EDIT:**
@@ -768,11 +854,12 @@ const logoUrl = require('../assets/rawalite-logo.png');
 
 ## 📊 FIX HISTORY
 
-| Version | WriteStream Fix | File Flush Fix | Event Handler Fix | Port Fix | Offer FK Fix | Discount Schema | PDF Theme Fix | CSS Dropdown Fix | Status Updates | ABI Management | Status |
-|---------|----------------|----------------|-------------------|----------|--------------|-----------------|---------------|------------------|----------------|----------------|---------|
-| v1.0.11 | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Partial |
-| v1.0.12 | ❌ LOST | ❌ LOST | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Regression |
-| v1.0.13 | ✅ Restored | ✅ Restored | ✅ Present | ✅ Present | ✅ Added | ✅ Added | ✅ Added | ✅ Added | ✅ Added | ✅ Added | Complete |
+| Version | WriteStream Fix | File Flush Fix | Event Handler Fix | Port Fix | Offer FK Fix | Discount Schema | PDF Theme Fix | CSS Dropdown Fix | Status Updates | ABI Management | Asset Validation | Status |
+|---------|----------------|----------------|-------------------|----------|--------------|-----------------|---------------|------------------|----------------|----------------|------------------|---------|
+| v1.0.11 | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Partial |
+| v1.0.12 | ❌ LOST | ❌ LOST | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Regression |
+| v1.0.13 | ✅ Restored | ✅ Restored | ✅ Present | ✅ Present | ✅ Added | ✅ Added | ✅ Added | ✅ Added | ✅ Added | ✅ Added | ❌ Missing | Near Complete |
+| v1.0.33 | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Added | Complete |
 
 ---
 
@@ -837,6 +924,6 @@ stmt.run(sessionId, eventType, eventData, notes, durationMs, timestamp); // ❌ 
 - Patterns evolve (with backward compatibility)
 - New validation rules are needed
 
-**Last Updated:** 2025-10-08 (Added FIX-013: Vite Asset Import Pattern - ensures logo assets display correctly in production builds)
+**Last Updated:** 2025-10-09 (Added FIX-014: UpdateManager Asset Validation - prevents "Failed to parse URL from" errors by validating GitHub release assets before creating UpdateInfo)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/validate-critical-fixes.mjs`
