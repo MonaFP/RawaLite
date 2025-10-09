@@ -39,6 +39,9 @@ nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   perMachine: false
+  # Force consistent asset naming pattern (dashes instead of spaces)
+  # This ensures compatibility with UpdateManager across all versions
+  artifactName: "RawaLite-Setup-${version}.${ext}"
 mac:
   target:
     - target: dmg
