@@ -9,6 +9,15 @@ export interface Settings {
   nextCustomerNumber?: number;
   nextOfferNumber?: number;
   nextInvoiceNumber?: number;
+  
+  // Auto-Update Preferences (Migration 018)
+  autoUpdateEnabled?: boolean;
+  autoUpdateCheckFrequency?: 'startup' | 'daily' | 'weekly';
+  autoUpdateNotificationStyle?: 'subtle' | 'prominent';
+  autoUpdateReminderInterval?: number;
+  autoUpdateAutoDownload?: boolean;
+  autoUpdateInstallPrompt?: 'immediate' | 'scheduled' | 'manual';
+  
   createdAt?: string;
   updatedAt?: string;
 }

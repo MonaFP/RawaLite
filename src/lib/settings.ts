@@ -14,6 +14,14 @@ export type CompanyData = {
   bankBic?: string;
   taxOffice?: string; // Finanzamt
   logo?: string; // Base64-encoded Logo
+  
+  // Auto-Update Preferences (Migration 018)
+  autoUpdateEnabled?: boolean;
+  autoUpdateCheckFrequency?: 'startup' | 'daily' | 'weekly';
+  autoUpdateNotificationStyle?: 'subtle' | 'prominent';
+  autoUpdateReminderInterval?: number;
+  autoUpdateAutoDownload?: boolean;
+  autoUpdateInstallPrompt?: 'immediate' | 'scheduled' | 'manual';
 };
 
 export type NumberingCircle = {
@@ -47,7 +55,15 @@ export const defaultSettings: Settings = {
     bankAccount: '',
     bankBic: '',
     taxOffice: '',
-    logo: ''
+    logo: '',
+    
+    // Auto-Update Preferences Defaults
+    autoUpdateEnabled: false,
+    autoUpdateCheckFrequency: 'startup',
+    autoUpdateNotificationStyle: 'subtle',
+    autoUpdateReminderInterval: 4,
+    autoUpdateAutoDownload: false,
+    autoUpdateInstallPrompt: 'manual'
   },
   numberingCircles: [
     {

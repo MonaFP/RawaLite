@@ -136,6 +136,34 @@ declare interface Window {
       // Utility
       openDownloadFolder(): Promise<void>;
       verifyUpdateFile(filePath: string): Promise<boolean>;
+      
+      // === Phase 4: AutoUpdateService Security & Monitoring Extensions ===
+      
+      // Service Status Monitoring
+      getServiceStatus(): Promise<{
+        isRunning: boolean;
+        lastCheck: number | null;
+        currentDownload: any | null;
+        securityLevel: string;
+      }>;
+      
+      // Security Validation
+      validateSecurity(updateInfo: any): Promise<{
+        isValid: boolean;
+        securityChecks: {
+          hasValidSignature: boolean;
+          isFromTrustedSource: boolean;
+          hasValidChecksum: boolean;
+          virusScanClean: boolean;
+        };
+        recommendation: 'safe_to_download' | 'security_risk';
+      }>;
+      
+      // Service Preferences Management
+      updateServicePreferences(preferences: any): Promise<{
+        success: boolean;
+        message?: string;
+      }>;
     };
   };
   // 📄 PDF API (v1.7.5 Rollback for native Electron PDF generation)

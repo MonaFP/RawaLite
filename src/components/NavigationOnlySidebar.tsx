@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import logoUrl from '../assets/rawalite-logo.png';
+import SidebarUpdateWidget from './SidebarUpdateWidget';
+import { UpdateDialog } from './UpdateDialog';
 
 export const NavigationOnlySidebar: React.FC = () => {
   const location = useLocation();
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
 
   const navigationItems = [
     {
@@ -159,28 +162,19 @@ export const NavigationOnlySidebar: React.FC = () => {
         })}
       </nav>
 
-      {/* Version Info */}
-      <div style={{
-        marginTop: 'auto',
-        padding: '12px 8px',
-        textAlign: 'center',
-        borderTop: '1px solid rgba(255,255,255,0.08)'
-      }}>
-        <div style={{
-          fontSize: '0.7rem',
-          color: 'rgba(255,255,255,0.4)',
-          fontWeight: '500'
-        }}>
-          RawaLite v1.0.13
-        </div>
-        <div style={{
-          fontSize: '0.65rem',
-          color: 'rgba(255,255,255,0.3)',
-          marginTop: '2px'
-        }}>
-          Header Statistics Mode
-        </div>
-      </div>
+      {/* Smart Update Widget */}
+      <SidebarUpdateWidget 
+        checkOnMount={true}
+        onUpdateClick={() => setUpdateDialogOpen(true)}
+        position="sidebar"
+      />
+
+      {/* Update Dialog */}
+      <UpdateDialog 
+        isOpen={updateDialogOpen}
+        onClose={() => setUpdateDialogOpen(false)}
+        autoCheckOnOpen={false}
+      />
 
       <style>{`
         .nav-item:hover {

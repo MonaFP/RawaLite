@@ -40,6 +40,14 @@ export class FieldMapper {
     // Company/Settings Felder
     'logo': 'logo',
     
+    // Auto-Update Preferences Felder (Migration 018)
+    'autoUpdateEnabled': 'auto_update_enabled',
+    'autoUpdateCheckFrequency': 'auto_update_check_frequency',
+    'autoUpdateNotificationStyle': 'auto_update_notification_style',
+    'autoUpdateReminderInterval': 'auto_update_reminder_interval',
+    'autoUpdateAutoDownload': 'auto_update_auto_download',
+    'autoUpdateInstallPrompt': 'auto_update_install_prompt',
+    
     // Package Felder (KRITISCH - waren vorher nicht definiert!)
     'internalTitle': 'internal_title',
     'parentPackageId': 'parent_package_id',

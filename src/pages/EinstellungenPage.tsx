@@ -7,6 +7,7 @@ import type { CompanyData, NumberingCircle } from "../lib/settings";
 import { defaultSettings } from "../lib/settings";
 import { UpdateDialog } from "../components/UpdateDialog";
 import { UpdateStatus } from "../components/UpdateStatus";
+import { AutoUpdatePreferences } from "../components/AutoUpdatePreferences";
 import { ThemeSelector } from "../components/ThemeSelector";
 import { NavigationModeSelector } from "../components/NavigationModeSelector";
 import { useActivities } from "../hooks/useActivities";
@@ -1886,29 +1887,7 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
             <p style={{ margin: "0 0 16px 0", color: "#6b7280", fontSize: "14px" }}>
               Konfigurieren Sie, wie RawaLite mit Updates umgehen soll.
             </p>
-            <div style={{ 
-              padding: "16px", 
-              backgroundColor: "rgba(255,255,255,0.05)",
-              borderRadius: "8px",
-              border: "1px solid rgba(255,255,255,0.1)"
-            }}>
-              <label style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-                <input 
-                  type="checkbox" 
-                  disabled
-                  style={{ marginRight: "8px" }} 
-                />
-                <span style={{ fontSize: "14px" }}>Automatisch nach Updates suchen (Coming Soon)</span>
-              </label>
-              <label style={{ display: "flex", alignItems: "center" }}>
-                <input 
-                  type="checkbox" 
-                  disabled
-                  style={{ marginRight: "8px" }} 
-                />
-                <span style={{ fontSize: "14px" }}>Beta-Versionen einbeziehen (Coming Soon)</span>
-              </label>
-            </div>
+            <AutoUpdatePreferences />
           </div>
         </div>
       )}
