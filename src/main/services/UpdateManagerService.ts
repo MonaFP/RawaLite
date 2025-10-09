@@ -641,11 +641,15 @@ export class UpdateManagerService {
   }
 
   private createUpdateInfo(release: any): UpdateInfo {
-    // Enhanced asset matching for multiple naming patterns
+    // 🔄 UNIVERSAL ASSET COMPATIBILITY: Support both old (v1.0.32) and new naming patterns
     const asset = release.assets.find((a: any) => 
+      // Legacy pattern: RawaLite.Setup.1.0.32.exe (v1.0.32 and earlier)
+      a.name.match(/RawaLite\.Setup\.\d+\.\d+\.\d+\.exe$/i) ||
+      // Current pattern: RawaLite-Setup-1.0.35.exe (v1.0.34+)
+      a.name.match(/RawaLite-Setup-\d+\.\d+\.\d+\.exe$/i) ||
+      // Fallback patterns for any Setup.exe
       (a.name.includes('.exe') && a.name.includes('Setup')) ||
-      a.name.match(/RawaLite.*Setup.*\.exe$/i) ||
-      a.name.match(/RawaLite-Setup-.*\.exe$/i)
+      a.name.match(/RawaLite.*Setup.*\.exe$/i)
     );
 
     // 🔄 BACKWARD COMPATIBILITY FIX: Graceful degradation instead of throwing
@@ -957,8 +961,14 @@ Manual download: https://github.com/MonaFP/RawaLite/releases/tag/${release.tag_n
     }
 
     const release = this.state.checkResult.latestRelease;
+    // 🔄 UNIVERSAL ASSET COMPATIBILITY: Support both old (v1.0.32) and new naming patterns
     const asset = release.assets?.find((a: any) => 
-      a.name.includes('.exe') && a.name.includes('Setup')
+      // Legacy pattern: RawaLite.Setup.1.0.32.exe (v1.0.32 and earlier)
+      a.name.match(/RawaLite\.Setup\.\d+\.\d+\.\d+\.exe$/i) ||
+      // Current pattern: RawaLite-Setup-1.0.35.exe (v1.0.34+)
+      a.name.match(/RawaLite-Setup-\d+\.\d+\.\d+\.exe$/i) ||
+      // Fallback patterns for any Setup.exe
+      (a.name.includes('.exe') && a.name.includes('Setup'))
     ) || release.assets?.[0];
 
     // 🔄 BACKWARD COMPATIBILITY FIX: Graceful degradation for older clients (v1.0.32)
