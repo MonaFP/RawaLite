@@ -23,6 +23,8 @@ Führe FAST-TRACK Release durch mit minimaler, aber sicherer Validation:
 - [ ] 🏷️ **Emergency Tag:** Git commit + tag mit "HOTFIX:" prefix
 - [ ] 🚀 **Immediate Release:** GitHub Release mit "🚨 HOTFIX" im Titel
 - [ ] ⏰ **Monitor Actions:** GitHub Actions für Assets (oder manual fallback)
+- [ ] 🚨 **CRITICAL ASSET CHECK:** `gh release view vX.X.X --json assets` - MUSS Assets haben!
+- [ ] ❌ **EMERGENCY FALLBACK:** Bei `assets: []` → SOFORT `pnpm dist` + manual upload
 
 ### EMERGENCY PHASE 4: Rapid Deployment (1-2 Min)
 - [ ] 🧪 **Quick UpdateManager Test:** Nur Update-Check + Download verifizieren

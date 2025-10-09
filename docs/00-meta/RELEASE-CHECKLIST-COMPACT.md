@@ -10,7 +10,10 @@
 [ ] 🏷️ git commit + tag + push --tags
 [ ] 🚀 gh release create + generate-notes
 [ ] ⏰ wait for GitHub Actions assets (5-10 Min)
-[ ] ✅ verify UpdateManager functional
+[ ] 🚨 MANDATORY: gh release view vX.X.X --json assets (MUST show assets!)
+[ ] ❌ IF assets: [] → DELETE release + manual build: pnpm dist
+[ ] 🔧 Manual upload: gh release upload vX.X.X dist-release/RawaLite-Setup-X.X.X.exe
+[ ] ✅ verify UpdateManager functional (NO "Failed to parse URL" error!)
 [ ] 🎉 release ready for testusers
 ```
 
@@ -20,11 +23,21 @@
 - **Next Minor:** v1.1.0 (New features)
 - **Critical Fixes:** 14/14 active (CRITICAL-FIXES-REGISTRY.md)
 
-## 🚨 QUICK VALIDATION
+## 🚨 CRITICAL ASSET VALIDATION (NEW)
 ```bash
-pnpm validate:critical-fixes  # → 14/14 ✅
-pnpm test                     # → All passing ✅  
-git status                    # → Clean ✅
+# MANDATORY nach jedem Release:
+gh release view vX.X.X --json assets    # → MUSS Assets zeigen!
+
+# VERBOTEN - Release ohne Assets:
+{"assets": []}  # ❌ SOFORT LÖSCHEN!
+
+# ERFORDERLICH - Release mit Assets:
+{"assets": [{"name": "RawaLite-Setup-X.X.X.exe", "size": 106000000}]}  # ✅
+
+# Bei fehlendem Asset - SOFORTIGER Fallback:
+gh release delete vX.X.X --yes
+pnpm dist
+gh release create vX.X.X --generate-notes dist-release/RawaLite-Setup-X.X.X.exe
 ```
 
 ## 📱 TESTUSER COMMUNICATION TEMPLATE

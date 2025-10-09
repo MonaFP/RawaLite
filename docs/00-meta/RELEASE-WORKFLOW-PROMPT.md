@@ -22,7 +22,10 @@ Arbeite diese Phasen systematisch ab und validiere jeden Schritt:
 - [ ] 🚀 **Create Release:** `gh release create vX.X.X --title "🚀 RawaLite vX.X.X" --generate-notes`
 - [ ] 📝 **Release Notes:** Automatische Generation mit GitHub CLI
 - [ ] ⏰ **Monitor Actions:** GitHub Actions Status überwachen (.github/workflows/release.yml)
-- [ ] ✅ **Asset Check:** Warte auf und validiere Assets (.exe + .yml Dateien)
+- [ ] 🚨 **MANDATORY ASSET VALIDATION:** `gh release view vX.X.X --json assets` MUSS mindestens 2 Assets zeigen
+- [ ] ❌ **STOP IF NO ASSETS:** Wenn assets: [] → Release löschen und manuell builden
+- [ ] 🔧 **Manual Fallback:** Bei fehlendem Asset: `pnpm dist` → `gh release upload vX.X.X dist-release/RawaLite-Setup-X.X.X.exe`
+- [ ] ✅ **Final Asset Check:** Assets mit korrekter Größe (>100MB) und .exe Extension validieren
 
 ### PHASE 4: Post-Release Verification  
 - [ ] 🧪 **UpdateManager Test:** Simuliere Update-Check und Download-Fähigkeit
@@ -76,13 +79,28 @@ git status                    # Muss "working tree clean" zeigen
 ## MANUAL FALLBACK PROCEDURES
 Falls GitHub Actions fehlschlägt:
 ```bash
+# 🚨 CRITICAL: Immer bei fehlendem Asset ausführen!
 # Emergency Manual Build & Upload
 pnpm clean:release:force
 pnpm build
 pnpm dist  # May require native module rebuild
-# ⚠️ CRITICAL: Verwende korrekte Asset-Namen!
+
+# MANDATORY: Asset-Namen prüfen
+ls dist-release/              # Muss RawaLite-Setup-X.X.X.exe zeigen
+
+# MANDATORY: Release Asset Upload
 gh release upload vX.X.X "dist-release/RawaLite Setup X.X.X.exe" --name "RawaLite-Setup-X.X.X.exe"
+
+# MANDATORY: Final Validation
+gh release view vX.X.X --json assets | jq '.assets[].name'  # Muss .exe zeigen
 ```
+
+## ⚠️ CRITICAL ASSET VALIDATION RULES (NEW)
+- [ ] **NEVER** ignore empty assets array: `{"assets": []}`
+- [ ] **ALWAYS** check asset size: Must be >100MB for .exe file
+- [ ] **ALWAYS** verify asset naming: `RawaLite-Setup-X.X.X.exe` format
+- [ ] **STOP RELEASE** if UpdateManager would get "Failed to parse URL from" error
+- [ ] **DELETE RELEASE** if no assets and recreate with manual build
 
 ## SUCCESS CRITERIA
 - [ ] UpdateManager zeigt neues Update an
