@@ -462,7 +462,22 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
       }
       setIsDownloading(false);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Download fehlgeschlagen';
+      let errorMsg = err instanceof Error ? err.message : 'Download fehlgeschlagen';
+      
+      // ✅ USER-FRIENDLY: Check for missing assets error and provide helpful message
+      if (errorMsg.includes('No valid setup asset found')) {
+        errorMsg = `⏳ Build-Assets werden noch erstellt...
+
+Das Update ist verfügbar, aber die Download-Dateien werden noch automatisch erstellt. 
+
+🔧 Optionen:
+• In 5-10 Minuten erneut versuchen (Build-Pipeline läuft)
+• Manueller Download: GitHub.com → Releases → Neueste Version
+• Bei Problemen: Entwickler kontaktieren
+
+💡 Das passiert normalerweise nur bei frisch veröffentlichten Updates.`;
+      }
+      
       logError('UpdateDialog', 'startDownload', err as Error, { step: 'download_execution' });
       setError(errorMsg);
       setIsDownloading(false);
