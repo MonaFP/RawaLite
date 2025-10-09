@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { hookEventBus } from '../hooks/useHookEventBus';
 
 // Type definitions for different entity statuses
 type OfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected';
@@ -158,7 +159,15 @@ export function StatusControl({
       // Success - notify parent with updated data
       onUpdated(result);
       
+      // 🔥 NEW: Emit event for hook invalidation (keeps FIX-009 intact)
+      hookEventBus.emitEntityUpdate(kind, row.id, {
+        oldStatus: currentStatus,
+        status: newStatus,
+        version: result.version
+      });
+      
       console.log(`✅ Status updated: ${kind}[${row.id}] ${row.status} → ${newStatus} (v${row.version} → v${result.version})`);
+      console.log(`📡 Event emitted for hook invalidation: ${kind}-updated`);
       
     } catch (error) {
       // Rollback optimistic update

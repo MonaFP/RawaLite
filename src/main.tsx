@@ -10,6 +10,7 @@ import { SettingsProvider } from "./contexts/SettingsContext";
 import { NumberingProvider } from "./contexts/NumberingContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { NavigationProvider } from "./contexts/NavigationContext";
+import { FocusModeProvider } from "./contexts/FocusModeContext";
 
 // Import pages
 import DashboardPage from "./pages/DashboardPage";
@@ -83,19 +84,21 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>
       <NavigationProvider>
-        <LoadingProvider>
-          <NotificationProvider>
-            <PersistenceProvider mode="sqlite">
-              <SettingsProvider>
-                <NumberingProvider>
-                  <RouterProvider router={router} />
-                  <LoadingOverlay />
-                  <NotificationContainer />
-                </NumberingProvider>
-              </SettingsProvider>
-            </PersistenceProvider>
-          </NotificationProvider>
-        </LoadingProvider>
+        <FocusModeProvider>
+          <LoadingProvider>
+            <NotificationProvider>
+              <PersistenceProvider mode="sqlite">
+                <SettingsProvider>
+                  <NumberingProvider>
+                    <RouterProvider router={router} />
+                    <LoadingOverlay />
+                    <NotificationContainer />
+                  </NumberingProvider>
+                </SettingsProvider>
+              </PersistenceProvider>
+            </NotificationProvider>
+          </LoadingProvider>
+        </FocusModeProvider>
       </NavigationProvider>
     </ThemeProvider>
   </React.StrictMode>

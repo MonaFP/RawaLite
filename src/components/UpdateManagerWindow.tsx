@@ -9,6 +9,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import type { UpdateInfo, DownloadProgress } from '../types/update.types';
+import logoImage from '../assets/rawalite-logo.png';
 import { debugLogger, logClick, logApiCall, logApiResponse, logStateChange, logError } from '../services/DebugLogger';
 
 interface UpdateManagerWindowProps {
@@ -48,16 +49,19 @@ interface ProgressBarProps {
 function ProgressBar({ progress, color = 'var(--accent, var(--sidebar-green))', height = 8 }: ProgressBarProps) {
   return (
     <div 
-      className="rounded-full overflow-hidden"
       style={{ 
         height,
-        background: 'rgba(0,0,0,0.1)'
+        background: 'rgba(0,0,0,0.1)',
+        borderRadius: '9999px',
+        overflow: 'hidden'
       }}
     >
       <div
-        className="transition-all duration-300 ease-out rounded-full h-full"
         style={{
           width: `${Math.min(100, Math.max(0, progress))}%`,
+          transition: 'all 0.3s ease-out',
+          borderRadius: '9999px',
+          height: '100%',
           backgroundColor: color
         }}
       />
@@ -619,34 +623,45 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
     // Priority 8: No Update Available
     if (!hasUpdate && !isChecking) {
       return (
-        <div className="text-center py-8">
+        <div style={{ textAlign: 'center', padding: '32px 0' }}>
           <div 
-            className="text-4xl mb-4"
-            style={{ color: 'var(--ok, #22c55e)' }}
+            style={{ 
+              color: 'var(--ok, #22c55e)',
+              fontSize: '36px',
+              marginBottom: '16px'
+            }}
           >
             ✓
           </div>
           <h3 
-            className="text-lg font-semibold mb-2"
-            style={{ color: 'var(--ok, #22c55e)' }}
+            style={{ 
+              color: 'var(--ok, #22c55e)',
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '8px'
+            }}
           >
             Version ist aktuell
           </h3>
           <p 
-            className="mb-4"
-            style={{ color: 'var(--text-secondary, #374151)' }}
+            style={{ 
+              color: 'var(--text-secondary, #374151)',
+              marginBottom: '16px'
+            }}
           >
             Sie verwenden bereits die neueste Version ({currentVersion}).
           </p>
           <button
             onClick={checkForUpdates}
-            className="px-4 py-2 rounded-lg font-medium"
             style={{
               background: 'var(--accent, var(--sidebar-green))',
               color: 'white',
               border: 'none',
               cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontWeight: '500'
             }}
             onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.9'}
             onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
@@ -659,28 +674,36 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
 
     // Default: Initial State
     return (
-      <div className="text-center py-8">
+      <div style={{ textAlign: 'center', padding: '32px 0' }}>
         <h3 
-          className="text-lg font-semibold mb-2"
-          style={{ color: 'var(--text-primary, #1e293b)' }}
+          style={{ 
+            color: 'var(--text-primary, #1e293b)',
+            fontSize: '18px',
+            fontWeight: '600',
+            marginBottom: '8px'
+          }}
         >
           Update-Manager
         </h3>
         <p 
-          className="mb-4"
-          style={{ color: 'var(--text-secondary, #374151)' }}
+          style={{ 
+            color: 'var(--text-secondary, #374151)',
+            marginBottom: '16px'
+          }}
         >
           Aktuelle Version: {currentVersion}
         </p>
         <button
           onClick={checkForUpdates}
-          className="px-4 py-2 rounded-lg font-medium"
           style={{
             background: 'var(--accent, var(--sidebar-green))',
             color: 'white',
             border: 'none',
             cursor: 'pointer',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            fontWeight: '500'
           }}
           onMouseEnter={(e) => (e.target as HTMLElement).style.opacity = '0.9'}
           onMouseLeave={(e) => (e.target as HTMLElement).style.opacity = '1'}
@@ -693,54 +716,71 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
 
   return (
     <div 
-      className="min-h-screen p-6" 
       style={{ 
         background: 'var(--main-bg, linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%))',
-        color: 'var(--text-primary, #1e293b)'
+        color: 'var(--text-primary, #1e293b)',
+        minHeight: '100vh',
+        padding: '24px'
       }}
     >
-      <div className="max-w-md mx-auto">
+      <div style={{ maxWidth: '400px', margin: '0 auto' }}>
         {/* Header */}
         <div 
-          className="rounded-lg shadow-sm p-6 mb-6"
           style={{ 
             background: 'var(--card-bg, rgba(255,255,255,0.98))',
             boxShadow: '0 10px 30px rgba(0,0,0,.15), 0 1px 8px rgba(0,0,0,.08)',
             backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(0,0,0,.12)'
+            border: '1px solid rgba(0,0,0,.12)',
+            borderRadius: '8px',
+            padding: '24px',
+            marginBottom: '24px'
           }}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               <div 
-                className="w-12 h-12 rounded-lg flex items-center justify-center mr-3 overflow-hidden"
-                style={{ 
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: '12px',
+                  overflow: 'hidden',
                   background: 'var(--accent, var(--sidebar-green))',
                   color: 'white'
                 }}
               >
                 <img 
-                  src="/rawalite-logo.png" 
+                  src={logoImage} 
                   alt="RawaLite Logo" 
-                  className="w-10 h-10 object-contain"
+                  style={{ width: '40px', height: '40px', objectFit: 'contain' }}
                   onError={(e) => {
                     // Fallback zum Lightning-Symbol wenn Logo nicht lädt
                     (e.target as HTMLImageElement).style.display = 'none';
                     (e.target as HTMLImageElement).nextElementSibling!.textContent = '⚡';
                   }}
                 />
-                <span className="text-xl" style={{ display: 'none' }}>⚡</span>
+                <span style={{ fontSize: '20px', display: 'none' }}>⚡</span>
               </div>
               <div>
                 <h1 
-                  className="text-xl font-bold"
-                  style={{ color: 'var(--text-primary, #1e293b)' }}
+                  style={{ 
+                    color: 'var(--text-primary, #1e293b)',
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    margin: '0'
+                  }}
                 >
                   RawaLite
                 </h1>
                 <p 
-                  className="text-sm"
-                  style={{ color: 'var(--text-secondary, #374151)' }}
+                  style={{ 
+                    color: 'var(--text-secondary, #374151)',
+                    fontSize: '14px',
+                    margin: '0'
+                  }}
                 >
                   Update Manager
                 </p>
@@ -751,13 +791,14 @@ export function UpdateManagerWindow({ autoCheckOnMount = true }: UpdateManagerWi
 
         {/* Content */}
         <div 
-          className="rounded-lg shadow-sm p-6"
           style={{ 
             background: 'var(--card-bg, rgba(255,255,255,0.98))',
             boxShadow: '0 10px 30px rgba(0,0,0,.15), 0 1px 8px rgba(0,0,0,.08)',
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(0,0,0,.12)',
-            color: 'var(--text-primary, #1e293b)'
+            color: 'var(--text-primary, #1e293b)',
+            borderRadius: '8px',
+            padding: '24px'
           }}
         >
           {renderContent()}

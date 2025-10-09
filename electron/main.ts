@@ -10,6 +10,8 @@ import { updateEntityStatus, getStatusHistory, getEntityForUpdate } from '../src
 import { getDb, prepare, exec, tx } from '../src/main/db/Database'
 import { runAllMigrations } from '../src/main/db/MigrationService'
 import { createHotBackup, createVacuumBackup, checkIntegrity, restoreFromBackup, cleanOldBackups } from '../src/main/db/BackupService'
+// 🛠️ Development imports
+import { createUpdateManagerDevWindow } from './windows/updateManagerDev'
 
 console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
 
@@ -972,6 +974,13 @@ function generateTemplateHTML(options: any): string {
     total: entity.total
   });
   
+  console.log(`🔍 PDF Entity notes debug:`, {
+    templateType,
+    hasNotes: !!entity.notes,
+    notesLength: entity.notes?.length || 0,
+    notesContent: entity.notes || 'undefined'
+  });
+  
   // Markdown zu HTML konvertieren mit sicherer Konfiguration
   function convertMarkdownToHtml(markdown: string | undefined): string {
     if (!markdown?.trim()) return '';
@@ -1587,3 +1596,28 @@ ipcMain.handle('files:getImageAsBase64', async (event, filePath: string) => {
     };
   }
 });
+
+// ============================================================================
+// 🛠️ DEVELOPMENT COMMANDS
+// ============================================================================
+
+// Check for development flags
+const isUpdateManagerDev = process.argv.includes('--update-manager-dev');
+
+if (isDev && isUpdateManagerDev) {
+  console.log('🛠️ [DEV] UpdateManager Development Mode activated');
+  
+  // Create standalone UpdateManager development window AFTER normal app startup
+  app.whenReady().then(() => {
+    setTimeout(() => {
+      createUpdateManagerDevWindow();
+      
+      console.log('🛠️ [DEV] UpdateManager Development Window created');
+      console.log('🛠️ [DEV] Features:');
+      console.log('  - DevTools enabled');
+      console.log('  - Mock progress service available');
+      console.log('  - Hot reload support');
+      console.log('  - CSS variable debugging');
+    }, 2000); // Delay to allow normal app startup first
+  });
+}
