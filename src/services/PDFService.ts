@@ -136,6 +136,22 @@ export class PDFService {
         notesContent: invoice.notes ? (invoice.notes.substring(0, 100) + (invoice.notes.length > 100 ? '...' : '')) : 'undefined',
         fullNotes: invoice.notes
       });
+      console.log('📋 Invoice data received for PDF:', {
+        discountType: invoice.discountType,
+        discountValue: invoice.discountValue,
+        discountAmount: invoice.discountAmount,
+        subtotalBeforeDiscount: invoice.subtotalBeforeDiscount,
+        subtotal: invoice.subtotal,
+        total: invoice.total,
+        lineItemsWithAttachments: invoice.lineItems?.map(item => ({ 
+          id: item.id, 
+          title: item.title,
+          attachmentCount: item.attachments?.length || 0 
+        }))
+      });
+      
+      // Process attachments - convert file paths to base64 for PDF embedding
+      const processedInvoice = await this.processInvoiceAttachments(invoice);
       
       // Generate theme data for PDF styling
       const pdfTheme = currentTheme ? this.getCurrentPDFTheme(currentTheme, customColors) : null;
@@ -145,7 +161,7 @@ export class PDFService {
       const templateData = {
         templateType: 'invoice' as const,
         data: {
-          invoice,
+          invoice: processedInvoice,
           customer,
           settings,
           currentDate: new Date().toLocaleDateString('de-DE'),
@@ -325,6 +341,37 @@ export class PDFService {
     });
 
     return offer; // Return as-is since base64Data is already available
+  }
+
+  /**
+   * Process invoice attachments for PDF embedding
+   * Since we use database-only storage, attachments already have base64Data
+   */
+  private static async processInvoiceAttachments(invoice: Invoice): Promise<Invoice> {
+    if (!invoice.lineItems) {
+      console.log('📷 [PDF] No line items found in invoice');
+      return invoice;
+    }
+
+    console.log('📷 [PDF] Processing invoice attachments for', invoice.lineItems.length, 'line items');
+
+    // With database-only storage, attachments already have base64Data
+    // Just log what we have for debugging
+    invoice.lineItems.forEach((lineItem) => {
+      if (lineItem.attachments && lineItem.attachments.length > 0) {
+        console.log(`📷 [PDF] Invoice line item ${lineItem.id} has ${lineItem.attachments.length} attachments:`);
+        lineItem.attachments.forEach((attachment) => {
+          console.log(`📷 [PDF] - ${attachment.originalFilename} (${attachment.fileType}) - has base64: ${!!attachment.base64Data}`);
+          if (attachment.base64Data) {
+            console.log(`📷 [PDF] - Base64 data length: ${attachment.base64Data.length} chars`);
+          }
+        });
+      } else {
+        console.log(`📷 [PDF] Invoice line item ${lineItem.id} has no attachments`);
+      }
+    });
+
+    return invoice; // Return as-is since base64Data is already available
   }
 
   /**

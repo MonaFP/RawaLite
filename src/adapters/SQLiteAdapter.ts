@@ -1,4 +1,4 @@
-import type { PersistenceAdapter, Settings, Customer, Offer, Invoice, Package, Activity, Timesheet, TimesheetActivity, OfferAttachment } from "../persistence/adapter";
+import type { PersistenceAdapter, Settings, Customer, Offer, Invoice, Package, Activity, Timesheet, TimesheetActivity, OfferAttachment, InvoiceAttachment } from "../persistence/adapter";
 import { DbClient } from "../services/DbClient";
 import { FieldMapper, mapFromSQL, mapFromSQLArray, mapToSQL, convertSQLQuery } from "../lib/field-mapper";
 
@@ -859,9 +859,17 @@ export class SQLiteAdapter implements PersistenceAdapter {
       parent_item_id: number | null;
     }>(lineItemQuery, [id]);
 
-    return {
-      ...invoice,
-      lineItems: lineItems.map(item => {
+    // Load attachments for each line item
+    const lineItemsWithAttachments = await Promise.all(
+      lineItems.map(async (item) => {
+        console.log(`🔍 [DB] Loading attachments for invoice line item ${item.id} in invoice ${id}`);
+        const attachments = await this.getInvoiceAttachments(id, item.id);
+        console.log(`🔍 [DB] Found ${attachments.length} attachments for invoice line item ${item.id}`);
+        if (attachments.length > 0) {
+          attachments.forEach((att, index) => {
+            console.log(`🔍 [DB] Invoice Attachment ${index + 1}: ${att.originalFilename} (base64 length: ${att.base64Data?.length || 'NULL'})`);
+          });
+        }
         const mappedItem = mapFromSQL(item);
         return {
           id: mappedItem.id,
@@ -870,9 +878,15 @@ export class SQLiteAdapter implements PersistenceAdapter {
           quantity: mappedItem.quantity,
           unitPrice: mappedItem.unitPrice,
           total: mappedItem.total,
-          parentItemId: mappedItem.parentItemId || undefined
+          parentItemId: mappedItem.parentItemId || undefined,
+          attachments: attachments
         };
       })
+    );
+
+    return {
+      ...invoice,
+      lineItems: lineItemsWithAttachments
     };
   }
 
@@ -953,6 +967,39 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
       // Map sub-item ID as well for potential nested sub-items
       idMapping[item.id] = Number(itemResult.lastInsertRowid);
+    }
+
+    // Process attachments for all line items (main and sub-items)
+    for (const item of data.lineItems) {
+      if (item.attachments && item.attachments.length > 0) {
+        const dbLineItemId = idMapping[item.id];
+        console.log(`📎 Processing ${item.attachments.length} attachments for invoice line item ${item.id} (DB ID: ${dbLineItemId})`);
+        
+        for (const attachment of item.attachments) {
+          // Only create attachments with negative IDs (new attachments)
+          if (attachment.id < 0) {
+            console.log(`📎 DEBUG: Creating invoice attachment:`, {
+              filename: attachment.filename,
+              originalFilename: attachment.originalFilename,
+              fileType: attachment.fileType,
+              fileSize: attachment.fileSize,
+              hasBase64: !!attachment.base64Data
+            });
+            
+            await this.createInvoiceAttachment({
+              invoiceId: Number(invoiceId),
+              lineItemId: dbLineItemId,
+              filename: attachment.filename,
+              originalFilename: attachment.originalFilename,
+              fileType: attachment.fileType,
+              fileSize: attachment.fileSize,
+              base64Data: attachment.base64Data,
+              description: attachment.description
+            });
+            console.log(`📎 Created invoice attachment: ${attachment.originalFilename}`);
+          }
+        }
+      }
     }
 
     const newInvoice = await this.getInvoice(invoiceId);
@@ -1301,9 +1348,9 @@ export class SQLiteAdapter implements PersistenceAdapter {
     });
 
     const result = await this.client.exec(
-      `INSERT INTO offer_attachments 
-       (offer_id, line_item_id, filename, original_filename, file_type, file_size, file_path, base64_data, description, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      convertSQLQuery(`INSERT INTO offer_attachments 
+       (offerId, lineItemId, filename, originalFilename, fileType, fileSize, filePath, base64Data, description, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
       [
         mappedAttachment.offer_id,
         mappedAttachment.line_item_id || null,
@@ -1320,7 +1367,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     );
 
     const created = await this.client.query<any>(
-      `SELECT * FROM offer_attachments WHERE id = ?`,
+      convertSQLQuery(`SELECT * FROM offer_attachments WHERE id = ?`),
       [result.lastInsertRowid]
     );
 
@@ -1328,30 +1375,31 @@ export class SQLiteAdapter implements PersistenceAdapter {
   }
 
   async getOfferAttachments(offerId: number, lineItemId?: number): Promise<OfferAttachment[]> {
-    let query = `SELECT * FROM offer_attachments WHERE offer_id = ?`;
+    let query = `SELECT * FROM offer_attachments WHERE offerId = ?`;
     const params = [offerId];
 
     if (lineItemId !== undefined) {
-      query += ` AND line_item_id = ?`;
+      query += ` AND lineItemId = ?`;
       params.push(lineItemId);
     }
 
-    query += ` ORDER BY created_at ASC`;
+    query += ` ORDER BY createdAt ASC`;
 
-    const rows = await this.client.query<any>(query, params);
+    const convertedQuery = convertSQLQuery(query);
+    const rows = await this.client.query<any>(convertedQuery, params);
     return mapFromSQLArray(rows) as OfferAttachment[];
   }
 
   async deleteOfferAttachment(attachmentId: number): Promise<void> {
     await this.client.exec(
-      `DELETE FROM offer_attachments WHERE id = ?`,
+      convertSQLQuery(`DELETE FROM offer_attachments WHERE id = ?`),
       [attachmentId]
     );
   }
 
   async updateOfferAttachment(id: number, patch: Partial<OfferAttachment>): Promise<OfferAttachment> {
     const current = await this.client.query<any>(
-      `SELECT * FROM offer_attachments WHERE id = ?`,
+      convertSQLQuery(`SELECT * FROM offer_attachments WHERE id = ?`),
       [id]
     );
 
@@ -1363,10 +1411,10 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const mappedNext = mapToSQL(next);
 
     await this.client.exec(
-      `UPDATE offer_attachments SET 
-       filename = ?, original_filename = ?, file_type = ?, file_size = ?, 
-       file_path = ?, base64_data = ?, description = ?, updated_at = ?
-       WHERE id = ?`,
+      convertSQLQuery(`UPDATE offer_attachments SET 
+       filename = ?, originalFilename = ?, fileType = ?, fileSize = ?, 
+       filePath = ?, base64Data = ?, description = ?, updatedAt = ?
+       WHERE id = ?`),
       [
         mappedNext.filename,
         mappedNext.original_filename,
@@ -1381,6 +1429,99 @@ export class SQLiteAdapter implements PersistenceAdapter {
     );
 
     return next as OfferAttachment;
+  }
+
+  // INVOICE ATTACHMENTS
+  async createInvoiceAttachment(attachment: Omit<InvoiceAttachment, 'id' | 'createdAt' | 'updatedAt'>): Promise<InvoiceAttachment> {
+    const now = nowIso();
+    const mappedAttachment = mapToSQL({
+      ...attachment,
+      createdAt: now,
+      updatedAt: now
+    });
+
+    const result = await this.client.exec(
+      convertSQLQuery(`INSERT INTO invoice_attachments 
+       (invoiceId, lineItemId, filename, originalFilename, fileType, fileSize, filePath, base64Data, description, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
+      [
+        mappedAttachment.invoice_id,
+        mappedAttachment.line_item_id || null,
+        mappedAttachment.filename,
+        mappedAttachment.original_filename,
+        mappedAttachment.file_type,
+        mappedAttachment.file_size,
+        mappedAttachment.file_path || null,
+        mappedAttachment.base64_data || null,
+        mappedAttachment.description || null,
+        mappedAttachment.created_at,
+        mappedAttachment.updated_at
+      ]
+    );
+
+    const created = await this.client.query<any>(
+      convertSQLQuery(`SELECT * FROM invoice_attachments WHERE id = ?`),
+      [result.lastInsertRowid]
+    );
+
+    return mapFromSQL(created[0]) as InvoiceAttachment;
+  }
+
+  async getInvoiceAttachments(invoiceId: number, lineItemId?: number): Promise<InvoiceAttachment[]> {
+    let query = `SELECT * FROM invoice_attachments WHERE invoiceId = ?`;
+    const params = [invoiceId];
+
+    if (lineItemId !== undefined) {
+      query += ` AND lineItemId = ?`;
+      params.push(lineItemId);
+    }
+
+    query += ` ORDER BY createdAt ASC`;
+
+    const convertedQuery = convertSQLQuery(query);
+    const rows = await this.client.query<any>(convertedQuery, params);
+    return mapFromSQLArray(rows) as InvoiceAttachment[];
+  }
+
+  async deleteInvoiceAttachment(attachmentId: number): Promise<void> {
+    await this.client.exec(
+      convertSQLQuery(`DELETE FROM invoice_attachments WHERE id = ?`),
+      [attachmentId]
+    );
+  }
+
+  async updateInvoiceAttachment(id: number, patch: Partial<InvoiceAttachment>): Promise<InvoiceAttachment> {
+    const current = await this.client.query<any>(
+      convertSQLQuery(`SELECT * FROM invoice_attachments WHERE id = ?`),
+      [id]
+    );
+
+    if (current.length === 0) {
+      throw new Error(`Invoice attachment with id ${id} not found`);
+    }
+
+    const next = { ...mapFromSQL(current[0]), ...patch, updatedAt: nowIso() };
+    const mappedNext = mapToSQL(next);
+
+    await this.client.exec(
+      convertSQLQuery(`UPDATE invoice_attachments SET 
+       filename = ?, originalFilename = ?, fileType = ?, fileSize = ?, 
+       filePath = ?, base64Data = ?, description = ?, updatedAt = ?
+       WHERE id = ?`),
+      [
+        mappedNext.filename,
+        mappedNext.original_filename,
+        mappedNext.file_type,
+        mappedNext.file_size,
+        mappedNext.file_path || null,
+        mappedNext.base64_data || null,
+        mappedNext.description || null,
+        mappedNext.updated_at,
+        id
+      ]
+    );
+
+    return next as InvoiceAttachment;
   }
 
   // READY STATUS
