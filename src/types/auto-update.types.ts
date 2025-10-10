@@ -52,6 +52,7 @@ export interface AutoUpdatePreferences {
   reminderInterval: number;               // Stunden zwischen Erinnerungen
   autoDownload: boolean;                  // Background Download erlaubt
   installPrompt: 'immediate' | 'scheduled' | 'manual';
+  updateChannel: 'stable' | 'beta';       // Mini-Fix Delivery: Update Channel
 }
 
 /**
@@ -63,7 +64,8 @@ export const DEFAULT_AUTO_UPDATE_PREFERENCES: AutoUpdatePreferences = {
   notificationStyle: 'subtle',
   reminderInterval: 4,
   autoDownload: false,
-  installPrompt: 'manual'
+  installPrompt: 'manual',
+  updateChannel: 'stable'
 };
 
 /**

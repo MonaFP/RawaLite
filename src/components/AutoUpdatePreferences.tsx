@@ -61,6 +61,43 @@ export const AutoUpdatePreferences: React.FC = () => {
       {/* Nur zeigen wenn aktiviert */}
       {preferences.enabled && (
         <div style={{ marginLeft: "24px", borderLeft: "2px solid rgba(255,255,255,0.1)", paddingLeft: "16px" }}>
+          {/* Update Channel Selection */}
+          <div style={{ marginBottom: "12px" }}>
+            <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: "500" }}>
+              Update-Kanal:
+            </label>
+            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+                <input 
+                  type="radio" 
+                  name="updateChannel"
+                  value="stable"
+                  checked={preferences.updateChannel === 'stable'}
+                  onChange={(e) => updatePreference('updateChannel', e.target.value as 'stable' | 'beta')}
+                  style={{ marginRight: "6px" }} 
+                />
+                <span style={{ fontSize: "14px" }}>Stable (Empfohlen)</span>
+              </label>
+              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+                <input 
+                  type="radio" 
+                  name="updateChannel"
+                  value="beta"
+                  checked={preferences.updateChannel === 'beta'}
+                  onChange={(e) => updatePreference('updateChannel', e.target.value as 'stable' | 'beta')}
+                  style={{ marginRight: "6px" }} 
+                />
+                <span style={{ fontSize: "14px", color: "rgba(255, 165, 0, 0.9)" }}>Beta (Vorabversionen)</span>
+              </label>
+            </div>
+            <div style={{ fontSize: "12px", opacity: 0.7, marginTop: "4px" }}>
+              {preferences.updateChannel === 'beta' 
+                ? "⚠️ Beta-Kanal enthält Vorabversionen und möglicherweise instabile Features"
+                : "✅ Stable-Kanal erhält nur getestete, stabile Versionen"
+              }
+            </div>
+          </div>
+
           {/* Check-Häufigkeit */}
           <div style={{ marginBottom: "12px" }}>
             <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: "500" }}>

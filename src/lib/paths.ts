@@ -245,6 +245,27 @@ export class PATHS {
     return pathUtils.join(assetsDir, 'uploads');
   }
 
+  // 🔧 **Mini-Fix Delivery - Asset Override System**
+  static async OVERRIDE_ASSETS_DIR(): Promise<string> {
+    const appData = await this.pathManager.getAppDataPath();
+    return pathUtils.join(appData, 'override-assets');
+  }
+
+  static async getOverridePath(assetPath: string): Promise<string> {
+    const overrideDir = await this.OVERRIDE_ASSETS_DIR();
+    // Normalisiere den Asset-Pfad und erstelle Override-Pfad
+    const normalizedPath = assetPath.replace(/^\/+|\\+/g, '').replace(/\\+/g, '/');
+    return pathUtils.join(overrideDir, normalizedPath);
+  }
+
+  static async ensureOverrideDir(assetPath: string): Promise<string> {
+    const overridePath = await this.getOverridePath(assetPath);
+    // Extrahiere Directory-Pfad aus der Asset-Datei
+    const dirPath = overridePath.substring(0, overridePath.lastIndexOf('/'));
+    await this.ensureDir(dirPath);
+    return overridePath;
+  }
+
   // 🧪 **Testing & Development**
   static async TEST_DATA_DIR(): Promise<string> {
     if (!isTest) {
@@ -320,7 +341,8 @@ export class PATHS {
       exports: await this.EXPORTS_DIR(),
       templates: await this.TEMPLATES_DIR(),
       settings: await this.SETTINGS_DIR(),
-      assets: await this.ASSETS_DIR()
+      assets: await this.ASSETS_DIR(),
+      overrideAssets: await this.OVERRIDE_ASSETS_DIR()
     };
   }
 }
@@ -371,6 +393,10 @@ export const PathsTestUtils = {
  * 
  * const dbPath = await PATHS.DATABASE_FILE();
  * const logPath = await PATHS.LOG_FILE();
+ * 
+ * // 🔧 Mini-Fix Delivery - Asset Override
+ * const overridePath = await PATHS.getOverridePath('assets/icon.png');
+ * const readyPath = await PATHS.ensureOverrideDir('assets/styles/main.css');
  * 
  * // ❌ Never do this
  * import { app } from 'electron';
