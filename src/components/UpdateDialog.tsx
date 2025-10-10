@@ -331,6 +331,26 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
   const [error, setError] = useState<string | null>(null);
   const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
   const [needsRestart, setNeedsRestart] = useState(false);
+  
+  // Legacy v1.0.41 Support - Manual File Selection
+  const [isLegacyMode, setIsLegacyMode] = useState(false);
+  const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
+  const [fileValidation, setFileValidation] = useState<{
+    isValid: boolean;
+    error?: string;
+    size?: number;
+  } | null>(null);
+
+  // Helper: Check if current version is v1.0.41 or lower (needs legacy mode)
+  const isLegacyVersion = (version: string): boolean => {
+    try {
+      const [major, minor, patch] = version.split('.').map(Number);
+      // v1.0.41 and lower need manual installation due to redirect bug
+      return major === 1 && minor === 0 && patch <= 41;
+    } catch {
+      return false;
+    }
+  };
 
   // Subscribe to Update Events from Main Process
   useEffect(() => {
@@ -404,20 +424,49 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
         setLatestVersion(result.latestVersion);
         logStateChange('UpdateDialog', { hasUpdate: false }, { hasUpdate: true, latestVersion: result.latestVersion }, 'update_found');
         
-        // Use latestRelease data for updateInfo
-        if (result.latestRelease) {
+        let normalizedInfo: UpdateInfo | null = null;
+
+        try {
+          logApiCall('UpdateDialog', 'getUpdateInfo');
+          normalizedInfo = await window.rawalite.updates.getUpdateInfo();
+          logApiResponse('UpdateDialog', 'getUpdateInfo', normalizedInfo);
+        } catch (getInfoError) {
+          logError('UpdateDialog', 'getUpdateInfo', getInfoError as Error, { step: 'fetch_normalized_update_info' });
+        }
+
+        if (normalizedInfo) {
+          setUpdateInfo(normalizedInfo);
+          logStateChange('UpdateDialog', { updateInfo: undefined }, { updateInfo: normalizedInfo }, 'updateInfo_set_normalized');
+        } else if (result.latestRelease) {
+          const installerAsset =
+            result.latestRelease.assets?.find(asset =>
+              asset.name?.toLowerCase().endsWith('.exe') ||
+              asset.browser_download_url?.toLowerCase().endsWith('.exe') ||
+              /setup/i.test(asset.name || '')
+            ) || result.latestRelease.assets?.[0];
+
+          const fallbackVersion = result.latestRelease.tag_name?.replace(/^v/, '') || result.latestVersion;
+          const fallbackDownloadUrl = installerAsset?.browser_download_url
+            || (fallbackVersion
+              ? `https://github.com/MonaFP/RawaLite/releases/download/v${fallbackVersion}/RawaLite-Setup-${fallbackVersion}.exe`
+              : '');
+
+          const fallbackAssetName = installerAsset?.name
+            || (fallbackVersion ? `RawaLite-Setup-${fallbackVersion}.exe` : 'RawaLite-Setup-latest.exe');
+
           const updateInfoData = {
             version: result.latestVersion,
             name: result.latestRelease.name || `RawaLite v${result.latestVersion}`,
             releaseNotes: result.latestRelease.body || '',
             publishedAt: result.latestRelease.published_at || new Date().toISOString(),
-            downloadUrl: result.latestRelease.assets?.[0]?.browser_download_url || '',
-            assetName: result.latestRelease.assets?.[0]?.name || 'RawaLite.Setup.exe',
-            fileSize: result.latestRelease.assets?.[0]?.size || 0,
+            downloadUrl: fallbackDownloadUrl,
+            assetName: fallbackAssetName,
+            fileSize: installerAsset?.size || 0,
             isPrerelease: result.latestRelease.prerelease || false
           };
+
           setUpdateInfo(updateInfoData);
-          logStateChange('UpdateDialog', { updateInfo: undefined }, { updateInfo: updateInfoData }, 'updateInfo_set');
+          logStateChange('UpdateDialog', { updateInfo: undefined }, { updateInfo: updateInfoData }, 'updateInfo_set_fallback');
         }
       } else {
         setHasUpdate(false);
@@ -529,6 +578,100 @@ Das Update ist verfügbar, aber die Download-Dateien werden noch automatisch ers
     logStateChange('UpdateDialog', { isDownloading: true }, { isDownloading: false }, 'download_cancelled');
   };
 
+  // Legacy v1.0.41 Support: Manual File Selection
+  const selectManualUpdateFile = async () => {
+    logClick('UpdateDialog', 'selectManualUpdateFile');
+    
+    if (!window.rawalite?.updates?.selectUpdateFile) {
+      setError('File-Picker ist nicht verfügbar');
+      return;
+    }
+
+    try {
+      setError(null);
+      logApiCall('UpdateDialog', 'selectUpdateFile');
+      
+      const filePath = await window.rawalite.updates.selectUpdateFile();
+      logApiResponse('UpdateDialog', 'selectUpdateFile', { filePath });
+      
+      if (!filePath) {
+        // User cancelled selection
+        console.log('📁 User cancelled file selection');
+        return;
+      }
+
+      setSelectedFilePath(filePath);
+      
+      // Validate the selected file
+      await validateSelectedFile(filePath);
+      
+    } catch (err) {
+      const errorMsg = `File-Auswahl fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`;
+      logError('UpdateDialog', 'selectManualUpdateFile', err as Error);
+      setError(errorMsg);
+      setFileValidation({ isValid: false, error: errorMsg });
+    }
+  };
+
+  const validateSelectedFile = async (filePath: string) => {
+    if (!window.rawalite?.updates?.validateUpdateFile) {
+      setFileValidation({ isValid: false, error: 'File-Validierung nicht verfügbar' });
+      return;
+    }
+
+    try {
+      logApiCall('UpdateDialog', 'validateUpdateFile', { filePath });
+      
+      const validation = await window.rawalite.updates.validateUpdateFile(filePath);
+      logApiResponse('UpdateDialog', 'validateUpdateFile', validation);
+      
+      setFileValidation(validation);
+      
+      if (validation.isValid) {
+        console.log(`✅ Selected file validated: ${filePath} (${validation.size} bytes)`);
+      } else {
+        console.warn(`❌ Selected file invalid: ${validation.error}`);
+      }
+      
+    } catch (err) {
+      const errorMsg = `File-Validierung fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`;
+      logError('UpdateDialog', 'validateSelectedFile', err as Error);
+      setFileValidation({ isValid: false, error: errorMsg });
+    }
+  };
+
+  const installManualUpdate = async () => {
+    if (!selectedFilePath || !fileValidation?.isValid) {
+      setError('Keine gültige Installationsdatei ausgewählt');
+      return;
+    }
+
+    logClick('UpdateDialog', 'installManualUpdate', { filePath: selectedFilePath });
+    
+    setIsInstalling(true);
+    setError(null);
+    
+    try {
+      logApiCall('UpdateDialog', 'installUpdate', { filePath: selectedFilePath, manual: true });
+      
+      await window.rawalite.updates.installUpdate(selectedFilePath, {
+        silent: true,
+        restartAfter: false // Ask user first
+      });
+      
+      logApiResponse('UpdateDialog', 'installUpdate', { success: true, manual: true });
+      setNeedsRestart(true);
+      console.log('✅ Manual update installation completed, restart required');
+      
+    } catch (err) {
+      const errorMsg = `Installation fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`;
+      logError('UpdateDialog', 'installManualUpdate', err as Error);
+      setError(errorMsg);
+    } finally {
+      setIsInstalling(false);
+    }
+  };
+
   const restartApp = async () => {
     logClick('UpdateDialog', 'restartApp');
     
@@ -587,6 +730,22 @@ Das Update ist verfügbar, aber die Download-Dateien werden noch automatisch ers
       return () => clearTimeout(timer);
     }
   }, [isOpen, autoCheckOnOpen, isChecking]); // Removed state.currentPhase dependency
+
+  // Get current version and detect legacy mode
+  useEffect(() => {
+    if (isOpen && window.rawalite?.updates?.getCurrentVersion) {
+      window.rawalite.updates.getCurrentVersion()
+        .then(version => {
+          setCurrentVersion(version);
+          const isLegacy = isLegacyVersion(version);
+          setIsLegacyMode(isLegacy);
+          console.log(`📱 Version ${version} detected, Legacy Mode: ${isLegacy}`);
+        })
+        .catch(err => {
+          console.warn('Failed to get current version:', err);
+        });
+    }
+  }, [isOpen]);
 
   // Don't render if not open
   if (!isOpen) return null;
@@ -653,6 +812,105 @@ Das Update ist verfügbar, aber die Download-Dateien werden noch automatisch ers
                   <p className="text-gray-600 text-sm">Prüfe GitHub für neue Versionen</p>
                   <div className="mt-4">
                     <ProgressBar progress={50} color="#3b82f6" height={4} />
+                  </div>
+                </div>
+              );
+            }
+
+            // Priority 2.5: Legacy Mode (v1.0.41) - Manual File Selection
+            if (isLegacyMode && hasUpdate && !downloadedFilePath && !selectedFilePath) {
+              return (
+                <div className="py-6">
+                  <div className="text-center mb-6">
+                    <div className="text-yellow-500 text-4xl mb-4">⚠️</div>
+                    <h3 className="text-lg font-semibold mb-2">Manuelle Aktualisierung erforderlich</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Ihr Client (v{currentVersion}) benötigt eine einmalige manuelle Aktualisierung.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <h4 className="font-medium text-blue-900 mb-2">Verfügbares Update:</h4>
+                    <p className="text-sm text-blue-800">
+                      <strong>{updateInfo?.name || `Version ${latestVersion}`}</strong>
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      {updateInfo?.fileSize ? `Größe: ${formatBytes(updateInfo.fileSize)}` : ''}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <button
+                      onClick={selectManualUpdateFile}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                    >
+                      📁 Installationsdatei auswählen
+                    </button>
+                    
+                    <p className="text-xs text-gray-500 text-center">
+                      Wählen Sie die Installationsdatei (.exe) aus einem sicheren Speicherort
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+
+            // Priority 2.6: Legacy Mode - File Selected & Validated
+            if (isLegacyMode && selectedFilePath) {
+              return (
+                <div className="py-6">
+                  <div className="text-center mb-6">
+                    <div className="text-green-500 text-4xl mb-4">📁</div>
+                    <h3 className="text-lg font-semibold mb-2">Installationsdatei ausgewählt</h3>
+                  </div>
+                  
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                    <h4 className="font-medium text-gray-900 mb-2">Ausgewählte Datei:</h4>
+                    <p className="text-sm text-gray-700 break-all mb-2">
+                      {selectedFilePath.split(/[\\/]/).pop()}
+                    </p>
+                    {fileValidation && (
+                      <div className={`text-xs ${fileValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                        {fileValidation.isValid ? (
+                          <>
+                            ✅ Datei validiert {fileValidation.size ? `(${formatBytes(fileValidation.size)})` : ''}
+                          </>
+                        ) : (
+                          <>
+                            ❌ {fileValidation.error || 'Ungültige Datei'}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    {fileValidation?.isValid ? (
+                      <button
+                        onClick={installManualUpdate}
+                        disabled={isInstalling}
+                        className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                      >
+                        {isInstalling ? '🔄 Wird installiert...' : '🚀 Jetzt installieren'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={selectManualUpdateFile}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                      >
+                        📁 Andere Datei auswählen
+                      </button>
+                    )}
+                    
+                    <button
+                      onClick={() => {
+                        setSelectedFilePath(null);
+                        setFileValidation(null);
+                      }}
+                      className="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors"
+                    >
+                      Abbrechen
+                    </button>
                   </div>
                 </div>
               );
