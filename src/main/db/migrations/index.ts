@@ -27,6 +27,7 @@ import * as migration015 from './015_add_status_versioning';
 import * as migration016 from './016_add_offer_attachments';
 import * as migration017 from './017_add_update_history';
 import * as migration018 from './018_add_auto_update_preferences';
+import * as migration019 from './019_mini_fix_delivery';
 import * as migration020 from './020_add_invoice_attachments';
 
 export const migrations: Migration[] = [
@@ -137,6 +138,12 @@ export const migrations: Migration[] = [
     name: '018_add_auto_update_preferences',
     up: migration018.up,
     down: migration018.down
+  },
+  {
+    version: 19,
+    name: '019_mini_fix_delivery',
+    up: migration019.up,
+    down: migration019.down
   },
   {
     version: 20,

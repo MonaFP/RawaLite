@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.0.42",
+  "version": "1.0.44",
   "description": "Rechnungs- und Angebotsverwaltung Lite",
   "author": "MonaFP",
   "private": true,
@@ -81,7 +81,7 @@
     "release:minor": "pnpm version:minor && pnpm release:execute",
     "release:major": "pnpm version:major && pnpm release:execute",
     "release:beta": "pnpm version:beta && pnpm release:execute",
-    "release:execute": "git add package.json && git commit -m \"v$(node -e 'console.log(require(\"./package.json\").version)')\" && git tag v$(node -e 'console.log(require(\"./package.json\").version)') && git push origin main --tags",
+    "release:execute": "node -e \"const pkg=require('./package.json'); require('child_process').execSync(`git add package.json && git commit -m \\\"v${pkg.version}\\\" && git tag v${pkg.version} && git push origin main --tags`, {stdio:'inherit'});\"",
     "setup:hooks": "pwsh -ExecutionPolicy Bypass -File scripts/setup-git-hooks.ps1"
   },
   "dependencies": {
