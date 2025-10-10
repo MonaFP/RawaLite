@@ -71,11 +71,12 @@ describe('GitHubApiService', () => {
       );
     });
 
-    it('should handle 404 not found', async () => { // ✅ test → it
+    it('should handle 404 not found', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        statusText: 'Not Found'
+        statusText: 'Not Found',
+        headers: new Headers()
       } as Response);
 
       await expect(service.getLatestRelease()).rejects.toThrow('Not Found');

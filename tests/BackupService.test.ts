@@ -114,7 +114,7 @@ describe('BackupService', () => {
       const backupPath = '/mock/vacuum-backup.db';
       const error = new Error('VACUUM failed');
       
-      mockDb.exec.mockRejectedValue(error);
+      mockDb.exec.mockImplementation(() => { throw error; });
 
       await expect(BackupService.createVacuumBackup(backupPath)).rejects.toThrow('VACUUM failed');
     });
@@ -122,14 +122,18 @@ describe('BackupService', () => {
 
   describe('checkIntegrity', () => {
     it('should return valid integrity check', async () => {
-      const mockStmt = {
-        all: vi.fn().mockReturnValue([{ integrity_check: 'ok' }]), // ✅ Korrigiere all()
-        finalize: vi.fn()
+      const mockIntegrityStmt = {
+        all: vi.fn().mockReturnValue([{ integrity_check: 'ok' }])
+      };
+      const mockFkStmt = {
+        all: vi.fn().mockReturnValue([]) // No FK violations
       };
       
-      mockDb.prepare.mockReturnValue(mockStmt);
+      mockDb.prepare
+        .mockReturnValueOnce(mockIntegrityStmt) // First call: PRAGMA integrity_check
+        .mockReturnValueOnce(mockFkStmt);       // Second call: PRAGMA foreign_key_check
 
-      const result = await BackupService.checkIntegrity();
+      const result = BackupService.checkIntegrity();
 
       expect(result).toMatchObject({
         ok: true,
@@ -137,17 +141,22 @@ describe('BackupService', () => {
         errors: []
       });
       expect(mockDb.prepare).toHaveBeenCalledWith('PRAGMA integrity_check');
+      expect(mockDb.prepare).toHaveBeenCalledWith('PRAGMA foreign_key_check');
     });
 
     it('should detect integrity errors', async () => {
-      const mockStmt = {
-        all: vi.fn().mockReturnValue([{ integrity_check: 'corruption detected' }]), // ✅ Korrigiere all()
-        finalize: vi.fn()
+      const mockIntegrityStmt = {
+        all: vi.fn().mockReturnValue([{ integrity_check: 'corruption detected' }])
+      };
+      const mockFkStmt = {
+        all: vi.fn().mockReturnValue([]) // No FK violations
       };
       
-      mockDb.prepare.mockReturnValue(mockStmt);
+      mockDb.prepare
+        .mockReturnValueOnce(mockIntegrityStmt)
+        .mockReturnValueOnce(mockFkStmt);
 
-      const result = await BackupService.checkIntegrity();
+      const result = BackupService.checkIntegrity();
 
       expect(result.ok).toBe(false);
       expect(result.errors).toContain('corruption detected');
@@ -156,23 +165,21 @@ describe('BackupService', () => {
     it('should handle integrity check errors', async () => {
       const error = new Error('PRAGMA failed');
       const mockStmt = {
-        all: vi.fn().mockImplementation(() => { throw error; }), // ✅ Korrigiere all()
-        finalize: vi.fn()
+        all: vi.fn().mockImplementation(() => { throw error; })
       };
       
       mockDb.prepare.mockReturnValue(mockStmt);
 
-      const result = await BackupService.checkIntegrity(); // ✅ Erwarte Result, nicht Rejection
+      const result = BackupService.checkIntegrity(); // Service catches errors and returns result
 
       expect(result.ok).toBe(false);
       expect(result.errors).toContain('Integrity check error: Error: PRAGMA failed');
-      expect(mockStmt.finalize).toHaveBeenCalled();
     });
   });
 
   describe('restoreFromBackup', () => {
     it('should restore from backup successfully', async () => {
-      const backupPath = '/mock/backup.db';
+      const backupPath = '/mock/userdata/database/backups/backup.db';
 
       const result = await BackupService.restoreFromBackup(backupPath);
 
@@ -182,23 +189,28 @@ describe('BackupService', () => {
       });
     });
 
-    it('should fail when backup file does not exist', async () => {
-      const backupPath = '/mock/nonexistent.db';
+    it('should fail when backup file does not exist', () => {
+      const backupPath = '/mock/userdata/database/backups/nonexistent.db';
       
-      (fs.existsSync as any).mockReturnValue(false);
+      (fs.existsSync as any).mockImplementation((path: string) => {
+        return path !== backupPath; // Only the test file doesn't exist
+      });
 
-      await expect(BackupService.restoreFromBackup(backupPath))
-        .rejects.toThrow('Backup file not found');
+      expect(() => BackupService.restoreFromBackup(backupPath))
+        .toThrow('Backup file not found');
     });
 
-    it('should handle restore errors', async () => {
-      const backupPath = '/mock/backup.db';
+    it('should handle restore errors', () => {
+      const backupPath = '/mock/userdata/database/backups/backup.db';
       const error = new Error('Copy failed');
       
-      (fs.copyFileSync as any).mockImplementation(() => { throw error; });
+      // Mock the main copyFileSync (second call in service) to fail
+      (fs.copyFileSync as any)
+        .mockImplementationOnce(() => {}) // First call (backup current) succeeds
+        .mockImplementationOnce(() => { throw error; }); // Second call (restore) fails
 
-      await expect(BackupService.restoreFromBackup(backupPath))
-        .rejects.toThrow('Copy failed');
+      expect(() => BackupService.restoreFromBackup(backupPath))
+        .toThrow('Copy failed');
     });
   });
 

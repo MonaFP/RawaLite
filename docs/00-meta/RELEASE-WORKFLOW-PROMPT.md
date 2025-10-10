@@ -12,20 +12,25 @@ Arbeite diese Phasen systematisch ab und validiere jeden Schritt:
 - [ ] 📊 **Git Status:** `git status` prüfen (Erwarte: working tree clean)
 - [ ] 📈 **Current Version:** package.json Version ermitteln und nächste Version vorschlagen
 
-### PHASE 2: Version Management
+### PHASE 2: Version Management & Git Operations
 - [ ] 📝 **Version Bump:** Basierend auf Changes bestimme Release-Typ (patch/minor/major)
 - [ ] 📄 **Update package.json:** Version entsprechend aktualisieren
 - [ ] 🏷️ **Git Operations:** Commit + Tag erstellen mit Format `vX.X.X`
 - [ ] 🔄 **Push:** Git push mit Tags: `git push origin main --tags`
 
-### PHASE 3: GitHub Release Creation
-- [ ] 🚀 **Create Release:** `gh release create vX.X.X --title "🚀 RawaLite vX.X.X" --generate-notes`
+### PHASE 3: GitHub Actions Release (PRIMARY METHOD)
+- [ ] 🚀 **Trigger GitHub Actions:** `gh workflow run release.yml -f tag=vX.X.X`
+- [ ] ⏰ **Monitor Actions:** GitHub Actions Tab überwachen (5-10 Minuten)
+- [ ] � **Check Workflow Status:** Stelle sicher, dass alle Steps erfolgreich sind
+- [ ] 📦 **Verify Build Artifacts:** Actions sollten automatisch Assets erstellen
+- [ ] 🚨 **MANDATORY ASSET VALIDATION:** Nach Actions-Completion: `gh release view vX.X.X --json assets`
+- [ ] ✅ **Release Publishing:** Actions published Release automatisch nach erfolgreicher Asset-Erstellung
+
+### PHASE 3-FALLBACK: Manual CLI Release (ONLY IF ACTIONS FAIL)
+- [ ] 🚨 **Use only if GitHub Actions failed:** Nur bei Actions-Fehlern verwenden
+- [ ] 🏗️ **Manual Build:** `pnpm clean && pnpm build && pnpm dist`
+- [ ] 🚀 **Create Release:** `gh release create vX.X.X --title "🚀 RawaLite vX.X.X" --generate-notes dist-release/RawaLite-Setup-X.X.X.exe dist-release/latest.yml`
 - [ ] 📝 **Release Notes:** Automatische Generation mit GitHub CLI
-- [ ] ⏰ **Monitor Actions:** GitHub Actions Status überwachen (.github/workflows/release.yml)
-- [ ] 🚨 **MANDATORY ASSET VALIDATION:** `gh release view vX.X.X --json assets` MUSS mindestens 2 Assets zeigen
-- [ ] ❌ **STOP IF NO ASSETS:** Wenn assets: [] → Release löschen und manuell builden
-- [ ] 🔧 **Manual Fallback:** Bei fehlendem Asset: `pnpm dist` → `gh release upload vX.X.X dist-release/RawaLite-Setup-X.X.X.exe`
-- [ ] ✅ **Final Asset Check:** Assets mit korrekter Größe (>100MB) und .exe Extension validieren
 
 ### PHASE 4: Post-Release Verification  
 - [ ] 🧪 **UpdateManager Test:** Simuliere Update-Check und Download-Fähigkeit
@@ -56,30 +61,36 @@ Arbeite diese Phasen systematisch ab und validiere jeden Schritt:
 ## CRITICAL VALIDATION COMMANDS
 ```bash
 # Diese Befehle MÜSSEN vor Release erfolgreich sein:
-pnpm validate:critical-fixes  # Muss "12/12 fixes validated successfully" zeigen ⚠️ UPDATED COUNT
+pnpm validate:critical-fixes  # Muss "15/15 fixes validated successfully" zeigen
 pnpm test                     # Muss "All tests passing" zeigen  
 git status                    # Muss "working tree clean" zeigen
+
+# GitHub Actions Workflow Commands:
+gh workflow run release.yml -f tag=vX.X.X    # Trigger Actions build
+gh run list --workflow=release.yml --limit=1  # Check latest run status
+gh run view --log                             # View detailed logs if failed
 ```
 
 ## EXPECTED OUTPUTS
 - ✅ **Neuer Git Tag:** vX.X.X im Repository
+- ✅ **GitHub Actions Erfolg:** Workflow-Status "completed" 
 - ✅ **GitHub Release:** Mit automatisch generierten Release Notes
-- ✅ **Build Assets:** RawaLite-Setup-X.X.X.exe + latest.yml verfügbar ⚠️ FIXED NAMING
+- ✅ **Build Assets:** RawaLite-Setup-X.X.X.exe + latest.yml verfügbar (via Actions)
 - ✅ **UpdateManager:** Funktional für Testuser (Download + Installation)
-- ✅ **Critical Fixes:** Alle 12 Fixes validiert und dokumentiert ⚠️ UPDATED COUNT
+- ✅ **Critical Fixes:** Alle 15 Fixes validiert und dokumentiert
 
 ## ERROR HANDLING STRATEGIES
 - **Critical Fixes Failed:** STOP sofort → Identifiziere fehlenden Fix in CRITICAL-FIXES-REGISTRY.md
 - **Tests Failed:** STOP sofort → Repariere Tests vor Release
 - **Git Issues:** Resolve conflicts → Clean working tree → Retry
-- **GitHub Actions Failed:** Fallback zu manueller Asset-Erstellung via `pnpm dist`
-- **Asset Validation Failed:** Verwende dist-release/ backup für manuellen Upload
-- **Backward Compatibility Failed:** STOP → Analysiere Breaking Changes → Fix oder Revert ⚠️ NEW
+- **GitHub Actions Failed:** Check Workflow logs → Fix issues → Retry OR fallback zu manueller Methode
+- **Asset Validation Failed:** Verwende GitHub Actions logs für Debugging → Retry Build
+- **Backward Compatibility Failed:** STOP → Analysiere Breaking Changes → Fix oder Revert
 
 ## MANUAL FALLBACK PROCEDURES
 Falls GitHub Actions fehlschlägt:
 ```bash
-# 🚨 CRITICAL: Immer bei fehlendem Asset ausführen!
+# 🚨 CRITICAL: Nur bei GitHub Actions Failure verwenden!
 # Emergency Manual Build & Upload
 pnpm clean:release:force
 pnpm build
@@ -88,8 +99,8 @@ pnpm dist  # May require native module rebuild
 # MANDATORY: Asset-Namen prüfen
 ls dist-release/              # Muss RawaLite-Setup-X.X.X.exe zeigen
 
-# MANDATORY: Release Asset Upload
-gh release upload vX.X.X "dist-release/RawaLite Setup X.X.X.exe" --name "RawaLite-Setup-X.X.X.exe"
+# MANDATORY: Release mit Assets erstellen (nicht nur upload)
+gh release create vX.X.X --generate-notes "dist-release/RawaLite-Setup-X.X.X.exe" "dist-release/latest.yml"
 
 # MANDATORY: Final Validation
 gh release view vX.X.X --json assets | jq '.assets[].name'  # Muss .exe zeigen

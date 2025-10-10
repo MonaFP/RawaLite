@@ -925,7 +925,7 @@ const asset = release.assets?.[0]; // No .find() with proper filter
 
 ### **BEFORE ANY VERSION BUMP:**
 1. **Run:** `pnpm validate:critical-fixes`
-2. **Verify:** All fixes are present and functional
+2. **Verify:** All 16 fixes are present and functional
 3. **Test:** Download verification works
 4. **Confirm:** No regression detected
 
@@ -940,12 +940,12 @@ const asset = release.assets?.[0]; // No .find() with proper filter
 
 ## 📊 FIX HISTORY
 
-| Version | WriteStream Fix | File Flush Fix | Event Handler Fix | Port Fix | Offer FK Fix | Discount Schema | PDF Theme Fix | CSS Dropdown Fix | Status Updates | ABI Management | Asset Validation | Status |
-|---------|----------------|----------------|-------------------|----------|--------------|-----------------|---------------|------------------|----------------|----------------|------------------|---------|
-| v1.0.11 | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Partial |
-| v1.0.12 | ❌ LOST | ❌ LOST | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Regression |
-| v1.0.13 | ✅ Restored | ✅ Restored | ✅ Present | ✅ Present | ✅ Added | ✅ Added | ✅ Added | ✅ Added | ✅ Added | ✅ Added | ❌ Missing | Near Complete |
-| v1.0.33 | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Added | Complete |
+| Version | WriteStream Fix | File Flush Fix | Event Handler Fix | Port Fix | Offer FK Fix | Discount Schema | PDF Theme Fix | CSS Dropdown Fix | Status Updates | ABI Management | Asset Validation | Universal Assets | GitHub Actions | Status |
+|---------|----------------|----------------|-------------------|----------|--------------|-----------------|---------------|------------------|----------------|----------------|------------------|------------------|----------------|---------|
+| v1.0.11 | ✅ Added | ✅ Added | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | ❌ Missing | Partial |
+| v1.0.33 | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Added | ❌ Missing | ❌ Missing | Near Complete |
+| v1.0.38 | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ❌ Missing | Near Complete |
+| v1.0.39 | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Present | ✅ Added | Complete |
 
 ---
 
@@ -1120,6 +1120,76 @@ gh release create vX.X.X --generate-notes  # Without asset verification
 
 ---
 
-**Last Updated:** 2025-10-09 (Added FIX-014: GitHub Release Asset Validation - prevents "Failed to parse URL from" errors by mandating asset verification)
+### **FIX-016: GitHub Actions Release Workflow Integration**
+- **ID:** `github-actions-release-workflow-integration`
+- **Files:** `.github/workflows/release.yml`, Release documentation prompts
+- **Pattern:** GitHub Actions as primary release method with proper tag checkout
+- **Location:** GitHub Actions workflow + Release-Workflow-Prompt.md
+- **First Implemented:** v1.0.39
+- **Last Verified:** v1.0.39
+- **Status:** ✅ ACTIVE
+
+**Problem Solved:** CLI-first release workflow causing systematic asset failures
+- **Root Cause:** `gh release create` bypassed GitHub Actions, creating releases without assets
+- **Symptom:** "Failed to parse URL from" errors because releases had empty assets array
+- **Impact:** Multiple failed releases requiring manual intervention and documentation confusion
+
+**Required GitHub Actions Pattern:**
+```yaml
+# Correct tag checkout for workflow_dispatch
+steps:
+  - name: 📥 Checkout code
+    uses: actions/checkout@v4
+    with:
+      ref: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+```
+
+**Required Release Workflow Pattern:**
+```bash
+# PRIMARY METHOD - GitHub Actions first
+git tag vX.X.X && git push --tags
+gh workflow run release.yml -f tag=vX.X.X
+# Monitor: gh run list --workflow=release.yml --limit=1
+
+# FALLBACK ONLY - Manual method if Actions fail
+pnpm dist
+gh release create vX.X.X --generate-notes dist-release/RawaLite-Setup-X.X.X.exe
+```
+
+**FORBIDDEN Patterns:**
+```bash
+# ❌ CLI-first workflow (bypasses Actions)
+gh release create vX.X.X --generate-notes  # Creates release without assets
+
+# ❌ Using HEAD checkout for manual tags
+# Missing: ref: ${{ github.event.inputs.tag }}
+
+# ❌ Ignoring workflow status
+# Must verify: gh run view --log for success/failure
+```
+
+**Impact:**
+- ✅ Automated asset generation via GitHub Actions
+- ✅ Consistent build environment and native module compilation
+- ✅ Proper error handling and logging for debugging
+- ✅ Eliminates "Failed to parse URL from" errors
+- ✅ Clear primary/fallback workflow distinction
+
+**Validation Commands:**
+```bash
+# Verify workflow triggered correctly
+gh run list --workflow=release.yml --limit=1
+gh run view --log
+
+# Verify assets created
+gh release view vX.X.X --json assets
+
+# Test UpdateManager compatibility
+# Should show proper download URLs and executable files
+```
+
+---
+
+**Last Updated:** 2025-10-10 (Added FIX-016: GitHub Actions Release Workflow Integration - prevents asset failures by using Actions as primary release method)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/validate-critical-fixes.mjs`

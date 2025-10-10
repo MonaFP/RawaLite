@@ -30,16 +30,27 @@ DIAGNOSIS: Code-Changes haben bestehende Tests gebrochen
 - [ ] 🔧 **Fix or Update:** Repariere Code oder aktualisiere Tests
 - [ ] ✅ **Full Suite:** `pnpm test` muss 100% passing zeigen
 
-#### 🔴 PROBLEM: GitHub Actions Build Failed  
+#### 🔴 PROBLEM: GitHub Actions Workflow Failed  
 ```
-SYMPTOM: Release created, aber keine Assets nach 10+ Minuten
-DIAGNOSIS: .github/workflows/release.yml Build-Pipeline failed
+SYMPTOM: gh workflow run erfolgreich getriggert, aber Build fails
+DIAGNOSIS: Workflow-Pipeline Fehler in .github/workflows/release.yml
 ```
 **SOLUTION STEPS:**
-- [ ] 📊 **Check Actions:** GitHub → Actions Tab → Failed Workflow analysieren
-- [ ] 🔍 **Error Analysis:** Build-Log für Error-Details prüfen
-- [ ] 🔧 **Manual Fallback:** Lokaler Build via `pnpm dist` + manual upload
-- [ ] 📦 **Asset Upload:** `gh release upload vX.X.X dist-release/*.exe dist-release/*.yml`
+- [ ] 📊 **Check Workflow Status:** `gh run list --workflow=release.yml --limit=1`
+- [ ] 🔍 **Detailed Logs:** `gh run view --log` für spezifische Fehler-Details
+- [ ] 🔧 **Common Fixes:** Native module rebuild, dependency conflicts, build permissions
+- [ ] � **Retry Workflow:** `gh run rerun` wenn temporärer Fehler
+
+#### 🔴 PROBLEM: GitHub Actions Build Success aber keine Assets
+```
+SYMPTOM: Workflow zeigt "completed", aber gh release view zeigt leere assets
+DIAGNOSIS: Asset-Upload Step fehlgeschlagen oder falsche Pfade
+```
+**SOLUTION STEPS:**
+- [ ] � **Check Build Artifacts:** Workflow Logs nach "Create distribution" Step prüfen
+- [ ] 🔍 **Asset Paths:** dist-release/ Verzeichnis in Actions Logs validieren  
+- [ ] � **Manual Asset Upload:** `gh release upload vX.X.X dist-release/*.exe dist-release/*.yml`
+- [ ] ✅ **Re-validate:** `gh release view vX.X.X --json assets`
 
 #### 🔴 PROBLEM: Electron Build Failed (better-sqlite3)
 ```
@@ -63,16 +74,27 @@ DIAGNOSIS: Asset-Namen stimmen nicht mit UpdateManager Expectations überein
 - [ ] 🔧 **Re-upload:** Assets mit korrekten Namen neu hochladen
 - [ ] 🧪 **UpdateManager Test:** Verify Update-Check erkennt neue Assets
 
-#### 🔴 PROBLEM: UpdateManager Shows "No Updates Available"
+#### 🔴 PROBLEM: Workflow Dispatch Tag Mismatch
 ```
-SYMPTOM: Release erstellt, Assets vorhanden, aber UpdateManager sieht nichts
-DIAGNOSIS: Version-Comparison Logic oder Asset-Detection Problem
+SYMPTOM: gh workflow run -f tag=vX.X.X läuft, aber buildet falschen Code
+DIAGNOSIS: Workflow checkt HEAD aus statt spezifizierten Tag
 ```
 **SOLUTION STEPS:**
-- [ ] 📈 **Version Check:** package.json Version > aktuelle App Version?
-- [ ] 🔍 **GitHub API:** Manuell GitHub Releases API testen
-- [ ] 🧪 **Manual Test:** `pnpm dev:updatemanager` für Debug-Logs
-- [ ] 🔧 **Force Refresh:** App-Cache clearen oder neu starten
+- [ ] � **Verify Tag:** `git tag -l vX.X.X` - existiert Tag überhaupt?
+- [ ] 🔄 **Push Tags:** `git push origin --tags` falls Tag nur lokal
+- [ ] 🔧 **Workflow Fix:** Checke .github/workflows/release.yml checkout step
+- [ ] ✅ **Retry:** Nach Tag-Push erneut `gh workflow run release.yml -f tag=vX.X.X`
+
+#### 🔴 PROBLEM: CLI Release vs GitHub Actions Conflict
+```
+SYMPTOM: CLI Release erstellt, dann GitHub Actions fehlschlagen
+DIAGNOSIS: Release existiert bereits, Actions können nicht überschreiben
+```
+**SOLUTION STEPS:**
+- [ ] 🗑️ **Delete Release:** `gh release delete vX.X.X --yes` 
+- [ ] 🏷️ **Keep Tag:** Tag bleibt erhalten für Actions
+- [ ] � **Trigger Actions:** `gh workflow run release.yml -f tag=vX.X.X`
+- [ ] ⏰ **Monitor:** Actions erstellen Release neu mit Assets
 
 ### EMERGENCY PROCEDURES
 
@@ -117,6 +139,12 @@ pnpm test                           # Test Suite Status
 git status                          # Git Working Tree
 node --version && pnpm --version    # Environment Info
 electron --version                  # Electron Version
+
+# GitHub Actions Diagnostics  
+gh workflow list                    # Available workflows
+gh run list --workflow=release.yml --limit=5  # Recent runs
+gh run view --log                   # Latest run details
+gh api repos/MonaFP/RawaLite/releases  # Raw API check
 
 # Build Diagnostics
 pnpm build                          # Web Build Test
