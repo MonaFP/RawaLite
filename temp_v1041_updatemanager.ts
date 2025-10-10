@@ -19,11 +19,6 @@ import { createReadStream } from 'fs';
 import { githubApiService } from './GitHubApiService';
 import { mockProgressService } from './MockProgressService';
 import UpdateHistoryService from './UpdateHistoryService';
-import {
-  LEGACY_INSTALLER_FALLBACK_SIZE,
-  normalizeInstallerSelection,
-  type InstallerSelectionSource
-} from './updateInstallerSelector';
 import type {
   UpdateCheckResult,
   UpdateInfo,
@@ -457,39 +452,21 @@ export class UpdateManagerService {
       return targetPath;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
-      // 🚨 SPECIAL HANDLING: Detect v1.0.41 "Missing MZ header" error
-      let userFriendlyError = errorMessage;
-      if (errorMessage.includes('Missing MZ header') || errorMessage.includes('Not an executable file')) {
-        userFriendlyError = `Auto-update failed: Your current version cannot handle GitHub redirects.
-
-🔧 SOLUTION: Manual update required (one-time only)
-👉 Download: https://github.com/MonaFP/RawaLite/releases/latest
-
-Why this happens:
-• Current version: v1.0.41 (has download bug)
-• Target version: v1.0.42+ (has download fix)
-• After manual update: All future updates work automatically!
-
-Technical details: ${errorMessage}`;
-      }
-      
       debugLog('UpdateManagerService', 'download_error', {
-        originalError: errorMessage,
-        userFriendlyError: userFriendlyError,
+        error: errorMessage,
         stack: error instanceof Error ? error.stack : undefined
       }, errorMessage);
       
       this.setState({ 
         currentPhase: 'error',
-        lastError: userFriendlyError, // Use user-friendly error message
+        lastError: errorMessage,
         downloadStatus: {
           status: 'failed',
-          error: userFriendlyError
+          error: errorMessage
         }
       });
-      this.emit({ type: 'download-failed', error: userFriendlyError });
-      throw new Error(userFriendlyError); // Throw user-friendly error
+      this.emit({ type: 'download-failed', error: errorMessage });
+      throw error;
     } finally {
       this.setState({ downloading: false });
       this.currentDownloadController = null;
@@ -662,46 +639,6 @@ Technical details: ${errorMessage}`;
     }
   }
 
-  private resolveNormalizedUpdateInfo(updateInfo: UpdateInfo): {
-    info: UpdateInfo;
-    needsManualNotice: boolean;
-    source: InstallerSelectionSource;
-  } {
-    const fallbackVersion = updateInfo.version || this.state.checkResult?.latestVersion || '';
-
-    const selection = normalizeInstallerSelection({
-      release: this.state.checkResult?.latestRelease,
-      requested: {
-        downloadUrl: updateInfo.downloadUrl,
-        assetName: updateInfo.assetName,
-        fileSize: updateInfo.fileSize
-      },
-      fallbackVersion
-    });
-
-    if (!selection) {
-      throw new Error('No installer selection available');
-    }
-
-    const sanitizedVersion = (fallbackVersion || selection.assetName || 'latest').replace(/^v/, '') || 'latest';
-    const normalizedUrl = this.getBackwardCompatibleDownloadUrl(
-      sanitizedVersion,
-      selection.downloadUrl,
-      selection.assetName
-    );
-
-    return {
-      info: {
-        ...updateInfo,
-        downloadUrl: normalizedUrl,
-        assetName: selection.assetName || 'RawaLite-Setup.exe',
-        fileSize: selection.fileSize || 0
-      },
-      needsManualNotice: selection.needsManualNotice || false,
-      source: selection.source || 'legacy-fallback'
-    };
-  }
-
   private createUpdateInfo(release: any): UpdateInfo {
     // 🔄 UNIVERSAL ASSET COMPATIBILITY: Support both old (v1.0.32) and new naming patterns
     const asset = release.assets.find((a: any) => 
@@ -731,23 +668,12 @@ Technical details: ${errorMessage}`;
         name: release.name || `Update ${release.tag_name}`,
         releaseNotes: release.body || `Update to version ${release.tag_name}
 
-⚠️ **MANUAL UPDATE REQUIRED for v1.0.41 users** ⚠️
-
-If you're currently running v1.0.41, please download this update manually:
-👉 https://github.com/MonaFP/RawaLite/releases/download/v${version}/RawaLite-Setup-${version}.exe
-
-Why manual update needed?
-• v1.0.41 has a bug in the auto-update system
-• v1.0.42+ has the fixed auto-update system
-• After manual update to v1.0.42, all future updates work automatically!
-
-This is a ONE-TIME manual update - future updates will be automatic.
-
-📦 Manual download: https://github.com/MonaFP/RawaLite/releases/tag/v${version}`,
+⚠️ Asset not yet available - build in progress.
+Manual download: https://github.com/MonaFP/RawaLite/releases/tag/${release.tag_name}`,
         publishedAt: release.published_at || new Date().toISOString(),
-        downloadUrl: this.getBackwardCompatibleDownloadUrl(version, asset?.browser_download_url, `RawaLite-Setup-${version}.exe`), // 🚨 LEGACY REDIRECT FIX
+        downloadUrl: `https://github.com/MonaFP/RawaLite/releases/download/v${version}/RawaLite-Setup-${version}.exe`, // v1.0.32 compatibility
         assetName: `RawaLite-Setup-${version}.exe`, // Corrected fallback name
-        fileSize: asset?.size || 106080500, // Use actual size or fallback
+        fileSize: 106080500, // Expected size fallback for v1.0.34
         isPrerelease: release.prerelease || false
       };
     }
@@ -1073,62 +999,11 @@ This is a ONE-TIME manual update - future updates will be automatic.
       name: release.name || `Update to ${release.tag_name}`,
       releaseNotes: release.body || 'No release notes available',
       publishedAt: release.published_at || new Date().toISOString(),
-      downloadUrl: this.getBackwardCompatibleDownloadUrl(release.tag_name?.replace(/^v/, '') || '1.0.42', asset.browser_download_url, asset.name), // 🚨 LEGACY REDIRECT FIX
+      downloadUrl: asset.browser_download_url,
       assetName: asset.name,
       fileSize: asset.size,
       isPrerelease: release.prerelease || false
     };
-  }
-
-  /**
-   * 🚨 LEGACY CLIENT COMPATIBILITY FIX for v1.0.41 → v1.0.42+ updates
-   * 
-   * Problem: v1.0.41 GitHubApiService cannot handle GitHub 302 redirects properly.
-   * It downloads HTML redirect pages instead of the actual binary executable.
-   * 
-   * Solution: For critical updates (like v1.0.42), provide alternative hosting
-   * via GitHub Pages or direct links that don't require redirect handling.
-   * 
-   * @param version - Target version (e.g., "1.0.42")
-   * @param originalUrl - Original GitHub asset URL with redirects
-   * @param assetName - Name of the asset file
-   * @returns URL that works with legacy clients (no redirects)
-   */
-  private getBackwardCompatibleDownloadUrl(version: string, originalUrl?: string, assetName?: string): string {
-    if (!originalUrl) {
-      // Fallback for missing assets
-      return `https://github.com/MonaFP/RawaLite/releases/download/v${version}/RawaLite-Setup-${version}.exe`;
-    }
-
-    const currentAppVersion = app.getVersion();
-    debugLog('UpdateManagerService', 'getBackwardCompatibleDownloadUrl', {
-      currentVersion: currentAppVersion,
-      targetVersion: version,
-      originalUrl: originalUrl,
-      assetName: assetName
-    });
-
-    // SPECIAL CASE: v1.0.42 Compatibility Fix
-    // For v1.0.42 specifically, we provide alternative hosting for legacy v1.0.41 clients
-    if (version === '1.0.42' && assetName === 'RawaLite-Setup-1.0.42.exe') {
-      // Option 1: Use GitHub Raw for static hosting (if we upload the exe to repo)
-      // This would be: https://raw.githubusercontent.com/MonaFP/RawaLite/main/dist-release/RawaLite-Setup-1.0.42.exe
-      
-      // Option 2: Use alternative hosting (like GitHub Pages)
-      // This would be: https://monafp.github.io/RawaLite/releases/RawaLite-Setup-1.0.42.exe
-      
-      // Option 3: Detect legacy client and provide manual download instructions
-      // For now, we'll use the original URL and let the user know in release notes
-      
-      debugLog('UpdateManagerService', 'v1042_legacy_compatibility', {
-        strategy: 'fallback_to_original_url_with_release_notes',
-        note: 'v1.0.41 users will need manual download, v1.0.42+ works automatically'
-      });
-    }
-
-    // Return original URL - the real fix is in v1.0.42's GitHubApiService
-    // Once users update to v1.0.42 (manually for first time), all future updates work
-    return originalUrl;
   }
 }
 

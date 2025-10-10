@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.0.42",
+  "version": "1.0.41",
   "description": "Rechnungs- und Angebotsverwaltung Lite",
   "author": "MonaFP",
   "private": true,
@@ -63,7 +63,7 @@
     "pre:release": "pnpm validate:critical-fixes && pnpm validate:docs-structure && pnpm validate:path-compliance && pnpm typecheck && pnpm lint && pnpm build",
     "safe:dist": "pnpm pre:release && pnpm dist",
     "safe:version": "pnpm validate:pre-release && pnpm version",
-    "precommit": "pnpm typecheck && pnpm lint && pnpm guard:assets && pnpm guard:cjs && pnpm guard:pkgtype && pnpm guard:native && pnpm validate:asar && pnpm validate:electron-abi && pnpm validate:critical-fixes && pnpm validate:migrations",
+    "precommit": "pnpm typecheck && pnpm lint && pnpm guard:assets && pnpm guard:cjs && pnpm guard:pkgtype && pnpm guard:native && pnpm validate:asar && pnpm validate:electron-abi && pnpm validate:critical-fixes",
     "sync-version": "tsx scripts/sync-version.ts",
     "version:report": "tsx scripts/sync-version.ts report",
     "version:check": "tsx scripts/sync-version.ts scan",
@@ -71,18 +71,7 @@
     "test:update-ipc": "pwsh -ExecutionPolicy Bypass -File scripts/test-update-ipc.ps1 -ShowDetails",
     "test:update-manager": "pwsh -ExecutionPolicy Bypass -File scripts/test-update-manager.ps1 -ShowDetails",
     "test:update-e2e": "pwsh -ExecutionPolicy Bypass -File scripts/test-update-e2e.ps1 -ShowDetails",
-    "test:update-all": "pnpm test:github-cli && pnpm test:update-ipc && pnpm test:update-manager && pnpm test:update-e2e",
-    "validate:migrations": "node scripts/validate-migration-index.mjs",
-    "version:patch": "pnpm version patch --no-git-tag-version && pnpm sync-version",
-    "version:minor": "pnpm version minor --no-git-tag-version && pnpm sync-version",
-    "version:major": "pnpm version major --no-git-tag-version && pnpm sync-version",
-    "version:beta": "pnpm version prerelease --preid=beta --no-git-tag-version && pnpm sync-version",
-    "release:patch": "pnpm version:patch && pnpm release:execute",
-    "release:minor": "pnpm version:minor && pnpm release:execute",
-    "release:major": "pnpm version:major && pnpm release:execute",
-    "release:beta": "pnpm version:beta && pnpm release:execute",
-    "release:execute": "node -e \"const pkg=require('./package.json'); require('child_process').execSync(`git add package.json && git commit -m \\\"v${pkg.version}\\\" && git tag v${pkg.version} && git push origin main --tags`, {stdio:'inherit'});\"",
-    "setup:hooks": "pwsh -ExecutionPolicy Bypass -File scripts/setup-git-hooks.ps1"
+    "test:update-all": "pnpm test:github-cli && pnpm test:update-ipc && pnpm test:update-manager && pnpm test:update-e2e"
   },
   "dependencies": {
     "better-sqlite3": "^12.4.1",
