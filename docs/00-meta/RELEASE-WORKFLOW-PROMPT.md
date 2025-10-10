@@ -1,4 +1,19 @@
-# 🚀 RELEASE WORKFLOW PROMPT - Copy & Paste zu VS Code Chat
+# 🚀 RELEASE WORKFLO### PHASE 3: GitHub Ac### PHASE 4: Post-Release Verification  
+- [ ] 🧪 **UpdateManager Test:** Simuliere Update-Check und Download-Fähigkeit
+- [ ] 🎯 **Channel-Specific Testing:** Teste sowohl Stable- als auch Beta-Channel Updates
+- [ ] 🛠️ **Backward Compatibility:** Teste ältere Version → neue Version Updates ⚠️ NEW REQUIREMENT
+- [ ] 🔔 **Auto-Update Preferences:** Validiere dass User-Einstellungen respektiert werden
+- [ ] 📱 **User Communication:** GitHub Release-Link für Testuser bereitstellen
+- [ ] 📚 **Documentation:** Updates in CRITICAL-FIXES-REGISTRY.md falls nötig
+- [ ] 🎉 **Success Confirmation:** Bestätige funktionalen Release für End-UserRelease (PRIMARY METHOD)
+- [ ] 🚀 **Trigger GitHub Actions:** `gh workflow run release.yml -f tag=vX.X.X`
+- [ ] ⏰ **Monitor Actions:** GitHub Actions Tab überwachen (5-10 Minuten)
+- [ ] 🔧 **Check Workflow Status:** Stelle sicher, dass alle Steps erfolgreich sind
+- [ ] 📦 **Verify Build Artifacts:** Actions sollten automatisch Assets erstellen
+- [ ] 🚨 **MANDATORY ASSET VALIDATION:** Nach Actions-Completion: `gh release view vX.X.X --json assets`
+- [ ] ✅ **Release Publishing:** Actions published Release automatisch nach erfolgreicher Asset-Erstellung
+- [ ] 🎯 **Channel Targeting:** Für Beta-Releases: Tag als `vX.X.X-beta.Y` und Beta-Channel Notification
+- [ ] 🔔 **Update Preferences:** Berücksichtige User Auto-Update Preferences (stable vs beta channel)T - Copy & Paste zu VS Code Chat
 
 ## CONTEXT
 Du bist GitHub Copilot und hilfst beim Release-Prozess für RawaLite. Führe einen strukturierten, vollständigen Release-Workflow durch.
@@ -44,19 +59,27 @@ Arbeite diese Phasen systematisch ab und validiere jeden Schritt:
 - [ ] **Version Compatibility:** Teste mindestens N-2 Versionen → neue Version  
 - [ ] **Error Messages:** Prüfe ob ältere Versionen hilfreiche Fehlermeldungen bekommen
 - [ ] **API Changes:** Keine Breaking Changes in GitHub Release API Structure
+- [ ] **Channel Compatibility:** Beta-Releases erreichen nur Beta-Channel Users
+- [ ] **Feature Flag Validation:** Neue Features respektieren bestehende Feature Flags
+- [ ] **Settings Migration:** Auto-Update Preferences bleiben nach Update erhalten
 
 ## CURRENT PROJECT STATE
 - **Repository:** MonaFP/RawaLite
 - **Branch:** main  
 - **Package Manager:** pnpm (⚠️ NIEMALS npm verwenden!)
-- **Critical Fixes:** 12 active fixes (siehe CRITICAL-FIXES-REGISTRY.md) ⚠️ OUTDATED COUNT
+- **Critical Fixes:** 15 active fixes (siehe CRITICAL-FIXES-REGISTRY.md) ✅ AKTUALISIERT
 - **GitHub Actions:** .github/workflows/release.yml vorhanden
-- **Current Version:** 1.0.34 (aus package.json) ⚠️ OUTDATED
+- **Current Version:** 1.0.40 (aus package.json) ✅ AKTUALISIERT
+- **Update Channels:** Stable/Beta Channel Support implementiert (Migration 019)
+- **Feature Flags:** Feature Flag System verfügbar
+- **Auto-Update Preferences:** Vollständige User Control über Update-Verhalten
 
 ## RELEASE TYPES
-- **patch** (1.0.34 → 1.0.35): Bugfixes, Critical Fixes, kleine Verbesserungen
-- **minor** (1.0.34 → 1.1.0): Neue Features, größere Verbesserungen  
-- **major** (1.0.34 → 2.0.0): Breaking Changes, Architektur-Änderungen
+- **patch** (1.0.40 → 1.0.41): Bugfixes, Critical Fixes, kleine Verbesserungen
+- **minor** (1.0.40 → 1.1.0): Neue Features, größere Verbesserungen  
+- **major** (1.0.40 → 2.0.0): Breaking Changes, Architektur-Änderungen
+- **beta** (1.1.0-beta.1): Vorabversionen für Beta-Channel Users
+- **alpha** (1.1.0-alpha.1): Early Development Builds
 
 ## CRITICAL VALIDATION COMMANDS
 ```bash
@@ -72,12 +95,14 @@ gh run view --log                             # View detailed logs if failed
 ```
 
 ## EXPECTED OUTPUTS
-- ✅ **Neuer Git Tag:** vX.X.X im Repository
+- ✅ **Neuer Git Tag:** vX.X.X (oder vX.X.X-beta.Y) im Repository
 - ✅ **GitHub Actions Erfolg:** Workflow-Status "completed" 
 - ✅ **GitHub Release:** Mit automatisch generierten Release Notes
 - ✅ **Build Assets:** RawaLite-Setup-X.X.X.exe + latest.yml verfügbar (via Actions)
 - ✅ **UpdateManager:** Funktional für Testuser (Download + Installation)
 - ✅ **Critical Fixes:** Alle 15 Fixes validiert und dokumentiert
+- ✅ **Channel Targeting:** Korrekte Distribution an Stable/Beta Channel Users
+- ✅ **Settings Preservation:** Auto-Update Preferences bleiben erhalten
 
 ## ERROR HANDLING STRATEGIES
 - **Critical Fixes Failed:** STOP sofort → Identifiziere fehlenden Fix in CRITICAL-FIXES-REGISTRY.md

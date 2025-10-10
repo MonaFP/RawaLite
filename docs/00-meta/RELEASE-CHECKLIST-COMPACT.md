@@ -8,20 +8,24 @@
 [ ] 🔍 validate + test + clean git status
 [ ] 📈 bump package.json version  
 [ ] 🏷️ git commit + tag + push --tags
+[ ] 🎯 determine release channel (stable vs beta)
 [ ] 🚀 gh workflow run release.yml -f tag=vX.X.X (PRIMARY METHOD)
 [ ] ⏰ monitor GitHub Actions (5-10 Min) - check workflow status
 [ ] 🚨 MANDATORY: gh release view vX.X.X --json assets (MUST show assets!)
 [ ] ❌ IF GitHub Actions failed → manual fallback: pnpm dist + gh release create
 [ ] ✅ verify UpdateManager functional (NO "Failed to parse URL" error!)
+[ ] 🔔 test auto-update preferences respected (stable/beta channels)
 [ ] 🎉 release ready for testusers
 ```
 
 ## 📊 VERSION TRACKING
-- **Current:** v1.0.38 (Latest with GitHub Actions integration)
-- **Next Patch:** v1.0.39 (Bugfixes/Small improvements)
+- **Current:** v1.0.40 (Latest with GitHub Actions integration)
+- **Next Patch:** v1.0.41 (Bugfixes/Small improvements)
 - **Next Minor:** v1.1.0 (New features)
 - **Critical Fixes:** 15/15 active (CRITICAL-FIXES-REGISTRY.md)
 - **Release Method:** GitHub Actions (primary), CLI (fallback only)
+- **Update Channels:** Stable/Beta Channel Support (Migration 019)
+- **Feature Flags:** User-configurable feature toggles available
 
 ## 🚨 CRITICAL GITHUB ACTIONS WORKFLOW (NEW)
 ```bash
