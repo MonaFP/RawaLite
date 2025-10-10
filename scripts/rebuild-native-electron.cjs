@@ -87,6 +87,26 @@ if (rebuildSuccess) {
     console.log('🧹 [Rebuild] Removed ABI rebuild flag');
   }
   
+  // Cache building fix: Clear pnpm and electron rebuild caches
+  console.log('🧹 [Rebuild] Clearing cache for clean builds...');
+  const cachePaths = [
+    path.join(__dirname, '..', 'node_modules', '.cache'),
+    path.join(__dirname, '..', '.pnpm-store'),
+    path.join(__dirname, '..', '.vite'),
+    path.join(__dirname, '..', 'node_modules', '.vite')
+  ];
+  
+  cachePaths.forEach(cachePath => {
+    if (fs.existsSync(cachePath)) {
+      try {
+        fs.rmSync(cachePath, { recursive: true, force: true });
+        console.log(`🧹 [Rebuild] Cleared cache: ${path.basename(cachePath)}`);
+      } catch (error) {
+        console.warn(`⚠️ [Rebuild] Could not clear cache ${path.basename(cachePath)}:`, error.message);
+      }
+    }
+  });
+  
 } else {
   console.error('❌ [Rebuild] All rebuild attempts failed');
   process.exit(1);

@@ -11,6 +11,9 @@
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
+    // Cache building fixes for v1.0.42
+    "incremental": false,
+    "tsBuildInfoFile": null,
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],

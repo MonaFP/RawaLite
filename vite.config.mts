@@ -15,7 +15,20 @@ export default defineConfig({
   build: {
     outDir: 'dist-web',
     assetsDir: 'assets',
-    manifest: true
+    manifest: true,
+    // Cache building fixes for v1.0.42
+    rollupOptions: {
+      cache: false, // Disable persistent cache to prevent stale builds
+    },
+    minify: 'esbuild', // Consistent minification
+    target: 'es2022' // Align with tsconfig
   },
   server: { port: 5174 },
+  // Additional cache fixes
+  optimizeDeps: {
+    force: false, // Let Vite handle dep optimization
+    exclude: ['electron'] // Don't try to optimize electron
+  },
+  // Clear cache on config change
+  clearScreen: false
 })
