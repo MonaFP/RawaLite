@@ -98,6 +98,22 @@ export interface OfferAttachment {
   updatedAt: string;
 }
 
+// New interface for invoice attachments (images, files)
+export interface InvoiceAttachment {
+  id: number;
+  invoiceId: number;
+  lineItemId?: number; // Optional - kann an gesamte Rechnung oder spezifische Position gehängt werden
+  filename: string;
+  originalFilename: string;
+  fileType: string; // MIME type (image/png, image/jpeg, etc.)
+  fileSize: number; // Size in bytes
+  filePath?: string; // File system path for larger files
+  base64Data?: string; // Base64 data for smaller images (< 1MB)
+  description?: string; // Optional description
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Discount interface for offers and invoices
 export interface DocumentDiscount {
   discountType: 'none' | 'percentage' | 'fixed';
@@ -140,6 +156,7 @@ export interface InvoiceLineItem {
   sourcePackageItemId?: number; // Reference to original package item
   sortOrder?: number;
   clientTempId?: string; // Frontend helper for temporary IDs
+  attachments?: InvoiceAttachment[]; // Neue Eigenschaft für Anhänge
 }
 
 export interface Invoice extends DocumentDiscount {
@@ -284,4 +301,16 @@ export interface PersistenceAdapter {
   createTimesheet(data: Omit<Timesheet, "id" | "createdAt" | "updatedAt">): Promise<Timesheet>;
   updateTimesheet(id: number, patch: Partial<Timesheet>): Promise<Timesheet>;
   deleteTimesheet(id: number): Promise<void>;
+
+  // Offer Attachments
+  createOfferAttachment(attachment: Omit<OfferAttachment, 'id' | 'createdAt' | 'updatedAt'>): Promise<OfferAttachment>;
+  getOfferAttachments(offerId: number, lineItemId?: number): Promise<OfferAttachment[]>;
+  updateOfferAttachment(id: number, patch: Partial<OfferAttachment>): Promise<OfferAttachment>;
+  deleteOfferAttachment(id: number): Promise<void>;
+
+  // Invoice Attachments
+  createInvoiceAttachment(attachment: Omit<InvoiceAttachment, 'id' | 'createdAt' | 'updatedAt'>): Promise<InvoiceAttachment>;
+  getInvoiceAttachments(invoiceId: number, lineItemId?: number): Promise<InvoiceAttachment[]>;
+  updateInvoiceAttachment(id: number, patch: Partial<InvoiceAttachment>): Promise<InvoiceAttachment>;
+  deleteInvoiceAttachment(id: number): Promise<void>;
 }

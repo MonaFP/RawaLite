@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Invoice, InvoiceLineItem, Customer, Offer } from '../persistence/adapter';
+import type { Invoice, InvoiceLineItem, InvoiceAttachment, Customer, Offer } from '../persistence/adapter';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { usePersistence } from '../contexts/PersistenceContext';
 import { useNotifications } from '../contexts/NotificationContext';
@@ -113,6 +113,86 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
     setLineItems(items => items.filter(item => item.id !== id && item.parentItemId !== id));
   };
 
+  const handleImageUpload = async (lineItemId: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          showError(`❌ ${file.name}: Nur Bilddateien sind erlaubt (PNG, JPG, GIF, etc.)`);
+          return null;
+        }
+
+        // Convert to base64
+        return new Promise<{ base64Data: string; file: File } | null>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve({ 
+            base64Data: reader.result as string,
+            file: file
+          });
+          reader.onerror = () => {
+            showError(`❌ Fehler beim Lesen von ${file.name}`);
+            resolve(null);
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      const results = await Promise.all(uploadPromises);
+      const validImages = results.filter(result => result !== null) as { base64Data: string; file: File }[];
+
+      if (validImages.length === 0) return;
+
+      // Store directly in line items state (will be saved to DB when invoice is saved)
+      setLineItems(items => items.map(item => {
+        if (item.id === lineItemId) {
+          const existingAttachments = item.attachments || [];
+          const newAttachments: InvoiceAttachment[] = validImages.map((imageData, index) => ({
+            id: -(Date.now() + index), // Negative ID for new attachments (will get positive ID from DB)
+            invoiceId: invoice?.id || 0,
+            lineItemId: lineItemId,
+            filename: `${imageData.file.name.replace(/\.[^/.]+$/, "")}_${Date.now()}_${index}${imageData.file.name.match(/\.[^/.]+$/)?.[0] || '.png'}`,
+            originalFilename: imageData.file.name,
+            fileType: imageData.file.type,
+            fileSize: imageData.file.size,
+            base64Data: imageData.base64Data, // Store base64 directly
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }));
+
+          return {
+            ...item,
+            attachments: [...existingAttachments, ...newAttachments]
+          };
+        }
+        return item;
+      }));
+
+      showSuccess(`✅ ${validImages.length} Bild(er) hinzugefügt (werden beim Speichern in DB gesichert)`);
+
+    } catch (error) {
+      console.error('Image upload error:', error);
+      showError('❌ Fehler beim Hochladen der Bilder');
+    }
+
+    // Reset file input
+    event.target.value = '';
+  };
+
+  const removeAttachment = (lineItemId: number, attachmentId: number) => {
+    setLineItems(items => items.map(item => {
+      if (item.id === lineItemId) {
+        return {
+          ...item,
+          attachments: (item.attachments || []).filter(att => att.id !== attachmentId)
+        };
+      }
+      return item;
+    }));
+  };
+
   const addFromOffer = async (offerId: number) => {
     if (!adapter) return;
     
@@ -127,7 +207,22 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
         quantity: item.quantity,
         unitPrice: item.unitPrice,
         total: item.total,
-        parentItemId: item.parentItemId
+        parentItemId: item.parentItemId,
+        // Transfer attachments from offer to invoice
+        attachments: item.attachments ? item.attachments.map(attachment => ({
+          id: Date.now() + Math.random(), // Generate new IDs for invoice attachments
+          invoiceId: 0, // Will be set when invoice is created
+          lineItemId: 0, // Will be mapped during save
+          filename: attachment.filename,
+          originalFilename: attachment.originalFilename,
+          fileType: attachment.fileType,
+          fileSize: attachment.fileSize,
+          filePath: attachment.filePath,
+          base64Data: attachment.base64Data,
+          description: attachment.description,
+          createdAt: attachment.createdAt,
+          updatedAt: attachment.updatedAt
+        })) : []
       }));
 
       setLineItems(newItems);
@@ -135,8 +230,15 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       setTitle(offer.title);
       setNotes(offer.notes || ''); // ✅ FIX: Notes aus Angebot übernehmen
       setVatRate(offer.vatRate);
+      
+      // Show user feedback about attachments transfer
+      const totalAttachments = offer.lineItems.reduce((sum, item) => sum + (item.attachments?.length || 0), 0);
+      if (totalAttachments > 0) {
+        showSuccess(`✅ Angebot übernommen mit ${totalAttachments} Dateianhang/en`);
+      }
     } catch (error) {
       console.error('Error adding offer:', error);
+      showError('❌ Fehler beim Übernehmen des Angebots');
     }
   };
 
@@ -371,6 +473,49 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"12px", minHeight:"60px", resize:"vertical"}}
                 />
 
+                {/* Anhänge-Sektion für Parent Items */}
+                <div style={{marginTop: "8px", padding: "8px", backgroundColor: "rgba(0,0,0,.1)", borderRadius: "4px"}}>
+                  <label style={{fontSize: "12px", fontWeight: "500", marginBottom: "4px", display: "block"}}>
+                    📎 Anhänge (Screenshots, Bilder)
+                  </label>
+                  <div style={{display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap"}}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => handleImageUpload(item.id, e)}
+                      style={{fontSize: "12px"}}
+                    />
+                    <span style={{fontSize: "11px", color: "var(--muted)"}}>
+                      PNG, JPG (DB-Speicherung)
+                    </span>
+                  </div>
+                  
+                  {/* Vorschau der hochgeladenen Bilder */}
+                  {item.attachments && item.attachments.length > 0 && (
+                    <div style={{marginTop: "8px", display: "flex", gap: "8px", flexWrap: "wrap"}}>
+                      {item.attachments.map(attachment => (
+                        <div key={attachment.id} style={{position: "relative"}}>
+                          <img 
+                            src={attachment.base64Data || attachment.filePath} 
+                            alt={attachment.originalFilename}
+                            style={{width: "60px", height: "60px", objectFit: "cover", borderRadius: "4px", border: "1px solid rgba(255,255,255,.2)"}}
+                            title={`${attachment.originalFilename} (${Math.round(attachment.fileSize/1024)}KB)`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeAttachment(item.id, attachment.id)}
+                            style={{position: "absolute", top: "-4px", right: "-4px", background: "#ef4444", color: "white", border: "none", borderRadius: "50%", width: "16px", height: "16px", fontSize: "10px", cursor: "pointer"}}
+                            title="Bild entfernen"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* Sub-Positionen */}
                 {lineItems
                   .filter(subItem => subItem.parentItemId === item.id)
@@ -436,6 +581,49 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                         onChange={(e) => updateLineItem(subItem.id, 'description', e.target.value)}
                         style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"12px", minHeight:"40px", resize:"vertical"}}
                       />
+
+                      {/* Anhänge-Sektion für Sub Items */}
+                      <div style={{marginTop: "8px", padding: "8px", backgroundColor: "rgba(0,0,0,.1)", borderRadius: "4px"}}>
+                        <label style={{fontSize: "12px", fontWeight: "500", marginBottom: "4px", display: "block"}}>
+                          📎 Anhänge (Screenshots, Bilder)
+                        </label>
+                        <div style={{display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap"}}>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => handleImageUpload(subItem.id, e)}
+                            style={{fontSize: "12px"}}
+                          />
+                          <span style={{fontSize: "11px", color: "var(--muted)"}}>
+                            PNG, JPG (DB-Speicherung)
+                          </span>
+                        </div>
+                        
+                        {/* Vorschau der hochgeladenen Bilder */}
+                        {subItem.attachments && subItem.attachments.length > 0 && (
+                          <div style={{marginTop: "8px", display: "flex", gap: "8px", flexWrap: "wrap"}}>
+                            {subItem.attachments.map(attachment => (
+                              <div key={attachment.id} style={{position: "relative"}}>
+                                <img 
+                                  src={attachment.base64Data || attachment.filePath} 
+                                  alt={attachment.originalFilename}
+                                  style={{width: "60px", height: "60px", objectFit: "cover", borderRadius: "4px", border: "1px solid rgba(255,255,255,.2)"}}
+                                  title={`${attachment.originalFilename} (${Math.round(attachment.fileSize/1024)}KB)`}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeAttachment(subItem.id, attachment.id)}
+                                  style={{position: "absolute", top: "-4px", right: "-4px", background: "#ef4444", color: "white", border: "none", borderRadius: "50%", width: "16px", height: "16px", fontSize: "10px", cursor: "pointer"}}
+                                  title="Bild entfernen"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
               </div>
