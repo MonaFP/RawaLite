@@ -298,13 +298,49 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const packageRows = await this.client.query<{ id: number }>(`SELECT id FROM packages WHERE internal_title = ? AND created_at = ? ORDER BY id DESC LIMIT 1`, [mappedPackageData.internal_title, mappedPackageData.created_at]);
     const packageId = packageRows[0].id;
 
-    // Insert line items
-    for (const item of data.lineItems) {
+    // 🎯 CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance  
+    // Create ID mapping for frontend negative IDs to database positive IDs
+    const idMapping: Record<number, number> = {};
+
+    // Sort items - main items first, then sub-items to ensure parent_item_id references exist
+    const mainItems = data.lineItems.filter(item => !item.parentItemId);
+    const subItems = data.lineItems.filter(item => item.parentItemId);
+
+    console.log(`🔧 CREATE PACKAGE: Starting with ${data.lineItems.length} total items`);
+    console.log(`🔧 CREATE PACKAGE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+
+    // Insert main items first and build ID mapping for ALL IDs
+    for (const item of mainItems) {
       const mappedItem = mapToSQL(item);
-      await this.client.exec(
+      const itemResult = await this.client.exec(
         `INSERT INTO package_line_items (package_id, title, quantity, amount, parent_item_id, description) VALUES (?, ?, ?, ?, ?, ?)`,
-        [packageId, mappedItem.title, mappedItem.quantity, mappedItem.amount, mappedItem.parent_item_id || null, mappedItem.description || null]
+        [packageId, mappedItem.title, mappedItem.quantity, mappedItem.amount, null, mappedItem.description || null]
       );
+
+      // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
+      idMapping[item.id] = Number(itemResult.lastInsertRowid);
+      
+      console.log(`🔧 CREATE PACKAGE ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
+    }
+
+    // Then insert sub-items with correct parent references
+    for (const item of subItems) {
+      const mappedItem = mapToSQL(item);
+
+      // Resolve parent_item_id using ID mapping - CRITICAL: Look up parent's NEW database ID
+      let resolvedParentId = null;
+      if (item.parentItemId) {
+        resolvedParentId = idMapping[item.parentItemId] || null;
+        console.log(`🔧 CREATE PACKAGE Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
+      }
+
+      const itemResult = await this.client.exec(
+        `INSERT INTO package_line_items (package_id, title, quantity, amount, parent_item_id, description) VALUES (?, ?, ?, ?, ?, ?)`,
+        [packageId, mappedItem.title, mappedItem.quantity, mappedItem.amount, resolvedParentId, mappedItem.description || null]
+      );
+
+      // Map sub-item ID as well for potential nested sub-items
+      idMapping[item.id] = Number(itemResult.lastInsertRowid);
     }
 
     const newPackage = await this.getPackage(packageId);
@@ -347,13 +383,56 @@ export class SQLiteAdapter implements PersistenceAdapter {
       // Delete old line items
       await this.client.exec(`DELETE FROM package_line_items WHERE package_id = ?`, [id]);
       
-      // Insert new line items
-      for (const item of patch.lineItems) {
+      console.log(`🔧 UPDATE PACKAGE: Starting with ${patch.lineItems.length} total items`);
+      
+      // 🎯 CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance
+      // Create ID mapping for frontend negative IDs to database positive IDs
+      const idMapping: Record<number, number> = {};
+
+      // Sort items - main items first, then sub-items
+      const mainItems = patch.lineItems.filter(item => !item.parentItemId);
+      const subItems = patch.lineItems.filter(item => item.parentItemId);
+      
+      console.log(`🔧 UPDATE PACKAGE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+      console.log(`🔧 UPDATE PACKAGE: Main items:`, mainItems.map(i => `${i.id}:${i.title}`));
+      console.log(`🔧 UPDATE PACKAGE: Sub items:`, subItems.map(i => `${i.id}:${i.title} (parent: ${i.parentItemId})`));
+
+      // Insert main items first and build ID mapping for ALL IDs
+      for (const item of mainItems) {
         const mappedItem = mapToSQL(item);
-        await this.client.exec(
+        const mainItemResult = await this.client.exec(
           `INSERT INTO package_line_items (package_id, title, quantity, amount, parent_item_id, description) VALUES (?, ?, ?, ?, ?, ?)`,
-          [id, mappedItem.title, mappedItem.quantity, mappedItem.amount, mappedItem.parent_item_id || null, mappedItem.description || null]
+          [id, mappedItem.title, mappedItem.quantity, mappedItem.amount, null, mappedItem.description || null]
         );
+
+        // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
+        idMapping[item.id] = Number(mainItemResult.lastInsertRowid);
+        
+        console.log(`🔧 UPDATE PACKAGE ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
+      }
+      
+      console.log(`🔧 UPDATE PACKAGE: Final ID mapping:`, idMapping);
+
+      // Then insert sub-items with correct parent references
+      for (const item of subItems) {
+        const mappedItem = mapToSQL(item);
+
+        // Resolve parent_item_id using ID mapping - CRITICAL: Look up parent's NEW database ID
+        let resolvedParentId = null;
+        if (item.parentItemId) {
+          resolvedParentId = idMapping[item.parentItemId] || null;
+          console.log(`🔧 UPDATE PACKAGE Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
+        }
+
+        const subItemResult = await this.client.exec(
+          `INSERT INTO package_line_items (package_id, title, quantity, amount, parent_item_id, description) VALUES (?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.quantity, mappedItem.amount, resolvedParentId, mappedItem.description || null]
+        );
+
+        // Map sub-item ID as well for potential nested sub-items
+        idMapping[item.id] = Number(subItemResult.lastInsertRowid);
+        
+        console.log(`🔧 UPDATE PACKAGE Sub-Item inserted with parent_item_id: ${resolvedParentId}`);
       }
     }
 

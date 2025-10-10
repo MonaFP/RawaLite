@@ -94,6 +94,12 @@ const CRITICAL_FIXES = {
     file: 'src/adapters/SQLiteAdapter.ts',
     pattern: /const idMapping: Record<number, number> = {};[\s\S]*?const mainItems = [\w.]+\.filter\(item => !item\.parentItemId\);[\s\S]*?const subItems = [\w.]+\.filter\(item => item\.parentItemId\);/,
     description: 'Invoice Foreign Key Constraint ID Mapping for parent-child relationships'
+  },
+
+  'package-foreign-key-id-mapping': {
+    file: 'src/adapters/SQLiteAdapter.ts', 
+    pattern: /CREATE PACKAGE:.*?Starting with.*?total items[\s\S]*?Found.*?main items and.*?sub-items/,
+    description: 'Package Line Items Foreign Key Constraint ID Mapping for parent-child relationships'
   }
 };
 
