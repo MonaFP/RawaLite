@@ -16,6 +16,9 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 - **[NUMMERNKREISE-PRODUCTION-BUG.md](./solved/NUMMERNKREISE-PRODUCTION-BUG.md)** - ✅ **SOLVED:** Production Bug: Fehlende Nummernkreise durch unvollständige Migration
 - **[BUGFIX-FOREIGN-KEY-SUBPOSITIONS.md](./BUGFIX-FOREIGN-KEY-SUBPOSITIONS.md)** - ✅ **SOLVED:** FOREIGN KEY constraint failed bei Angebot-Updates + Sub-Positionen in PDF-Ausgabe
 
+### Update System & Version Management
+- **[LESSONS-LEARNED-v1041-AutoUpdatePreferences-crash.md](./LESSONS-LEARNED-v1041-AutoUpdatePreferences-crash.md)** - 🔴 **CRITICAL:** v1.0.41 AutoUpdatePreferences implementation errors causing Settings-System crashes and blocking Update-System access
+
 ### Architecture & IPC  
 - **[IPC-ARCHITECTURE-LESSONS.md](./solved/IPC-ARCHITECTURE-LESSONS.md)** - Unified IPC Architecture für Window.rawalite Integration
 - **[LESSONS-LEARNED-FIELD-MAPPER-MISUNDERSTANDING.md](./LESSONS-LEARNED-FIELD-MAPPER-MISUNDERSTANDING.md)** - ✅ **COMPLETE:** Field-Mapper Architektur Missverständnis - Warum funktionierende Systeme nicht "optimiert" werden sollten
@@ -80,6 +83,7 @@ Dieser Ordner sammelt wichtige Erkenntnisse und Lösungen aus der RawaLite-Entwi
 | Schema Mismatch | Database | Field-Mapper System | SCHEMA-CONSISTENCY-LESSONS.md |
 | Fehlende Nummernkreise | Production | ✅ Migration 006 | NUMMERNKREISE-PRODUCTION-BUG.md |
 | FOREIGN KEY Constraint Failed | Database | ✅ Sortierte Line-Item Insertion + SQL Naming Fix | BUGFIX-FOREIGN-KEY-SUBPOSITIONS.md |
+| v1.0.41 AutoUpdatePreferences Crash | Update System | 🔴 CRITICAL - Settings-System crash blocks Update access | LESSONS-LEARNED-v1041-AutoUpdatePreferences-crash.md |
 | IPC Chaos | Architecture | Unified window.rawalite | IPC-ARCHITECTURE-LESSONS.md |
 | Field-Mapper Missverständnis | Architecture | ✅ Design-Intent verstehen vor Optimierung | LESSONS-LEARNED-FIELD-MAPPER-MISUNDERSTANDING.md |
 | Update Button funktionslos | Frontend | ✅ Async State Fix | UPDATE-BUTTON-FIX-LESSONS.md |
