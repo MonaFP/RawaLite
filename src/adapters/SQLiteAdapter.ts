@@ -832,31 +832,48 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const invoiceId = result.lastInsertRowid;
 
     // 🎯 CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance
-    // This prevents "FOREIGN KEY constraint failed" errors by mapping negative IDs
+    // Create ID mapping for frontend negative IDs to database positive IDs
     const idMapping: Record<number, number> = {};
-    const processedLineItems = data.lineItems.map(item => {
-      if (item.id < 0) {
-        // Generate new positive ID for database insertion
-        const newId = Date.now() + Math.random();
-        idMapping[item.id] = newId;
-        return { ...item, id: newId };
-      }
-      return item;
-    });
 
-    // Fix parent-child references using ID mapping
-    processedLineItems.forEach(item => {
-      if (item.parentItemId && item.parentItemId < 0) {
-        item.parentItemId = idMapping[item.parentItemId] || item.parentItemId;
-      }
-    });
+    // Sort items - main items first, then sub-items to ensure parent_item_id references exist
+    const mainItems = data.lineItems.filter(item => !item.parentItemId);
+    const subItems = data.lineItems.filter(item => item.parentItemId);
 
-    for (const item of processedLineItems) {
+    console.log(`🔧 CREATE INVOICE: Starting with ${data.lineItems.length} total items`);
+    console.log(`🔧 CREATE INVOICE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+
+    // Insert main items first and build ID mapping for ALL IDs
+    for (const item of mainItems) {
       const mappedItem = mapToSQL(item);
-      await this.client.exec(
+      const itemResult = await this.client.exec(
         `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [invoiceId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, mappedItem.parent_item_id || null]
+        [invoiceId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null]
       );
+
+      // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
+      idMapping[item.id] = Number(itemResult.lastInsertRowid);
+      
+      console.log(`🔧 CREATE INVOICE ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
+    }
+
+    // Then insert sub-items with correct parent references
+    for (const item of subItems) {
+      const mappedItem = mapToSQL(item);
+
+      // Resolve parent_item_id using ID mapping - CRITICAL: Look up parent's NEW database ID
+      let resolvedParentId = null;
+      if (item.parentItemId) {
+        resolvedParentId = idMapping[item.parentItemId] || null;
+        console.log(`🔧 CREATE INVOICE Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
+      }
+
+      const itemResult = await this.client.exec(
+        `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [invoiceId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId]
+      );
+
+      // Map sub-item ID as well for potential nested sub-items
+      idMapping[item.id] = Number(itemResult.lastInsertRowid);
     }
 
     const newInvoice = await this.getInvoice(invoiceId);
@@ -910,32 +927,55 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (patch.lineItems) {
       await this.client.exec(`DELETE FROM invoice_line_items WHERE invoice_id = ?`, [id]);
       
-      // 🎯 CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance
-      // This prevents "FOREIGN KEY constraint failed" errors by mapping negative IDs
+      console.log(`🔧 UPDATE INVOICE: Starting with ${patch.lineItems.length} total items`);
+      
+      // Create ID mapping for frontend negative IDs to database positive IDs
       const idMapping: Record<number, number> = {};
-      const processedLineItems = patch.lineItems.map(item => {
-        if (item.id < 0) {
-          // Generate new positive ID for database insertion
-          const newId = Date.now() + Math.random();
-          idMapping[item.id] = newId;
-          return { ...item, id: newId };
-        }
-        return item;
-      });
 
-      // Fix parent-child references using ID mapping
-      processedLineItems.forEach(item => {
-        if (item.parentItemId && item.parentItemId < 0) {
-          item.parentItemId = idMapping[item.parentItemId] || item.parentItemId;
-        }
-      });
+      // Sort items - main items first, then sub-items
+      const mainItems = patch.lineItems.filter(item => !item.parentItemId);
+      const subItems = patch.lineItems.filter(item => item.parentItemId);
+      
+      console.log(`🔧 UPDATE INVOICE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+      console.log(`🔧 UPDATE INVOICE: Main items:`, mainItems.map(i => `${i.id}:${i.title}`));
+      console.log(`🔧 UPDATE INVOICE: Sub items:`, subItems.map(i => `${i.id}:${i.title} (parent: ${i.parentItemId})`));
 
-      for (const item of processedLineItems) {
+      // Insert main items first and build ID mapping for ALL IDs
+      for (const item of mainItems) {
         const mappedItem = mapToSQL(item);
-        await this.client.exec(
+        const mainItemResult = await this.client.exec(
           `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, mappedItem.parent_item_id || null]
+          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null]
         );
+
+        // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
+        idMapping[item.id] = Number(mainItemResult.lastInsertRowid);
+        
+        console.log(`🔧 UPDATE INVOICE ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
+      }
+      
+      console.log(`🔧 UPDATE INVOICE: Final ID mapping:`, idMapping);
+
+      // Then insert sub-items with correct parent references
+      for (const item of subItems) {
+        const mappedItem = mapToSQL(item);
+
+        // Resolve parent_item_id using ID mapping - CRITICAL: Look up parent's NEW database ID
+        let resolvedParentId = null;
+        if (item.parentItemId) {
+          resolvedParentId = idMapping[item.parentItemId] || null;
+          console.log(`🔧 UPDATE INVOICE Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
+        }
+
+        const subItemResult = await this.client.exec(
+          `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId]
+        );
+
+        // Map sub-item ID as well for potential nested sub-items
+        idMapping[item.id] = Number(subItemResult.lastInsertRowid);
+        
+        console.log(`🔧 UPDATE INVOICE Sub-Item inserted with parent_item_id: ${resolvedParentId}`);
       }
     }
 

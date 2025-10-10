@@ -1195,11 +1195,16 @@ gh release view vX.X.X --json assets
 - **Files:** `src/adapters/SQLiteAdapter.ts`
 - **Pattern:** ID mapping system for frontend negative IDs to database positive IDs
 - **Locations:** 
-  - `createInvoice()` method ~Line 801-809
-  - `updateInvoice()` method ~Line 860-868
-- **First Implemented:** v1.0.40
+  - `createInvoice()` method ~Line 830-870
+  - `updateInvoice()` method ~Line 920-970
+- **First Implemented:** v1.0.40 (Fehlerhaft)
+- **Fixed Implementation:** v1.0.40 (Versuch 2 - Korrekt)
 - **Last Verified:** v1.0.40
 - **Status:** ✅ ACTIVE
+
+**Problem History:**
+- **Versuch 1:** Fehlerhafter Timestamp-basierter Ansatz (`Date.now() + Math.random()`)
+- **Versuch 2:** Korrekte Parent-Child Sortierung mit `lastInsertRowid` (wie bei Offers)
 
 **Required Code Pattern:**
 ```typescript
@@ -1217,6 +1222,20 @@ for (const item of mainItems) {
   
   // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
   idMapping[item.id] = Number(itemResult.lastInsertRowid);
+}
+
+// Then insert sub-items with correct parent references
+for (const item of subItems) {
+  const mappedItem = mapToSQL(item);
+
+  // Resolve parent_item_id using ID mapping - CRITICAL: Look up parent's NEW database ID
+  let resolvedParentId = null;
+  if (item.parentItemId) {
+    resolvedParentId = idMapping[item.parentItemId] || null;
+  }
+
+  const subItemResult = await this.client.exec(/*...INSERT with resolvedParentId...*/);
+  idMapping[item.id] = Number(subItemResult.lastInsertRowid);
 }
 
 // Then insert sub-items with correct parent references
