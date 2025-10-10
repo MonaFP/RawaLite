@@ -30,6 +30,16 @@ export class SQLiteAdapter implements PersistenceAdapter {
         nextCustomerNumber: 1,
         nextOfferNumber: 1,
         nextInvoiceNumber: 1,
+        // Auto-Update Preferences (Migration 018)
+        autoUpdateEnabled: true,
+        autoUpdateCheckFrequency: 'daily',
+        autoUpdateNotificationStyle: 'subtle',
+        autoUpdateReminderInterval: 7,
+        autoUpdateAutoDownload: false,
+        autoUpdateInstallPrompt: 'manual',
+        // Mini-Fix Delivery (Migration 019)
+        updateChannel: 'stable',
+        featureFlags: {},
         createdAt: nowIso(),
         updatedAt: nowIso(),
       };
@@ -37,8 +47,10 @@ export class SQLiteAdapter implements PersistenceAdapter {
       const mappedSettings = mapToSQL(defaultSettings);
       await this.client.exec(
         `
-        INSERT INTO settings (id, company_name, street, zip, city, tax_id, kleinunternehmer, next_customer_number, next_offer_number, next_invoice_number, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO settings (id, company_name, street, zip, city, tax_id, kleinunternehmer, next_customer_number, next_offer_number, next_invoice_number, 
+                            auto_update_enabled, auto_update_check_frequency, auto_update_notification_style, auto_update_reminder_interval,
+                            auto_update_auto_download, auto_update_install_prompt, update_channel, feature_flags, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
         [
           mappedSettings.id,
@@ -51,6 +63,14 @@ export class SQLiteAdapter implements PersistenceAdapter {
           mappedSettings.next_customer_number || 1,
           mappedSettings.next_offer_number || 1,
           mappedSettings.next_invoice_number || 1,
+          mappedSettings.auto_update_enabled ? 1 : 0,
+          mappedSettings.auto_update_check_frequency || 'daily',
+          mappedSettings.auto_update_notification_style || 'subtle',
+          mappedSettings.auto_update_reminder_interval || 7,
+          mappedSettings.auto_update_auto_download ? 1 : 0,
+          mappedSettings.auto_update_install_prompt || 'manual',
+          mappedSettings.update_channel || 'stable',
+          JSON.stringify(mappedSettings.feature_flags || {}),
           mappedSettings.created_at,
           mappedSettings.updated_at,
         ]
@@ -72,7 +92,10 @@ export class SQLiteAdapter implements PersistenceAdapter {
       UPDATE settings SET
         company_name = ?, street = ?, zip = ?, city = ?, phone = ?, email = ?, website = ?, 
         tax_id = ?, vat_id = ?, kleinunternehmer = ?, bank_name = ?, bank_account = ?, bank_bic = ?, 
-        logo = ?, next_customer_number = ?, next_offer_number = ?, next_invoice_number = ?, updated_at = ?
+        logo = ?, next_customer_number = ?, next_offer_number = ?, next_invoice_number = ?,
+        auto_update_enabled = ?, auto_update_check_frequency = ?, auto_update_notification_style = ?,
+        auto_update_reminder_interval = ?, auto_update_auto_download = ?, auto_update_install_prompt = ?,
+        update_channel = ?, feature_flags = ?, updated_at = ?
       WHERE id = ?
     `,
       [
@@ -93,6 +116,14 @@ export class SQLiteAdapter implements PersistenceAdapter {
         mappedNext.next_customer_number || 1,
         mappedNext.next_offer_number || 1,
         mappedNext.next_invoice_number || 1,
+        mappedNext.auto_update_enabled ? 1 : 0,
+        mappedNext.auto_update_check_frequency || 'daily',
+        mappedNext.auto_update_notification_style || 'subtle',
+        mappedNext.auto_update_reminder_interval || 7,
+        mappedNext.auto_update_auto_download ? 1 : 0,
+        mappedNext.auto_update_install_prompt || 'manual',
+        mappedNext.update_channel || 'stable',
+        JSON.stringify(mappedNext.feature_flags || {}),
         mappedNext.updated_at,
         next.id,
       ]
@@ -800,7 +831,27 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
     const invoiceId = result.lastInsertRowid;
 
-    for (const item of data.lineItems) {
+    // 🎯 CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance
+    // This prevents "FOREIGN KEY constraint failed" errors by mapping negative IDs
+    const idMapping: Record<number, number> = {};
+    const processedLineItems = data.lineItems.map(item => {
+      if (item.id < 0) {
+        // Generate new positive ID for database insertion
+        const newId = Date.now() + Math.random();
+        idMapping[item.id] = newId;
+        return { ...item, id: newId };
+      }
+      return item;
+    });
+
+    // Fix parent-child references using ID mapping
+    processedLineItems.forEach(item => {
+      if (item.parentItemId && item.parentItemId < 0) {
+        item.parentItemId = idMapping[item.parentItemId] || item.parentItemId;
+      }
+    });
+
+    for (const item of processedLineItems) {
       const mappedItem = mapToSQL(item);
       await this.client.exec(
         `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -858,7 +909,28 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
     if (patch.lineItems) {
       await this.client.exec(`DELETE FROM invoice_line_items WHERE invoice_id = ?`, [id]);
-      for (const item of patch.lineItems) {
+      
+      // 🎯 CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance
+      // This prevents "FOREIGN KEY constraint failed" errors by mapping negative IDs
+      const idMapping: Record<number, number> = {};
+      const processedLineItems = patch.lineItems.map(item => {
+        if (item.id < 0) {
+          // Generate new positive ID for database insertion
+          const newId = Date.now() + Math.random();
+          idMapping[item.id] = newId;
+          return { ...item, id: newId };
+        }
+        return item;
+      });
+
+      // Fix parent-child references using ID mapping
+      processedLineItems.forEach(item => {
+        if (item.parentItemId && item.parentItemId < 0) {
+          item.parentItemId = idMapping[item.parentItemId] || item.parentItemId;
+        }
+      });
+
+      for (const item of processedLineItems) {
         const mappedItem = mapToSQL(item);
         await this.client.exec(
           `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,

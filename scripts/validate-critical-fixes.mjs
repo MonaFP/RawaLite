@@ -88,6 +88,12 @@ const CRITICAL_FIXES = {
     file: 'src/main/services/UpdateManagerService.ts',
     pattern: /RawaLite\\\.Setup\\\.\\d\+\\\.\\d\+\\\.\\d\+\\\.exe/,
     description: 'Universal asset compatibility for v1.0.32 backward compatibility'
+  },
+
+  'invoice-foreign-key-id-mapping': {
+    file: 'src/adapters/SQLiteAdapter.ts',
+    pattern: /const idMapping: Record<number, number> = {};[\s\S]*?const mainItems = [\w.]+\.filter\(item => !item\.parentItemId\);[\s\S]*?const subItems = [\w.]+\.filter\(item => item\.parentItemId\);/,
+    description: 'Invoice Foreign Key Constraint ID Mapping for parent-child relationships'
   }
 };
 

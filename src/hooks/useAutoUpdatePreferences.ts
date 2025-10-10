@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { AutoUpdatePreferences } from '../types/auto-update.types';
 import { useUnifiedSettings } from './useUnifiedSettings';
+import { SQLiteAdapter } from '../adapters/SQLiteAdapter';
 
 /**
  * Hook zur Verwaltung der Auto-Update-Einstellungen
@@ -10,6 +11,7 @@ import { useUnifiedSettings } from './useUnifiedSettings';
  */
 export function useAutoUpdatePreferences() {
   const { settings, updateCompanyData } = useUnifiedSettings();
+  const [sqliteAdapter] = useState(() => new SQLiteAdapter());
   
   const [preferences, setPreferences] = useState<AutoUpdatePreferences>({
     enabled: false,
@@ -17,7 +19,8 @@ export function useAutoUpdatePreferences() {
     notificationStyle: 'subtle',
     reminderInterval: 4,
     autoDownload: false,
-    installPrompt: 'manual'
+    installPrompt: 'manual',
+    updateChannel: 'stable'
   });
   
   const [loading, setLoading] = useState(true);
@@ -32,7 +35,8 @@ export function useAutoUpdatePreferences() {
         notificationStyle: settings.companyData.autoUpdateNotificationStyle ?? 'subtle',
         reminderInterval: settings.companyData.autoUpdateReminderInterval ?? 4,
         autoDownload: settings.companyData.autoUpdateAutoDownload ?? false,
-        installPrompt: settings.companyData.autoUpdateInstallPrompt ?? 'manual'
+        installPrompt: settings.companyData.autoUpdateInstallPrompt ?? 'manual',
+        updateChannel: (settings as any).updateChannel ?? 'stable'
       });
       setLoading(false);
     }
@@ -48,18 +52,23 @@ export function useAutoUpdatePreferences() {
       const updatedPrefs = { ...preferences, [key]: value };
       setPreferences(updatedPrefs);
 
-      // Speichere über das bestehende Settings-System (field-mapper compliant)
-      const settingsUpdate = {
-        ...settings.companyData,
-        autoUpdateEnabled: updatedPrefs.enabled,
-        autoUpdateCheckFrequency: updatedPrefs.checkFrequency as 'startup' | 'daily' | 'weekly',
-        autoUpdateNotificationStyle: updatedPrefs.notificationStyle as 'subtle' | 'prominent',
-        autoUpdateReminderInterval: updatedPrefs.reminderInterval,
-        autoUpdateAutoDownload: updatedPrefs.autoDownload,
-        autoUpdateInstallPrompt: updatedPrefs.installPrompt as 'immediate' | 'scheduled' | 'manual'
-      };
+      // AutoUpdate-spezifische Felder über companyData
+      if (key !== 'updateChannel') {
+        const settingsUpdate = {
+          ...settings.companyData,
+          autoUpdateEnabled: updatedPrefs.enabled,
+          autoUpdateCheckFrequency: updatedPrefs.checkFrequency as 'startup' | 'daily' | 'weekly',
+          autoUpdateNotificationStyle: updatedPrefs.notificationStyle as 'subtle' | 'prominent',
+          autoUpdateReminderInterval: updatedPrefs.reminderInterval,
+          autoUpdateAutoDownload: updatedPrefs.autoDownload,
+          autoUpdateInstallPrompt: updatedPrefs.installPrompt as 'immediate' | 'scheduled' | 'manual'
+        };
 
-      await updateCompanyData(settingsUpdate);
+        await updateCompanyData(settingsUpdate);
+      } else {
+        // updateChannel über SettingsAdapter direkt
+        await sqliteAdapter.updateSettings({ updateChannel: value as 'stable' | 'beta' });
+      }
     } catch (err) {
       console.error('[AutoUpdatePreferences] Update error:', err);
       setError(err instanceof Error ? err.message : 'Speichern fehlgeschlagen');
@@ -67,7 +76,7 @@ export function useAutoUpdatePreferences() {
       // Revert bei Fehler
       setPreferences(prev => ({ ...prev, [key]: preferences[key] }));
     }
-  }, [preferences, settings.companyData, updateCompanyData]);
+  }, [preferences, settings.companyData, updateCompanyData, sqliteAdapter]);
 
   const resetToDefaults = useCallback(async () => {
     try {
@@ -79,7 +88,8 @@ export function useAutoUpdatePreferences() {
         notificationStyle: 'subtle',
         reminderInterval: 4,
         autoDownload: false,
-        installPrompt: 'manual'
+        installPrompt: 'manual',
+        updateChannel: 'stable'
       };
 
       setPreferences(defaultPrefs);
