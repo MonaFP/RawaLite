@@ -84,17 +84,28 @@ export class GitHubApiService extends EventEmitter {
         headers: {
           'Accept': 'application/octet-stream',
           'User-Agent': 'RawaLite-UpdateChecker/1.0'
-        }
+        },
+        redirect: 'follow'  // ✅ CRITICAL: Follow GitHub 302 redirects to actual file
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorType = response.status === 404 ? 'E_NOT_FOUND' : 
+                         response.status >= 500 ? 'E_SERVER_ERROR' : 'E_HTTP_ERROR';
+        throw new Error(`${errorType}: HTTP ${response.status}: ${response.statusText}`);
       }
 
-      // Verify content type is binary, not HTML/text
+      // Enhanced content type validation for redirect/HTML detection
       const contentType = response.headers.get('content-type') || '';
-      if (contentType.includes('text/html') || contentType.includes('text/plain')) {
-        throw new Error(`Invalid content type: ${contentType}. Expected binary download.`);
+      if (contentType.includes('text/html')) {
+        throw new Error('E_REDIRECT_HTML: Download returned HTML page instead of binary file');
+      }
+      if (contentType.includes('text/plain')) {
+        throw new Error('E_REDIRECT_TEXT: Download returned text response instead of binary file');
+      }
+      if (!contentType.includes('application/octet-stream') && 
+          !contentType.includes('application/x-msdownload') &&
+          !contentType.includes('application/exe')) {
+        console.warn(`Unexpected content-type: ${contentType}, proceeding with caution`);
       }
 
       const totalBytes = asset.size || parseInt(response.headers.get('content-length') || '0');
@@ -119,10 +130,17 @@ export class GitHubApiService extends EventEmitter {
           if (done) break;
           
           if (value) {
-            // Check MZ header on first chunk to verify executable
+            // Critical: Check MZ header on first chunk to verify PE executable
             if (isFirstChunk) {
-              if (value.length < 2 || value[0] !== 0x4D || value[1] !== 0x5A) {
-                throw new Error('Not an executable file: Missing MZ header');
+              if (value.length < 2) {
+                throw new Error('E_INVALID_FILE: Download too small, missing PE header');
+              }
+              if (value[0] !== 0x4D || value[1] !== 0x5A) {
+                // Log first few bytes for debugging
+                const firstBytes = Array.from(value.slice(0, 16))
+                  .map(b => b.toString(16).padStart(2, '0'))
+                  .join(' ');
+                throw new Error(`E_NO_MZ: Not a PE executable. First bytes: ${firstBytes}`);
               }
               isFirstChunk = false;
             }

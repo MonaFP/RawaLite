@@ -111,6 +111,7 @@ declare interface Window {
         error?: string;
       }>;
       getCurrentVersion(): Promise<string>;
+      getUpdateInfo(): Promise<any>; // v1.0.41 compatibility API
       
       // Update Manager Window
       openManager(): Promise<{
@@ -136,6 +137,15 @@ declare interface Window {
       // Utility
       openDownloadFolder(): Promise<void>;
       verifyUpdateFile(filePath: string): Promise<boolean>;
+      
+      // Legacy v1.0.41 Support - Manual File Selection
+      selectUpdateFile(): Promise<string | null>; // Returns selected file path or null if cancelled
+      validateUpdateFile(filePath: string): Promise<{
+        isValid: boolean;
+        size?: number;
+        version?: string;
+        error?: string;
+      }>;
       
       // === Phase 4: AutoUpdateService Security & Monitoring Extensions ===
       
