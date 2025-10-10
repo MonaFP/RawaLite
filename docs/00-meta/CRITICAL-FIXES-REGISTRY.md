@@ -1278,6 +1278,72 @@ parent_item_id: item.parentItemId // When parentItemId = -1 (frontend ID)
 
 ---
 
-**Last Updated:** 2025-10-10 (Added FIX-017: Invoice Foreign Key Constraint ID Mapping - prevents FOREIGN KEY failures when saving invoices with sub-items)
+### **FIX-018: Package Line Items Foreign Key Constraint ID Mapping**
+- **ID:** `package-foreign-key-id-mapping`
+- **Files:** `src/adapters/SQLiteAdapter.ts`
+- **Pattern:** Parent-Child ID mapping system for package line items
+- **Locations:** 
+  - `createPackage()` method ~Line 302-350
+  - `updatePackage()` method ~Line 360-410
+- **First Implemented:** v1.0.40
+- **Last Verified:** v1.0.40
+- **Status:** ✅ ACTIVE
+
+**Problem History:**
+- **Before Fix:** No ID mapping system - direct frontend negative IDs used as database foreign keys
+- **After Fix:** Complete Parent-Child sorting with `lastInsertRowid` mapping (identical to Offers/Invoices)
+
+**Required Code Pattern:**
+```typescript
+// createPackage() and updatePackage() methods - MUST implement ID mapping
+const idMapping: Record<number, number> = {};
+
+// Sort items - main items first, then sub-items to ensure parent_item_id references exist
+const mainItems = data.lineItems.filter(item => !item.parentItemId);
+const subItems = data.lineItems.filter(item => item.parentItemId);
+
+console.log(`🔧 CREATE PACKAGE: Starting with ${data.lineItems.length} total items`);
+console.log(`🔧 CREATE PACKAGE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+
+// Insert main items first and build ID mapping for ALL IDs
+for (const item of mainItems) {
+  const itemResult = await this.client.exec(/*...*/);
+  idMapping[item.id] = Number(itemResult.lastInsertRowid);
+}
+
+// Then insert sub-items with correct parent references
+for (const item of subItems) {
+  const resolvedParentId = idMapping[item.parentItemId] || null;
+  const subItemResult = await this.client.exec(/*...INSERT with resolvedParentId...*/);
+  idMapping[item.id] = Number(subItemResult.lastInsertRowid);
+}
+```
+
+**Critical Functions:**
+- Prevents FOREIGN KEY constraint failures when saving packages with sub-items
+- Maps frontend negative IDs (-1, -2) to valid database positive IDs (1, 2)
+- Ensures parent_item_id references always point to existing database records
+- Maintains hierarchical structure of package line items
+
+**Symptoms if Missing:**
+```
+FOREIGN KEY constraint failed
+```
+- Sub-items are deleted during package save operations
+- Package line items fail to save with parent-child relationships
+- Database constraint violations prevent package persistence
+
+**FORBIDDEN Patterns:**
+```typescript
+// ❌ Direct insertion without ID mapping
+INSERT INTO package_line_items (..., parent_item_id) VALUES (..., item.parentItemId)
+
+// ❌ Using frontend negative IDs as database foreign keys
+parent_item_id: item.parentItemId // When parentItemId = -1 (frontend ID)
+```
+
+---
+
+**Last Updated:** 2025-10-10 (Added FIX-018: Package Line Items Foreign Key Constraint ID Mapping - prevents FOREIGN KEY failures when saving packages with sub-items)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/validate-critical-fixes.mjs`
