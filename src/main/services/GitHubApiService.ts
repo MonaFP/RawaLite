@@ -80,15 +80,27 @@ export class GitHubApiService extends EventEmitter {
       // Ensure target directory exists
       await fs.mkdir(dirname(targetPath), { recursive: true });
 
-      const response = await fetch(asset.browser_download_url);
+      const response = await fetch(asset.browser_download_url, {
+        headers: {
+          'Accept': 'application/octet-stream',
+          'User-Agent': 'RawaLite-UpdateChecker/1.0'
+        }
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
+      // Verify content type is binary, not HTML/text
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('text/html') || contentType.includes('text/plain')) {
+        throw new Error(`Invalid content type: ${contentType}. Expected binary download.`);
+      }
+
       const totalBytes = asset.size || parseInt(response.headers.get('content-length') || '0');
       let downloadedBytes = 0;
       const startTime = Date.now();
+      let isFirstChunk = true;
 
       // Create write stream
       const writeStream = createWriteStream(targetPath);
@@ -107,6 +119,14 @@ export class GitHubApiService extends EventEmitter {
           if (done) break;
           
           if (value) {
+            // Check MZ header on first chunk to verify executable
+            if (isFirstChunk) {
+              if (value.length < 2 || value[0] !== 0x4D || value[1] !== 0x5A) {
+                throw new Error('Not an executable file: Missing MZ header');
+              }
+              isFirstChunk = false;
+            }
+            
             writeStream.write(value);
             downloadedBytes += value.length;
             
@@ -239,7 +259,10 @@ export class GitHubApiService extends EventEmitter {
 
     // Make HTTP request
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      headers: this.headers
+      headers: {
+        ...this.headers
+      },
+      redirect: 'follow'
     });
 
     // Handle GitHub rate limit headers

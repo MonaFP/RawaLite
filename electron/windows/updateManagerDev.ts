@@ -4,6 +4,8 @@
  */
 
 import { BrowserWindow, app } from 'electron';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import * as path from 'node:path';
 
 let devWin: BrowserWindow | null = null;
@@ -18,14 +20,14 @@ export function createUpdateManagerDevWindow(): BrowserWindow {
   const rootPath = isDev ? process.cwd() : app.getAppPath();
 
   const preloadPath = isDev
-    ? path.join(rootPath, 'dist-electron', 'preload.js')
-    : path.join(__dirname, 'preload.js');
+    ? join(rootPath, 'dist-electron', 'preload.js')
+    : join(__dirname, 'preload.js');
 
   let iconPath: string;
   if (isDev) {
-    iconPath = path.join(rootPath, 'public', 'rawalite-logo.png');
+    iconPath = join(rootPath, 'public', 'rawalite-logo.png');
   } else {
-    iconPath = path.join(process.resourcesPath, 'assets', 'icon.png');
+    iconPath = join(process.resourcesPath, 'assets', 'icon.png');
   }
 
   console.log('[UpdateManagerDevWindow] Creating development window with preload:', preloadPath);
@@ -56,10 +58,10 @@ export function createUpdateManagerDevWindow(): BrowserWindow {
     devWin.webContents.openDevTools({ mode: 'detach' });
     
     // Load production HTML with UpdateManager route
-    const htmlPath = path.join(rootPath, 'dist-web', 'index.html');
+    const htmlPath = join(rootPath, 'dist-web', 'index.html');
     console.log('[UpdateManagerDevWindow] Loading Production HTML:', htmlPath);
     
-    if (require('fs').existsSync(htmlPath)) {
+    if (existsSync(htmlPath)) {
       devWin.loadFile(htmlPath, { hash: 'update-manager' });
     } else {
       console.error('[UpdateManagerDevWindow] No production build found. Run: pnpm run build');

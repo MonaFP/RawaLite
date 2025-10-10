@@ -1,6 +1,7 @@
 # Ordner/Dateien, die NICHT ins Repo sollen
 node_modules/
 dist/
+docs/
 dist-web/
 dist-manual/
 *.log

@@ -10,7 +10,7 @@
  */
 
 import { createHash } from 'crypto';
-import { promises as fs } from 'fs';
+import { promises as fs, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { spawn } from 'child_process';
 import { app, dialog, shell } from 'electron';
@@ -385,7 +385,6 @@ export class UpdateManagerService {
         });
         
         // ✅ CREATE MOCK FILE: Create a dummy file for verification
-        const fs = require('fs').promises;
         await fs.writeFile(targetPath, Buffer.alloc(setupAsset.size, 0)); // Create file with correct size
         
         debugLog('UpdateManagerService', 'mock_download_complete', { targetPath });
@@ -801,11 +800,11 @@ Manual download: https://github.com/MonaFP/RawaLite/releases/tag/${release.tag_n
       debugLog('UpdateManagerService', 'runInstaller_start', {
         filePath,
         options,
-        fileExists: require('fs').existsSync(filePath)
+        fileExists: existsSync(filePath)
       });
 
       // Check if file exists before trying to run it
-      if (!require('fs').existsSync(filePath)) {
+      if (!existsSync(filePath)) {
         const error = `Installer file not found: ${filePath}`;
         debugLog('UpdateManagerService', 'runInstaller_file_not_found', { filePath }, error);
         reject(new Error(error));
