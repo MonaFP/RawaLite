@@ -439,7 +439,7 @@ export function UpdateDialog({ isOpen, onClose, autoCheckOnOpen = false }: Updat
           logStateChange('UpdateDialog', { updateInfo: undefined }, { updateInfo: normalizedInfo }, 'updateInfo_set_normalized');
         } else if (result.latestRelease) {
           const installerAsset =
-            result.latestRelease.assets?.find(asset =>
+            result.latestRelease.assets?.find((asset: any) =>
               asset.name?.toLowerCase().endsWith('.exe') ||
               asset.browser_download_url?.toLowerCase().endsWith('.exe') ||
               /setup/i.test(asset.name || '')

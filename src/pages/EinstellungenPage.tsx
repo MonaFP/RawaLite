@@ -31,7 +31,6 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const [featureFlags, setFeatureFlags] = useState({
     enableAssetOverride: false,
     enableBetaUpdates: false,
-    enableDeveloperMode: false,
     enableExperimentalFeatures: false
   });
 
@@ -82,7 +81,6 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
       setFeatureFlags({
         enableAssetOverride: settingsFeatureFlags.enableAssetOverride || false,
         enableBetaUpdates: settingsFeatureFlags.enableBetaUpdates || false,
-        enableDeveloperMode: settingsFeatureFlags.enableDeveloperMode || false,
         enableExperimentalFeatures: settingsFeatureFlags.enableExperimentalFeatures || false
       });
     }
@@ -2103,23 +2101,6 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                     <span style={{ fontWeight: "500" }}>Beta Updates aktivieren</span>
                     <div style={{ fontSize: "12px", opacity: 0.7, marginTop: "2px" }}>
                       Erhalte frühe Updates mit neuen Features (kann instabil sein)
-                    </div>
-                  </div>
-                </label>
-              </div>
-
-              <div style={{ marginBottom: "16px" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    checked={featureFlags.enableDeveloperMode}
-                    onChange={(e) => updateFeatureFlag('enableDeveloperMode', e.target.checked)}
-                    style={{ cursor: "pointer", transform: "scale(1.2)" }}
-                  />
-                  <div>
-                    <span style={{ fontWeight: "500" }}>Developer Mode</span>
-                    <div style={{ fontSize: "12px", opacity: 0.7, marginTop: "2px" }}>
-                      Zeigt erweiterte Debugging-Informationen und Logs
                     </div>
                   </div>
                 </label>

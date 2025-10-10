@@ -209,6 +209,18 @@ contextBridge.exposeInMainWorld('rawalite', {
     verifyUpdateFile: (filePath: string) => 
       ipcRenderer.invoke('updates:verifyFile', filePath) as Promise<boolean>,
     
+    // Legacy v1.0.41 Support - Manual File Selection
+    selectUpdateFile: () =>
+      ipcRenderer.invoke('updates:selectUpdateFile') as Promise<string | null>,
+    validateUpdateFile: (filePath: string) =>
+      ipcRenderer.invoke('updates:validateUpdateFile', filePath) as Promise<{
+        isValid: boolean;
+        size?: number;
+        version?: string;
+        fileName?: string;
+        error?: string;
+      }>,
+    
     // === Phase 4: AutoUpdateService Security & Monitoring Extensions ===
     
     // Service Status Monitoring

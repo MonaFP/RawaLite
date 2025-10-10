@@ -11,9 +11,47 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'; // ✅ afterEach hinzugefügt
 import { GitHubApiService } from '../../src/main/services/GitHubApiService';
 import { RateLimitManager } from '../../src/main/services/RateLimitManager';
+import fs from 'fs/promises';
+import { createWriteStream } from 'fs';
 
 // Mock fetch global
 global.fetch = vi.fn(); // ✅ Vitest vi.fn()
+
+// Mock fs modules
+vi.mock('fs/promises', () => ({
+  default: {
+    writeFile: vi.fn().mockResolvedValue(void 0),
+    readFile: vi.fn().mockResolvedValue(Buffer.alloc(0)),
+    unlink: vi.fn().mockResolvedValue(void 0),
+    mkdir: vi.fn().mockResolvedValue(void 0),
+    stat: vi.fn().mockResolvedValue({ size: 1000 })
+  },
+  writeFile: vi.fn().mockResolvedValue(void 0),
+  readFile: vi.fn().mockResolvedValue(Buffer.alloc(0)),
+  unlink: vi.fn().mockResolvedValue(void 0),
+  mkdir: vi.fn().mockResolvedValue(void 0),
+  stat: vi.fn().mockResolvedValue({ size: 1000 })
+}));
+vi.mock('fs', () => ({
+  createWriteStream: vi.fn(() => ({
+    write: vi.fn(),
+    end: vi.fn(),
+    on: vi.fn(),
+    emit: vi.fn(),
+    once: vi.fn(),
+    removeListener: vi.fn()
+  })),
+  promises: {
+    writeFile: vi.fn().mockResolvedValue(void 0),
+    readFile: vi.fn().mockResolvedValue(Buffer.alloc(0)),
+    unlink: vi.fn().mockResolvedValue(void 0),
+    mkdir: vi.fn().mockResolvedValue(void 0),
+    stat: vi.fn().mockResolvedValue({ size: 1000 })
+  }
+}));
+
+const mockFs = vi.mocked(fs);
+const mockCreateWriteStream = vi.mocked(createWriteStream);
 
 describe('GitHubApiService', () => {
   let service: GitHubApiService;
@@ -195,5 +233,118 @@ describe('RateLimitManager', () => {
 
     expect(manager.canMakeRequest()).toBe(true);
     expect(manager.getRemainingRequests()).toBe(60);
+  });
+});
+
+describe('Robust Download with Redirect Support', () => {
+  let service: GitHubApiService;
+  let mockFetch: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    service = new GitHubApiService();
+    mockFetch = fetch as ReturnType<typeof vi.fn>;
+    mockFetch.mockClear();
+    mockFs.mkdir.mockResolvedValue(undefined);
+    
+    // Mock WriteStream
+    const mockWriteStream = {
+      write: vi.fn(),
+      end: vi.fn((callback) => callback && callback()),
+      on: vi.fn()
+    };
+    mockCreateWriteStream.mockReturnValue(mockWriteStream as any);
+  });
+
+  it('should follow 302 redirects correctly', async () => {
+    const mockAsset = {
+      name: 'test.exe',
+      browser_download_url: 'https://github.com/test/releases/download/v1.0.0/test.exe',
+      size: 1000,
+      content_type: 'application/octet-stream',
+      download_count: 0
+    };
+
+    // Mock PE executable bytes (MZ header)
+    const peBytes = new Uint8Array([0x4D, 0x5A, 0x90, 0x00, ...Array(996).fill(0x00)]);
+    
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      headers: new Map([
+        ['content-type', 'application/octet-stream'],
+        ['content-length', '1000']
+      ]),
+      body: {
+        getReader: () => ({
+          read: vi.fn()
+            .mockResolvedValueOnce({ done: false, value: peBytes })
+            .mockResolvedValueOnce({ done: true }),
+          releaseLock: vi.fn()
+        })
+      }
+    } as any);
+
+    // Verify fetch is called with redirect: 'follow'
+    await service.downloadAsset(mockAsset, '/tmp/test.exe');
+    
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://github.com/test/releases/download/v1.0.0/test.exe',
+      expect.objectContaining({
+        redirect: 'follow'
+      })
+    );
+  });
+
+  it('should reject HTML redirect pages with E_REDIRECT_HTML', async () => {
+    const mockAsset = {
+      name: 'test.exe',
+      browser_download_url: 'https://github.com/test/releases/download/v1.0.0/test.exe',
+      size: 1000,
+      content_type: 'application/octet-stream',
+      download_count: 0
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      headers: new Map([
+        ['content-type', 'text/html'],
+        ['content-length', '500']
+      ]),
+      body: null
+    } as any);
+
+    await expect(service.downloadAsset(mockAsset, '/tmp/test.exe'))
+      .rejects.toThrow('E_REDIRECT_HTML: Download returned HTML page instead of binary file');
+  });
+
+  it('should reject files without MZ header with E_NO_MZ', async () => {
+    const mockAsset = {
+      name: 'test.exe',
+      browser_download_url: 'https://github.com/test/releases/download/v1.0.0/test.exe',
+      size: 1000,
+      content_type: 'application/octet-stream',
+      download_count: 0
+    };
+
+    // Mock HTML content (no MZ header)
+    const htmlBytes = new Uint8Array([0x3C, 0x68, 0x74, 0x6D, 0x6C, ...Array(995).fill(0x00)]); // <html...
+    
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      headers: new Map([
+        ['content-type', 'application/octet-stream'],
+        ['content-length', '1000']
+      ]),
+      body: {
+        getReader: () => ({
+          read: vi.fn()
+            .mockResolvedValueOnce({ done: false, value: htmlBytes })
+            .mockResolvedValueOnce({ done: true }),
+          releaseLock: vi.fn()
+        })
+      }
+    } as any);
+
+    await expect(service.downloadAsset(mockAsset, '/tmp/test.exe'))
+      .rejects.toThrow('E_NO_MZ: Not a PE executable. First bytes: 3c 68 74 6d 6c 00 00 00 00 00 00 00 00 00 00 00');
   });
 });

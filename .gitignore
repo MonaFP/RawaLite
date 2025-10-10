@@ -11,6 +11,7 @@ dist-manual/
 # Build-/Release-Artefakte
 dist/
 dist-electron/
+dist-release/
 build/
 *.log
 *.zip

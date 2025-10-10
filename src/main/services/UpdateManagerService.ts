@@ -19,6 +19,11 @@ import { createReadStream } from 'fs';
 import { githubApiService } from './GitHubApiService';
 import { mockProgressService } from './MockProgressService';
 import UpdateHistoryService from './UpdateHistoryService';
+import {
+  LEGACY_INSTALLER_FALLBACK_SIZE,
+  normalizeInstallerSelection,
+  type InstallerSelectionSource
+} from './updateInstallerSelector';
 import type {
   UpdateCheckResult,
   UpdateInfo,
@@ -655,6 +660,42 @@ Technical details: ${errorMessage}`;
       console.error('Failed to get current version:', error);
       return '0.0.0';
     }
+  }
+
+  private resolveNormalizedUpdateInfo(updateInfo: UpdateInfo): {
+    info: UpdateInfo;
+    needsManualNotice: boolean;
+    source: InstallerSelectionSource;
+  } {
+    const fallbackVersion = updateInfo.version || this.state.checkResult?.latestVersion || '';
+
+    const selection = normalizeInstallerSelection({
+      release: this.state.checkResult?.latestRelease,
+      requested: {
+        downloadUrl: updateInfo.downloadUrl,
+        assetName: updateInfo.assetName,
+        fileSize: updateInfo.fileSize
+      },
+      fallbackVersion
+    });
+
+    const sanitizedVersion = (fallbackVersion || selection.assetName || 'latest').replace(/^v/, '') || 'latest';
+    const normalizedUrl = this.getBackwardCompatibleDownloadUrl(
+      sanitizedVersion,
+      selection.downloadUrl,
+      selection.assetName
+    );
+
+    return {
+      info: {
+        ...updateInfo,
+        downloadUrl: normalizedUrl,
+        assetName: selection.assetName || 'RawaLite-Setup.exe',
+        fileSize: selection.fileSize || 0
+      },
+      needsManualNotice: selection.needsManualNotice || false,
+      source: selection.source
+    };
   }
 
   private createUpdateInfo(release: any): UpdateInfo {
