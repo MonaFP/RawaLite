@@ -56,11 +56,14 @@ export class GitHubApiService extends EventEmitter {
 
   /**
    * Holt die neueste Release-Information
+   * @param options - Backward compatibility parameter (ignored for v1.0.41 compatibility)
    */
-  async getLatestRelease(): Promise<GitHubRelease> {
+  async getLatestRelease(options?: { channel?: 'stable' | 'beta' }): Promise<GitHubRelease> {
     const endpoint = `/repos/${this.repo}/releases/latest`;
     
     try {
+      // Note: GitHub doesn't support beta channels directly, always return latest stable
+      // This provides backward compatibility for v1.0.41 users with beta channel enabled
       const response = await this.makeRequest<any>(endpoint);
       return this.mapGitHubReleaseToInternal(response);
     } catch (error) {
