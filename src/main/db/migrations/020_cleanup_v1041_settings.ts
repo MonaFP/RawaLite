@@ -20,93 +20,78 @@ export function up(db: Database.Database): void {
   console.log('🔧 [Migration 020] Cleanup v1.0.41 problematic settings...');
 
   try {
-    // 1. Reset Beta Channel zu Stable (KRITISCH für Update-Funktionalität)
-    const updateChannelResult = db.prepare(`
-      UPDATE settings 
-      SET update_channel = 'stable' 
-      WHERE update_channel = 'beta'
-    `).run();
-
-    if (updateChannelResult.changes > 0) {
-      console.log(`✅ [Migration 020] Reset ${updateChannelResult.changes} Beta-Channel Settings zu Stable`);
+    // 1. Prüfe erst ob settings Tabelle überhaupt existiert
+    const tables = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`).all();
+    if (tables.length === 0) {
+      console.log('ℹ️ [Migration 020] Settings table does not exist, skipping migration');
+      return;
     }
 
-    // 2. Prüfe ob feature_flags Spalte existiert (robust)
+    // 2. Hole aktuelle Spalten der settings Tabelle
     const columns = db.prepare(`PRAGMA table_info(settings)`).all();
-    const hasFeatureFlags = columns.some((col: any) => col.name === 'feature_flags');
+    const columnNames = columns.map((col: any) => col.name);
     
-    if (hasFeatureFlags) {
-      // Remove feature_flags column (war nie vollständig implementiert)
-      console.log('🗑️ [Migration 020] Removing feature_flags column...');
-      
-      // SQLite ALTER TABLE DROP COLUMN workaround
-      // Erstelle neue Tabelle ohne feature_flags
-      const settingsColumns = columns
-        .filter((col: any) => col.name !== 'feature_flags')
-        .map((col: any) => `${col.name} ${col.type}`)
-        .join(', ');
+    console.log(`� [Migration 020] Current settings columns: ${columnNames.join(', ')}`);
 
-      db.exec(`
-        -- Create new settings table without feature_flags
-        CREATE TABLE settings_new (
-          ${settingsColumns}
-        );
-        
-        -- Copy all data except feature_flags
-        INSERT INTO settings_new SELECT ${columns
-          .filter((col: any) => col.name !== 'feature_flags')
-          .map((col: any) => col.name)
-          .join(', ')} FROM settings;
-        
-        -- Replace old table
-        DROP TABLE settings;
-        ALTER TABLE settings_new RENAME TO settings;
-      `);
-      
-      console.log('✅ [Migration 020] Removed feature_flags column successfully');
-    }
-
-    // 3. Prüfe ob update_channel Spalte existiert und remove falls vorhanden
-    const updatedColumns = db.prepare(`PRAGMA table_info(settings)`).all();
-    const hasUpdateChannel = updatedColumns.some((col: any) => col.name === 'update_channel');
-    
+    // 3. Reset Beta Channel zu Stable (nur wenn update_channel existiert)
+    const hasUpdateChannel = columnNames.includes('update_channel');
     if (hasUpdateChannel) {
-      console.log('🗑️ [Migration 020] Removing update_channel column...');
-      
-      // Remove update_channel column (GitHubApiService nicht bereit)
-      const finalColumns = updatedColumns
-        .filter((col: any) => col.name !== 'update_channel')
-        .map((col: any) => `${col.name} ${col.type}`)
-        .join(', ');
+      const updateChannelResult = db.prepare(`
+        UPDATE settings 
+        SET update_channel = 'stable' 
+        WHERE update_channel = 'beta'
+      `).run();
 
-      db.exec(`
-        -- Create final settings table without update_channel
-        CREATE TABLE settings_final (
-          ${finalColumns}
-        );
-        
-        -- Copy all data except update_channel
-        INSERT INTO settings_final SELECT ${updatedColumns
-          .filter((col: any) => col.name !== 'update_channel')
-          .map((col: any) => col.name)
-          .join(', ')} FROM settings;
-        
-        -- Replace table
-        DROP TABLE settings;
-        ALTER TABLE settings_final RENAME TO settings;
-      `);
-      
-      console.log('✅ [Migration 020] Removed update_channel column successfully');
+      if (updateChannelResult.changes > 0) {
+        console.log(`✅ [Migration 020] Reset ${updateChannelResult.changes} Beta-Channel Settings zu Stable`);
+      }
+    } else {
+      console.log('ℹ️ [Migration 020] No update_channel column found, skipping update');
     }
 
-    // 4. Validation: Ensure settings table ist in sauberem Zustand
-    const finalTableInfo = db.prepare(`PRAGMA table_info(settings)`).all();
-    const cleanColumnNames = finalTableInfo.map((col: any) => col.name);
+    // 4. Remove problematische Spalten falls vorhanden
+    const problematicColumns = ['feature_flags', 'update_channel'];
+    const columnsToRemove = problematicColumns.filter(col => columnNames.includes(col));
+    
+    if (columnsToRemove.length > 0) {
+      console.log(`🗑️ [Migration 020] Removing problematic columns: ${columnsToRemove.join(', ')}`);
+      
+      // Keep nur die Spalten die wir behalten wollen
+      const keepColumns = columns.filter((col: any) => !problematicColumns.includes(col.name));
+      
+      if (keepColumns.length > 0) {
+        const newTableColumns = keepColumns.map((col: any) => `${col.name} ${col.type}`).join(', ');
+        const selectColumns = keepColumns.map((col: any) => col.name).join(', ');
+
+        db.exec(`
+          -- Create new settings table without problematic columns
+          CREATE TABLE settings_new (
+            ${newTableColumns}
+          );
+          
+          -- Copy data without problematic columns
+          INSERT INTO settings_new (${selectColumns}) 
+          SELECT ${selectColumns} FROM settings;
+          
+          -- Replace old table
+          DROP TABLE settings;
+          ALTER TABLE settings_new RENAME TO settings;
+        `);
+        
+        console.log(`✅ [Migration 020] Removed problematic columns: ${columnsToRemove.join(', ')}`);
+      } else {
+        console.log('⚠️ [Migration 020] All columns were problematic, keeping original table');
+      }
+    } else {
+      console.log('ℹ️ [Migration 020] No problematic columns found, table is clean');
+    }
+
+    // 5. Final validation
+    const finalColumns = db.prepare(`PRAGMA table_info(settings)`).all();
+    const finalColumnNames = finalColumns.map((col: any) => col.name);
     
     console.log('✅ [Migration 020] Settings table cleanup complete');
-    console.log(`📊 [Migration 020] Final columns: ${cleanColumnNames.join(', ')}`);
-    
-    // 5. Log Migration Success für Debugging
+    console.log(`📊 [Migration 020] Final columns: ${finalColumnNames.join(', ')}`);
     console.log('🎯 [Migration 020] v1.0.41 → v1.0.42 Rückwärtskompatibilität hergestellt');
 
   } catch (error) {
