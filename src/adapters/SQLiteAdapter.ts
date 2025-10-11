@@ -37,9 +37,6 @@ export class SQLiteAdapter implements PersistenceAdapter {
         autoUpdateReminderInterval: 7,
         autoUpdateAutoDownload: false,
         autoUpdateInstallPrompt: 'manual',
-        // Mini-Fix Delivery (Migration 019)
-        updateChannel: 'stable',
-        featureFlags: {},
         createdAt: nowIso(),
         updatedAt: nowIso(),
       };

@@ -65,10 +65,8 @@ export function useAutoUpdatePreferences() {
         };
 
         await updateCompanyData(settingsUpdate);
-      } else {
-        // updateChannel über SettingsAdapter direkt
-        await sqliteAdapter.updateSettings({ updateChannel: value as 'stable' | 'beta' });
       }
+      // Note: updateChannel is not supported in this version
     } catch (err) {
       console.error('[AutoUpdatePreferences] Update error:', err);
       setError(err instanceof Error ? err.message : 'Speichern fehlgeschlagen');

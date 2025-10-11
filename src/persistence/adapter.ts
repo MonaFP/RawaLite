@@ -18,10 +18,6 @@ export interface Settings {
   autoUpdateAutoDownload?: boolean;
   autoUpdateInstallPrompt?: 'immediate' | 'scheduled' | 'manual';
   
-  // Mini-Fix Delivery System (Migration 019)
-  updateChannel?: 'stable' | 'beta';
-  featureFlags?: Record<string, boolean>;
-  
   createdAt?: string;
   updatedAt?: string;
 }

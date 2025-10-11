@@ -48,10 +48,6 @@ export class FieldMapper {
     'autoUpdateAutoDownload': 'auto_update_auto_download',
     'autoUpdateInstallPrompt': 'auto_update_install_prompt',
     
-    // Mini-Fix Delivery System Felder (Migration 019)
-    'updateChannel': 'update_channel',
-    'featureFlags': 'feature_flags',
-    
     // Package Felder (KRITISCH - waren vorher nicht definiert!)
     'internalTitle': 'internal_title',
     'parentPackageId': 'parent_package_id',

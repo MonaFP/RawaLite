@@ -27,14 +27,6 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   const { showError, showSuccess } = useNotifications();
   const [sqliteAdapter] = useState(() => new SQLiteAdapter());
 
-  // State für Feature Flags
-  const [featureFlags, setFeatureFlags] = useState({
-    enableAssetOverride: false,
-    enableBetaUpdates: false,
-    enableDeveloperMode: false,
-    enableExperimentalFeatures: false
-  });
-
   // State für Activity Dialog
   const [showActivityDialog, setShowActivityDialog] = useState(false);
   const [editingActivity, setEditingActivity] = useState<any>(null);
@@ -46,7 +38,7 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     description: '',
     hourlyRate: 0
   });
-  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'activities' | 'themes' | 'updates' | 'advanced' | 'maintenance'>('company');
+  const [activeTab, setActiveTab] = useState<'company' | 'logo' | 'tax' | 'bank' | 'numbering' | 'activities' | 'themes' | 'updates' | 'maintenance'>('company');
   const [companyFormData, setCompanyFormData] = useState<CompanyData>(() => ({
     ...defaultSettings.companyData,
     ...settings.companyData
@@ -74,19 +66,6 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
     };
     loadVersion();
   }, []);
-
-  // Feature Flags aus Settings laden
-  useEffect(() => {
-    const settingsFeatureFlags = (settings as any).featureFlags;
-    if (settingsFeatureFlags) {
-      setFeatureFlags({
-        enableAssetOverride: settingsFeatureFlags.enableAssetOverride || false,
-        enableBetaUpdates: settingsFeatureFlags.enableBetaUpdates || false,
-        enableDeveloperMode: settingsFeatureFlags.enableDeveloperMode || false,
-        enableExperimentalFeatures: settingsFeatureFlags.enableExperimentalFeatures || false
-      });
-    }
-  }, [settings]);
 
   // Activity Dialog Funktionen
   const openCreateActivityDialog = () => {
@@ -160,25 +139,6 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
 
   // A2: Stable Close Callback - verhindert Dialog Re-Renders durch Function Reference Changes
   const handleCloseUpdateDialog = useCallback(() => setUpdateDialogOpen(false), []);
-
-  // Feature Flag Update Handler
-  const updateFeatureFlag = useCallback(async (flagName: keyof typeof featureFlags, value: boolean) => {
-    try {
-      const newFeatureFlags = { ...featureFlags, [flagName]: value };
-      setFeatureFlags(newFeatureFlags);
-
-      // Update über SQLiteAdapter mit any type da featureFlags noch nicht im Settings interface ist
-      await sqliteAdapter.updateSettings({ featureFlags: newFeatureFlags } as any);
-      
-      showSuccess(`Feature "${flagName}" ${value ? 'aktiviert' : 'deaktiviert'}`);
-    } catch (error) {
-      console.error('Fehler beim Aktualisieren der Feature Flags:', error);
-      showError('Fehler beim Speichern der Feature Flag Einstellungen');
-      
-      // Revert bei Fehler
-      setFeatureFlags(prev => ({ ...prev, [flagName]: !value }));
-    }
-  }, [featureFlags, sqliteAdapter, showSuccess, showError]);
 
   // Update form data when settings change
   React.useEffect(() => {
@@ -1283,22 +1243,6 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
           Updates
         </button>
         <button
-          onClick={() => setActiveTab('advanced')}
-          style={{
-            backgroundColor: activeTab === 'advanced' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
-            color: activeTab === 'advanced' ? "white" : "#374151",
-            border: activeTab === 'advanced' ? "1px solid #1e3a2e" : "1px solid rgba(0,0,0,.2)",
-            padding: "8px 16px",
-            borderRadius: "8px 8px 0 0",
-            cursor: "pointer",
-            borderBottom: activeTab === 'advanced' ? "2px solid #1e3a2e" : "2px solid transparent",
-            transition: "all 0.2s ease",
-            fontWeight: activeTab === 'advanced' ? "600" : "500"
-          }}
-        >
-          🔧 Erweiterte Optionen
-        </button>
-        <button
           onClick={() => setActiveTab('maintenance')}
           style={{
             backgroundColor: activeTab === 'maintenance' ? "#1e3a2e" : "rgba(255,255,255,0.8)",
@@ -2049,139 +1993,6 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
           <div style={{ margin: '32px 0', borderTop: '1px solid rgba(0,0,0,0.1)' }} />
           
           <NavigationModeSelector />
-        </div>
-      )}
-
-      {/* Advanced Options Tab - Erweiterte Optionen */}
-      {activeTab === 'advanced' && (
-        <div>
-          <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Erweiterte Optionen</h3>
-          <p style={{ opacity: 0.7, marginBottom: "24px" }}>
-            Konfigurieren Sie erweiterte Funktionen und experimentelle Features für RawaLite.
-          </p>
-
-          {/* Mini-Fix Delivery Section */}
-          <div style={{ marginBottom: "32px" }}>
-            <h4 style={{ margin: "0 0 12px 0", color: "#374151" }}>🚀 Mini-Fix Delivery System</h4>
-            <p style={{ margin: "0 0 16px 0", color: "#6b7280", fontSize: "14px" }}>
-              Erweiterte Funktionen für schnelle Updates und Asset-Overrides.
-            </p>
-            
-            <div style={{ 
-              padding: "16px", 
-              backgroundColor: "rgba(255,255,255,0.05)",
-              borderRadius: "8px",
-              border: "1px solid rgba(255,255,255,0.1)",
-              marginBottom: "16px"
-            }}>
-              <div style={{ marginBottom: "16px" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    checked={featureFlags.enableAssetOverride}
-                    onChange={(e) => updateFeatureFlag('enableAssetOverride', e.target.checked)}
-                    style={{ cursor: "pointer", transform: "scale(1.2)" }}
-                  />
-                  <div>
-                    <span style={{ fontWeight: "500" }}>Asset Override aktivieren</span>
-                    <div style={{ fontSize: "12px", opacity: 0.7, marginTop: "2px" }}>
-                      Ermöglicht das Überschreiben von App-Assets ohne Update
-                    </div>
-                  </div>
-                </label>
-              </div>
-
-              <div style={{ marginBottom: "16px" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    checked={featureFlags.enableBetaUpdates}
-                    onChange={(e) => updateFeatureFlag('enableBetaUpdates', e.target.checked)}
-                    style={{ cursor: "pointer", transform: "scale(1.2)" }}
-                  />
-                  <div>
-                    <span style={{ fontWeight: "500" }}>Beta Updates aktivieren</span>
-                    <div style={{ fontSize: "12px", opacity: 0.7, marginTop: "2px" }}>
-                      Erhalte frühe Updates mit neuen Features (kann instabil sein)
-                    </div>
-                  </div>
-                </label>
-              </div>
-
-              <div style={{ marginBottom: "16px" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    checked={featureFlags.enableDeveloperMode}
-                    onChange={(e) => updateFeatureFlag('enableDeveloperMode', e.target.checked)}
-                    style={{ cursor: "pointer", transform: "scale(1.2)" }}
-                  />
-                  <div>
-                    <span style={{ fontWeight: "500" }}>Developer Mode</span>
-                    <div style={{ fontSize: "12px", opacity: 0.7, marginTop: "2px" }}>
-                      Zeigt erweiterte Debugging-Informationen und Logs
-                    </div>
-                  </div>
-                </label>
-              </div>
-
-              <div style={{ marginBottom: "0" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    checked={featureFlags.enableExperimentalFeatures}
-                    onChange={(e) => updateFeatureFlag('enableExperimentalFeatures', e.target.checked)}
-                    style={{ cursor: "pointer", transform: "scale(1.2)" }}
-                  />
-                  <div>
-                    <span style={{ fontWeight: "500" }}>Experimentelle Features</span>
-                    <div style={{ fontSize: "12px", opacity: 0.7, marginTop: "2px" }}>
-                      Aktiviert experimentelle Funktionen in der Entwicklung
-                    </div>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            <div style={{ 
-              padding: "12px 16px", 
-              backgroundColor: "rgba(255, 193, 7, 0.1)",
-              borderRadius: "8px",
-              border: "1px solid rgba(255, 193, 7, 0.3)",
-              fontSize: "14px"
-            }}>
-              <strong>⚠️ Hinweis:</strong> Diese Features sind experimentell und können sich in zukünftigen Versionen ändern.
-              Verwenden Sie sie auf eigene Verantwortung in Produktionsumgebungen.
-            </div>
-          </div>
-
-          {/* System Information Section */}
-          <div style={{ marginBottom: "32px" }}>
-            <h4 style={{ margin: "0 0 12px 0", color: "#374151" }}>🔍 System-Informationen</h4>
-            <div style={{ 
-              padding: "16px", 
-              backgroundColor: "rgba(255,255,255,0.05)",
-              borderRadius: "8px",
-              border: "1px solid rgba(255,255,255,0.1)",
-              fontSize: "14px",
-              fontFamily: "monospace"
-            }}>
-              <div style={{ marginBottom: "8px" }}>
-                <strong>Override Assets Directory:</strong><br/>
-                <span style={{ opacity: 0.8 }}>{`await PATHS.OVERRIDE_ASSETS_DIR()`}</span>
-              </div>
-              <div style={{ marginBottom: "8px" }}>
-                <strong>Update Channel:</strong><br/>
-                <span style={{ opacity: 0.8 }}>{(settings as any).updateChannel || 'stable'}</span>
-              </div>
-              <div style={{ marginBottom: "0" }}>
-                <strong>Feature Flags:</strong><br/>
-                <span style={{ opacity: 0.8 }}>
-                  {JSON.stringify(featureFlags, null, 2)}
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
