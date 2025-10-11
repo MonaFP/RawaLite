@@ -71,10 +71,9 @@ Neue KI-Session für Release/Deployment:
 1. PFLICHT: docs/00-meta/CRITICAL-FIXES-REGISTRY.md lesen
 2. PFLICHT: docs/00-meta/INSTRUCTIONS-KI.md lesen
 3. Dann: docs/11-deployment/INDEX.md + docs/10-security/INDEX.md
-4. ZWINGEND: pnpm validate:pre-release vor jedem Release
-5. ZWINGEND: pnpm validate:release-assets vX.X.X nach Release-Erstellung
-6. Verwende: pnpm safe:version statt pnpm version
-7. MANDATORY: Verify gh release view vX.X.X --json assets shows assets!
+4. ZWINGEND: pnpm validate:critical-fixes && pnpm validate:docs-structure
+5. Verwende: pnpm safe:version statt pnpm version
+6. Verwende: pnpm safe:dist statt pnpm dist
 
 Task-Kontext: [DEINE AUFGABE HIER EINFÜGEN]
 ```
@@ -104,10 +103,7 @@ pnpm validate:critical-fixes
 pnpm validate:docs-structure
 
 # Vor Releases:
-pnpm validate:pre-release
-
-# Nach Release-Erstellung:
-pnpm validate:release-assets vX.X.X
+pnpm validate:critical-fixes && pnpm validate:docs-structure
 
 # Sichere Version-Befehle:
 pnpm safe:version patch
@@ -125,7 +121,6 @@ pnpm safe:dist
 - ❌ WriteStream.end() ohne Promise wrapper
 - ❌ Multiple process.on('close') handlers
 - ❌ Port-Änderungen von 5174 in dev
-- ❌ Release ohne Assets: {"assets": []} ← VERURSACHT "Failed to parse URL from" ERROR!
 
 **Bei Zweifel:** Fragen, nicht raten!
 

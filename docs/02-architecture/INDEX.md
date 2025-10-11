@@ -23,11 +23,6 @@ Architekturelle Entscheidungen, Electron-Konfiguration, System-Design und strukt
 
 #### ⚡ electron/
 - **solved/**: Gelöste Electron-Probleme
-  - `SYSTEM-ANALYSIS-TODO-PLAN.md` - ✅ **Phase 1 Critical Issues VOLLSTÄNDIG ABGESCHLOSSEN (Oktober 2025)**
-    - TODO #1: Activity Templates ✅ (Migration 009, 6 Default Templates, UI Integration)  
-    - TODO #2: Test Framework ✅ (Vitest 2.1.9, Critical Fixes Tests, CI Integration)
-    - TODO #3: Data Import ✅ (CSV + ZIP Import, Multi-Format Support, Error Handling)
-    - **Gesamtbewertung**: 87/100 → 90+/100 ERREICHT ✅
   - `LESSONS-LEARNED-electron-html-loading-fehler.md` - HTML Loading Probleme
 - **active/**: Bekannte offene Electron-Probleme
 
