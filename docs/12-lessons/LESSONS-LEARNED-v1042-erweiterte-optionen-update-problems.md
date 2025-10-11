@@ -300,19 +300,24 @@ async getLatestRelease(options?: { channel?: 'stable' | 'beta' }): Promise<GitHu
 ## 📋 **Action Items for Resolution**
 
 ### **Immediate (v1.0.43 Emergency Fix)**
-- [ ] Disable Beta Updates checkbox with user-friendly explanation
-- [ ] Add warning messages for experimental features affecting updates
-- [ ] Update documentation to reflect current implementation status
+- [ ] ✅ **Migration 020 erstellen:** v1.0.41 → v1.0.42 Settings Cleanup
+- [ ] ✅ **Database Robustheit:** Settings Adapter ignoriert unbekannte Felder graceful
+- [ ] ✅ **Update-Channel Reset:** Alle `update_channel='beta'` → `'stable'` 
+- [ ] ✅ **Feature Flags Cleanup:** Entferne `feature_flags` falls vorhanden
+- [ ] 📝 **User Communication:** Erkläre dass Beta Updates in v1.0.44 verfügbar werden
+- [ ] 🧪 **Testing:** Teste Update v1.0.41 → v1.0.43 mit problematischen Database States
 
 ### **Short-term (v1.0.44)**
 - [ ] Implement GitHubApiService channel support (stable/beta)
 - [ ] Add settings validation for update-related feature flags
 - [ ] Integration testing for all feature flag combinations
+- [ ] Re-enable Beta Updates mit vollständiger Backend-Integration
 
 ### **Long-term (Architecture)**
 - [ ] Establish backend-first development standards for feature flags
 - [ ] Implement automated checks for frontend/backend integration gaps
 - [ ] Create feature flag validation framework
+- [ ] Migration registration validation in CI/CD pipeline
 
 ---
 
@@ -352,7 +357,78 @@ async getLatestRelease(options?: { channel?: 'stable' | 'beta' }): Promise<GitHu
 
 ---
 
-## 📝 **Quick-Triage-Checkliste für Update-Probleme**
+## � **RÜCKWÄRTSKOMPATIBILITÄT ANALYSIS - 11. Oktober 2025**
+
+### **KRITISCHE ENTDECKUNG: Migration 019 war NIE registriert!**
+
+**Befund:** Migration 019 (`019_mini_fix_delivery.ts`) existiert als Datei, aber ist **NICHT** in `src/main/db/migrations/index.ts` registriert.
+
+**Implikationen:**
+- ✅ **Positive Nachricht:** Keine v1.0.41 Benutzer haben `updateChannel`/`featureFlags` Datenbank-Spalten
+- ❌ **Problem:** UI ermöglichte Settings-Änderungen ohne Datenbank-Schema
+- 🎯 **Root Cause des Update-Fehlers:** v1.0.41 Benutzer mit `update_channel='beta'` in Database, aber v1.0.42 GitHubApiService ohne Beta-Support
+
+### **Tatsächliche Datenbank-Zustände bei v1.0.41 Benutzern:**
+
+```sql
+-- v1.0.41 Benutzer mit aktivierten Beta Updates:
+SELECT * FROM settings WHERE id = 1;
+-- Potentielle Felder (falls manuell geschrieben):
+-- update_channel: 'beta'  ← PROBLEM für v1.0.42
+-- feature_flags: '{"enableBetaUpdates":true,...}'  ← Falls irgendwie gespeichert
+```
+
+**Warum "Missing MZ header" Error auftritt:**
+1. v1.0.41 Benutzer hat `update_channel='beta'` in Database
+2. v1.0.42 UpdateManager lädt Settings → sieht `beta` channel  
+3. GitHubApiService hat **KEINE** Beta-Unterstützung → lädt falschen Release
+4. Download-Datei ist nicht die erwartete .exe → "Missing MZ header"
+
+### **Rückwärtskompatibilitäts-Anforderungen:**
+
+#### **MIGRATION 020: v1.0.41 → v1.0.42 Cleanup (ERFORDERLICH)**
+
+```sql
+-- Migration 020: Cleanup v1.0.41 problematic settings
+-- Remove beta channel settings and feature flags
+UPDATE settings 
+SET update_channel = 'stable' 
+WHERE update_channel = 'beta';
+
+-- Remove feature_flags if column exists (robuste Abfrage)
+-- (Nur ausführen falls Spalte existiert)
+```
+
+#### **Settings Adapter Robustheit:**
+
+```typescript
+// src/adapters/SQLiteAdapter.ts - Graceful handling
+async getSettings(): Promise<Settings> {
+  const result = await this.client.exec(
+    `SELECT * FROM settings ORDER BY id LIMIT 1`
+  );
+  
+  if (result.length === 0) return this.getDefaultSettings();
+  
+  const rawSettings = result[0];
+  
+  // ✅ RÜCKWÄRTSKOMPATIBILITÄT: Ignore unknown fields
+  const cleanSettings: Settings = {
+    id: rawSettings.id,
+    companyName: rawSettings.companyName,
+    // ... alle bekannten Felder
+    
+    // IGNORE: updateChannel, featureFlags (v1.0.41 artifacts)
+    // Diese Felder werden nicht mehr verwendet
+  };
+  
+  return cleanSettings;
+}
+```
+
+---
+
+## �📝 **Quick-Triage-Checkliste für Update-Probleme**
 
 - [ ] **Feature Flags Status:**
   - [ ] enableBetaUpdates: ❌ (Channel-Support fehlt)
@@ -364,6 +440,8 @@ async getLatestRelease(options?: { channel?: 'stable' | 'beta' }): Promise<GitHu
 - [ ] **Settings updateChannel vs Service Capability:** ❌ MISMATCH
 - [ ] **Backend-Frontend Integration:** ❌ UNVOLLSTÄNDIG  
 - [ ] **User Impact:** ✅ DOKUMENTIERT (Critical for Beta Users)
+- [ ] **Migration 019 Registration:** ❌ NICHT REGISTRIERT (Erklärung für fehlende DB-Spalten)
+- [ ] **Rückwärtskompatibilität:** ⚠️ ERFORDERLICH (Migration 020 für v1.0.41 Cleanup)
 
 ---
 

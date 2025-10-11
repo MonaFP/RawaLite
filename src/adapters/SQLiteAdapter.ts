@@ -46,8 +46,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
         `
         INSERT INTO settings (id, company_name, street, zip, city, tax_id, kleinunternehmer, next_customer_number, next_offer_number, next_invoice_number, 
                             auto_update_enabled, auto_update_check_frequency, auto_update_notification_style, auto_update_reminder_interval,
-                            auto_update_auto_download, auto_update_install_prompt, update_channel, feature_flags, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            auto_update_auto_download, auto_update_install_prompt, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
         [
           mappedSettings.id,
@@ -66,16 +66,45 @@ export class SQLiteAdapter implements PersistenceAdapter {
           mappedSettings.auto_update_reminder_interval || 7,
           mappedSettings.auto_update_auto_download ? 1 : 0,
           mappedSettings.auto_update_install_prompt || 'manual',
-          mappedSettings.update_channel || 'stable',
-          JSON.stringify(mappedSettings.feature_flags || {}),
           mappedSettings.created_at,
           mappedSettings.updated_at,
         ]
       );
       return defaultSettings;
     }
+
+    // ✅ RÜCKWÄRTSKOMPATIBILITÄT: Robust handling von Settings aus verschiedenen Versionen
+    const rawSettings = rows[0];
     
-    return mapFromSQL(rows[0]) as Settings;
+    // Extract nur bekannte Felder - ignoriere unbekannte (updateChannel, featureFlags etc.)
+    const cleanSettings: Settings = {
+      id: rawSettings.id || 1,
+      companyName: rawSettings.company_name || "",
+      street: rawSettings.street || "",
+      zip: rawSettings.zip || "",
+      city: rawSettings.city || "",
+      taxId: rawSettings.tax_id || "",
+      kleinunternehmer: Boolean(rawSettings.kleinunternehmer),
+      nextCustomerNumber: rawSettings.next_customer_number || 1,
+      nextOfferNumber: rawSettings.next_offer_number || 1,
+      nextInvoiceNumber: rawSettings.next_invoice_number || 1,
+      
+      // Auto-Update Preferences (Migration 018) - mit Fallbacks
+      autoUpdateEnabled: rawSettings.auto_update_enabled !== undefined ? Boolean(rawSettings.auto_update_enabled) : true,
+      autoUpdateCheckFrequency: rawSettings.auto_update_check_frequency || 'daily',
+      autoUpdateNotificationStyle: rawSettings.auto_update_notification_style || 'subtle',
+      autoUpdateReminderInterval: rawSettings.auto_update_reminder_interval || 7,
+      autoUpdateAutoDownload: rawSettings.auto_update_auto_download !== undefined ? Boolean(rawSettings.auto_update_auto_download) : false,
+      autoUpdateInstallPrompt: rawSettings.auto_update_install_prompt || 'manual',
+      
+      createdAt: rawSettings.created_at || nowIso(),
+      updatedAt: rawSettings.updated_at || nowIso(),
+      
+      // BEWUSST IGNORIERT: updateChannel, featureFlags (v1.0.41 legacy)
+      // Diese Felder werden durch Migration 020 entfernt
+    };
+
+    return cleanSettings;
   }
 
   async updateSettings(patch: Partial<Settings>): Promise<Settings> {
