@@ -490,8 +490,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
       const mappedOffer = mapFromSQL(offer) as Omit<Offer, "lineItems">;
       console.log('🔧 [SQLiteAdapter.listOffers] Mapped offer:', mappedOffer);
       
-      // FIX: Use consistent field-mapping instead of manual aliases
-      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, itemType, sourcePackageId FROM offer_line_items WHERE offerId = ? ORDER BY id`);
+      // FIX: Use snake_case field names and mapFromSQL for consistency
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
       console.log('🔧 [SQLiteAdapter.listOffers] LineItem query:', lineItemQuery);
       
       const lineItems = await this.client.query<{
@@ -499,24 +499,30 @@ export class SQLiteAdapter implements PersistenceAdapter {
         title: string;
         description: string | null;
         quantity: number;
-        unitPrice: number;
+        unit_price: number;
         total: number;
-        parentItemId: number | null;
+        parent_item_id: number | null;
+        item_type?: string;
+        source_package_id?: number;
       }>(lineItemQuery, [offer.id]);
 
       console.log('🔧 [SQLiteAdapter.listOffers] LineItems for offer', offer.id, ':', lineItems);
 
       result.push({
         ...mappedOffer,
-        lineItems: lineItems.map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description || undefined,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          total: item.total,
-          parentItemId: item.parentItemId || undefined
-        }))
+        lineItems: lineItems.map(item => {
+          // Use mapFromSQL for consistent snake_case to camelCase conversion
+          const mappedItem = mapFromSQL(item);
+          return {
+            id: mappedItem.id,
+            title: mappedItem.title,
+            description: mappedItem.description || undefined,
+            quantity: mappedItem.quantity,
+            unitPrice: mappedItem.unitPrice,
+            total: mappedItem.total,
+            parentItemId: mappedItem.parentItemId || undefined
+          };
+        })
       });
     }
     
@@ -530,15 +536,17 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (!rows[0]) return null;
 
     const offer = mapFromSQL(rows[0]) as Omit<Offer, "lineItems">;
-    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price as unitPrice, total, parent_item_id as parentItemId, item_type as itemType, source_package_id as sourcePackageId FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
     const lineItems = await this.client.query<{
       id: number;
       title: string;
       description: string | null;
       quantity: number;
-      unitPrice: number;
+      unit_price: number;
       total: number;
-      parentItemId: number | null;
+      parent_item_id: number | null;
+      item_type?: string;
+      source_package_id?: number;
     }>(lineItemQuery, [id]);
 
     // Load attachments for each line item
@@ -552,14 +560,18 @@ export class SQLiteAdapter implements PersistenceAdapter {
             console.log(`🔍 [DB] Attachment ${index + 1}: ${att.originalFilename} (base64 length: ${att.base64Data?.length || 'NULL'})`);
           });
         }
+        
+        // Use mapFromSQL to properly convert snake_case to camelCase
+        const mappedItem = mapFromSQL(item);
+        
         return {
-          id: item.id,
-          title: item.title,
-          description: item.description || undefined,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          total: item.total,
-          parentItemId: item.parentItemId || undefined,
+          id: mappedItem.id,
+          title: mappedItem.title,
+          description: mappedItem.description || undefined,
+          quantity: mappedItem.quantity,
+          unitPrice: mappedItem.unitPrice,
+          total: mappedItem.total,
+          parentItemId: mappedItem.parentItemId || undefined,
           attachments: attachments
         };
       })

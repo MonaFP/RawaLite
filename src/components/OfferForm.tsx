@@ -6,6 +6,7 @@ import { useNotifications } from '../contexts/NotificationContext';
 import { useLoading } from '../contexts/LoadingContext';
 import { ValidationError, handleError } from '../lib/errors';
 import { calculateDocumentTotals, validateDiscount, formatCurrency } from '../lib/discount-calculator';
+import { formatNumberInputValue, parseNumberInput, getNumberInputStyles } from '../lib/input-helpers';
 
 interface OfferFormProps {
   offer?: Offer;
@@ -82,6 +83,21 @@ export const OfferForm: React.FC<OfferFormProps> = ({
     vatRate,
     isKleinunternehmer
   );
+
+  // 🐛 DEBUG: Log calculation details for intermittent discount bug
+  console.log('🧮 [OfferForm] Discount calculation debug:', {
+    lineItemsLength: lineItems.length,
+    lineItemsTotalInput: lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0),
+    discountType,
+    discountValue,
+    calculatedTotals: {
+      subtotalBeforeDiscount: totals.subtotalBeforeDiscount,
+      discountAmount: totals.discountAmount,
+      subtotalAfterDiscount: totals.subtotalAfterDiscount,
+      vatAmount: totals.vatAmount,
+      totalAmount: totals.totalAmount
+    }
+  });
 
   // 📷 Image Upload Functions - Database-First Approach
   const handleImageUpload = async (lineItemId: number, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -382,8 +398,8 @@ export const OfferForm: React.FC<OfferFormProps> = ({
       notes: notes.trim(),
       validUntil,
       lineItems,
-      // Use new discount calculator results
-      subtotal: totals.subtotalAfterDiscount,
+      // FIXED: subtotal should be sum of line items BEFORE discount, not after
+      subtotal: totals.subtotalBeforeDiscount,
       vatRate,
       vatAmount: totals.vatAmount,
       total: totals.totalAmount,
@@ -583,11 +599,11 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                       />
                       <input
                         type="number"
-                        value={parentItem.unitPrice}
-                        onChange={(e) => updateLineItem(parentItem.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                        step="0.01"
+                        placeholder="Einzelpreis"
+                        value={formatNumberInputValue(parentItem.unitPrice)}
+                        onChange={(e) => updateLineItem(parentItem.id, 'unitPrice', parseNumberInput(e.target.value))}
                         min="0"
-                        style={{padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                        style={{...getNumberInputStyles(), padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
                         disabled={isSubmitting}
                       />
                       <div style={{padding:"8px", textAlign:"right", fontWeight:"500"}}>
@@ -703,11 +719,11 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                           />
                           <input
                             type="number"
-                            value={subItem.unitPrice}
-                            onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                            step="0.01"
+                            placeholder="Einzelpreis"
+                            value={formatNumberInputValue(subItem.unitPrice)}
+                            onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseNumberInput(e.target.value))}
                             min="0"
-                            style={{padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                            style={{...getNumberInputStyles(), padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
                             disabled={isSubmitting}
                           />
                           <div style={{padding:"8px", textAlign:"right", fontWeight:"500"}}>
@@ -845,11 +861,11 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                     />
                     <input
                       type="number"
-                      value={item.unitPrice}
-                      onChange={(e) => updateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                      step="0.01"
+                      placeholder="Einzelpreis"
+                      value={formatNumberInputValue(item.unitPrice)}
+                      onChange={(e) => updateLineItem(item.id, 'unitPrice', parseNumberInput(e.target.value))}
                       min="0"
-                      style={{padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                      style={{...getNumberInputStyles(), padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
                       disabled={isSubmitting}
                     />
                     <div style={{padding:"8px", textAlign:"right", fontWeight:"500"}}>
@@ -925,13 +941,12 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                 <div style={{display:"flex", alignItems:"center", gap:"4px"}}>
                   <input
                     type="number"
-                    value={discountValue}
-                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
-                    style={{width:"80px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                    placeholder="0"
+                    value={formatNumberInputValue(discountValue)}
+                    onChange={(e) => setDiscountValue(parseNumberInput(e.target.value))}
+                    style={{...getNumberInputStyles(), width:"80px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
                     min="0"
                     max="100"
-                    step="0.1"
-                    placeholder="0"
                   />
                   <span>%</span>
                 </div>
@@ -954,12 +969,11 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                   <span>€</span>
                   <input
                     type="number"
-                    value={discountValue}
-                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
-                    style={{width:"100px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                    placeholder="0,00"
+                    value={formatNumberInputValue(discountValue)}
+                    onChange={(e) => setDiscountValue(parseNumberInput(e.target.value))}
+                    style={{...getNumberInputStyles(), width:"100px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
                     min="0"
-                    step="0.01"
-                    placeholder="0.00"
                   />
                 </div>
               )}
@@ -998,12 +1012,12 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                     <span>MwSt.:</span>
                     <input
                       type="number"
-                      value={vatRate}
-                      onChange={(e) => setVatRate(parseFloat(e.target.value) || 0)}
-                      style={{width:"60px", padding:"4px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
+                      placeholder="19"
+                      value={formatNumberInputValue(vatRate)}
+                      onChange={(e) => setVatRate(parseNumberInput(e.target.value, 19))}
+                      style={{...getNumberInputStyles(), width:"60px", padding:"4px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
                       min="0"
                       max="100"
-                      step="0.1"
                     />
                     <span>%</span>
                   </div>

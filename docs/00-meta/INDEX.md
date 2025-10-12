@@ -1,153 +1,78 @@
-# 00-meta - Project Meta-Documentation# 00-meta - Project Meta-Documentation# 00-meta INDEX
-
-
+# 00-meta - Project Meta-Documentation
 
 > **Purpose:** Project management, KI instructions, standards, and organizational documentation
 
-
-
-## 📋 **Contents**> **Purpose:** Project management, KI instructions, standards, and organizational documentation## ### 🔄 active/solved/
-
-
-
-### **🤖 KI Instructions & Guides**- **solved/**: Bewährte Standard-Patterns
-
-- [INSTRUCTIONS-KI.md](INSTRUCTIONS-KI.md) - Mandatory KI development rules and patterns
-
-- [ONBOARDING-GUIDE.md](ONBOARDING-GUIDE.md) - Complete setup guide for new team members## 📋 **Contents**  - **[LESSONS-LEARNED-DOCUMENTATION-REORGANIZATION.md](solved/LESSONS-LEARNED-DOCUMENTATION-REORGANIZATION.md)** - ✅ **KI-Optimierte Dokumentationsreorganisation**
-
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Problem-solving guide for fix preservation system
-
-- [DOCUMENTATION-STRUCTURE-GUIDE.md](DOCUMENTATION-STRUCTURE-GUIDE.md) - How to organize documentation correctly    - Vollständige Migration von inkonsistenter zu lückenloser 00-12 Struktur
-
-
-
-### **🛡️ Fix Preservation System**### **🤖 KI Instructions & Guides**    - Workflow-orientierte Progression: Meta → Architecture → Development → Implementation → Deployment
-
-- [CRITICAL-FIXES-REGISTRY.md](CRITICAL-FIXES-REGISTRY.md) - Registry of all critical fixes that must be preserved
-
-- [SYSTEMATIC-FIX-PRESERVATION-STRATEGY.md](active/SYSTEMATIC-FIX-PRESERVATION-STRATEGY.md) - 4-layer defense strategy- [INSTRUCTIONS-KI.md](INSTRUCTIONS-KI.md) - Mandatory KI development rules and patterns    - Content-Migration Mapping und Best Practices für zukünftige Reorganisationen
-
-
-
-### **📊 Project Management**- [ONBOARDING-GUIDE.md](ONBOARDING-GUIDE.md) - Complete setup guide for new team members- **active/**: Standard-Entwicklungen in ArbeitMeta-Dokumentation & Standards
-
-- [README.md](README.md) - Meta-documentation overview
-
-- [DOCUMENTATION-QUALITY-TRACKING.md](DOCUMENTATION-QUALITY-TRACKING.md) - Documentation quality metrics- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Problem-solving guide for fix preservation system
-
-- [REORGANIZATION-CHANGE-LOG.md](REORGANIZATION-CHANGE-LOG.md) - Documentation structure changes
-
-- [LESSONS-LEARNED-TEMPLATE.md](LESSONS-LEARNED-TEMPLATE.md) - Template for lessons learned documents- [DOCUMENTATION-STRUCTURE-GUIDE.md](DOCUMENTATION-STRUCTURE-GUIDE.md) - How to organize documentation correctly### 📋 Zweck
-
-
-
-### **🔄 Active Issues**KI-Instruktionen, Entwicklungsstandards, Workflows und Richtlinien für RawaLite.
-
-- [DOWNLOAD-VERIFICATION-BUG.md](active/DOWNLOAD-VERIFICATION-BUG.md) - Download verification analysis
-
-- [LESSONS-LEARNED-DOWNLOAD-VERIFICATION-REGRESSION.md](active/LESSONS-LEARNED-DOWNLOAD-VERIFICATION-REGRESSION.md) - Regression analysis### **🛡️ Fix Preservation System**
-
-- [MOCK-HOOK-PREVENTION-STRATEGY.md](active/MOCK-HOOK-PREVENTION-STRATEGY.md) - Mock hook prevention
-
-- [SESSION-REPORT-v1.0.10-DEVELOPMENT.md](active/SESSION-REPORT-v1.0.10-DEVELOPMENT.md) - Development session report- [CRITICAL-FIXES-REGISTRY.md](CRITICAL-FIXES-REGISTRY.md) - Registry of all critical fixes that must be preserved### 📁 Struktur
-
-
-
-### **✅ Solved Issues**- [SYSTEMATIC-FIX-PRESERVATION-STRATEGY.md](active/SYSTEMATIC-FIX-PRESERVATION-STRATEGY.md) - 4-layer defense strategy
-
-- [LESSONS-LEARNED-DOCUMENTATION-REORGANIZATION.md](solved/LESSONS-LEARNED-DOCUMENTATION-REORGANIZATION.md) - Documentation reorganization lessons
-
-#### 🤖 KI-Instruktionen
-
-### **🔧 Debugging & Development**
-
-- [CHAT-SESSION-SUMMARY-2025-10-01.md](debugging/active/CHAT-SESSION-SUMMARY-2025-10-01.md) - Chat session analysis### **📊 Project Management**- **[INSTRUCTIONS-KI.md](INSTRUCTIONS-KI.md)** - Haupt-KI-Instruktionen für Entwicklung
-
-- [CROSS-REF-settings-schema-migration.md](debugging/solved/CROSS-REF-settings-schema-migration.md) - Schema migration cross-reference
-
-- [LESSONS-LEARNED-typescript-unused-imports.md](debugging/solved/LESSONS-LEARNED-typescript-unused-imports.md) - TypeScript import cleanup- [README.md](README.md) - Meta-documentation overview
-
-
-
-### **📈 Project Status**- [DOCUMENTATION-QUALITY-TRACKING.md](DOCUMENTATION-QUALITY-TRACKING.md) - Documentation quality metrics#### 📋 Standards & Richtlinien
-
-- [REPOSITORY-STATUS-POST-v1.0.10-SESSION.md](REPOSITORY-STATUS-POST-v1.0.10-SESSION.md) - Repository status analysis
-
-- [GITHUB_API_MIGRATION.md](GITHUB_API_MIGRATION.md) - GitHub CLI to API migration plan- [REORGANIZATION-CHANGE-LOG.md](REORGANIZATION-CHANGE-LOG.md) - Documentation structure changes- **[SCHEMA-CONSISTENCY-STANDARDS.md](SCHEMA-CONSISTENCY-STANDARDS.md)** - Schema-Konsistenz Standards
-
-- [SCHEMA-CONSISTENCY-STANDARDS.md](SCHEMA-CONSISTENCY-STANDARDS.md) - Database schema standards
-
-- [LESSONS-LEARNED-TEMPLATE.md](LESSONS-LEARNED-TEMPLATE.md) - Template for lessons learned documents- **[standards.md](standards.md)** - Coding Standards und Best Practices
-
-## 🔗 **Related Topics**
-
-- **[WORKFLOWS.md](WORKFLOWS.md)** - Git, Build und Development Workflows
-
-- [Standards & Conventions](../01-standards/) - Code standards and development guidelines
-
-- [Architecture](../02-architecture/) - System design and technical architecture  ### **🔄 Active Issues**- **[debugging.md](debugging.md)** - Systematische Debugging-Richtlinien
-
-- [Development](../03-development/) - Development workflows and environment setup
-
-- [Critical Fix Tests](../../tests/critical-fixes/) - Automated validation of critical patterns- [DOWNLOAD-VERIFICATION-BUG.md](active/DOWNLOAD-VERIFICATION-BUG.md) - Download verification analysis
-
-
-
-## 📈 **Status**- [LESSONS-LEARNED-DOWNLOAD-VERIFICATION-REGRESSION.md](active/LESSONS-LEARNED-DOWNLOAD-VERIFICATION-REGRESSION.md) - Regression analysis#### 🔄 Migrations & Plans
-
-
-
-- **Last Updated:** 2025-10-03- [MOCK-HOOK-PREVENTION-STRATEGY.md](active/MOCK-HOOK-PREVENTION-STRATEGY.md) - Mock hook prevention- **[GITHUB_API_MIGRATION.md](GITHUB_API_MIGRATION.md)** - ✅ **GitHub CLI → API Migration Plan**
-
-- **Active Issues:** 4 (Fix preservation, download verification, documentation)
-
-- **Documentation Status:** Complete - Post-reorganization structure- [SESSION-REPORT-v1.0.10-DEVELOPMENT.md](active/SESSION-REPORT-v1.0.10-DEVELOPMENT.md) - Development session report  - Vollständiger 11-Stunden Migrationsplan von GitHub CLI zu direkter HTTP API
-
-- **Fix Preservation:** 4-layer defense system implemented and documented
-  - 4-Phasen Implementierung: Service Foundation → Integration → Testing → Cleanup
-
-### **✅ Solved Issues**  - Zero External Dependencies + Simplified User Experience
-
-- [LESSONS-LEARNED-DOCUMENTATION-REORGANIZATION.md](solved/LESSONS-LEARNED-DOCUMENTATION-REORGANIZATION.md) - Documentation reorganization lessons
-
-#### 📊 Qualitäts-Tracking
-
-### **🔧 Debugging & Development**- **[DOCUMENTATION-QUALITY-TRACKING.md](DOCUMENTATION-QUALITY-TRACKING.md)** - Dokumentationsqualität
-
-- [CHAT-SESSION-SUMMARY-2025-10-01.md](debugging/active/CHAT-SESSION-SUMMARY-2025-10-01.md) - Chat session analysis- **[lessons_learned_TEMPLATE.md](lessons_learned_TEMPLATE.md)** - Template für Lessons Learned
-
-- [CROSS-REF-settings-schema-migration.md](debugging/solved/CROSS-REF-settings-schema-migration.md) - Schema migration cross-reference
-
-- [LESSONS-LEARNED-typescript-unused-imports.md](debugging/solved/LESSONS-LEARNED-typescript-unused-imports.md) - TypeScript import cleanup### � active/solved/
-
-- **solved/**: Bewährte Standard-Patterns
-
-### **📈 Project Status**- **active/**: Standard-Entwicklungen in Arbeit
-
-- [REPOSITORY-STATUS-POST-v1.0.10-SESSION.md](REPOSITORY-STATUS-POST-v1.0.10-SESSION.md) - Repository status analysis
-
-- [GITHUB_API_MIGRATION.md](GITHUB_API_MIGRATION.md) - GitHub CLI to API migration plan### � KI-Hinweise
-
-- [SCHEMA-CONSISTENCY-STANDARDS.md](SCHEMA-CONSISTENCY-STANDARDS.md) - Database schema standards- ✅ **Start here**: INSTRUCTIONS-KI.md für alle KI-Interaktionen
-
-- ✅ **Standards**: SCHEMA-CONSISTENCY-STANDARDS.md für Database-Entwicklung
-
-## 🔗 **Related Topics**- ✅ **Workflows**: Alle Entwicklungsprozesse dokumentiert
-
-
-
-- [Standards & Conventions](../01-standards/) - Code standards and development guidelines### 🔗 Verwandte Dokumentation
-
-- [Architecture](../02-architecture/) - System design and technical architecture  - **[01-architecture/](../01-architecture/)** - System-Design und Electron-Architektur
-
-- [Development](../03-development/) - Development workflows and environment setup- **[04-database/](../04-database/)** - SQLite Database Implementation
-
-- [Critical Fix Tests](../../tests/critical-fixes/) - Automated validation of critical patterns- **[11-lessons/](../11-lessons/)** - Konsolidierte Lessons Learned
+## 📋 **Thematic Organization**
+
+### **🤖 KI Instructions & Development**
+- **[ki-instructions/](ki-instructions/)** - KI Development Guidelines & System Analysis Prompts
+  - Core KI Instructions for RawaLite Development
+  - Session Briefing & Context Setup
+  - System Analysis Frameworks
+
+### **🛡️ Critical Fixes Management**
+- **[critical-fixes/](critical-fixes/)** - ✅ **Fix Preservation System**
+  - **[CRITICAL-FIXES-REGISTRY.md](critical-fixes/CRITICAL-FIXES-REGISTRY.md)** - Registry aller geschützten Fixes
+  - **[TROUBLESHOOTING.md](critical-fixes/TROUBLESHOOTING.md)** - Problem-Solving Guide
+  - 4-Layer Defense System für Code-Preservation
+
+### **🔄 Development Workflows**
+- **[workflows/](workflows/)** - ✅ **Release & Hotfix Processes**
+  - **[HOTFIX-WORKFLOW-PROMPT.md](workflows/HOTFIX-WORKFLOW-PROMPT.md)** - Critical Hotfix Process
+  - **[RELEASE-WORKFLOW-PROMPT.md](workflows/RELEASE-WORKFLOW-PROMPT.md)** - Standard Release Process
+  - **[RELEASE-CHECKLIST-COMPACT.md](workflows/RELEASE-CHECKLIST-COMPACT.md)** - Release Validation
+  - **[RELEASE-TROUBLESHOOTING-PROMPT.md](workflows/RELEASE-TROUBLESHOOTING-PROMPT.md)** - Release Debugging
+
+### **� Project Management**
+- **[project-management/](project-management/)** - ✅ **Status & Planning**
+  - **[REPOSITORY-STATUS-POST-v1.0.13-SESSION.md](project-management/REPOSITORY-STATUS-POST-v1.0.13-SESSION.md)** - Current Status
+  - **[SYSTEM-ANALYSIS-TODO-PLAN.md](project-management/SYSTEM-ANALYSIS-TODO-PLAN.md)** - Analysis Planning
+  - Session Briefings & Handover Documentation
+
+### **📚 Documentation Standards**
+- **[../01-standards/](../01-standards/)** - ✅ **Quality & Structure Guidelines**
+  - **[DOCUMENTATION-STRUCTURE-GUIDE.md](../01-standards/DOCUMENTATION-STRUCTURE-GUIDE.md)** - 15-Kategorien System
+  - **[DOCUMENTATION-QUALITY-TRACKING.md](../01-standards/DOCUMENTATION-QUALITY-TRACKING.md)** - Quality Metrics
+  - **[SCHEMA-CONSISTENCY-STANDARDS.md](../01-standards/SCHEMA-CONSISTENCY-STANDARDS.md)** - Database Standards
+
+### **🏗️ Reorganization History**
+- **[reorganization/](reorganization/)** - ✅ **Structure Change Documentation**
+  - **[ROOT-REORGANISATION-2025-10-12.md](reorganization/ROOT-REORGANISATION-2025-10-12.md)** - Latest Root Cleanup
+  - **[WORKSPACE-CLEANUP-temp-ordner-2025-10-12.md](reorganization/WORKSPACE-CLEANUP-temp-ordner-2025-10-12.md)** - Temp Cleanup
+  - **[REORGANIZATION-CHANGE-LOG.md](reorganization/REORGANIZATION-CHANGE-LOG.md)** - Complete Change History
+
+## 🎯 **KI-Navigation Quick Start**
+
+**� Critical Development:**
+1. ✅ **ALWAYS check first:** [critical-fixes/CRITICAL-FIXES-REGISTRY.md](critical-fixes/CRITICAL-FIXES-REGISTRY.md)
+2. ✅ **For releases:** [workflows/RELEASE-WORKFLOW-PROMPT.md](workflows/RELEASE-WORKFLOW-PROMPT.md) 
+3. ✅ **For hotfixes:** [workflows/HOTFIX-WORKFLOW-PROMPT.md](workflows/HOTFIX-WORKFLOW-PROMPT.md)
+
+**📚 Standards & Guidelines:**
+1. ✅ **Documentation:** [../01-standards/DOCUMENTATION-STRUCTURE-GUIDE.md](../01-standards/DOCUMENTATION-STRUCTURE-GUIDE.md)
+2. ✅ **Schema Work:** [../01-standards/SCHEMA-CONSISTENCY-STANDARDS.md](../01-standards/SCHEMA-CONSISTENCY-STANDARDS.md)
+3. ✅ **Templates:** [templates/](templates/) for consistent formatting
+
+**📊 Project Context:**
+1. ✅ **Current Status:** [project-management/REPOSITORY-STATUS-POST-v1.0.13-SESSION.md](project-management/REPOSITORY-STATUS-POST-v1.0.13-SESSION.md)
+2. ✅ **System Analysis:** [project-management/SYSTEM-ANALYSIS-TODO-PLAN.md](project-management/SYSTEM-ANALYSIS-TODO-PLAN.md)
+
+## 🎯 **Legacy Structure Mapping**
+
+Die ursprünglichen `/final/`, `/plan/`, `/sessions/`, `/solved/`, `/wip/` Ordner bleiben als historische Referenz erhalten, aber neue Inhalte werden in der thematischen Struktur organisiert.
+
+## 🔗 **Related Documentation**
+
+- **[01-standards/](../01-standards/)** - Code Standards & Development Guidelines  
+- **[02-architecture/](../02-architecture/)** - System Design & Technical Architecture
+- **[03-development/](../03-development/)** - Development Workflows & Environment Setup
+- **[05-database/](../05-database/)** - SQLite Database Implementation
+- **[11-deployment/](../11-deployment/)** - Release & Deployment Processes
+- **[15-session-summary/](../15-session-summary/)** - Session Documentation
 
 ## 📈 **Status**
 
-- **Last Updated:** 2025-10-03
-- **Active Issues:** 4 (Fix preservation, download verification, documentation)
-- **Documentation Status:** Complete - Post-reorganization structure
-- **Fix Preservation:** 4-layer defense system implemented and documented
+- **Last Updated:** 2025-10-12 (Meta-Ordner Reorganisation)
+- **Structure:** Thematically organized for optimal KI-navigation
+- **Documentation Status:** Complete enterprise-level organization
+- **Fix Preservation:** 4-layer defense system active and protected

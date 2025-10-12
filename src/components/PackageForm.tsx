@@ -3,6 +3,7 @@ import { useNotifications } from "../contexts/NotificationContext";
 import { useLoading } from "../contexts/LoadingContext";
 import { ValidationError, handleError } from "../lib/errors";
 import type { Package, PackageLineItem } from "../persistence/adapter";
+import { formatNumberInputValue, parseNumberInput, getNumberInputStyles } from '../lib/input-helpers';
 
 export interface PackageFormValues {
   internalTitle: string;
@@ -297,10 +298,10 @@ export default function PackageForm({
               />
               <input 
                 type="number"
-                value={item.amount}
-                onChange={e => updateLineItem(index, "amount", Number(e.target.value))}
                 placeholder={isSubItem ? "0" : "1000"}
-                step="0.01"
+                value={formatNumberInputValue(item.amount)}
+                onChange={e => updateLineItem(index, "amount", parseNumberInput(e.target.value))}
+                style={getNumberInputStyles()}
                 disabled={isSubmitting}
                 className={fieldErrors[`item_${index}_amount`] ? 'error' : ''}
               />
@@ -435,10 +436,10 @@ export default function PackageForm({
           />
           <input 
             type="number"
-            value={currentItem.amount}
-            onChange={e => setCurrentItem(prev => ({ ...prev, amount: Number(e.target.value) }))}
             placeholder="0"
-            step="0.01"
+            value={formatNumberInputValue(currentItem.amount)}
+            onChange={e => setCurrentItem(prev => ({ ...prev, amount: parseNumberInput(e.target.value) }))}
+            style={getNumberInputStyles()}
             disabled={isSubmitting}
           />
           {currentItem.parentItemId !== undefined && (

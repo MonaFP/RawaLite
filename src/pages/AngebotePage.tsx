@@ -44,6 +44,19 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
     
     // 3. Anhänge für jedes Line Item laden mit Feldmappings
     for (const lineItem of lineItemRows) {
+      // 3a. Feldmappings für Line Items (snake_case -> camelCase)
+      lineItem.unitPrice = lineItem.unit_price;
+      lineItem.parentItemId = lineItem.parent_item_id;
+      lineItem.itemType = lineItem.item_type;
+      lineItem.sourcePackageId = lineItem.source_package_id;
+      
+      console.log(`🔍 [PDF DEBUG] Line Item ${lineItem.id} field mapping:`, {
+        originalUnitPrice: lineItem.unit_price,
+        mappedUnitPrice: lineItem.unitPrice,
+        quantity: lineItem.quantity,
+        total: lineItem.total
+      });
+      
       const attachmentRows = await window.rawalite.db.query(
         'SELECT id, offer_id, line_item_id, original_filename, file_type, file_size, base64_data FROM offer_attachments WHERE line_item_id = ?',
         [lineItem.id]

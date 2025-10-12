@@ -13,6 +13,7 @@ import * as migration000 from './000_init';
 import * as migration001 from './001_settings_restructure';
 import * as migration002 from './002_customers_schema_fix';
 import * as migration003 from './003_fix_settings_schema';
+import * as migration004 from './004_gap_placeholder';
 import * as migration005 from './005_add_packages_numbering';
 import * as migration006 from './006_fix_missing_circles';
 import * as migration007 from './007_fix_packages_invoice_schema';
@@ -27,6 +28,7 @@ import * as migration015 from './015_add_status_versioning';
 import * as migration016 from './016_add_offer_attachments';
 import * as migration017 from './017_add_update_history';
 import * as migration018 from './018_add_auto_update_preferences';
+import * as migration019 from './019_mini_fix_delivery';
 import * as migration020 from './020_cleanup_v1041_settings';
 
 export const migrations: Migration[] = [
@@ -56,6 +58,12 @@ export const migrations: Migration[] = [
   },
   {
     version: 5,
+    name: '004_gap_placeholder',
+    up: migration004.up,
+    down: migration004.down
+  },
+  {
+    version: 6,
     name: '005_add_packages_numbering',
     up: migration005.up,
     down: migration005.down
@@ -137,6 +145,12 @@ export const migrations: Migration[] = [
     name: '018_add_auto_update_preferences',
     up: migration018.up,
     down: migration018.down
+  },
+  {
+    version: 19,
+    name: '019_mini_fix_delivery',
+    up: migration019.up,
+    down: migration019.down
   },
   {
     version: 20,
