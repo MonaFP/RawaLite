@@ -33,7 +33,6 @@ docs
 │   └── workflows
 │       └── INDEX.md
 ├── 01-standards
-│   ├── CODING-STANDARDS.md
 │   ├── DOCUMENTATION-QUALITY-TRACKING.md
 │   ├── DOCUMENTATION-STRUCTURE-GUIDE.md
 │   ├── final
@@ -43,11 +42,9 @@ docs
 │   ├── HOTFIX-WORKFLOW-PROMPT.md
 │   ├── INDEX.md
 │   ├── plan
-│   ├── QUICK-REFERENCE.md
 │   ├── SCHEMA-CONSISTENCY-STANDARDS.md
 │   ├── sessions
 │   ├── standards.md
-│   ├── TESTING-STANDARDS.md
 │   ├── wip
 │   └── WORKFLOWS.md
 ├── 02-architecture
@@ -273,13 +270,8 @@ docs
 │   │   ├── CHAT-SESSION-SUMMARY-2025-10-01.md
 │   │   ├── REPOSITORY-STATUS-POST-v1.0.10-SESSION.md
 │   │   └── SESSION-REPORT-v1.0.10-DEVELOPMENT.md
-│   ├── HYBRID-COMPONENT-ARCHITECTURE.md
-│   ├── INDEX.md
 │   ├── plan
-│   │   └── DOCUMENTATION-CLEANUP-PLAN.md
 │   ├── sessions
-│   ├── UPDATE-SYSTEM-ARCHITECTURE.md
-│   ├── UPDATE_TESTING.md
 │   └── wip
 ├── 13-deprecated
 │   ├── ARCHIVED-UpdateManagerService-v1032.md
