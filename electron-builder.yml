@@ -21,6 +21,7 @@ nodeGypRebuild: false
 asarUnpack:
   - "node_modules/better-sqlite3/**/*"
   - "node_modules/bindings/**/*"
+  - "node_modules/sharp/**/*"
   - "**/*.node"
 electronVersion: "31.7.7"
 icon: public/rawalite-logo.png

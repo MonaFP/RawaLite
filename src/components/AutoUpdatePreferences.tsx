@@ -1,224 +1,50 @@
 import React from 'react';
-import { useAutoUpdatePreferences } from '../hooks/useAutoUpdatePreferences';
+// import { useAutoUpdatePreferences } from '../hooks/useAutoUpdatePreferences'; // DISABLED for emergency fix
 
 /**
  * AutoUpdatePreferences Komponente
- * Phase 2: Preferences & Settings Integration
+ * v1.0.42 EMERGENCY HOTFIX: Disabled due to SQL crashes
  * 
- * Verwendet RawaLite Standards: field-mapper, useUnifiedSettings
+ * PROBLEM: useAutoUpdatePreferences hook creates SQLiteAdapter causing
+ * "no such column: next_customer_number" errors that crash Settings page
+ * 
+ * SOLUTION: Temporary disable component until proper DatabaseService integration
+ * SEE: docs/12-lessons/LESSONS-LEARNED-v1041-AutoUpdatePreferences-crash.md
  */
 export const AutoUpdatePreferences: React.FC = () => {
-  const { preferences, loading, error, updatePreference, resetToDefaults } = useAutoUpdatePreferences();
-
-  if (loading) {
-    return (
-      <div style={{ 
-        padding: "16px", 
-        backgroundColor: "rgba(255,255,255,0.05)",
-        borderRadius: "8px",
-        border: "1px solid rgba(255,255,255,0.1)",
-        textAlign: "center"
-      }}>
-        <div>Lade Update-Einstellungen...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ 
-        padding: "16px", 
-        backgroundColor: "rgba(239, 68, 68, 0.1)",
-        borderRadius: "8px",
-        border: "1px solid rgba(239, 68, 68, 0.3)",
-        color: "rgb(239, 68, 68)"
-      }}>
-        <div>Fehler beim Laden der Update-Einstellungen: {error}</div>
-      </div>
-    );
-  }
-
+  // EMERGENCY HOTFIX v1.0.42: Disable problematic component
   return (
     <div style={{ 
       padding: "16px", 
-      backgroundColor: "rgba(255,255,255,0.05)",
+      backgroundColor: "rgba(255, 165, 0, 0.1)",
       borderRadius: "8px",
-      border: "1px solid rgba(255,255,255,0.1)"
+      border: "1px solid rgba(255, 165, 0, 0.3)",
+      color: "rgb(255, 165, 0)"
     }}>
-      {/* Auto-Update aktivieren */}
-      <label style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
-        <input 
-          type="checkbox" 
-          checked={preferences.enabled}
-          onChange={(e) => updatePreference('enabled', e.target.checked)}
-          style={{ marginRight: "8px" }} 
-        />
-        <span style={{ fontSize: "14px", fontWeight: "500" }}>
-          Automatisch nach Updates suchen
-        </span>
-      </label>
-
-      {/* Nur zeigen wenn aktiviert */}
-      {preferences.enabled && (
-        <div style={{ marginLeft: "24px", borderLeft: "2px solid rgba(255,255,255,0.1)", paddingLeft: "16px" }}>
-          {/* Update Channel Selection */}
-          <div style={{ marginBottom: "12px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: "500" }}>
-              Update-Kanal:
-            </label>
-            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                <input 
-                  type="radio" 
-                  name="updateChannel"
-                  value="stable"
-                  checked={preferences.updateChannel === 'stable'}
-                  onChange={(e) => updatePreference('updateChannel', e.target.value as 'stable' | 'beta')}
-                  style={{ marginRight: "6px" }} 
-                />
-                <span style={{ fontSize: "14px" }}>Stable (Empfohlen)</span>
-              </label>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                <input 
-                  type="radio" 
-                  name="updateChannel"
-                  value="beta"
-                  checked={preferences.updateChannel === 'beta'}
-                  onChange={(e) => updatePreference('updateChannel', e.target.value as 'stable' | 'beta')}
-                  style={{ marginRight: "6px" }} 
-                />
-                <span style={{ fontSize: "14px", color: "rgba(255, 165, 0, 0.9)" }}>Beta (Vorabversionen)</span>
-              </label>
-            </div>
-            <div style={{ fontSize: "12px", opacity: 0.7, marginTop: "4px" }}>
-              {preferences.updateChannel === 'beta' 
-                ? "⚠️ Beta-Kanal enthält Vorabversionen und möglicherweise instabile Features"
-                : "✅ Stable-Kanal erhält nur getestete, stabile Versionen"
-              }
-            </div>
-          </div>
-
-          {/* Check-Häufigkeit */}
-          <div style={{ marginBottom: "12px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: "500" }}>
-              Prüfung durchführen:
-            </label>
-            <select
-              value={preferences.checkFrequency}
-              onChange={(e) => updatePreference('checkFrequency', e.target.value as any)}
-              style={{
-                padding: "6px",
-                borderRadius: "4px",
-                border: "1px solid rgba(255,255,255,.2)",
-                backgroundColor: "rgba(255,255,255,.05)",
-                color: "var(--foreground)",
-                fontSize: "14px"
-              }}
-            >
-              <option value="startup">Bei jedem Start</option>
-              <option value="daily">Täglich</option>
-              <option value="weekly">Wöchentlich</option>
-            </select>
-          </div>
-
-          {/* Benachrichtigungsstil */}
-          <div style={{ marginBottom: "12px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: "500" }}>
-              Benachrichtigungsstil:
-            </label>
-            <select
-              value={preferences.notificationStyle}
-              onChange={(e) => updatePreference('notificationStyle', e.target.value as any)}
-              style={{
-                padding: "6px",
-                borderRadius: "4px",
-                border: "1px solid rgba(255,255,255,.2)",
-                backgroundColor: "rgba(255,255,255,.05)",
-                color: "var(--foreground)",
-                fontSize: "14px"
-              }}
-            >
-              <option value="subtle">Dezent</option>
-              <option value="prominent">Auffällig</option>
-            </select>
-          </div>
-
-          {/* Erinnerungsintervall */}
-          <div style={{ marginBottom: "12px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: "500" }}>
-              Erinnerung alle {preferences.reminderInterval} Stunden
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="24"
-              value={preferences.reminderInterval}
-              onChange={(e) => updatePreference('reminderInterval', parseInt(e.target.value))}
-              style={{
-                width: "100%",
-                marginBottom: "4px"
-              }}
-            />
-            <div style={{ fontSize: "12px", opacity: 0.7 }}>
-              1 Stunde ← → 24 Stunden
-            </div>
-          </div>
-
-          {/* Auto-Download */}
-          <label style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-            <input 
-              type="checkbox" 
-              checked={preferences.autoDownload}
-              onChange={(e) => updatePreference('autoDownload', e.target.checked)}
-              style={{ marginRight: "8px" }} 
-            />
-            <span style={{ fontSize: "14px" }}>
-              Updates automatisch im Hintergrund herunterladen
-            </span>
-          </label>
-
-          {/* Install-Verhalten */}
-          <div style={{ marginBottom: "12px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: "500" }}>
-              Installation:
-            </label>
-            <select
-              value={preferences.installPrompt}
-              onChange={(e) => updatePreference('installPrompt', e.target.value as any)}
-              style={{
-                padding: "6px",
-                borderRadius: "4px",
-                border: "1px solid rgba(255,255,255,.2)",
-                backgroundColor: "rgba(255,255,255,.05)",
-                color: "var(--foreground)",
-                fontSize: "14px"
-              }}
-            >
-              <option value="manual">Manuell bestätigen</option>
-              <option value="scheduled">Geplant installieren</option>
-              <option value="immediate">Sofort installieren</option>
-            </select>
-          </div>
-        </div>
-      )}
-
-      {/* Reset Button */}
-      <div style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-        <button
-          onClick={resetToDefaults}
-          style={{
-            padding: "6px 12px",
-            fontSize: "12px",
-            backgroundColor: "transparent",
-            color: "rgba(255,255,255,0.6)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: "4px",
-            cursor: "pointer"
-          }}
-        >
-          Standardwerte wiederherstellen
-        </button>
-      </div>
+      <h4 style={{ margin: "0 0 8px 0", color: "rgb(255, 165, 0)" }}>
+        🔧 Auto-Update Einstellungen vorübergehend nicht verfügbar
+      </h4>
+      <p style={{ margin: "0 0 12px 0", fontSize: "14px", lineHeight: "1.4" }}>
+        Die automatischen Update-Einstellungen sind in dieser Version temporär deaktiviert 
+        aufgrund von Datenbankzugriffsproblemen.
+      </p>
+      <p style={{ margin: "0 0 12px 0", fontSize: "14px", lineHeight: "1.4" }}>
+        <strong>Manuelle Updates sind weiterhin verfügbar:</strong>
+      </p>
+      <ul style={{ margin: "0 0 12px 16px", fontSize: "14px", lineHeight: "1.4" }}>
+        <li>Verwenden Sie den "Update verfügbar" Button oben rechts</li>
+        <li>Oder laden Sie Updates manuell von GitHub herunter</li>
+        <li>Update-System funktioniert normal, nur die Einstellungen sind deaktiviert</li>
+      </ul>
+      <p style={{ margin: "0", fontSize: "12px", opacity: "0.8" }}>
+        Automatische Update-Funktionen werden in v1.0.43 wiederhergestellt.
+      </p>
     </div>
   );
+
+  // ORIGINAL IMPLEMENTATION BACKUP:
+  // The problematic code has been moved to AutoUpdatePreferences.tsx.backup
+  // Problem: useAutoUpdatePreferences hook creates new SQLiteAdapter instance
+  // This causes "no such column: next_customer_number" SQL errors
+  // Which crash the entire Settings page, blocking access to Update-System
 };

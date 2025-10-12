@@ -48,6 +48,7 @@ function Remove-BuildArtifacts {
         'dist',
         'dist-web', 
         'dist-electron',
+        'dist-release',
         'build',
         'release',
         '.vite',
@@ -119,7 +120,7 @@ function Force-Remove-Directory($path) {
 function Test-CleanupSuccess {
     Write-Info "Validating cleanup..."
     
-    $cleanupPaths = @('dist', 'dist-web', 'dist-electron', 'build', 'release', '.vite')
+    $cleanupPaths = @('dist', 'dist-web', 'dist-electron', 'dist-release', 'build', 'release', '.vite')
     $remaining = $cleanupPaths | Where-Object { Test-Path $_ }
     
     if ($remaining.Count -eq 0) {

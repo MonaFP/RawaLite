@@ -4,6 +4,7 @@ import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { usePersistence } from '../contexts/PersistenceContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { calculateDocumentTotals, validateDiscount, formatCurrency } from '../lib/discount-calculator';
+import { formatNumberInputValue, parseNumberInput, getNumberInputStyles } from '../lib/input-helpers';
 
 interface InvoiceFormProps {
   invoice?: Invoice;
@@ -280,8 +281,8 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       notes,
       dueDate,
       lineItems: processedLineItems, // Use processed items with mapped IDs
-      // Use new discount calculator results
-      subtotal: totals.subtotalAfterDiscount,
+      // FIXED: subtotal should be sum of line items BEFORE discount, not after
+      subtotal: totals.subtotalBeforeDiscount,
       vatRate,
       vatAmount: totals.vatAmount,
       total: totals.totalAmount,
@@ -438,11 +439,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     <input
                       type="number"
                       placeholder="Einzelpreis"
-                      value={item.unitPrice}
-                      onChange={(e) => updateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                      style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
+                      value={formatNumberInputValue(item.unitPrice)}
+                      onChange={(e) => updateLineItem(item.id, 'unitPrice', parseNumberInput(e.target.value))}
+                      style={{...getNumberInputStyles(), width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
                       min="0"
-                      step="0.01"
                     />
                   </div>
                   <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
@@ -554,11 +554,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                           <input
                             type="number"
                             placeholder="Einzelpreis"
-                            value={subItem.unitPrice}
-                            onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                            style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
+                            value={formatNumberInputValue(subItem.unitPrice)}
+                            onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseNumberInput(e.target.value))}
+                            style={{...getNumberInputStyles(), width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
                             min="0"
-                            step="0.01"
                           />
                         </div>
                         <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
@@ -664,13 +663,12 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 <div style={{display:"flex", alignItems:"center", gap:"4px"}}>
                   <input
                     type="number"
-                    value={discountValue}
-                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
-                    style={{width:"80px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                    placeholder="0"
+                    value={formatNumberInputValue(discountValue)}
+                    onChange={(e) => setDiscountValue(parseNumberInput(e.target.value))}
+                    style={{...getNumberInputStyles(), width:"80px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
                     min="0"
                     max="100"
-                    step="0.1"
-                    placeholder="0"
                   />
                   <span>%</span>
                 </div>
@@ -693,12 +691,11 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   <span>€</span>
                   <input
                     type="number"
-                    value={discountValue}
-                    onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
-                    style={{width:"100px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
+                    placeholder="0,00"
+                    value={formatNumberInputValue(discountValue)}
+                    onChange={(e) => setDiscountValue(parseNumberInput(e.target.value))}
+                    style={{...getNumberInputStyles(), width:"100px", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
                     min="0"
-                    step="0.01"
-                    placeholder="0.00"
                   />
                 </div>
               )}
@@ -737,12 +734,12 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     <span>MwSt.:</span>
                     <input
                       type="number"
-                      value={vatRate}
-                      onChange={(e) => setVatRate(parseFloat(e.target.value) || 0)}
-                      style={{width:"60px", padding:"4px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
+                      placeholder="19"
+                      value={formatNumberInputValue(vatRate)}
+                      onChange={(e) => setVatRate(parseNumberInput(e.target.value, 19))}
+                      style={{...getNumberInputStyles(), width:"60px", padding:"4px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
                       min="0"
                       max="100"
-                      step="0.1"
                     />
                     <span>%</span>
                   </div>

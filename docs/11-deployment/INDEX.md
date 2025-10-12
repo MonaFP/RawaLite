@@ -75,3 +75,11 @@ pnpm test:update-e2e
 - **scripts/** → Verification Scripts für jeden Meilenstein ausführen
 - **GitHub CLI** → Dramatically reduces implementation complexity (High → Low)
 - **Timeline:** 1 Woche statt 2-3 Wochen durch CLI-Integration
+
+## 🔗 **Related Topics**
+
+- [Architecture](../02-architecture/) - Update system architecture and technical design
+- [Security](../10-security/) - Update security validation and secure installation
+- [Database](../05-database/) - Database migration handling during updates
+- [Session Summaries](../15-session-summary/) - Deployment session summaries and problem resolution tracking
+- [Testing](../04-testing/) - Update testing strategies and validation procedures

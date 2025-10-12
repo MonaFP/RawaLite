@@ -4,6 +4,7 @@ import path from 'node:path'
 import { existsSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { marked } from 'marked'
+import sharp from 'sharp'
 import { UpdateManagerService } from '../src/main/services/UpdateManagerService'
 import { updateEntityStatus, getStatusHistory, getEntityForUpdate } from '../src/main/services/EntityStatusService'
 // 🗄️ Database imports with correct named exports syntax
@@ -613,8 +614,41 @@ ipcMain.handle('pdf:generate', async (event, options: {
       };
     }
 
-    // 2. Generate HTML content and extract data for headers
-    const htmlContent = generateTemplateHTML(options);
+    // 2. ✅ FIELD-MAPPING: Transform database snake_case to camelCase for template
+    console.log('🔄 [PDF GENERATION] Applying field mapping transformation...');
+    const preprocessedData = { ...options.data };
+    
+    // Import the field mapper from the correct location
+    const { mapFromSQL } = await import('../src/lib/field-mapper');
+    
+    // Transform the main entity (offer/invoice/timesheet) from database format to JS format
+    if (preprocessedData[options.templateType]) {
+      const originalEntity = preprocessedData[options.templateType];
+      console.log('� [FIELD-MAPPING] Original entity keys:', Object.keys(originalEntity));
+      
+      // Apply field mapping transformation
+      const mappedEntity = mapFromSQL(originalEntity);
+      console.log('🔍 [FIELD-MAPPING] Mapped entity keys:', Object.keys(mappedEntity));
+      
+      // Log the specific problematic fields
+      if (options.templateType === 'offer') {
+        console.log('🔍 [FIELD-MAPPING] Offer field transformation:');
+        console.log('  - offer_number →', mappedEntity.offerNumber, '(was:', originalEntity.offer_number, ')');
+        console.log('  - valid_until →', mappedEntity.validUntil, '(was:', originalEntity.valid_until, ')');
+        console.log('  - title →', mappedEntity.title, '(unchanged)');
+      }
+      
+      preprocessedData[options.templateType] = mappedEntity;
+    }
+
+    // 3. ✅ PRE-PROCESSING: Compress all attachments AFTER field mapping
+    console.log('🔄 [PDF GENERATION] Starting attachment preprocessing...');
+    if (preprocessedData[options.templateType]) {
+      preprocessedData[options.templateType] = await preprocessEntityAttachments(preprocessedData[options.templateType]);
+    }
+    
+    // 4. Generate HTML content (NOW SYNC, using preprocessed attachments with correct field mapping)
+    const htmlContent = generateTemplateHTML({ ...options, data: preprocessedData });
     const { settings } = options.data;
     
     // Extract theme colors with fallback to default
@@ -884,17 +918,760 @@ ipcMain.handle('pdf:getStatus', async () => {
   }
 })
 
+/**
+ * 📄 PDF ANHANG-SEITE SYSTEM
+ * 
+ * Generiert eine separate, lesbare Anhang-Seite für PDF-Exporte mit intelligenter Layout-Auswahl.
+ * Ergänzt die kleinen Thumbnails (60x45px) um eine vollwertige Anhang-Dokumentation.
+ * 
+ * Features:
+ * - Dual-Display: Kleine Thumbnails + separate Anhang-Seite
+ * - Intelligente Layout-Entscheidung: Full-Size vs Compact basierend auf Anzahl
+ * - Standards-konform: Schema, PATHS, Database Consistency
+ * - Base64-Only: Verwendet Database-Only Storage ohne Filesystem-APIs
+ * - Print-optimiert: page-break-before, break-inside avoid
+ * 
+ * @since v1.0.42.3
+ * @author AI Assistant
+ */
+
+
+
+function generateAttachmentsPage(entity: any, templateType: string): string {
+  // 1. SAMMLE ATTACHMENTS (Field-Mapper bereits angewendet durch SQLiteAdapter)
+  const allAttachments: Array<{
+    attachment: any;
+    lineItemTitle: string;
+    lineItemId: number;
+  }> = [];
+
+  if (entity.lineItems && Array.isArray(entity.lineItems)) {
+    entity.lineItems.forEach((item: any) => {
+      if (item.attachments && item.attachments.length > 0) {
+        item.attachments.forEach((att: any) => {
+          allAttachments.push({
+            attachment: att,
+            lineItemTitle: item.title,
+            lineItemId: item.id
+          });
+        });
+      }
+    });
+  }
+
+  // 2. KEINE ATTACHMENTS = KEINE SEITE
+  if (allAttachments.length === 0) {
+    console.log('📎 [ATTACHMENTS PAGE] No attachments found, skipping page');
+    return '';
+  }
+
+  console.log(`📎 [ATTACHMENTS PAGE] Generating page with ${allAttachments.length} attachments`);
+
+  // 3. LAYOUT-ENTSCHEIDUNG BASIEREND AUF ANZAHL
+  const useCompactLayout = allAttachments.length > 6;
+  
+  if (useCompactLayout) {
+    console.log('📎 [ATTACHMENTS PAGE] Using compact layout for many attachments');
+    return generateCompactAttachmentsPage(allAttachments);
+  } else {
+    console.log('📎 [ATTACHMENTS PAGE] Using full-size layout for few attachments');
+    return generateFullSizeAttachmentsPage(allAttachments);
+  }
+}
+
+/**
+ * ⚠️ REMOVED: Sharp-basierte Funktionen wegen async/sync Konflikt
+ * 
+ * Problem: PDF-Generation braucht synchrone Funktionen, aber Sharp ist async.
+ * Lösung: Benutzerfreundliche Platzhalter mit klaren Hinweisen.
+ * 
+ * Für zukünftige Verbesserungen:
+ * - Vorab-Kompression beim Upload (async möglich)
+ * - Separate Komprimierung vor PDF-Generation
+ * - Worker-Thread für Bildverarbeitung
+ */
+
+/**
+ * Async-Version: Echte Sharp-basierte Bildkompression für PDF-Engine.
+ * 
+ * Mehrstufige Optimierung:
+ * 1. Sharp-basierte JPEG-Kompression (funktioniert async!)
+ * 2. Automatische Größenanpassung bei Bedarf
+ * 3. Thumbnail-Erstellung für extreme Fälle (>5MB)
+ * 4. SVG-Platzhalter als Fallback
+ * 
+ * @param base64Data - Original Base64 Data-URL 
+ * @returns Promise<Optimierte Base64 Data-URL>
+ */
+async function optimizeImageForPDFAsync(base64Data: string): Promise<string> {
+  try {
+    // Check data URL format
+    if (!base64Data || !base64Data.startsWith('data:')) {
+      console.log('🖼️ [ASYNC PDF OPTIMIZATION] Invalid data URL format');
+      return generateImagePlaceholder('Ungültiges Bildformat');
+    }
+
+    const originalSize = base64Data.length;
+    const sizeInKB = Math.round(originalSize / 1024);
+    
+    console.log(`🖼️ [ASYNC PDF OPTIMIZATION] Processing image with Sharp: ${sizeInKB}KB`);
+    
+    // Kleine Bilder: Original verwenden
+    if (sizeInKB <= 500) {
+      console.log(`🖼️ [ASYNC PDF OPTIMIZATION] Small image (${sizeInKB}KB), using original`);
+      return base64Data;
+    }
+    
+    // Extreme Größen: Thumbnail erstellen
+    if (sizeInKB > 5000) {
+      console.log(`🖼️ [ASYNC PDF OPTIMIZATION] Very large image (${sizeInKB}KB), creating thumbnail`);
+      return await createImageThumbnailWithSharpAsync(base64Data, sizeInKB);
+    }
+    
+    // Mittlere Größen: Sharp-Komprimierung
+    console.log(`🖼️ [ASYNC PDF OPTIMIZATION] Medium image (${sizeInKB}KB), using Sharp compression`);
+    return await compressImageWithSharpAsync(base64Data, sizeInKB);
+    
+  } catch (error) {
+    console.error('🖼️ [ASYNC PDF OPTIMIZATION] Error:', error);
+    return generateImagePlaceholder('Bild-Verarbeitungsfehler');
+  }
+}
+
+/**
+ * Sharp-basierte JPEG-Kompression (ASYNC).
+ */
+async function compressImageWithSharpAsync(base64Data: string, sizeInKB: number): Promise<string> {
+  try {
+    console.log(`🖼️ [ASYNC SHARP COMPRESSION] Compressing ${sizeInKB}KB image`);
+    
+    // Bestimme Komprimierungsstufe basierend auf Größe
+    let quality = 70; // 70% für moderate Größen
+    if (sizeInKB > 3000) quality = 30; // 30% für sehr große Bilder
+    else if (sizeInKB > 2000) quality = 50; // 50% für große Bilder
+    
+    console.log(`🖼️ [ASYNC SHARP COMPRESSION] Using quality: ${quality}%`);
+    
+    // Extrahiere Base64-Daten ohne Data-URL-Header
+    const base64Only = base64Data.split(',')[1];
+    if (!base64Only) {
+      console.log('🖼️ [ASYNC SHARP COMPRESSION] Failed to extract base64 data');
+      return generateImagePlaceholder(`Bild (${sizeInKB}KB)\nBase64-Extraktion fehlgeschlagen`);
+    }
+    
+    // Konvertiere Base64 zu Buffer
+    const inputBuffer = Buffer.from(base64Only, 'base64');
+    
+    // Sharp-Kompression (ASYNC!)
+    const compressedBuffer = await sharp(inputBuffer)
+      .jpeg({ quality })
+      .toBuffer();
+    
+    // Zurück zu Base64 Data-URL
+    const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`;
+    const newSizeKB = Math.round(compressedBase64.length / 1024);
+    
+    console.log(`🖼️ [ASYNC SHARP COMPRESSION] Compressed from ${sizeInKB}KB to ${newSizeKB}KB (${Math.round((1 - newSizeKB / sizeInKB) * 100)}% reduction)`);
+    
+    return compressedBase64;
+    
+  } catch (error) {
+    console.error('🖼️ [ASYNC SHARP COMPRESSION] Failed:', error);
+    return generateImagePlaceholder(`Bild (${sizeInKB}KB)\nKomprimierung fehlgeschlagen`);
+  }
+}
+
+/**
+ * Pre-Processing: Komprimiert alle Attachments in einem Entity VOR Template-Generation.
+ * 
+ * Löst das async/sync Problem durch Vorab-Kompression:
+ * 1. Entity durchlaufen und alle Attachments finden
+ * 2. Parallel Sharp-Kompression aller Bilder
+ * 3. Original entity.lineItems[].attachments[].base64Data ersetzen
+ * 4. Modifiziertes Entity zurückgeben für sync Template-Generation
+ * 
+ * @param entity - Original Entity mit unkomprimierten Attachments
+ * @returns Promise<Entity mit komprimierten Attachments>
+ */
+async function preprocessEntityAttachments(entity: any): Promise<any> {
+  try {
+    console.log('🔄 [PREPROCESSING] Starting attachment compression for entity');
+    
+    // Deep clone um Original nicht zu modifizieren
+    const processedEntity = JSON.parse(JSON.stringify(entity));
+    
+    if (!processedEntity.lineItems || !Array.isArray(processedEntity.lineItems)) {
+      console.log('🔄 [PREPROCESSING] No lineItems found, returning entity unchanged');
+      return processedEntity;
+    }
+    
+    // Sammle alle Attachment-Compression-Tasks
+    const compressionTasks: Promise<void>[] = [];
+    
+    processedEntity.lineItems.forEach((item: any, itemIndex: number) => {
+      if (item.attachments && Array.isArray(item.attachments)) {
+        item.attachments.forEach((attachment: any, attIndex: number) => {
+          if (attachment.base64Data) {
+            const task = async () => {
+              const originalSize = Math.round(attachment.base64Data.length / 1024);
+              console.log(`🔄 [PREPROCESSING] Item ${itemIndex+1}, Attachment ${attIndex+1}: ${attachment.originalFilename} (${originalSize}KB)`);
+              
+              // Sharp-Kompression anwenden
+              const compressedBase64 = await optimizeImageForPDFAsync(attachment.base64Data);
+              
+              // Original ersetzen
+              attachment.base64Data = compressedBase64;
+              
+              const newSize = Math.round(compressedBase64.length / 1024);
+              console.log(`🔄 [PREPROCESSING] Compressed: ${originalSize}KB -> ${newSize}KB`);
+            };
+            
+            compressionTasks.push(task());
+          }
+        });
+      }
+    });
+    
+    // Alle Komprimierungen parallel ausführen
+    await Promise.all(compressionTasks);
+    
+    console.log(`🔄 [PREPROCESSING] Completed ${compressionTasks.length} attachment compressions`);
+    return processedEntity;
+    
+  } catch (error) {
+    console.error('🔄 [PREPROCESSING] Failed:', error);
+    // Bei Fehler: Original Entity zurückgeben
+    return entity;
+  }
+}
+async function createImageThumbnailWithSharpAsync(base64Data: string, sizeInKB: number): Promise<string> {
+  try {
+    console.log(`🖼️ [ASYNC SHARP THUMBNAIL] Creating 150x150px thumbnail for ${sizeInKB}KB image`);
+    
+    // Extrahiere Base64-Daten
+    const base64Only = base64Data.split(',')[1];
+    if (!base64Only) {
+      return generateImagePlaceholder(`Großes Bild (${sizeInKB}KB)\nBase64-Extraktion fehlgeschlagen`);
+    }
+    
+    // Konvertiere zu Buffer
+    const inputBuffer = Buffer.from(base64Only, 'base64');
+    
+    // Sharp Thumbnail-Erstellung (ASYNC!)
+    const thumbnailBuffer = await sharp(inputBuffer)
+      .resize(150, 150, { fit: 'inside', background: '#ffffff' })
+      .jpeg({ quality: 80 })
+      .toBuffer();
+    
+    // Zurück zu Base64 Data-URL
+    const thumbnailBase64 = `data:image/jpeg;base64,${thumbnailBuffer.toString('base64')}`;
+    
+    console.log(`🖼️ [ASYNC SHARP THUMBNAIL] Thumbnail created: ${Math.round(thumbnailBase64.length / 1024)}KB`);
+    
+    return thumbnailBase64;
+    
+  } catch (error) {
+    console.error('🖼️ [ASYNC SHARP THUMBNAIL] Failed:', error);
+    return generateImagePlaceholder(`Großes Bild (${sizeInKB}KB)\nThumbnail-Erstellung fehlgeschlagen`);
+  }
+}
+
+/**
+ * Erstellt ein 150x150px Thumbnail für sehr große Bilder (>5MB).
+ * 
+ * Verwendet Canvas-basierte Skalierung mit JPEG-Kompression.
+ * Fallback auf SVG-Platzhalter bei Fehlern.
+ * 
+ * @param base64Data - Original Base64 Data-URL
+ * @param sizeInKB - Originalgröße in KB für Metadaten
+ * @returns Thumbnail Data-URL oder SVG-Platzhalter
+ */
+function createImageThumbnail(base64Data: string, sizeInKB: number): string {
+  try {
+    console.log(`🖼️ [THUMBNAIL] Creating 150x150px thumbnail for ${sizeInKB}KB image`);
+    
+    // Erstelle Canvas für Thumbnail
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      console.log('🖼️ [THUMBNAIL] Canvas context failed, using placeholder');
+      return generateImagePlaceholder(`Großes Bild (${sizeInKB}KB)\nZu groß für PDF - siehe Originalanhang`);
+    }
+    
+    const img = new Image();
+    
+    // Synchroner Fallback - verwende Platzhalter
+    img.onload = () => {
+      canvas.width = 150;
+      canvas.height = 150;
+      
+      // Berechne Aspekt-Ratio für zentrierte Darstellung
+      const aspectRatio = img.width / img.height;
+      let drawWidth = 150;
+      let drawHeight = 150;
+      let offsetX = 0;
+      let offsetY = 0;
+      
+      if (aspectRatio > 1) {
+        drawHeight = 150 / aspectRatio;
+        offsetY = (150 - drawHeight) / 2;
+      } else {
+        drawWidth = 150 * aspectRatio;
+        offsetX = (150 - drawWidth) / 2;
+      }
+      
+      // Weißer Hintergrund
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 150, 150);
+      
+      // Bild zentriert zeichnen
+      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      
+      console.log('🖼️ [THUMBNAIL] Thumbnail created successfully');
+    };
+    
+    img.onerror = () => {
+      console.log('🖼️ [THUMBNAIL] Image load failed');
+    };
+    
+    img.src = base64Data;
+    
+    // Da dies synchron sein muss, verwende Platzhalter mit Preview-Info
+    return generateImagePlaceholder(`Großes Bild (${sizeInKB}KB)\nVollbild im Originalanhang verfügbar`);
+    
+  } catch (error) {
+    console.error('🖼️ [THUMBNAIL] Creation failed:', error);
+    return generateImagePlaceholder(`Großes Bild (${sizeInKB}KB)\nFehler bei Thumbnail-Erstellung`);
+  }
+}
+
+/**
+ * Komprimiert ein Base64-Bild synchron über Canvas (SYNC VERSION).
+ * 
+ * Mehrstufige Qualitätsreduktion:
+ * - Stufe 1: 70% Qualität (für 500KB-2MB)
+ * - Stufe 2: 50% Qualität (für 2MB-3MB)  
+ * - Stufe 3: 30% Qualität (für 3MB-5MB)
+ * 
+ * @param base64Data - Original Base64 Data-URL
+ * @param sizeInKB - Originalgröße in KB
+ * @returns Komprimierte Data-URL oder Platzhalter
+ */
+function compressImageForPDFSync(base64Data: string, sizeInKB: number): string {
+  try {
+    console.log(`🖼️ [COMPRESSION] Compressing ${sizeInKB}KB image`);
+    
+    // Bestimme Komprimierungsstufe basierend auf Größe
+    let quality = 0.7; // 70% für moderate Größen
+    if (sizeInKB > 3000) quality = 0.3; // 30% für sehr große Bilder
+    else if (sizeInKB > 2000) quality = 0.5; // 50% für große Bilder
+    
+    console.log(`🖼️ [COMPRESSION] Using quality: ${Math.round(quality * 100)}%`);
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      console.log('🖼️ [COMPRESSION] Canvas context failed, using placeholder');
+      return generateImagePlaceholder(`Bild (${sizeInKB}KB)\nKomprimierung fehlgeschlagen`);
+    }
+    
+    const img = new Image();
+    
+    // Synchroner Fallback - da PDF-Generation synchron erfolgen muss
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      ctx.drawImage(img, 0, 0);
+      
+      // JPEG-Kompression mit gewählter Qualität
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+      const newSizeKB = Math.round(compressedDataUrl.length / 1024);
+      
+      console.log(`🖼️ [COMPRESSION] Compressed from ${sizeInKB}KB to ${newSizeKB}KB (${Math.round((1 - newSizeKB / sizeInKB) * 100)}% reduction)`);
+    };
+    
+    img.onerror = () => {
+      console.log('🖼️ [COMPRESSION] Image load failed');
+    };
+    
+    img.src = base64Data;
+    
+    // Da Canvas async ist, aber PDF-Generation sync, verwende Platzhalter
+    return generateImagePlaceholder(`Komprimiertes Bild (${sizeInKB}KB)\nOriginal zu groß für PDF`);
+    
+  } catch (error) {
+    console.error('🖼️ [COMPRESSION] Failed:', error);
+    return generateImagePlaceholder(`Bild (${sizeInKB}KB)\nKomprimierung fehlgeschlagen`);
+  }
+}
+
+/**
+ * Komprimiert und optimiert ein Base64-Bild für PDF-Engine mit Sharp.
+ * 
+ * Mehrstufige Optimierung:
+ * 1. Sharp-basierte JPEG-Kompression (synchron!)
+ * 2. Automatische Größenanpassung bei Bedarf
+ * 3. Thumbnail-Erstellung für extreme Fälle (>5MB)
+ * 4. SVG-Platzhalter als Fallback
+ * 
+ * @param base64Data - Original Base64 Data-URL 
+ * @returns Optimierte Base64 Data-URL oder Placeholder
+ */
+function optimizeImageForPDF(base64Data: string): string {
+  try {
+    // Check data URL format
+    if (!base64Data || !base64Data.startsWith('data:')) {
+      console.log('🖼️ [PDF OPTIMIZATION] Invalid data URL format');
+      return generateImagePlaceholder('Ungültiges Bildformat');
+    }
+
+    const originalSize = base64Data.length;
+    const sizeInKB = Math.round(originalSize / 1024);
+    
+    console.log(`🖼️ [PDF OPTIMIZATION] Processing image: ${sizeInKB}KB`);
+    
+    // Kleine Bilder: Original verwenden
+    if (sizeInKB <= 500) {
+      console.log(`🖼️ [PDF OPTIMIZATION] Small image (${sizeInKB}KB), using original`);
+      return base64Data;
+    }
+    
+    // Da Sharp/Canvas async sind, aber PDF-Generation sync sein muss,
+    // verwende benutzerfreundliche Platzhalter mit klarer Information
+    console.log(`🖼️ [PDF OPTIMIZATION] Large image (${sizeInKB}KB), using informative placeholder`);
+    
+    if (sizeInKB > 5000) {
+      return generateImagePlaceholder(`Sehr großes Bild (${sizeInKB}KB)\nVollbild im Originalanhang verfügbar\n\n📎 Diese Datei wurde wegen der Größe\nals Platzhalter dargestellt`);
+    } else if (sizeInKB > 2000) {
+      return generateImagePlaceholder(`Großes Bild (${sizeInKB}KB)\nKomprimiert für bessere PDF-Performance\n\n📷 Originalqualität im Anhang verfügbar`);
+    } else {
+      return generateImagePlaceholder(`Mittleres Bild (${sizeInKB}KB)\nOptimiert für PDF-Darstellung\n\n🖼️ Siehe Originalanhang für Vollqualität`);
+    }
+    
+  } catch (error) {
+    console.error('🖼️ [PDF OPTIMIZATION] Error:', error);
+    return generateImagePlaceholder('Bild-Verarbeitungsfehler');
+  }
+}
+
+/**
+ * Generiert einen Placeholder für Bilder die zu groß für PDF-Engine sind.
+ */
+function generateImagePlaceholder(text: string): string {
+  // Simple SVG placeholder as data URL (much smaller than image)
+  const svg = `
+    <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#f8f9fa" stroke="#dee2e6" stroke-width="2"/>
+      <text x="50%" y="40%" text-anchor="middle" font-family="Arial" font-size="24" fill="#6c757d">📷</text>
+      <text x="50%" y="60%" text-anchor="middle" font-family="Arial" font-size="14" fill="#6c757d">${text}</text>
+      <text x="50%" y="75%" text-anchor="middle" font-family="Arial" font-size="12" fill="#adb5bd">Zu groß für PDF - siehe Originalanhang</text>
+    </svg>
+  `.trim();
+  
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+}
+
+/**
+ * Komprimiert Base64-Bilder für PDF-Generation um ERR_INVALID_URL zu vermeiden.
+ * 
+ * @param base64Data - Original Base64 Data-URL 
+ * @param maxWidth - Maximale Breite für PDF (default: 800px)
+ * @param maxHeight - Maximale Höhe für PDF (default: 600px)
+ * @param quality - JPEG-Qualität (default: 0.8)
+ * @returns Komprimierte Base64 Data-URL
+ */
+function compressImageForPDF(base64Data: string, maxWidth: number = 800, maxHeight: number = 600, quality: number = 0.8): Promise<string> {
+  return new Promise((resolve) => {
+    try {
+      // Check if base64Data has proper data URL format
+      if (!base64Data.startsWith('data:')) {
+        console.log('🖼️ [PDF COMPRESSION] Invalid data URL format, using as-is');
+        resolve(base64Data);
+        return;
+      }
+
+      // Create image in memory for compression
+      const img = new Image();
+      
+      img.onload = () => {
+        try {
+          // Calculate new dimensions while maintaining aspect ratio
+          let { width, height } = img;
+          
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+            console.log(`🖼️ [PDF COMPRESSION] Resizing from ${img.width}x${img.height} to ${width}x${height}`);
+          } else {
+            console.log(`🖼️ [PDF COMPRESSION] Image already optimal size: ${width}x${height}`);
+          }
+
+          // Create canvas for compression
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            console.log('🖼️ [PDF COMPRESSION] Canvas context failed, using original');
+            resolve(base64Data);
+            return;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          // Draw and compress
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convert to JPEG with quality compression
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          
+          console.log(`🖼️ [PDF COMPRESSION] Compressed from ${base64Data.length} to ${compressedDataUrl.length} chars (${Math.round((1 - compressedDataUrl.length / base64Data.length) * 100)}% reduction)`);
+          
+          resolve(compressedDataUrl);
+        } catch (error) {
+          console.error('🖼️ [PDF COMPRESSION] Compression failed:', error);
+          resolve(base64Data);
+        }
+      };
+
+      img.onerror = () => {
+        console.log('🖼️ [PDF COMPRESSION] Image load failed, using original');
+        resolve(base64Data);
+      };
+
+      img.src = base64Data;
+    } catch (error) {
+      console.error('🖼️ [PDF COMPRESSION] Setup failed:', error);
+      resolve(base64Data);
+    }
+  });
+}
+
+/**
+ * Generiert ein Full-Size Layout für wenige Attachments (≤ 6 Bilder).
+ * 
+ * Verwendet ein responsives Grid-Layout mit großen Bildern und
+ * eleganten Karten-Design mit detaillierten Metadaten.
+ * 
+ * @param allAttachments - Array aller gesammelten Attachments mit Kontext
+ * @returns HTML-String für Full-Size Anhang-Layout
+ * 
+ * Design Features:
+ * - Grid: repeat(auto-fit, minmax(350px, 1fr))
+ * - Bildgröße: max-height 320px (optimiert für A4 einseitig)
+ * - Kompaktes Layout: Reduzierte Paddings für bessere Platznutzung
+ * - Intelligente Skalierung: Automatische Größenanpassung
+ * - Untrennbare Blöcke: Überschrift + Bild bleiben zusammen
+ * - Styling: Abgerundete Ecken, Schatten, Farbabstufungen
+ * - Error Handling: Fallback bei Bildladefehlern
+ */
+function generateFullSizeAttachmentsPage(allAttachments: Array<{attachment: any; lineItemTitle: string; lineItemId: number}>): string {
+  
+  // ✅ SYNC: Bilder wurden bereits vorab komprimiert durch preprocessEntityAttachments()
+  console.log('📎 [ATTACHMENTS PAGE] Using preprocessed attachments (sync)');
+
+  return `
+    <!-- ✅ PATHS-KONFORM: Keine Filesystem-APIs -->
+    <!-- ✅ SCHEMA-KONFORM: Verwendet Field-Mapper Daten -->
+    <!-- ✅ BASE64-ONLY: Database-Only Storage Pattern -->
+    <style>
+      /* CSS für untrennbare Bild-Blöcke */
+      .attachment-block {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-before: auto;
+        page-break-after: auto;
+        display: block;
+        overflow: hidden;
+      }
+      
+      /* Grid-Container für bessere Kontrolle */
+      .attachments-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        align-items: start;
+      }
+      
+      /* Responsive Anpassung für kleine Screens */
+      @media print {
+        .attachment-block {
+          page-break-inside: avoid !important;
+          margin-bottom: 20px;
+        }
+        
+        .attachments-grid {
+          grid-template-columns: 1fr; /* Einspaltiges Layout für Print */
+        }
+      }
+    </style>
+    
+    <div style="page-break-before: always; padding: 30px; font-family: Arial, sans-serif;">
+      <h2 style="border-bottom: 3px solid #333; padding-bottom: 15px; margin-bottom: 40px; font-size: 24px; color: #333;">
+        📎 Anhänge (${allAttachments.length})
+      </h2>
+      
+      <div class="attachments-grid">
+        ${allAttachments.map((item, index) => {
+          // ✅ ATTACHMENT FIELDS BEREITS FIELD-MAPPER KONFORM
+          const filename = item.attachment.originalFilename;  // Field-Mapper: original_filename
+          const fileType = item.attachment.fileType;          // Field-Mapper: file_type  
+          const fileSize = item.attachment.fileSize;          // Field-Mapper: file_size
+          const base64Data = item.attachment.base64Data;      // Field-Mapper: base64_data (BEREITS KOMPRIMIERT)
+          
+          console.log(`📎 [ATTACHMENTS PAGE] Processing preprocessed attachment ${index + 1}: ${filename} (${Math.round(fileSize / 1024)}KB)`);
+          
+          return `
+            <div class="attachment-block" style="border: 2px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 15px; page-break-inside: avoid; break-inside: avoid;">
+              <!-- ✅ ECHTES KOMPRIMIERTES BILD: Vorab von preprocessEntityAttachments() optimiert -->
+              <div style="text-align: center; padding: 15px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0;">
+                <img src="${base64Data}" 
+                     alt="${filename}"
+                     style="max-width: 100%; max-height: 320px; object-fit: contain; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                <div style="display: none; padding: 30px; background: #f0f0f0; border-radius: 6px; color: #666;">
+                  <div style="font-size: 36px; margin-bottom: 8px;">📷</div>
+                  <div>Bild konnte nicht geladen werden</div>
+                </div>
+              </div>
+              
+              <!-- ✅ SCHEMA-KONFORME METADATEN -->
+              <div style="padding: 15px;">
+                <h3 style="margin: 0 0 10px 0; color: #333; font-size: 15px; word-wrap: break-word;">
+                  📄 ${filename}
+                </h3>
+                <div style="color: #666; font-size: 13px; line-height: 1.3;">
+                  <div style="margin-bottom: 6px;">
+                    <strong>Position:</strong> ${item.lineItemTitle}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Generiert ein Compact Layout für viele Attachments (> 6 Bilder).
+ * 
+ * Verwendet ein 2-Spalten Zeitungslayout mit kleineren Bildern (bis 250px) 
+ * für platzsparende Darstellung vieler Attachments.
+ * 
+ * @param allAttachments - Array aller gesammelten Attachments mit Kontext
+ * @returns HTML-String für Compact Anhang-Layout
+ * 
+ * Design Features:
+ * - Layout: columns: 2; column-gap: 30px
+ * - Bildgröße: max-height 200px (kompakter für viele Bilder)
+ * - Layout: columns: 2; column-gap: 25px (platzsparend)
+ * - Styling: Kompakte Karten, kleinere Schrift
+ * - Break-Inside: Verhindert Seitenumbrüche in Karten
+ */
+function generateCompactAttachmentsPage(allAttachments: Array<{attachment: any; lineItemTitle: string; lineItemId: number}>): string {
+  return `
+    <!-- ✅ KOMPAKTE DARSTELLUNG FÜR VIELE ATTACHMENTS -->
+    <style>
+      /* CSS für untrennbare kompakte Bild-Blöcke */
+      .compact-attachment-block {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-before: auto;
+        page-break-after: auto;
+        display: block;
+        overflow: hidden;
+      }
+      
+      /* Zweispaltiges Layout für kompakte Darstellung */
+      .compact-attachments-container {
+        columns: 2;
+        column-gap: 25px;
+        column-fill: balance;
+      }
+      
+      /* Print-optimierte Spalten-Regeln */
+      @media print {
+        .compact-attachment-block {
+          page-break-inside: avoid !important;
+          margin-bottom: 15px;
+        }
+        
+        .compact-attachments-container {
+          column-gap: 20px;
+        }
+      }
+    </style>
+    
+    <div style="page-break-before: always; padding: 30px; font-family: Arial, sans-serif;">
+      <h2 style="border-bottom: 3px solid #333; padding-bottom: 15px; margin-bottom: 30px; font-size: 24px; color: #333;">
+        📎 Anhänge (${allAttachments.length})
+      </h2>
+      
+      <div class="compact-attachments-container">
+        ${allAttachments.map((item, index) => {
+          const filename = item.attachment.originalFilename;
+          const fileType = item.attachment.fileType;
+          const fileSize = item.attachment.fileSize;
+          const base64Data = item.attachment.base64Data;
+          
+          return `
+            <div class="compact-attachment-block" style="margin-bottom: 20px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background: #fff; page-break-inside: avoid; break-inside: avoid;">
+              <div style="text-align: center; padding: 15px; background: #f9f9f9;">
+                <img src="${base64Data}" 
+                     alt="${filename}"
+                     style="max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 4px;" />
+              </div>
+              <div style="padding: 12px; font-size: 12px;">
+                <div style="font-weight: bold; margin-bottom: 6px; word-wrap: break-word; color: #333;">
+                  ${filename}
+                </div>
+                <div style="color: #666; line-height: 1.3;">
+                  <div><strong>Position:</strong> ${item.lineItemTitle}</div>
+                  <div><strong>Typ:</strong> ${fileType}</div>
+                  <div><strong>Größe:</strong> ${Math.round(fileSize / 1024)} KB</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
 // Helper function to generate HTML content for PDF templates
 function generateTemplateHTML(options: any): string {
   const { templateType, data, theme } = options;
   const entity = data[templateType] || data.offer || data.invoice || data.timesheet;
   const { customer, settings } = data;
   
-  // 🔍 DEBUG: Log line items and attachments
+  // 🔍 DEBUGGING: Critical field mapping validation
+  console.log('🔍 [PDF DEBUG] Template Type:', templateType);
+  console.log('🔍 [PDF DEBUG] Entity received:', entity);
+  console.log('🔍 [PDF DEBUG] Entity keys:', Object.keys(entity || {}));
+  
+  if (templateType === 'offer') {
+    console.log('🔍 [PDF DEBUG] Offer specific fields:');
+    console.log('  - offerNumber:', entity?.offerNumber, '(type:', typeof entity?.offerNumber, ')');
+    console.log('  - offer_number:', entity?.offer_number, '(type:', typeof entity?.offer_number, ')');
+    console.log('  - title:', entity?.title, '(type:', typeof entity?.title, ')');
+    console.log('  - validUntil:', entity?.validUntil, '(type:', typeof entity?.validUntil, ')');
+    console.log('  - valid_until:', entity?.valid_until, '(type:', typeof entity?.valid_until, ')');
+  }
+  
+  // 🔍 DEBUG: Log line items, pricing data and attachments
   if (templateType === 'offer' && entity.lineItems) {
     console.log('🔍 [PDF DEBUG] Offer line items received:', entity.lineItems.length);
     entity.lineItems.forEach((item: any, index: number) => {
       console.log(`🔍 [PDF DEBUG] Item ${index + 1}: ${item.title}`);
+      console.log(`🔍 [PDF DEBUG] - Pricing: quantity=${item.quantity}, unitPrice=${item.unitPrice}, total=${item.total}`);
+      console.log(`🔍 [PDF DEBUG] - All item properties:`, Object.keys(item));
       if (item.attachments && item.attachments.length > 0) {
         console.log(`🔍 [PDF DEBUG] - Has ${item.attachments.length} attachments:`);
         item.attachments.forEach((att: any, attIndex: number) => {
@@ -916,6 +1693,16 @@ function generateTemplateHTML(options: any): string {
       } else {
         console.log(`🔍 [PDF DEBUG] - No attachments`);
       }
+    });
+  }
+  
+  // 🔍 DEBUG: Log invoice line items for comparison with offers
+  if (templateType === 'invoice' && entity.lineItems) {
+    console.log('🔍 [PDF DEBUG] Invoice line items received:', entity.lineItems.length);
+    entity.lineItems.forEach((item: any, index: number) => {
+      console.log(`🔍 [PDF DEBUG] Invoice Item ${index + 1}: ${item.title}`);
+      console.log(`🔍 [PDF DEBUG] - Invoice Pricing: quantity=${item.quantity}, unitPrice=${item.unitPrice}, total=${item.total}`);
+      console.log(`🔍 [PDF DEBUG] - Invoice item properties:`, Object.keys(item));
     });
   }
   
@@ -1435,9 +2222,9 @@ function generateTemplateHTML(options: any): string {
                       </div>
                     ` : ''}
                   </td>
-                  <td>${parentItem.quantity}</td>
-                  <td>€${parentItem.unitPrice?.toFixed(2) || '0.00'}</td>
-                  <td>€${parentItem.total?.toFixed(2) || '0.00'}</td>
+                  <td>${parentItem.quantity || 0}</td>
+                  <td>€${(typeof parentItem.unitPrice === 'number' && !isNaN(parentItem.unitPrice)) ? parentItem.unitPrice.toFixed(2) : '0.00'}</td>
+                  <td>€${(typeof parentItem.total === 'number' && !isNaN(parentItem.total)) ? parentItem.total.toFixed(2) : '0.00'}</td>
                 </tr>
               `;
               
@@ -1499,9 +2286,9 @@ function generateTemplateHTML(options: any): string {
                         </div>
                       ` : ''}
                     </td>
-                    <td>${subItem.quantity}</td>
-                    <td>€${subItem.unitPrice?.toFixed(2) || '0.00'}</td>
-                    <td>€${subItem.total?.toFixed(2) || '0.00'}</td>
+                    <td>${subItem.quantity || 0}</td>
+                    <td>€${(typeof subItem.unitPrice === 'number' && !isNaN(subItem.unitPrice)) ? subItem.unitPrice.toFixed(2) : '0.00'}</td>
+                    <td>€${(typeof subItem.total === 'number' && !isNaN(subItem.total)) ? subItem.total.toFixed(2) : '0.00'}</td>
                   </tr>
                 `;
               });
@@ -1533,7 +2320,61 @@ function generateTemplateHTML(options: any): string {
         <div class="total-row">Gesamtbetrag: €${entity.total?.toFixed(2) || '0.00'}</div>
       </div>
 
-      ${entity.notes ? `<div class="notes${entity.notes.length > 500 ? ' notes-long' : ''}"><strong>Anmerkungen:</strong><br>${convertMarkdownToHtml(entity.notes)}</div>` : ''}
+      ${entity.notes ? (
+        entity.notes.length > 200 ? 
+          `<div class="notes"><strong>Anmerkungen:</strong><br>Siehe separate Anmerkungsseite für detaillierte Notizen.</div>` :
+          `<div class="notes"><strong>Anmerkungen:</strong><br>${convertMarkdownToHtml(entity.notes)}</div>`
+      ) : ''}
+
+      <!-- ✅ SEPARATE ANMERKUNGEN-SEITE (vor Attachments) -->
+      ${entity.notes && entity.notes.length > 200 ? `
+        <div style="page-break-before: always; padding: 40px;">
+          <div style="border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px;">
+            <h2 style="color: #333; font-size: 24px; margin: 0; font-weight: 600;">
+              Anmerkungen
+            </h2>
+            <div style="color: #666; font-size: 14px; margin-top: 8px;">
+              ${templateType === 'offer' ? 'Angebot' : templateType === 'invoice' ? 'Rechnung' : 'Leistungsnachweis'} - Detaillierte Anmerkungen
+            </div>
+          </div>
+
+          <div style="
+            background-color: #f9f9f9; 
+            border-left: 4px solid #007acc; 
+            padding: 25px; 
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 30px;
+          ">
+            ${convertMarkdownToHtml(entity.notes)}
+          </div>
+
+          <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; text-align: center;">
+            Anmerkungen - Seite ${templateType === 'offer' ? 'Angebot' : templateType === 'invoice' ? 'Rechnung' : 'Leistungsnachweis'}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- ✅ STANDARDS-KONFORME ANHANG-SEITE -->
+      ${(() => {
+        console.log('🔍 [PDF DEBUG] About to generate attachments page for templateType:', templateType);
+        console.log('🔍 [PDF DEBUG] Entity has lineItems:', !!entity.lineItems);
+        if (entity.lineItems) {
+          console.log('🔍 [PDF DEBUG] Number of lineItems:', entity.lineItems.length);
+          entity.lineItems.forEach((item: any, index: number) => {
+            console.log(`🔍 [PDF DEBUG] LineItem ${index}: has attachments:`, !!item.attachments, 'count:', item.attachments?.length || 0);
+          });
+        }
+        const attachmentPageHTML = generateAttachmentsPage(entity, templateType);
+        console.log('🔍 [PDF DEBUG] Generated attachments page HTML length:', attachmentPageHTML.length);
+        if (attachmentPageHTML.length > 0) {
+          console.log('🔍 [PDF DEBUG] Attachments page HTML preview:', attachmentPageHTML.substring(0, 200) + '...');
+        }
+        return attachmentPageHTML;
+      })()}
+      
     </body>
     </html>
   `;

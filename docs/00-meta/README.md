@@ -10,10 +10,10 @@
 
 Neu bei RawaLite? Starte hier:
 
-1. **[Installation](../50-persistence/INSTALL.md)** - Setup & Systemanforderungen
+1. **[Installation](../05-database/INSTALL.md)** - Setup & Systemanforderungen
 2. **[Projekt-Übersicht](../../PROJECT_OVERVIEW.md)** - Was ist RawaLite?
-3. **[Architektur](../10-architecture/ARCHITEKTUR.md)** - Technische Grundlagen
-4. **[Entwickler-Leitfaden](DEV_GUIDE.md)** - Erste Schritte
+3. **[Architektur](../02-architecture/ARCHITEKTUR.md)** - Technische Grundlagen
+4. **[Entwickler-Leitfaden](../03-development/DEV_GUIDE.md)** - Erste Schritte
 
 ---
 
@@ -22,26 +22,26 @@ Neu bei RawaLite? Starte hier:
 ### 🏗️ **Architektur & Design**
 | Dokument | Beschreibung | Zielgruppe |
 |----------|--------------|------------|
-| **[ARCHITEKTUR.md](ARCHITEKTUR.md)** | Technische Architektur, Process Model, Security | Entwickler, Architekten |
+| **[ARCHITEKTUR.md](../02-architecture/ARCHITEKTUR.md)** | Technische Architektur, Process Model, Security | Entwickler, Architekten |
 | **[PROJECT_OVERVIEW.md](../PROJECT_OVERVIEW.md)** | Feature-Übersicht, Tech-Stack, Status | Alle Beteiligten |
 
 ### 🛠️ **Entwicklung**
 | Dokument | Beschreibung | Zielgruppe |
 |----------|--------------|------------|
-| **[standards.md](standards.md)** | Coding Standards, Best Practices, Conventions | Entwickler |
-| **[debugging.md](debugging.md)** | Debugging-Prozesse, Error Handling, Tools | Entwickler |
-| **[DEV_GUIDE.md](DEV_GUIDE.md)** | Entwickler-Konventionen, Setup | Entwickler |
+| **[standards.md](../01-standards/standards.md)** | Coding Standards, Best Practices, Conventions | Entwickler |
+| **[debugging.md](../03-development/debugging.md)** | Debugging-Prozesse, Error Handling, Tools | Entwickler |
+| **[DEV_GUIDE.md](../03-development/DEV_GUIDE.md)** | Entwickler-Konventionen, Setup | Entwickler |
 
 ### 🔄 **Prozesse & Workflows**
 | Dokument | Beschreibung | Zielgruppe |
 |----------|--------------|------------|
-| **[WORKFLOWS.md](WORKFLOWS.md)** | Git-Workflow, Release-Prozess, CI/CD | Entwickler, DevOps |
-| **[.github/PULL_REQUEST_TEMPLATE.md](../.github/PULL_REQUEST_TEMPLATE.md)** | PR-Vorlage für Code Reviews | Entwickler |
+| **[WORKFLOWS.md](../01-standards/WORKFLOWS.md)** | Git-Workflow, Release-Prozess, CI/CD | Entwickler, DevOps |
+| **[.github/PULL_REQUEST_TEMPLATE.md](../../.github/PULL_REQUEST_TEMPLATE.md)** | PR-Vorlage für Code Reviews | Entwickler |
 
 ### 🚀 **Setup & Installation**  
 | Dokument | Beschreibung | Zielgruppe |
 |----------|--------------|------------|
-| **[INSTALL.md](INSTALL.md)** | Installation, Systemanforderungen | Alle |
+| **[INSTALL.md](../05-database/INSTALL.md)** | Installation, Systemanforderungen | Alle |
 
 ---
 
@@ -49,30 +49,30 @@ Neu bei RawaLite? Starte hier:
 
 ### 👩‍💻 **Entwickler (Neu)**
 Empfohlene Reihenfolge:
-1. [../50-persistence/INSTALL.md](../50-persistence/INSTALL.md) - Setup der Entwicklungsumgebung
+1. [../05-database/INSTALL.md](../05-database/INSTALL.md) - Setup der Entwicklungsumgebung
 2. [../../PROJECT_OVERVIEW.md](../../PROJECT_OVERVIEW.md) - Projekt verstehen  
-3. [standards.md](standards.md) - Coding Guidelines lernen
-4. [workflows/WORKFLOWS.md](workflows/WORKFLOWS.md) - Git & PR-Prozess verstehen
-5. [debugging/debugging.md](debugging/debugging.md) - Debugging-Tools kennenlernen
+3. [../01-standards/standards.md](../01-standards/standards.md) - Coding Guidelines lernen
+4. [../01-standards/WORKFLOWS.md](../01-standards/WORKFLOWS.md) - Git & PR-Prozess verstehen
+5. [../03-development/debugging.md](../03-development/debugging.md) - Debugging-Tools kennenlernen
 
 ### 👨‍💻 **Entwickler (Erfahren)**
 Schnell-Referenz:
-- [standards.md](standards.md) - Code-Conventions nachschlagen
-- [debugging.md](debugging.md) - Debugging-Strategien
-- [ARCHITEKTUR.md](ARCHITEKTUR.md) - Architektur-Details
-- [WORKFLOWS.md](WORKFLOWS.md) - Release & CI-Prozesse
+- [../01-standards/standards.md](../01-standards/standards.md) - Code-Conventions nachschlagen
+- [../03-development/debugging.md](../03-development/debugging.md) - Debugging-Strategien
+- [../02-architecture/ARCHITEKTUR.md](../02-architecture/ARCHITEKTUR.md) - Architektur-Details
+- [../01-standards/WORKFLOWS.md](../01-standards/WORKFLOWS.md) - Release & CI-Prozesse
 
 ### 🏗️ **Architekten**
 Technische Details:
-- [ARCHITEKTUR.md](ARCHITEKTUR.md) - Vollständige Architektur-Dokumentation
-- [standards.md](standards.md) - Qualitäts-Standards
-- [PROJECT_OVERVIEW.md](../PROJECT_OVERVIEW.md) - Feature-Matrix
+- [../02-architecture/ARCHITEKTUR.md](../02-architecture/ARCHITEKTUR.md) - Vollständige Architektur-Dokumentation
+- [../01-standards/standards.md](../01-standards/standards.md) - Qualitäts-Standards
+- [../../PROJECT_OVERVIEW.md](../../PROJECT_OVERVIEW.md) - Feature-Matrix
 
 ### 👔 **Projektleitung**
 Status & Übersicht:
-- [PROJECT_OVERVIEW.md](../PROJECT_OVERVIEW.md) - Projekt-Status & Features
-- [WORKFLOWS.md](WORKFLOWS.md) - Entwicklungsprozesse
-- [INSTALL.md](INSTALL.md) - Deployment-Requirements
+- [../../PROJECT_OVERVIEW.md](../../PROJECT_OVERVIEW.md) - Projekt-Status & Features
+- [../01-standards/WORKFLOWS.md](../01-standards/WORKFLOWS.md) - Entwicklungsprozesse
+- [../05-database/INSTALL.md](../05-database/INSTALL.md) - Deployment-Requirements
 
 ---
 
@@ -184,13 +184,13 @@ Vor jedem Release prüfen:
 
 ## 🎯 **Nächste Schritte**
 
-**Neuer Entwickler?** → Starte mit [INSTALL.md](INSTALL.md)
+**Neuer Entwickler?** → Starte mit [../05-database/INSTALL.md](../05-database/INSTALL.md)
 
-**Erfahrener Entwickler?** → Direkter Sprung zu [standards.md](standards.md)
+**Erfahrener Entwickler?** → Direkter Sprung zu [../01-standards/standards.md](../01-standards/standards.md)
 
-**Architektur-Details gesucht?** → Siehe [ARCHITEKTUR.md](ARCHITEKTUR.md)
+**Architektur-Details gesucht?** → Siehe [../02-architecture/ARCHITEKTUR.md](../02-architecture/ARCHITEKTUR.md)
 
-**Prozess-Fragen?** → Schaue in [WORKFLOWS.md](WORKFLOWS.md)
+**Prozess-Fragen?** → Schaue in [WORKFLOWS.md](../01-standards/WORKFLOWS.md)
 
 ---
 

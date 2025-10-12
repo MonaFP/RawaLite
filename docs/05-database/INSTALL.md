@@ -91,7 +91,7 @@ npm install -g pnpm@9
 ```
 
 **Build Failures:**
-- Siehe [debugging.md](debugging.md) für systematische Debugging-Hilfe
+- Siehe [debugging.md](../03-development/debugging.md) für systematische Debugging-Hilfe
 
 ---
 

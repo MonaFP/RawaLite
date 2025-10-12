@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Timesheet, TimesheetActivity, Customer, Activity } from '../persistence/adapter';
 import { useActivities } from '../hooks/useActivities';
+import { formatNumberInputValue, parseNumberInput, getNumberInputStyles } from '../lib/input-helpers';
 
 interface TimesheetFormProps {
   timesheet?: Timesheet;
@@ -280,10 +281,11 @@ export const TimesheetForm: React.FC<TimesheetFormProps> = ({
                   <label>Stundensatz (€)</label>
                   <input
                     type="number"
-                    step="0.01"
+                    placeholder="Stundensatz"
                     min="0"
-                    value={activity.hourlyRate}
-                    onChange={(e) => updateActivity(index, 'hourlyRate', parseFloat(e.target.value) || 0)}
+                    value={formatNumberInputValue(activity.hourlyRate)}
+                    onChange={(e) => updateActivity(index, 'hourlyRate', parseNumberInput(e.target.value))}
+                    style={getNumberInputStyles()}
                   />
                 </div>
 

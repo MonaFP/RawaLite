@@ -19,3 +19,6 @@ build/
 *.pfx
 *.p12
 *.cer
+
+# Auto-generated build metadata (esbuild)
+meta.json

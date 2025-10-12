@@ -37,9 +37,6 @@ export class SQLiteAdapter implements PersistenceAdapter {
         autoUpdateReminderInterval: 7,
         autoUpdateAutoDownload: false,
         autoUpdateInstallPrompt: 'manual',
-        // Mini-Fix Delivery (Migration 019)
-        updateChannel: 'stable',
-        featureFlags: {},
         createdAt: nowIso(),
         updatedAt: nowIso(),
       };
@@ -49,8 +46,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
         `
         INSERT INTO settings (id, company_name, street, zip, city, tax_id, kleinunternehmer, next_customer_number, next_offer_number, next_invoice_number, 
                             auto_update_enabled, auto_update_check_frequency, auto_update_notification_style, auto_update_reminder_interval,
-                            auto_update_auto_download, auto_update_install_prompt, update_channel, feature_flags, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            auto_update_auto_download, auto_update_install_prompt, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
         [
           mappedSettings.id,
@@ -69,16 +66,45 @@ export class SQLiteAdapter implements PersistenceAdapter {
           mappedSettings.auto_update_reminder_interval || 7,
           mappedSettings.auto_update_auto_download ? 1 : 0,
           mappedSettings.auto_update_install_prompt || 'manual',
-          mappedSettings.update_channel || 'stable',
-          JSON.stringify(mappedSettings.feature_flags || {}),
           mappedSettings.created_at,
           mappedSettings.updated_at,
         ]
       );
       return defaultSettings;
     }
+
+    // ✅ RÜCKWÄRTSKOMPATIBILITÄT: Robust handling von Settings aus verschiedenen Versionen
+    const rawSettings = rows[0];
     
-    return mapFromSQL(rows[0]) as Settings;
+    // Extract nur bekannte Felder - ignoriere unbekannte (updateChannel, featureFlags etc.)
+    const cleanSettings: Settings = {
+      id: rawSettings.id || 1,
+      companyName: rawSettings.company_name || "",
+      street: rawSettings.street || "",
+      zip: rawSettings.zip || "",
+      city: rawSettings.city || "",
+      taxId: rawSettings.tax_id || "",
+      kleinunternehmer: Boolean(rawSettings.kleinunternehmer),
+      nextCustomerNumber: rawSettings.next_customer_number || 1,
+      nextOfferNumber: rawSettings.next_offer_number || 1,
+      nextInvoiceNumber: rawSettings.next_invoice_number || 1,
+      
+      // Auto-Update Preferences (Migration 018) - mit Fallbacks
+      autoUpdateEnabled: rawSettings.auto_update_enabled !== undefined ? Boolean(rawSettings.auto_update_enabled) : true,
+      autoUpdateCheckFrequency: rawSettings.auto_update_check_frequency || 'daily',
+      autoUpdateNotificationStyle: rawSettings.auto_update_notification_style || 'subtle',
+      autoUpdateReminderInterval: rawSettings.auto_update_reminder_interval || 7,
+      autoUpdateAutoDownload: rawSettings.auto_update_auto_download !== undefined ? Boolean(rawSettings.auto_update_auto_download) : false,
+      autoUpdateInstallPrompt: rawSettings.auto_update_install_prompt || 'manual',
+      
+      createdAt: rawSettings.created_at || nowIso(),
+      updatedAt: rawSettings.updated_at || nowIso(),
+      
+      // BEWUSST IGNORIERT: updateChannel, featureFlags (v1.0.41 legacy)
+      // Diese Felder werden durch Migration 020 entfernt
+    };
+
+    return cleanSettings;
   }
 
   async updateSettings(patch: Partial<Settings>): Promise<Settings> {
@@ -464,8 +490,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
       const mappedOffer = mapFromSQL(offer) as Omit<Offer, "lineItems">;
       console.log('🔧 [SQLiteAdapter.listOffers] Mapped offer:', mappedOffer);
       
-      // FIX: Use consistent field-mapping instead of manual aliases
-      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, itemType, sourcePackageId FROM offer_line_items WHERE offerId = ? ORDER BY id`);
+      // FIX: Use snake_case field names and mapFromSQL for consistency
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
       console.log('🔧 [SQLiteAdapter.listOffers] LineItem query:', lineItemQuery);
       
       const lineItems = await this.client.query<{
@@ -473,24 +499,30 @@ export class SQLiteAdapter implements PersistenceAdapter {
         title: string;
         description: string | null;
         quantity: number;
-        unitPrice: number;
+        unit_price: number;
         total: number;
-        parentItemId: number | null;
+        parent_item_id: number | null;
+        item_type?: string;
+        source_package_id?: number;
       }>(lineItemQuery, [offer.id]);
 
       console.log('🔧 [SQLiteAdapter.listOffers] LineItems for offer', offer.id, ':', lineItems);
 
       result.push({
         ...mappedOffer,
-        lineItems: lineItems.map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description || undefined,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          total: item.total,
-          parentItemId: item.parentItemId || undefined
-        }))
+        lineItems: lineItems.map(item => {
+          // Use mapFromSQL for consistent snake_case to camelCase conversion
+          const mappedItem = mapFromSQL(item);
+          return {
+            id: mappedItem.id,
+            title: mappedItem.title,
+            description: mappedItem.description || undefined,
+            quantity: mappedItem.quantity,
+            unitPrice: mappedItem.unitPrice,
+            total: mappedItem.total,
+            parentItemId: mappedItem.parentItemId || undefined
+          };
+        })
       });
     }
     
@@ -504,15 +536,17 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (!rows[0]) return null;
 
     const offer = mapFromSQL(rows[0]) as Omit<Offer, "lineItems">;
-    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price as unitPrice, total, parent_item_id as parentItemId, item_type as itemType, source_package_id as sourcePackageId FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
     const lineItems = await this.client.query<{
       id: number;
       title: string;
       description: string | null;
       quantity: number;
-      unitPrice: number;
+      unit_price: number;
       total: number;
-      parentItemId: number | null;
+      parent_item_id: number | null;
+      item_type?: string;
+      source_package_id?: number;
     }>(lineItemQuery, [id]);
 
     // Load attachments for each line item
@@ -526,14 +560,18 @@ export class SQLiteAdapter implements PersistenceAdapter {
             console.log(`🔍 [DB] Attachment ${index + 1}: ${att.originalFilename} (base64 length: ${att.base64Data?.length || 'NULL'})`);
           });
         }
+        
+        // Use mapFromSQL to properly convert snake_case to camelCase
+        const mappedItem = mapFromSQL(item);
+        
         return {
-          id: item.id,
-          title: item.title,
-          description: item.description || undefined,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          total: item.total,
-          parentItemId: item.parentItemId || undefined,
+          id: mappedItem.id,
+          title: mappedItem.title,
+          description: mappedItem.description || undefined,
+          quantity: mappedItem.quantity,
+          unitPrice: mappedItem.unitPrice,
+          total: mappedItem.total,
+          parentItemId: mappedItem.parentItemId || undefined,
           attachments: attachments
         };
       })
