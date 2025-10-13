@@ -22,6 +22,7 @@ import { createUpdateManagerWindow } from './windows/update-window'
 import { registerPathHandlers } from './ipc/paths'
 import { registerFilesystemHandlers } from './ipc/filesystem'
 import { registerStatusHandlers } from './ipc/status'
+import { registerNumberingHandlers } from './ipc/numbering'
 import * as fs from 'node:fs/promises'
 
 console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
@@ -142,7 +143,8 @@ app.whenReady().then(async () => {
     // Register IPC handlers
     registerPathHandlers(); // Step 3: Path handlers
     registerFilesystemHandlers(); // Step 4: Filesystem handlers
-    registerStatusHandlers(); // Step 5: Status handlers (FIX-010)
+    registerStatusHandlers(); // Step 5: Status handlers (FIX-009)
+    registerNumberingHandlers(); // Step 6: Numbering handlers
     
     // Setup Update Event Forwarding to UI
     updateManager.onUpdateEvent((event) => {
@@ -165,108 +167,7 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
 
-// 🔢 Numbering Circles IPC Handlers
-ipcMain.handle('nummernkreis:getAll', async () => {
-  try {
-    // Direct database access instead of DbClient service
-    const db = getDb()
-    const query = convertSQLQuery(`
-      SELECT id, name, prefix, digits, current, resetMode, lastResetYear 
-      FROM numberingCircles 
-      ORDER BY name
-    `)
-    const circles = db.prepare(query).all()
-    console.log('🔍 [DEBUG] Main Process - Found circles:', circles.length);
-    console.log('🔍 [DEBUG] Main Process - Circle data:', circles);
-    return { success: true, data: circles }
-  } catch (error) {
-    console.error('Error getting numbering circles:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
-})
-
-ipcMain.handle('nummernkreis:update', async (event, id: string, circle: any) => {
-  try {
-    // Direct database access instead of DbClient service
-    const db = getDb()
-    const updateQuery = convertSQLQuery(`
-      UPDATE numberingCircles 
-      SET name = ?, prefix = ?, digits = ?, current = ?, resetMode = ?, updatedAt = datetime('now')
-      WHERE id = ?
-    `)
-    db.prepare(updateQuery).run(circle.name, circle.prefix, circle.digits, circle.current, circle.resetMode, id)
-    return { success: true }
-  } catch (error) {
-    console.error('Error updating numbering circle:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
-})
-
-ipcMain.handle('nummernkreis:create', async (event, id: string, circle: any) => {
-  try {
-    // Direct database access instead of DbClient service
-    const db = getDb()
-    const insertQuery = convertSQLQuery(`
-      INSERT OR IGNORE INTO numberingCircles (id, name, prefix, digits, current, resetMode, lastResetYear, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `)
-    db.prepare(insertQuery).run(id, circle.name, circle.prefix, circle.digits, circle.current, circle.resetMode, circle.lastResetYear)
-    return { success: true }
-  } catch (error) {
-    console.error('Error creating numbering circle:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
-})
-
-ipcMain.handle('nummernkreis:getNext', async (event, circleId: string) => {
-  try {
-    // Direct database access instead of DbClient service
-    const db = getDb()
-    
-    // Get current circle
-    const selectQuery = convertSQLQuery(`
-      SELECT id, prefix, digits, current, resetMode, lastResetYear 
-      FROM numberingCircles 
-      WHERE id = ?
-    `)
-    const circle = db.prepare(selectQuery).get(circleId) as any
-    
-    if (!circle) {
-      throw new Error(`Nummernkreis '${circleId}' nicht gefunden`)
-    }
-
-    const currentYear = new Date().getFullYear()
-    let nextNumber = circle.current + 1
-
-    if (circle.resetMode === 'yearly') {
-      if (!circle.lastResetYear || circle.lastResetYear !== currentYear) {
-        nextNumber = 1
-      }
-    }
-
-    // Update circle
-    const updateQuery = convertSQLQuery(`
-      UPDATE numberingCircles 
-      SET current = ?, lastResetYear = ?, updatedAt = datetime('now')
-      WHERE id = ?
-    `)
-    db.prepare(updateQuery).run(
-      nextNumber,
-      circle.resetMode === 'yearly' ? currentYear : circle.lastResetYear,
-      circleId
-    )
-
-    const paddedNumber = nextNumber.toString().padStart(circle.digits, '0')
-    const fullNumber = `${circle.prefix}${paddedNumber}`
-    
-    return { success: true, data: fullNumber }
-  } catch (error) {
-    console.error('Error getting next number:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
-})
-
-// 📄 PDF IPC Handlers (v1.7.5 Rollback) - Native Electron PDF Generation
+//  PDF IPC Handlers (v1.7.5 Rollback) - Native Electron PDF Generation
 import { dialog } from 'electron'
 import os from 'node:os'
 
