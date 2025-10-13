@@ -37,9 +37,9 @@ const CRITICAL_FIXES = {
   },
   
   'port-consistency-main': {
-    file: 'electron/main.ts',
+    file: 'electron/windows/main-window.ts',
     pattern: /win\.loadURL\('http:\/\/localhost:5174'\)/,
-    description: 'Port 5174 in electron main'
+    description: 'Port 5174 in electron main window (moved from main.ts in refactor Step 1)'
   },
   
   'status-control-responsive-design': {

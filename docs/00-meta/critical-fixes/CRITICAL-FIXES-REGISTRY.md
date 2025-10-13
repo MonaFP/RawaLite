@@ -97,11 +97,11 @@ process.on('close', () => clearTimeout(timeout)); // ❌ DOUBLE HANDLER
 
 ### **FIX-004: Port Consistency**
 - **ID:** `port-consistency-5174`
-- **Files:** `vite.config.mts`, `electron/main.ts`
+- **Files:** `vite.config.mts`, `electron/windows/main-window.ts`
 - **Pattern:** Unified port 5174 for dev environment
-- **Location:** vite.config.mts line 20, main.ts line 33
+- **Location:** vite.config.mts line 20, main-window.ts line ~44
 - **First Implemented:** v1.0.12
-- **Last Verified:** v1.0.13
+- **Last Verified:** v1.0.42.5 (Updated in refactor Step 1)
 - **Status:** ✅ ACTIVE
 
 **Required Code Pattern:**
@@ -109,7 +109,7 @@ process.on('close', () => clearTimeout(timeout)); // ❌ DOUBLE HANDLER
 // vite.config.mts
 server: { port: 5174 },
 
-// electron/main.ts
+// electron/windows/main-window.ts (moved from main.ts in refactor)
 win.loadURL('http://localhost:5174')
 ```
 

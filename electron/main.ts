@@ -15,6 +15,8 @@ import { createHotBackup, createVacuumBackup, checkIntegrity, restoreFromBackup,
 import { convertSQLQuery } from '../src/lib/field-mapper'
 // 🛠️ Development imports
 import { createUpdateManagerDevWindow } from './windows/updateManagerDev'
+// 📱 Window Management - Extracted in Step 1
+import { createWindow } from './windows/main-window'
 
 console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
 
@@ -22,70 +24,6 @@ console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_
 // Dieser Bereich wird schrittweise in Module aufgeteilt
 
 const isDev = !app.isPackaged            // zuverlässig für Dev/Prod
-
-function createWindow() {
-  // Projekt-Root ermitteln:
-  const rootPath = isDev ? process.cwd() : app.getAppPath()
-
-  // Preload: im Dev aus <root>/dist-electron, im Prod neben main.cjs
-  const preloadPath = isDev
-    ? path.join(rootPath, 'dist-electron', 'preload.js')
-    : path.join(__dirname, 'preload.js')
-
-  // Icon-Pfad definieren - konsistent mit PATHS-System aber Main-Process kompatibel
-  let iconPath: string;
-  if (isDev) {
-    // Development: Verwende public/ Ordner aus Projekt-Root
-    iconPath = path.join(rootPath, 'public', 'rawalite-logo.png');
-  } else {
-    // Production: Verwende assets/ aus extraResources (definiert in electron-builder.yml)
-    iconPath = path.join(process.resourcesPath, 'assets', 'icon.png');
-  }
-
-  console.log('🎯 [DEBUG] App Icon Path:', iconPath);
-  console.log('🎯 [DEBUG] Icon exists:', existsSync(iconPath));
-
-  const win = new BrowserWindow({
-    width: 1280,
-    height: 900,
-    icon: iconPath, // App-Icon setzen
-    webPreferences: {
-      preload: preloadPath,
-      contextIsolation: true,
-      sandbox: true,
-    },
-  })
-
-  if (isDev) {
-    // Vite-Dev-Server
-    win.loadURL('http://localhost:5174')
-    win.webContents.openDevTools({ mode: 'detach' })
-  } else {
-    // Produktive Version: HTML liegt als extraResource direkt im resources Ordner
-    const htmlPath = path.join(process.resourcesPath, 'index.html')
-    console.log('🔍 [DEBUG] HTML Path:', htmlPath)
-    console.log('🔍 [DEBUG] Resources Path:', process.resourcesPath)
-    console.log('🔍 [DEBUG] File exists:', existsSync(htmlPath))
-    
-    // Fallback check: manchmal ist es app.asar.unpacked/resources/
-    if (!existsSync(htmlPath)) {
-      const fallbackPath = path.join(process.resourcesPath, '..', 'resources', 'index.html')
-      console.log('🔍 [DEBUG] Fallback Path:', fallbackPath)
-      console.log('🔍 [DEBUG] Fallback exists:', existsSync(fallbackPath))
-      if (existsSync(fallbackPath)) {
-        win.loadFile(fallbackPath)
-        return
-      }
-    }
-    
-    win.loadFile(htmlPath)
-  }
-
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
-    return { action: 'deny' }
-  })
-}
 
 // Create Update Manager Window
 function createUpdateManagerWindow() {
