@@ -18,6 +18,9 @@ import { createUpdateManagerDevWindow } from './windows/updateManagerDev'
 // 📱 Window Management - Extracted in Step 1-2
 import { createWindow } from './windows/main-window'
 import { createUpdateManagerWindow } from './windows/update-window'
+// 🔌 IPC Handlers - Extracted in Step 3+
+import { registerPathHandlers } from './ipc/paths'
+import * as fs from 'node:fs/promises'
 
 console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
 
@@ -26,60 +29,7 @@ console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_
 
 const isDev = !app.isPackaged            // zuverlässig für Dev/Prod
 
-// 🗂️ IPC Handler für Pfad-Management (Phase 2)
-import * as fs from 'node:fs/promises'
-
-// 📁 Basic Path Handler (existing)
-ipcMain.handle('paths:get', async (event, pathType: 'userData' | 'documents' | 'downloads') => {
-  try {
-    switch (pathType) {
-      case 'userData':
-        return app.getPath('userData')
-      case 'documents':
-        return app.getPath('documents')
-      case 'downloads':
-        return app.getPath('downloads')
-      default:
-        throw new Error(`Unknown path type: ${pathType}`)
-    }
-  } catch (error) {
-    console.error(`Failed to get path ${pathType}:`, error)
-    throw error
-  }
-})
-
-// 📁 App-specific Path Handlers for PATHS System Integration
-ipcMain.handle('paths:getAppPath', async () => {
-  try {
-    return app.getAppPath()
-  } catch (error) {
-    console.error('Failed to get app path:', error)
-    throw error
-  }
-})
-
-ipcMain.handle('paths:getCwd', async () => {
-  try {
-    return process.cwd()
-  } catch (error) {
-    console.error('Failed to get current working directory:', error)
-    throw error
-  }
-})
-
-ipcMain.handle('paths:getPackageJsonPath', async () => {
-  try {
-    const packageJsonPath = app.isPackaged
-      ? path.join(app.getAppPath(), 'package.json')
-      : path.join(process.cwd(), 'package.json')
-    return packageJsonPath
-  } catch (error) {
-    console.error('Failed to get package.json path:', error)
-    throw error
-  }
-})
-
-// 🔧 Filesystem Operations für PATHS + SQLite/Dexie Support
+//  Filesystem Operations für PATHS + SQLite/Dexie Support
 ipcMain.handle('fs:ensureDir', async (event, dirPath: string) => {
   try {
     await fs.mkdir(dirPath, { recursive: true })
@@ -282,6 +232,9 @@ app.whenReady().then(async () => {
     updateManager = new UpdateManagerService();
     updateManager.initializeHistoryService(getDb());
     registerUpdateIpc(updateManager); // <-- IMPORTANT: Guaranteed to be called
+    
+    // Register IPC handlers
+    registerPathHandlers(); // Step 3: Path handlers
     
     // Setup Update Event Forwarding to UI
     updateManager.onUpdateEvent((event) => {
