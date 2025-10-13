@@ -11,6 +11,8 @@ import { updateEntityStatus, getStatusHistory, getEntityForUpdate } from '../src
 import { getDb, prepare, exec, tx } from '../src/main/db/Database'
 import { runAllMigrations } from '../src/main/db/MigrationService'
 import { createHotBackup, createVacuumBackup, checkIntegrity, restoreFromBackup, cleanOldBackups } from '../src/main/db/BackupService'
+// 🔧 Field Mapper for consistent snake_case ↔ camelCase conversion
+import { convertSQLQuery } from '../src/lib/field-mapper'
 // 🛠️ Development imports
 import { createUpdateManagerDevWindow } from './windows/updateManagerDev'
 
@@ -483,11 +485,11 @@ ipcMain.handle('nummernkreis:getAll', async () => {
   try {
     // Direct database access instead of DbClient service
     const db = getDb()
-    const query = `
+    const query = convertSQLQuery(`
       SELECT id, name, prefix, digits, current, resetMode, lastResetYear 
-      FROM numbering_circles 
+      FROM numberingCircles 
       ORDER BY name
-    `
+    `)
     const circles = db.prepare(query).all()
     console.log('🔍 [DEBUG] Main Process - Found circles:', circles.length);
     console.log('🔍 [DEBUG] Main Process - Circle data:', circles);
@@ -502,11 +504,11 @@ ipcMain.handle('nummernkreis:update', async (event, id: string, circle: any) => 
   try {
     // Direct database access instead of DbClient service
     const db = getDb()
-    const updateQuery = `
-      UPDATE numbering_circles 
-      SET name = ?, prefix = ?, digits = ?, current = ?, resetMode = ?, updated_at = datetime('now')
+    const updateQuery = convertSQLQuery(`
+      UPDATE numberingCircles 
+      SET name = ?, prefix = ?, digits = ?, current = ?, resetMode = ?, updatedAt = datetime('now')
       WHERE id = ?
-    `
+    `)
     db.prepare(updateQuery).run(circle.name, circle.prefix, circle.digits, circle.current, circle.resetMode, id)
     return { success: true }
   } catch (error) {
@@ -519,10 +521,10 @@ ipcMain.handle('nummernkreis:create', async (event, id: string, circle: any) => 
   try {
     // Direct database access instead of DbClient service
     const db = getDb()
-    const insertQuery = `
-      INSERT OR IGNORE INTO numbering_circles (id, name, prefix, digits, current, resetMode, lastResetYear, updated_at)
+    const insertQuery = convertSQLQuery(`
+      INSERT OR IGNORE INTO numberingCircles (id, name, prefix, digits, current, resetMode, lastResetYear, updatedAt)
       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `
+    `)
     db.prepare(insertQuery).run(id, circle.name, circle.prefix, circle.digits, circle.current, circle.resetMode, circle.lastResetYear)
     return { success: true }
   } catch (error) {
@@ -537,11 +539,11 @@ ipcMain.handle('nummernkreis:getNext', async (event, circleId: string) => {
     const db = getDb()
     
     // Get current circle
-    const selectQuery = `
+    const selectQuery = convertSQLQuery(`
       SELECT id, prefix, digits, current, resetMode, lastResetYear 
-      FROM numbering_circles 
+      FROM numberingCircles 
       WHERE id = ?
-    `
+    `)
     const circle = db.prepare(selectQuery).get(circleId) as any
     
     if (!circle) {
@@ -558,11 +560,11 @@ ipcMain.handle('nummernkreis:getNext', async (event, circleId: string) => {
     }
 
     // Update circle
-    const updateQuery = `
-      UPDATE numbering_circles 
-      SET current = ?, last_reset_year = ?, updated_at = datetime('now')
+    const updateQuery = convertSQLQuery(`
+      UPDATE numberingCircles 
+      SET current = ?, lastResetYear = ?, updatedAt = datetime('now')
       WHERE id = ?
-    `
+    `)
     db.prepare(updateQuery).run(
       nextNumber,
       circle.resetMode === 'yearly' ? currentYear : circle.lastResetYear,
@@ -2241,43 +2243,61 @@ function generateTemplateHTML(options: any): string {
                           <div style="display: flex; gap: 4px; margin-top: 3px; flex-wrap: wrap;">
                             ${subItem.attachments.map((attachment: any) => {
                               if (attachment.base64Data) {
-                                // Extract base64 data without data URL prefix
-                                const base64Data = attachment.base64Data.replace(/^data:[^;]+;base64,/, '');
-                                
                                 try {
-                                  // Create temporary file for the image
-                                  const tempDir = path.join(os.tmpdir(), 'rawalite-pdf-images');
-                                  if (!existsSync(tempDir)) {
-                                    mkdirSync(tempDir, { recursive: true });
+                                  // ✅ KONSISTENZ-FIX: Gleiche Data-URL Logik wie Parent-Items für Dev-Prod Kompatibilität
+                                  // Direkte Verwendung der Base64-Daten als Data-URL (OHNE temporäre Dateien)
+                                  let dataUrl = attachment.base64Data;
+                                  
+                                  // Stelle sicher, dass die Data-URL korrekt formatiert ist
+                                  if (!dataUrl.startsWith('data:')) {
+                                    const mimeType = attachment.fileType || 'image/png';
+                                    dataUrl = `data:${mimeType};base64,${dataUrl}`;
                                   }
                                   
-                                  const tempImagePath = path.join(tempDir, `${attachment.filename}_${Date.now()}.${attachment.fileType.split('/')[1] || 'png'}`);
+                                  console.log('🖼️ [PDF TEMPLATE] Sub-Item: Using data URL directly for:', attachment.originalFilename);
+                                  console.log('🖼️ [PDF TEMPLATE] Sub-Item: Data URL length:', dataUrl.length);
                                   
-                                  // Write base64 to temporary file
-                                  writeFileSync(tempImagePath, base64Data, 'base64');
+                                  // Verkürze die Base64-Daten für kleinere Bilder (falls zu groß)
+                                  const maxDataUrlLength = 2000000; // 2MB limit
+                                  if (dataUrl.length > maxDataUrlLength) {
+                                    console.log('🖼️ [PDF TEMPLATE] Sub-Item: Image too large, showing placeholder');
+                                    return `
+                                      <div style="display: inline-block; text-align: center; margin: 2px; padding: 4px; border: 1px dashed #ccc; border-radius: 2px;">
+                                        <div style="font-size: 16px; margin-bottom: 2px;">📷</div>
+                                        <div style="font-size: 8px; color: #888; max-width: 50px; word-wrap: break-word;">
+                                          ${attachment.originalFilename}
+                                        </div>
+                                        <div style="font-size: 7px; color: #999;">
+                                          (${Math.round(dataUrl.length/1024)}KB)
+                                        </div>
+                                      </div>
+                                    `;
+                                  }
                                   
                                   return `
-                                    <div style="display: inline-block; text-align: center;">
-                                      <img src="file://${tempImagePath}" 
+                                    <div style="display: inline-block; text-align: center; margin: 2px;">
+                                      <img src="${dataUrl}" 
                                            alt="${attachment.originalFilename}" 
-                                           style="width: 60px; height: 45px; object-fit: cover; border: 1px solid #ddd; border-radius: 2px;" />
-                                      <div style="font-size: 8px; color: #888; margin-top: 1px; max-width: 60px; word-wrap: break-word;">
+                                           style="width: 50px; height: 38px; object-fit: cover; border: 1px solid #ddd; border-radius: 2px; display: block;" 
+                                           onerror="this.style.display='none'; this.nextElementSibling.innerHTML='❌ Fehler';" />
+                                      <div style="font-size: 8px; color: #888; margin-top: 1px; max-width: 50px; word-wrap: break-word;">
                                         ${attachment.originalFilename}
                                       </div>
                                     </div>
                                   `;
                                 } catch (error) {
-                                  console.error('🖼️ [PDF] Error creating temp image for sub-item:', error);
+                                  console.error('🖼️ [PDF TEMPLATE] Sub-Item: Error creating data URL:', error);
                                   return `
                                     <div style="font-size: 9px; color: #999; border: 1px dashed #ccc; padding: 2px; border-radius: 2px;">
-                                      📎 ${attachment.originalFilename} (Fehler)
+                                      📎 ${attachment.originalFilename} (Fehler beim Laden)
                                     </div>
                                   `;
                                 }
                               } else {
+                                console.log('🖼️ [PDF TEMPLATE] Sub-Item: No base64 data for:', attachment.originalFilename);
                                 return `
                                   <div style="font-size: 9px; color: #999; border: 1px dashed #ccc; padding: 2px; border-radius: 2px;">
-                                    📎 ${attachment.originalFilename}
+                                    📎 ${attachment.originalFilename} (nicht verfügbar)
                                   </div>
                                 `;
                               }
