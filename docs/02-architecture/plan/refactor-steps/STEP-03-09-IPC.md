@@ -19,7 +19,11 @@ Aufteilen aller IPC-Handler aus main.ts in thematische Module. **Kritische Schri
 | 6 | `numbering.ts` | `nummernkreis:*` | Medium | - |
 | 7 | `backup.ts` | `backup:*` | Medium | - |
 | 8 | `db.ts` | `db:*` | **High** | FIX-012 SQL Binding |
-| 9 | `pdf.ts` | `pdf:*` | **High** | FIX-007 Theme System |
+| 9a | `pdf-core.ts` | `pdf:generate`, `pdf:getStatus` | **Critical** | FIX-007 Theme Core |
+| 9b | `pdf-templates.ts` | Template generators | **High** | FIX-007 Theme HTML |
+| 9c | `pdf-attachments.ts` | Attachment systems | **High** | Field-Mapping |
+| 9d | `pdf-images.ts` | Image processing | **High** | Sharp Integration |
+| 9e | `validation` | Cross-references | **Medium** | Integration Tests |
 
 ---
 
@@ -237,59 +241,152 @@ pnpm test:critical-fixes
 
 ---
 
-## 🚨 **Schritt 9: PDF IPC → ipc/pdf.ts [CRITICAL]**
+## 🚨 **Schritt 9a: PDF Core Handlers → ipc/pdf-core.ts [CRITICAL-PHASE-1]**
 
-### **⚠️ CRITICAL FIX-007 ACHTUNG**
-**Parameter-based Theme System** muss 1:1 erhalten bleiben:
+### **⚠️ CRITICAL FIX-007 PHASE 1**
+**PDF Core Handler** - Haupthandler `pdf:generate` und `pdf:getStatus`:
 
 ```typescript
-// MUSS ERHALTEN BLEIBEN in ipc/pdf.ts:
-private getThemeColor(theme: string): string {
-  const themeColors: Record<string, string> = {
-    'default': '#2D5016',     // Standard - Tannengrün
-    'sage': '#9CAF88',        // Salbeigrün  
-    'sky': '#87CEEB',         // Himmelblau
-    'lavender': '#DDA0DD',    // Lavendel
-    'peach': '#FFCBA4',       // Pfirsich
-    'rose': '#FFB6C1'         // Rosé
-  };
-  return themeColors[theme] || themeColors['default'];
-}
+// REFACTORMOVE: ipc/pdf-core.ts (PHASE 1)
+// ipcMain.handle('pdf:generate', async (event, options: { ... }) => { ... });
+// ipcMain.handle('pdf:getStatus', async () => { ... });
 
-getCurrentPDFTheme(): string {
-  return this.currentTheme || 'default';
-}
+import './ipc/pdf-core';
 ```
 
-### **Handler Migration**
+### **FIX-007 Theme Color Extraction - MUST PRESERVE**
 ```typescript
-// REFACTORMOVE: ipc/pdf.ts
-// ipcMain.handle('pdf:generate', async (event, { type, data, options }) => { ... });
-// ... pdf:* Handler + HTML-Generatoren ...
-
-import './ipc/pdf';
+// KRITISCH: Diese Zeile MUSS 1:1 erhalten bleiben in pdf-core.ts:
+const primaryColor = options.theme?.theme?.primary || options.theme?.primary || '#7ba87b';
+const accentColor = options.theme?.theme?.accent || options.theme?.accent || '#6b976b';
 ```
 
-### **Dependencies Migration**
+### **Phase 1 Scope**
+- ✅ `pdf:generate` Handler (Zeilen 174-330)
+- ✅ `pdf:getStatus` Handler (Zeilen 331-340)
+- ✅ FIX-007 Theme-Verarbeitung
+- ✅ PDF-Window Management
+
+---
+
+## 🚨 **Schritt 9b: PDF Template Generators → ipc/pdf-templates.ts [PHASE-2]**
+
+### **Template Function Migration**
 ```typescript
-// In ipc/pdf.ts lokal importieren:
-import { dialog } from 'electron';
-import sharp from 'sharp';
-import os from 'node:os';
-import path from 'node:path';
-// ... alle PDF-bezogenen Dependencies
+// REFACTORMOVE: ipc/pdf-templates.ts (PHASE 2)
+// function generateTemplateHTML(options: any): string { ... }
+// function convertMarkdownToHtml(markdown: string): string { ... }
+
+import './ipc/pdf-templates';
 ```
 
-### **Dev-Smoke Test nach Schritt 9**
+### **Phase 2 Scope**
+- ✅ `generateTemplateHTML()` (Zeilen 1250-1900)
+- ✅ `convertMarkdownToHtml()` (Zeilen 1375-1420)
+- ✅ HTML-Template-Generierung
+- ✅ Markdown-zu-HTML Konvertierung
+
+---
+
+## 🚨 **Schritt 9c: PDF Attachments System → ipc/pdf-attachments.ts [PHASE-3]**
+
+### **Attachment Functions Migration**
+```typescript
+// REFACTORMOVE: ipc/pdf-attachments.ts (PHASE 3)
+// function generateAttachmentsPage(entity: any, templateType: string): string { ... }
+// function generateFullSizeAttachmentsPage(...): string { ... }
+// function generateCompactAttachmentsPage(...): string { ... }
+
+import './ipc/pdf-attachments';
+```
+
+### **Phase 3 Scope**
+- ✅ `generateAttachmentsPage()` (Zeilen 580-620)
+- ✅ `generateFullSizeAttachmentsPage()` (Zeilen 1125-1250)
+- ✅ `generateCompactAttachmentsPage()` (Zeilen 1320-1420)
+- ✅ Attachment Layout-Entscheidung
+
+---
+
+## 🚨 **Schritt 9d: PDF Image Processing → ipc/pdf-images.ts [PHASE-4]**
+
+### **Image Processing Migration**
+```typescript
+// REFACTORMOVE: ipc/pdf-images.ts (PHASE 4)
+// async function preprocessEntityAttachments(entity: any): Promise<any> { ... }
+// async function optimizeImageForPDFAsync(base64Data: string): Promise<string> { ... }
+// async function compressImageWithSharpAsync(...): Promise<string> { ... }
+
+import './ipc/pdf-images';
+```
+
+### **Phase 4 Scope**
+- ✅ `preprocessEntityAttachments()` (Zeilen 700-800)
+- ✅ `optimizeImageForPDFAsync()` (Zeilen 650-700)
+- ✅ Sharp-basierte Bildkompression
+- ✅ Thumbnail-Erstellung
+- ✅ Placeholder-Generierung
+
+---
+
+## 🚨 **Schritt 9e: PDF File Management → existing files.ts [FINAL-PHASE]**
+
+### **File Handler Migration**
+```typescript
+// Diese Handler sind bereits in files.ts, nur Validierung:
+// ipcMain.handle('files:saveImage', async (...) => { ... });
+// ipcMain.handle('files:deleteFile', async (...) => { ... });
+// ipcMain.handle('files:getImageAsBase64', async (...) => { ... });
+```
+
+### **Phase 5 Scope**
+- ✅ File-Handler bereits extrahiert
+- ✅ Nur Validierung der Integration
+- ✅ Cross-Reference Tests
+
+---
+
+## ✅ **Revised Acceptance Criteria PDF (Schritte 9a-9e)**
+
+### **Phase 1 (9a) - Core Handlers:**
+- [ ] `pdf:generate` Handler mit FIX-007 erhalten
+- [ ] `pdf:getStatus` Handler funktional
+- [ ] Theme-Color-Extraktion 1:1 übertragen
+- [ ] PDF-Window-Management erhalten
+
+### **Phase 2 (9b) - Templates:**
+- [ ] `generateTemplateHTML()` vollständig übertragen
+- [ ] Markdown-Konvertierung erhalten
+- [ ] Template-Styling mit Theme-Colors
+
+### **Phase 3 (9c) - Attachments:**
+- [ ] Attachment-Seiten-Generierung erhalten
+- [ ] Layout-Entscheidung (Full-Size vs Compact)
+- [ ] Field-Mapping Integration
+
+### **Phase 4 (9d) - Images:**
+- [ ] Sharp-basierte Kompression erhalten
+- [ ] Async-Preprocessing erhalten
+- [ ] Placeholder-System funktional
+
+### **Phase 5 (9e) - Files:**
+- [ ] File-Handler Integration validiert
+- [ ] Cross-Module-Referenzen korrekt
+
+### **Critical Testing nach allen Phasen:**
 ```bash
-# Standard Guards + FIX-007 Validation
+# Nach jeder Phase:
 pnpm validate:critical-fixes
 
+# Nach Phase 5 (komplett):
+pnpm typecheck && pnpm lint && pnpm test && pnpm validate:critical-fixes
+
 # PDF-Smoke Test:
-# 1. Angebot erstellen
-# 2. PDF exportieren
-# 3. Theme-Farbe prüfen (sollte korrekt sein)
-# Erwartung: PDF mit korrekter Theme-Farbe
+# 1. Angebot mit Attachments erstellen
+# 2. PDF exportieren mit Theme
+# 3. Attachment-Seite prüfen
+# 4. Theme-Farbe validieren
+# Erwartung: PDF mit korrekter Theme-Farbe und Attachments
 ```
 
 ---
@@ -304,9 +401,13 @@ pnpm validate:critical-fixes
 - [ ] TypeScript-Typen erhalten
 - [ ] Guards grün
 
-### **Kritische Kriterien (8-9):**
+### **Kritische Kriterien (8, 9a-9e):**
 - [ ] **Schritt 8:** FIX-012 SQLite Parameter Binding erhalten
-- [ ] **Schritt 9:** FIX-007 PDF Theme System erhalten
+- [ ] **Schritt 9a:** FIX-007 PDF Theme Core erhalten
+- [ ] **Schritt 9b:** Template-Generierung vollständig
+- [ ] **Schritt 9c:** Attachment-System vollständig  
+- [ ] **Schritt 9d:** Image-Processing vollständig
+- [ ] **Schritt 9e:** File-Integration validiert
 - [ ] Critical Fixes Validation erfolgreich
 - [ ] Dev-Smoke Tests erfolgreich
 
@@ -320,15 +421,18 @@ pnpm validate:critical-fixes
 pnpm typecheck && pnpm lint && pnpm test && pnpm guard:cjs && pnpm guard:pkgtype && pnpm guard:assets && pnpm validate:critical-fixes
 ```
 
-### **Critical Testing (Schritte 8-9)**
+### **Critical Testing (Schritte 8, 9a-9e)**
 ```bash
-# Standard + Critical Fixes:
+# Standard + Critical Fixes nach jeder Phase:
 pnpm typecheck && pnpm lint && pnpm test && pnpm validate:critical-fixes
-pnpm test:critical-fixes
 
 # Manual Testing:
 # Schritt 8: DB-Operationen (CRUD für alle Entitäten)
-# Schritt 9: PDF-Export mit Theme-Validierung
+# Schritt 9a: PDF-Core mit Theme-Validierung
+# Schritt 9b: Template-HTML-Generierung
+# Schritt 9c: Attachment-Seiten mit Field-Mapping
+# Schritt 9d: Sharp-Bildkompression
+# Schritt 9e: Complete PDF-Export Integration
 ```
 
 ---
@@ -354,8 +458,20 @@ refactor(ipc): extract backup handlers to separate module
 # Schritt 8
 refactor(ipc): extract database handlers to separate module [CRITICAL-FIX-012]
 
-# Schritt 9
-refactor(ipc): extract PDF handlers to separate module [CRITICAL-FIX-007]
+# Schritt 9a
+refactor(ipc): extract PDF core handlers to separate module [CRITICAL-FIX-007-PHASE-1]
+
+# Schritt 9b
+refactor(ipc): extract PDF template generators to separate module [FIX-007-PHASE-2]
+
+# Schritt 9c
+refactor(ipc): extract PDF attachments system to separate module [FIX-007-PHASE-3]
+
+# Schritt 9d
+refactor(ipc): extract PDF image processing to separate module [FIX-007-PHASE-4]
+
+# Schritt 9e
+refactor(ipc): validate PDF file integration completeness [FIX-007-PHASE-5]
 ```
 
 ---
@@ -371,10 +487,13 @@ git reset --hard HEAD~1
 Remove-Item -Path "electron/ipc/[modulname].ts" -Force
 ```
 
-### **Critical Rollback (Schritte 8-9)**
+### **Critical Rollback (Schritte 8, 9a-9e)**
 ```bash
 # SOFORTIGER ROLLBACK bei Critical Fix Verlust:
 git reset --hard HEAD~1
+
+# Multi-Phase Rollback (bei PDF-Phasen):
+git reset --hard HEAD~[anzahl_der_phasen]
 
 # Validation:
 pnpm validate:critical-fixes
@@ -384,16 +503,22 @@ pnpm validate:critical-fixes
 
 ## ➡️ **Next Steps**
 
-Nach Schritt 9 Abschluss: [STEP-10-13-INTEGRATION.md](./STEP-10-13-INTEGRATION.md) - Integration & Cleanup
+Nach Schritt 9e Abschluss: [STEP-10-13-INTEGRATION.md](./STEP-10-13-INTEGRATION.md) - Integration & Cleanup
 
 ---
 
 ## 🔍 **Technical Notes**
 
 ### **File Size Targets**
-- Jedes IPC-Modul: < 300 Zeilen
+- Jedes IPC-Modul: < 300 Zeilen (PDF aufgeteilt in 4 Module à ~200-250 Zeilen)
 - Klare thematische Trennung
 - Minimale Abhängigkeiten zwischen Modulen
+
+### **PDF Module Breakdown**
+- **pdf-core.ts:** Haupt-IPC-Handler (~250 Zeilen)
+- **pdf-templates.ts:** HTML-Generierung (~280 Zeilen)  
+- **pdf-attachments.ts:** Attachment-Layouts (~200 Zeilen)
+- **pdf-images.ts:** Sharp-Verarbeitung (~250 Zeilen)
 
 ### **Security Considerations**
 - Path-Validierung: TODO-Marker für spätere Security-Updates
@@ -401,9 +526,11 @@ Nach Schritt 9 Abschluss: [STEP-10-13-INTEGRATION.md](./STEP-10-13-INTEGRATION.m
 - SQL-Injection Prevention: In db.ts erhalten
 
 ### **Critical Fix Preservation**
-- **FIX-007:** Theme-Mapping vollständig übertragen
-- **FIX-012:** undefined→null Konvertierung erhalten
-- **Alle SQL-Fixes:** Bei DB-Migration besonders achten
+- **FIX-007 Phase 1:** Theme-Color-Extraktion in pdf-core.ts
+- **FIX-007 Phase 2:** Template-Theme-Integration in pdf-templates.ts
+- **FIX-007 Phase 3:** Field-Mapping in pdf-attachments.ts
+- **FIX-007 Phase 4:** Sharp-Integration in pdf-images.ts
+- **FIX-012:** undefined→null Konvertierung in db.ts erhalten
 
 ---
 

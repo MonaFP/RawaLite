@@ -23,6 +23,7 @@ import { registerPathHandlers } from './ipc/paths'
 import { registerFilesystemHandlers } from './ipc/filesystem'
 import { registerStatusHandlers } from './ipc/status'
 import { registerNumberingHandlers } from './ipc/numbering'
+import { registerPdfCoreHandlers } from './ipc/pdf-core'
 import * as fs from 'node:fs/promises'
 
 console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
@@ -145,6 +146,7 @@ app.whenReady().then(async () => {
     registerFilesystemHandlers(); // Step 4: Filesystem handlers
     registerStatusHandlers(); // Step 5: Status handlers (FIX-009)
     registerNumberingHandlers(); // Step 6: Numbering handlers
+    registerPdfCoreHandlers(); // Step 7a: PDF Core handlers (FIX-007 Phase 1)
     
     // Setup Update Event Forwarding to UI
     updateManager.onUpdateEvent((event) => {
@@ -171,7 +173,9 @@ app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) creat
 import { dialog } from 'electron'
 import os from 'node:os'
 
-// PDF Generation Handler
+// REFACTORMOVE: ipc/pdf-core.ts (PHASE 1 - IN PROGRESS)
+// REFACTORMOVE: ipc/pdf-core.ts (PHASE 1 - IN PROGRESS)
+/*
 ipcMain.handle('pdf:generate', async (event, options: {
   templateType: 'offer' | 'invoice' | 'timesheet';
   data: {
@@ -504,7 +508,6 @@ ipcMain.handle('pdf:generate', async (event, options: {
   }
 })
 
-// PDF Status Handler
 ipcMain.handle('pdf:getStatus', async () => {
   try {
     return {
@@ -523,6 +526,7 @@ ipcMain.handle('pdf:getStatus', async () => {
     };
   }
 })
+*/
 
 /**
  * 📄 PDF ANHANG-SEITE SYSTEM
