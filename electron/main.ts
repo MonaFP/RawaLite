@@ -18,6 +18,9 @@ import { createUpdateManagerDevWindow } from './windows/updateManagerDev'
 
 console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
 
+// === REFACTOR START ===
+// Dieser Bereich wird schrittweise in Module aufgeteilt
+
 const isDev = !app.isPackaged            // zuverlässig für Dev/Prod
 
 function createWindow() {
@@ -638,6 +641,24 @@ ipcMain.handle('pdf:generate', async (event, options: {
         console.log('  - offer_number →', mappedEntity.offerNumber, '(was:', originalEntity.offer_number, ')');
         console.log('  - valid_until →', mappedEntity.validUntil, '(was:', originalEntity.valid_until, ')');
         console.log('  - title →', mappedEntity.title, '(unchanged)');
+      }
+      
+      // ✅ ALSO MAP lineItems and their attachments through field-mapper
+      if (mappedEntity.lineItems && Array.isArray(mappedEntity.lineItems)) {
+        console.log('🔍 [FIELD-MAPPING] Processing lineItems field mapping...');
+        mappedEntity.lineItems = mappedEntity.lineItems.map((lineItem: any) => {
+          const mappedLineItem = mapFromSQL(lineItem);
+          
+          // Also map attachments for each lineItem
+          if (lineItem.attachments && Array.isArray(lineItem.attachments)) {
+            mappedLineItem.attachments = lineItem.attachments.map((attachment: any) => mapFromSQL(attachment));
+            console.log(`🔍 [FIELD-MAPPING] Line Item ${lineItem.id}: Mapped ${lineItem.attachments.length} attachments`);
+          }
+          
+          return mappedLineItem;
+        });
+        
+        console.log(`🔍 [FIELD-MAPPING] Processed ${mappedEntity.lineItems.length} lineItems`);
       }
       
       preprocessedData[options.templateType] = mappedEntity;
@@ -2539,3 +2560,5 @@ if (isDev && isUpdateManagerDev) {
     }, 2000); // Delay to allow normal app startup first
   });
 }
+
+// === REFACTOR END ===

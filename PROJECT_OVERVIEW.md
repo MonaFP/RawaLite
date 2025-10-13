@@ -365,7 +365,8 @@ CREATE TABLE invoice_line_items (
 
 ### Development
 ```bash
-pnpm dev          # Startet Vite + Electron
+pnpm dev:all      # Standard Development (predev:electron + dev-starter.cjs)
+pnpm dev          # Alternative: force-dev-all.cjs
 pnpm vite         # Nur Vite Development Server
 pnpm electron:dev # Nur Electron (nach Build)
 ```

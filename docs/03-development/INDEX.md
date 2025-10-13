@@ -10,6 +10,11 @@
 - [WORKFLOWS.md](WORKFLOWS.md) - Git workflows, build processes, and development procedures
 - [IMPLEMENTATION-GUIDE-V1-5-2.md](IMPLEMENTATION-GUIDE-V1-5-2.md) - Step-by-step v1.5.2 feature implementation guide
 
+### **🏗️ Environment & Architecture**
+- [final/DEV-PROD-SEPARATION-IMPLEMENTATION.md](final/DEV-PROD-SEPARATION-IMPLEMENTATION.md) - **Production Validated** Dev-Prod separation patterns
+- [final/LESSONS-LEARNED-dev-prod-build-discrepancies.md](final/LESSONS-LEARNED-dev-prod-build-discrepancies.md) - Build pipeline differences and solutions
+- [final/ABI-SAFE-DATABASE-TOOLS.md](final/ABI-SAFE-DATABASE-TOOLS.md) - Development database tools and ABI protection
+
 ### **🔄 Active Development Issues**
 - [DEV-ALL-PARALLEL-EXECUTION-ISSUE.md](active/DEV-ALL-PARALLEL-EXECUTION-ISSUE.md) - Parallel execution debugging
 - [LESSONS-LEARNED-react-hooks-anti-patterns.md](active/LESSONS-LEARNED-react-hooks-anti-patterns.md) - React hooks best practices
@@ -24,7 +29,8 @@
 
 ## 📈 **Status**
 
-- **Last Updated:** 2025-10-03
+- **Last Updated:** 2025-10-12
 - **Active Issues:** 3 (Parallel execution, React patterns, PowerShell integration)
 - **Documentation Status:** Complete - Development workflows documented
 - **Setup Coverage:** Full development environment setup covered
+- **Dev-Prod Separation:** ✅ **PRODUCTION VALIDATED** - Comprehensive implementation documented
