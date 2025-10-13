@@ -67,9 +67,9 @@ const CRITICAL_FIXES = {
   },
   
   'status-ipc-handlers': {
-    file: 'electron/main.ts',
+    file: 'electron/ipc/status.ts',
     pattern: /ipcMain\.handle\('status:updateOfferStatus'[\s\S]*?updateEntityStatus[\s\S]*?ipcMain\.handle\('status:updateInvoiceStatus'/,
-    description: 'IPC handlers for database-driven status updates'
+    description: 'IPC handlers for database-driven status updates (moved from main.ts in refactor Step 5)'
   },
   
   'abi-management-system': {

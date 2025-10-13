@@ -437,11 +437,11 @@ document.body.classList // in Main Process context
 
 ### **FIX-009: Database-Driven Status Updates with Optimistic Locking**
 - **ID:** `database-status-updates-optimistic-locking`
-- **Files:** `src/main/services/EntityStatusService.ts`, `src/migrations/015_add_status_versioning.ts`, `electron/main.ts`, `electron/preload.ts`
+- **Files:** `src/main/services/EntityStatusService.ts`, `src/migrations/015_add_status_versioning.ts`, `electron/ipc/status.ts`, `electron/preload.ts`
 - **Pattern:** Complete status update system using database transactions with version-based optimistic locking
-- **Location:** EntityStatusService backend, Migration 015, IPC handlers for all entity types
+- **Location:** EntityStatusService backend, Migration 015, IPC handlers moved to status.ts in refactor Step 5
 - **First Implemented:** v1.0.13
-- **Last Verified:** v1.0.13
+- **Last Verified:** v1.0.42.5 (Updated in refactor Step 5)
 - **Status:** ✅ ACTIVE
 
 **Required Backend Service (EntityStatusService.ts):**
@@ -510,27 +510,36 @@ BEGIN
 END;
 ```
 
-**Required IPC Handlers (electron/main.ts):**
+**Required IPC Handlers (electron/ipc/status.ts - moved from main.ts in refactor):**
 ```typescript
 // Status update IPC handlers for all entity types
-ipcMain.handle('status:update-offer-status', async (event, params) => {
-  return await entityStatusService.updateEntityStatus({
-    tableName: 'offers',
-    ...params
+ipcMain.handle('status:updateOfferStatus', async (event, params) => {
+  const db = getDb();
+  return updateEntityStatus(db, 'offers', {
+    id: params.id,
+    newStatus: params.status,
+    expectedVersion: params.expectedVersion,
+    changedBy: 'user'
   });
 });
 
-ipcMain.handle('status:update-invoice-status', async (event, params) => {
-  return await entityStatusService.updateEntityStatus({
-    tableName: 'invoices', 
-    ...params
+ipcMain.handle('status:updateInvoiceStatus', async (event, params) => {
+  const db = getDb();
+  return updateEntityStatus(db, 'invoices', {
+    id: params.id,
+    newStatus: params.status,
+    expectedVersion: params.expectedVersion,
+    changedBy: 'user'
   });
 });
 
-ipcMain.handle('status:update-timesheet-status', async (event, params) => {
-  return await entityStatusService.updateEntityStatus({
-    tableName: 'timesheets',
-    ...params
+ipcMain.handle('status:updateTimesheetStatus', async (event, params) => {
+  const db = getDb();
+  return updateEntityStatus(db, 'timesheets', {
+    id: params.id,
+    newStatus: params.status,
+    expectedVersion: params.expectedVersion,
+    changedBy: 'user'
   });
 });
 ```

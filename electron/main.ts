@@ -21,6 +21,7 @@ import { createUpdateManagerWindow } from './windows/update-window'
 // 🔌 IPC Handlers - Extracted in Step 3+
 import { registerPathHandlers } from './ipc/paths'
 import { registerFilesystemHandlers } from './ipc/filesystem'
+import { registerStatusHandlers } from './ipc/status'
 import * as fs from 'node:fs/promises'
 
 console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
@@ -141,6 +142,7 @@ app.whenReady().then(async () => {
     // Register IPC handlers
     registerPathHandlers(); // Step 3: Path handlers
     registerFilesystemHandlers(); // Step 4: Filesystem handlers
+    registerStatusHandlers(); // Step 5: Status handlers (FIX-010)
     
     // Setup Update Event Forwarding to UI
     updateManager.onUpdateEvent((event) => {
@@ -162,78 +164,6 @@ app.whenReady().then(async () => {
 })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
-
-// === STATUS UPDATE SYSTEM ===
-// Handler for updating entity status with optimistic locking
-ipcMain.handle('status:updateOfferStatus', async (event, params: { id: number; status: string; expectedVersion: number }) => {
-  try {
-    const db = getDb()
-    const result = updateEntityStatus(db, 'offers', {
-      id: params.id,
-      newStatus: params.status as any,
-      expectedVersion: params.expectedVersion,
-      changedBy: 'user'
-    })
-    return result
-  } catch (error) {
-    console.error('Failed to update offer status:', error)
-    throw error
-  }
-})
-
-ipcMain.handle('status:updateInvoiceStatus', async (event, params: { id: number; status: string; expectedVersion: number }) => {
-  try {
-    const db = getDb()
-    const result = updateEntityStatus(db, 'invoices', {
-      id: params.id,
-      newStatus: params.status as any,
-      expectedVersion: params.expectedVersion,
-      changedBy: 'user'
-    })
-    return result
-  } catch (error) {
-    console.error('Failed to update invoice status:', error)
-    throw error
-  }
-})
-
-ipcMain.handle('status:updateTimesheetStatus', async (event, params: { id: number; status: string; expectedVersion: number }) => {
-  try {
-    const db = getDb()
-    const result = updateEntityStatus(db, 'timesheets', {
-      id: params.id,
-      newStatus: params.status as any,
-      expectedVersion: params.expectedVersion,
-      changedBy: 'user'
-    })
-    return result
-  } catch (error) {
-    console.error('Failed to update timesheet status:', error)
-    throw error
-  }
-})
-
-// Handler for getting status history
-ipcMain.handle('status:getHistory', async (event, params: { entityType: string; entityId: number }) => {
-  try {
-    const db = getDb()
-    return getStatusHistory(db, params.entityType as any, params.entityId)
-  } catch (error) {
-    console.error('Failed to get status history:', error)
-    throw error
-  }
-})
-
-// Handler for getting entity for update (with version for optimistic locking)
-ipcMain.handle('status:getEntityForUpdate', async (event, params: { entityType: string; entityId: number }) => {
-  try {
-    const db = getDb()
-    return getEntityForUpdate(db, params.entityType as any, params.entityId)
-  } catch (error) {
-    console.error('Failed to get entity for update:', error)
-    throw error
-  }
-})
 
 // 🔢 Numbering Circles IPC Handlers
 ipcMain.handle('nummernkreis:getAll', async () => {
