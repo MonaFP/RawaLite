@@ -15,8 +15,9 @@ import { createHotBackup, createVacuumBackup, checkIntegrity, restoreFromBackup,
 import { convertSQLQuery } from '../src/lib/field-mapper'
 // 🛠️ Development imports
 import { createUpdateManagerDevWindow } from './windows/updateManagerDev'
-// 📱 Window Management - Extracted in Step 1
+// 📱 Window Management - Extracted in Step 1-2
 import { createWindow } from './windows/main-window'
+import { createUpdateManagerWindow } from './windows/update-window'
 
 console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
 
@@ -24,52 +25,6 @@ console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_
 // Dieser Bereich wird schrittweise in Module aufgeteilt
 
 const isDev = !app.isPackaged            // zuverlässig für Dev/Prod
-
-// Create Update Manager Window
-function createUpdateManagerWindow() {
-  // Projekt-Root ermitteln:
-  const rootPath = isDev ? process.cwd() : app.getAppPath()
-
-  // Preload: im Dev aus <root>/dist-electron, im Prod neben main.cjs
-  const preloadPath = isDev
-    ? path.join(rootPath, 'dist-electron', 'preload.js')
-    : path.join(__dirname, 'preload.js')
-
-  // Icon-Pfad definieren
-  let iconPath: string;
-  if (isDev) {
-    iconPath = path.join(rootPath, 'public', 'rawalite-logo.png');
-  } else {
-    iconPath = path.join(process.resourcesPath, 'assets', 'icon.png');
-  }
-
-  const updateWin = new BrowserWindow({
-    width: 600,
-    height: 700,
-    icon: iconPath,
-    webPreferences: {
-      preload: preloadPath,
-      contextIsolation: true,
-      sandbox: true,
-    },
-    title: 'RawaLite Update Manager',
-    resizable: false,
-    alwaysOnTop: true,
-    parent: BrowserWindow.getFocusedWindow() || undefined,
-    modal: true
-  })
-
-  if (isDev) {
-    // Vite-Dev-Server mit Update Manager Route
-    updateWin.loadURL('http://localhost:5174/update-manager')
-  } else {
-    // Production: Load Update Manager Page
-    const htmlPath = path.join(process.resourcesPath, 'index.html')
-    updateWin.loadFile(htmlPath, { hash: 'update-manager' })
-  }
-
-  return updateWin
-}
 
 // 🗂️ IPC Handler für Pfad-Management (Phase 2)
 import * as fs from 'node:fs/promises'
