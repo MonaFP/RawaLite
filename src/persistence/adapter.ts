@@ -40,13 +40,15 @@ export interface PackageLineItem {
   id: number;
   title: string;
   quantity: number;
-  amount: number;
+  unitPrice: number;
   parentItemId?: number; // Für Sub-Items
   description?: string; // Freitext für Sub-Items
   // Phase 1: Item origin tracking
   itemOrigin?: 'manual' | 'package_import' | 'template';
   sortOrder?: number;
   clientTempId?: string; // Frontend helper for temporary IDs
+  priceDisplayMode?: PriceDisplayMode; // How to display prices (default: 'default')
+  hierarchyLevel?: number;
 }
 
 export interface Package {
@@ -59,6 +61,18 @@ export interface Package {
   createdAt: string;
   updatedAt: string;
 }
+
+/**
+ * Price display mode for line items
+ * Controls how prices are displayed in UI and PDF
+ * 
+ * @since v1.0.42.6
+ */
+export type PriceDisplayMode = 
+  | 'default'     // Normal price display (show quantity, unitPrice, total)
+  | 'included'    // Show "inkl." badge instead of prices (included in parent price)
+  | 'hidden'      // Hide prices completely (show "—")
+  | 'optional';   // Show "optional" badge (for future use)
 
 export interface OfferLineItem {
   id: number;
@@ -75,7 +89,9 @@ export interface OfferLineItem {
   sourcePackageItemId?: number; // Reference to original package item
   sortOrder?: number;
   clientTempId?: string; // Frontend helper for temporary IDs
+  priceDisplayMode?: PriceDisplayMode; // How to display prices (default: 'default')
   attachments?: OfferAttachment[]; // Neue Eigenschaft für Anhänge
+  hierarchyLevel?: number;
 }
 
 // New interface for offer attachments (images, files)
@@ -152,7 +168,9 @@ export interface InvoiceLineItem {
   sourcePackageItemId?: number; // Reference to original package item
   sortOrder?: number;
   clientTempId?: string; // Frontend helper for temporary IDs
+  priceDisplayMode?: PriceDisplayMode; // How to display prices (default: 'default')
   attachments?: InvoiceAttachment[]; // Neue Eigenschaft für Anhänge
+  hierarchyLevel?: number;
 }
 
 export interface Invoice extends DocumentDiscount {

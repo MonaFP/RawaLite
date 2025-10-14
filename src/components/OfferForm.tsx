@@ -318,8 +318,8 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           title: item.title,
           description: item.description,
           quantity: item.quantity,
-          unitPrice: item.amount, // PackageLineItem uses 'amount' instead of 'unitPrice'
-          total: item.quantity * item.amount,
+          unitPrice: item.unitPrice,
+          total: item.quantity * item.unitPrice,
           parentItemId: undefined, // Will be set in second pass
           itemType: 'package_import', // Package import type
           sourcePackageId: pkg.id // Reference to source package
@@ -329,8 +329,16 @@ export const OfferForm: React.FC<OfferFormProps> = ({
       // Second pass: set correct parentItemId references using the mapping
       newItems.forEach((item, index) => {
         const originalItem = pkg.lineItems[index];
-        if (originalItem.parentItemId && idMapping[originalItem.parentItemId]) {
-          item.parentItemId = idMapping[originalItem.parentItemId];
+        if (originalItem.parentItemId !== undefined && originalItem.parentItemId !== null) {
+          // FIX: Package uses DB-ID for parentItemId, not Array-Index!
+          // Map the original parent DB-ID to the new negative ID via idMapping
+          const mappedParentId = idMapping[originalItem.parentItemId];
+          if (mappedParentId !== undefined) {
+            item.parentItemId = mappedParentId;
+            console.log('📦 Package import - mapping parent DB-ID', originalItem.parentItemId, 'to new parent ID', mappedParentId);
+          } else {
+            console.warn('⚠️ Package import - parent ID', originalItem.parentItemId, 'not found in mapping!');
+          }
         }
       });
 
@@ -698,7 +706,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                         borderRadius: "6px",
                         padding: "12px"
                       }}>
-                        <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start", marginBottom:"8px"}}>
+                        <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr 120px auto", gap:"8px", alignItems:"start", marginBottom:"8px"}}>
                           <div>
                             <input
                               type="text"
@@ -714,8 +722,15 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                             value={subItem.quantity}
                             onChange={(e) => updateLineItem(subItem.id, 'quantity', parseInt(e.target.value) || 1)}
                             min="1"
-                            style={{padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
-                            disabled={isSubmitting}
+                            style={{
+                              padding:"8px", 
+                              border:"1px solid rgba(255,255,255,.1)", 
+                              borderRadius:"4px", 
+                              background:"rgba(17,24,39,.8)", 
+                              color:"var(--muted)",
+                              opacity: subItem.priceDisplayMode === 'included' || subItem.priceDisplayMode === 'hidden' ? 0.5 : 1
+                            }}
+                            disabled={isSubmitting || subItem.priceDisplayMode === 'included' || subItem.priceDisplayMode === 'hidden'}
                           />
                           <input
                             type="number"
@@ -723,12 +738,55 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                             value={formatNumberInputValue(subItem.unitPrice)}
                             onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseNumberInput(e.target.value))}
                             min="0"
-                            style={{...getNumberInputStyles(), padding:"8px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)"}}
-                            disabled={isSubmitting}
+                            style={{
+                              ...getNumberInputStyles(), 
+                              padding:"8px", 
+                              border:"1px solid rgba(255,255,255,.1)", 
+                              borderRadius:"4px", 
+                              background:"rgba(17,24,39,.8)", 
+                              color:"var(--muted)",
+                              opacity: subItem.priceDisplayMode === 'included' || subItem.priceDisplayMode === 'hidden' ? 0.5 : 1
+                            }}
+                            disabled={isSubmitting || subItem.priceDisplayMode === 'included' || subItem.priceDisplayMode === 'hidden'}
                           />
                           <div style={{padding:"8px", textAlign:"right", fontWeight:"500"}}>
-                            €{subItem.total.toFixed(2)}
+                            {subItem.priceDisplayMode === 'included' ? (
+                              <span style={{color:"var(--accent)", fontStyle:"italic", fontSize:"13px"}}>inkl.</span>
+                            ) : subItem.priceDisplayMode === 'hidden' ? (
+                              <span style={{color:"var(--muted)", fontSize:"14px"}}>—</span>
+                            ) : subItem.priceDisplayMode === 'optional' ? (
+                              <span style={{color:"var(--muted)", fontStyle:"italic", fontSize:"11px"}}>optional</span>
+                            ) : (
+                              <span>€{subItem.total.toFixed(2)}</span>
+                            )}
                           </div>
+                          <select
+                            value={subItem.priceDisplayMode || 'default'}
+                            onChange={(e) => {
+                              const mode = e.target.value as 'default' | 'included' | 'hidden' | 'optional';
+                              updateLineItem(subItem.id, 'priceDisplayMode', mode);
+                              
+                              // Bei 'included' oder 'hidden': Preise auf 0 setzen
+                              if (mode === 'included' || mode === 'hidden') {
+                                updateLineItem(subItem.id, 'unitPrice', 0);
+                                updateLineItem(subItem.id, 'quantity', 1);
+                              }
+                            }}
+                            style={{
+                              padding:"6px", 
+                              border:"1px solid rgba(255,255,255,.1)", 
+                              borderRadius:"4px", 
+                              background:"rgba(17,24,39,.8)", 
+                              color:"var(--muted)",
+                              fontSize:"12px"
+                            }}
+                            disabled={isSubmitting}
+                          >
+                            <option value="default">Preis</option>
+                            <option value="included">inkl.</option>
+                            <option value="hidden">versteckt</option>
+                            <option value="optional">optional</option>
+                          </select>
                           <div style={{display:"flex", gap:"4px"}}>
                             <button
                               type="button"

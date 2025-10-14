@@ -45,7 +45,7 @@ export const usePackages = () => {
     setLoading(true);
     try {
       // Calculate total if not provided
-      const calculatedTotal = data.total || data.lineItems.reduce((sum, item) => sum + (item.quantity * item.amount), 0);
+      const calculatedTotal = data.total || data.lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
       
       const newPackage = await adapter.createPackage({
         internalTitle: data.internalTitle,

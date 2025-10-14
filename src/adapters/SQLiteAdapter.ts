@@ -73,7 +73,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
       return defaultSettings;
     }
 
-    // ✅ RÜCKWÄRTSKOMPATIBILITÄT: Robust handling von Settings aus verschiedenen Versionen
+    // Ô£à R├£CKW├äRTSKOMPATIBILIT├äT: Robust handling von Settings aus verschiedenen Versionen
     const rawSettings = rows[0];
     
     // Extract nur bekannte Felder - ignoriere unbekannte (updateChannel, featureFlags etc.)
@@ -252,15 +252,16 @@ export class SQLiteAdapter implements PersistenceAdapter {
     // Load line items for each package
     const result: Package[] = [];
     for (const pkg of packages) {
-      const lineItemQuery = convertSQLQuery(`SELECT id, title, quantity, amount, parentItemId, description FROM packageLineItems WHERE packageId = ? ORDER BY id`);
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, quantity, unitPrice, parentItemId, description, priceDisplayMode FROM packageLineItems WHERE packageId = ? ORDER BY id`);
       const lineItemRows = await this.client.query<any>(lineItemQuery, [pkg.id]);
       const lineItems = mapFromSQLArray(lineItemRows).map(item => ({
         id: item.id,
         title: item.title,
         quantity: item.quantity,
-        amount: item.amount,
+        unitPrice: item.unitPrice ?? 0,
         parentItemId: item.parentItemId || undefined,
-        description: item.description || undefined
+        description: item.description || undefined,
+        priceDisplayMode: (item.priceDisplayMode as 'default' | 'included' | 'hidden' | 'optional' | undefined) || undefined
       }));
 
       result.push({
@@ -277,15 +278,16 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (sqlRows.length === 0) return null;
 
     const pkg = mapFromSQL(sqlRows[0]) as Omit<Package, "lineItems">;
-    const lineItemQuery = convertSQLQuery(`SELECT id, title, quantity, amount, parentItemId, description FROM packageLineItems WHERE packageId = ? ORDER BY id`);
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, quantity, unitPrice, parentItemId, description, priceDisplayMode FROM packageLineItems WHERE packageId = ? ORDER BY id`);
     const lineItemRows = await this.client.query<any>(lineItemQuery, [id]);
     const lineItems = mapFromSQLArray(lineItemRows).map(item => ({
       id: item.id,
       title: item.title,
       quantity: item.quantity,
-      amount: item.amount,
+      unitPrice: item.unitPrice ?? 0,
       parentItemId: item.parentItemId || undefined,
-      description: item.description || undefined
+      description: item.description || undefined,
+      priceDisplayMode: (item.priceDisplayMode as 'default' | 'included' | 'hidden' | 'optional' | undefined) || undefined
     }));
 
     return {
@@ -324,7 +326,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const packageRows = await this.client.query<{ id: number }>(`SELECT id FROM packages WHERE internal_title = ? AND created_at = ? ORDER BY id DESC LIMIT 1`, [mappedPackageData.internal_title, mappedPackageData.created_at]);
     const packageId = packageRows[0].id;
 
-    // 🎯 CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance  
+    // ­ƒÄ» CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance  
     // Create ID mapping for frontend negative IDs to database positive IDs
     const idMapping: Record<number, number> = {};
 
@@ -332,21 +334,21 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const mainItems = data.lineItems.filter(item => !item.parentItemId);
     const subItems = data.lineItems.filter(item => item.parentItemId);
 
-    console.log(`🔧 CREATE PACKAGE: Starting with ${data.lineItems.length} total items`);
-    console.log(`🔧 CREATE PACKAGE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+    console.log(`­ƒöº CREATE PACKAGE: Starting with ${data.lineItems.length} total items`);
+    console.log(`­ƒöº CREATE PACKAGE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
 
     // Insert main items first and build ID mapping for ALL IDs
     for (const item of mainItems) {
       const mappedItem = mapToSQL(item);
       const itemResult = await this.client.exec(
-        `INSERT INTO package_line_items (package_id, title, quantity, amount, parent_item_id, description) VALUES (?, ?, ?, ?, ?, ?)`,
-        [packageId, mappedItem.title, mappedItem.quantity, mappedItem.amount, null, mappedItem.description || null]
+        `INSERT INTO package_line_items (package_id, title, quantity, unit_price, parent_item_id, description, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [packageId, mappedItem.title, mappedItem.quantity, mappedItem.unit_price, null, mappedItem.description || null, mappedItem.price_display_mode || 'default']
       );
 
       // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
       idMapping[item.id] = Number(itemResult.lastInsertRowid);
       
-      console.log(`🔧 CREATE PACKAGE ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
+      console.log(`­ƒöº CREATE PACKAGE ID Mapping: Frontend ID ${item.id} ÔåÆ Database ID ${idMapping[item.id]}`);
     }
 
     // Then insert sub-items with correct parent references
@@ -357,12 +359,12 @@ export class SQLiteAdapter implements PersistenceAdapter {
       let resolvedParentId = null;
       if (item.parentItemId) {
         resolvedParentId = idMapping[item.parentItemId] || null;
-        console.log(`🔧 CREATE PACKAGE Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
+        console.log(`­ƒöº CREATE PACKAGE Sub-Item ID Mapping: Sub-Item ${item.id} ÔåÆ Parent ${item.parentItemId} ÔåÆ Resolved Parent DB ID ${resolvedParentId}`);
       }
 
       const itemResult = await this.client.exec(
-        `INSERT INTO package_line_items (package_id, title, quantity, amount, parent_item_id, description) VALUES (?, ?, ?, ?, ?, ?)`,
-        [packageId, mappedItem.title, mappedItem.quantity, mappedItem.amount, resolvedParentId, mappedItem.description || null]
+        `INSERT INTO package_line_items (package_id, title, quantity, unit_price, parent_item_id, description, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [packageId, mappedItem.title, mappedItem.quantity, mappedItem.unit_price, resolvedParentId, mappedItem.description || null, mappedItem.price_display_mode || 'default']
       );
 
       // Map sub-item ID as well for potential nested sub-items
@@ -409,9 +411,9 @@ export class SQLiteAdapter implements PersistenceAdapter {
       // Delete old line items
       await this.client.exec(`DELETE FROM package_line_items WHERE package_id = ?`, [id]);
       
-      console.log(`🔧 UPDATE PACKAGE: Starting with ${patch.lineItems.length} total items`);
+      console.log(`­ƒöº UPDATE PACKAGE: Starting with ${patch.lineItems.length} total items`);
       
-      // 🎯 CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance
+      // ­ƒÄ» CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance
       // Create ID mapping for frontend negative IDs to database positive IDs
       const idMapping: Record<number, number> = {};
 
@@ -419,25 +421,25 @@ export class SQLiteAdapter implements PersistenceAdapter {
       const mainItems = patch.lineItems.filter(item => !item.parentItemId);
       const subItems = patch.lineItems.filter(item => item.parentItemId);
       
-      console.log(`🔧 UPDATE PACKAGE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
-      console.log(`🔧 UPDATE PACKAGE: Main items:`, mainItems.map(i => `${i.id}:${i.title}`));
-      console.log(`🔧 UPDATE PACKAGE: Sub items:`, subItems.map(i => `${i.id}:${i.title} (parent: ${i.parentItemId})`));
+      console.log(`­ƒöº UPDATE PACKAGE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+      console.log(`­ƒöº UPDATE PACKAGE: Main items:`, mainItems.map(i => `${i.id}:${i.title}`));
+      console.log(`­ƒöº UPDATE PACKAGE: Sub items:`, subItems.map(i => `${i.id}:${i.title} (parent: ${i.parentItemId})`));
 
       // Insert main items first and build ID mapping for ALL IDs
       for (const item of mainItems) {
         const mappedItem = mapToSQL(item);
         const mainItemResult = await this.client.exec(
-          `INSERT INTO package_line_items (package_id, title, quantity, amount, parent_item_id, description) VALUES (?, ?, ?, ?, ?, ?)`,
-          [id, mappedItem.title, mappedItem.quantity, mappedItem.amount, null, mappedItem.description || null]
+          `INSERT INTO package_line_items (package_id, title, quantity, unit_price, parent_item_id, description, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.quantity, mappedItem.unit_price, null, mappedItem.description || null, mappedItem.price_display_mode || 'default']
         );
 
         // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
         idMapping[item.id] = Number(mainItemResult.lastInsertRowid);
         
-        console.log(`🔧 UPDATE PACKAGE ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
+        console.log(`­ƒöº UPDATE PACKAGE ID Mapping: Frontend ID ${item.id} ÔåÆ Database ID ${idMapping[item.id]}`);
       }
       
-      console.log(`🔧 UPDATE PACKAGE: Final ID mapping:`, idMapping);
+      console.log(`­ƒöº UPDATE PACKAGE: Final ID mapping:`, idMapping);
 
       // Then insert sub-items with correct parent references
       for (const item of subItems) {
@@ -447,18 +449,18 @@ export class SQLiteAdapter implements PersistenceAdapter {
         let resolvedParentId = null;
         if (item.parentItemId) {
           resolvedParentId = idMapping[item.parentItemId] || null;
-          console.log(`🔧 UPDATE PACKAGE Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
+          console.log(`­ƒöº UPDATE PACKAGE Sub-Item ID Mapping: Sub-Item ${item.id} ÔåÆ Parent ${item.parentItemId} ÔåÆ Resolved Parent DB ID ${resolvedParentId}`);
         }
 
         const subItemResult = await this.client.exec(
-          `INSERT INTO package_line_items (package_id, title, quantity, amount, parent_item_id, description) VALUES (?, ?, ?, ?, ?, ?)`,
-          [id, mappedItem.title, mappedItem.quantity, mappedItem.amount, resolvedParentId, mappedItem.description || null]
+          `INSERT INTO package_line_items (package_id, title, quantity, unit_price, parent_item_id, description, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.quantity, mappedItem.unit_price, resolvedParentId, mappedItem.description || null, mappedItem.price_display_mode || 'default']
         );
 
         // Map sub-item ID as well for potential nested sub-items
         idMapping[item.id] = Number(subItemResult.lastInsertRowid);
         
-        console.log(`🔧 UPDATE PACKAGE Sub-Item inserted with parent_item_id: ${resolvedParentId}`);
+        console.log(`­ƒöº UPDATE PACKAGE Sub-Item inserted with parent_item_id: ${resolvedParentId}`);
       }
     }
 
@@ -477,22 +479,22 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   // OFFERS
   async listOffers(): Promise<Offer[]> {
-    console.log('🔧 [SQLiteAdapter.listOffers] Starting offers query...');
+    console.log('­ƒöº [SQLiteAdapter.listOffers] Starting offers query...');
     
     const query = convertSQLQuery(`SELECT * FROM offers ORDER BY createdAt DESC`);
-    console.log('🔧 [SQLiteAdapter.listOffers] Main query:', query);
+    console.log('­ƒöº [SQLiteAdapter.listOffers] Main query:', query);
     
     const offers = await this.client.query<Omit<Offer, "lineItems">>(query);
-    console.log('🔧 [SQLiteAdapter.listOffers] Raw offers from DB:', offers.length, offers[0]);
+    console.log('­ƒöº [SQLiteAdapter.listOffers] Raw offers from DB:', offers.length, offers[0]);
     
     const result: Offer[] = [];
     for (const offer of offers) {
       const mappedOffer = mapFromSQL(offer) as Omit<Offer, "lineItems">;
-      console.log('🔧 [SQLiteAdapter.listOffers] Mapped offer:', mappedOffer);
+      console.log('­ƒöº [SQLiteAdapter.listOffers] Mapped offer:', mappedOffer);
       
       // FIX: Use snake_case field names and mapFromSQL for consistency
-      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
-      console.log('🔧 [SQLiteAdapter.listOffers] LineItem query:', lineItemQuery);
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
+      console.log('­ƒöº [SQLiteAdapter.listOffers] LineItem query:', lineItemQuery);
       
       const lineItems = await this.client.query<{
         id: number;
@@ -504,9 +506,10 @@ export class SQLiteAdapter implements PersistenceAdapter {
         parent_item_id: number | null;
         item_type?: string;
         source_package_id?: number;
+        price_display_mode?: string;
       }>(lineItemQuery, [offer.id]);
 
-      console.log('🔧 [SQLiteAdapter.listOffers] LineItems for offer', offer.id, ':', lineItems);
+      console.log('­ƒöº [SQLiteAdapter.listOffers] LineItems for offer', offer.id, ':', lineItems);
 
       result.push({
         ...mappedOffer,
@@ -520,13 +523,14 @@ export class SQLiteAdapter implements PersistenceAdapter {
             quantity: mappedItem.quantity,
             unitPrice: mappedItem.unitPrice,
             total: mappedItem.total,
-            parentItemId: mappedItem.parentItemId || undefined
+            parentItemId: mappedItem.parentItemId || undefined,
+            priceDisplayMode: (mappedItem.priceDisplayMode as 'default' | 'included' | 'hidden' | 'optional' | undefined) || undefined
           };
         })
       });
     }
     
-    console.log('🔧 [SQLiteAdapter.listOffers] Final result:', result.length, 'offers');
+    console.log('­ƒöº [SQLiteAdapter.listOffers] Final result:', result.length, 'offers');
     return result;
   }
 
@@ -536,7 +540,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (!rows[0]) return null;
 
     const offer = mapFromSQL(rows[0]) as Omit<Offer, "lineItems">;
-    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
     const lineItems = await this.client.query<{
       id: number;
       title: string;
@@ -547,17 +551,18 @@ export class SQLiteAdapter implements PersistenceAdapter {
       parent_item_id: number | null;
       item_type?: string;
       source_package_id?: number;
+      price_display_mode?: string;
     }>(lineItemQuery, [id]);
 
     // Load attachments for each line item
     const lineItemsWithAttachments = await Promise.all(
       lineItems.map(async (item) => {
-        console.log(`🔍 [DB] Loading attachments for line item ${item.id} in offer ${id}`);
+        console.log(`­ƒöì [DB] Loading attachments for line item ${item.id} in offer ${id}`);
         const attachments = await this.getOfferAttachments(id, item.id);
-        console.log(`🔍 [DB] Found ${attachments.length} attachments for line item ${item.id}`);
+        console.log(`­ƒöì [DB] Found ${attachments.length} attachments for line item ${item.id}`);
         if (attachments.length > 0) {
           attachments.forEach((att, index) => {
-            console.log(`🔍 [DB] Attachment ${index + 1}: ${att.originalFilename} (base64 length: ${att.base64Data?.length || 'NULL'})`);
+            console.log(`­ƒöì [DB] Attachment ${index + 1}: ${att.originalFilename} (base64 length: ${att.base64Data?.length || 'NULL'})`);
           });
         }
         
@@ -572,6 +577,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
           unitPrice: mappedItem.unitPrice,
           total: mappedItem.total,
           parentItemId: mappedItem.parentItemId || undefined,
+          priceDisplayMode: (mappedItem.priceDisplayMode as 'default' | 'included' | 'hidden' | 'optional' | undefined) || undefined,
           attachments: attachments
         };
       })
@@ -627,14 +633,14 @@ export class SQLiteAdapter implements PersistenceAdapter {
     for (const item of mainItems) {
       const mappedItem = mapToSQL(item);
       const itemResult = await this.client.exec(
-        `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, item.itemType || 'standalone', item.sourcePackageId || null]
+        `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, item.itemType || 'standalone', item.sourcePackageId || null, mappedItem.price_display_mode || 'default']
       );
 
       // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
       idMapping[item.id] = Number(itemResult.lastInsertRowid);
       
-      console.log(`🔧 CREATE ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
+      console.log(`­ƒöº CREATE ID Mapping: Frontend ID ${item.id} ÔåÆ Database ID ${idMapping[item.id]}`);
     }
 
     // Then insert sub-items with correct parent references
@@ -645,12 +651,12 @@ export class SQLiteAdapter implements PersistenceAdapter {
       let resolvedParentId = null;
       if (item.parentItemId) {
         resolvedParentId = idMapping[item.parentItemId] || null;
-        console.log(`🔧 CREATE Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
+        console.log(`­ƒöº CREATE Sub-Item ID Mapping: Sub-Item ${item.id} ÔåÆ Parent ${item.parentItemId} ÔåÆ Resolved Parent DB ID ${resolvedParentId}`);
       }
 
       const itemResult = await this.client.exec(
-        `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, item.itemType || 'individual_sub', item.sourcePackageId || null]
+        `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, item.itemType || 'individual_sub', item.sourcePackageId || null, mappedItem.price_display_mode || 'default']
       );
 
       // Map sub-item ID as well for potential nested sub-items
@@ -662,12 +668,12 @@ export class SQLiteAdapter implements PersistenceAdapter {
       for (const item of data.lineItems) {
         if (item.attachments && item.attachments.length > 0) {
           const dbLineItemId = idMapping[item.id];
-          console.log(`📎 Processing ${item.attachments.length} attachments for line item ${item.id} (DB ID: ${dbLineItemId})`);
+          console.log(`­ƒôÄ Processing ${item.attachments.length} attachments for line item ${item.id} (DB ID: ${dbLineItemId})`);
           
           for (const attachment of item.attachments) {
             // Only create attachments with negative IDs (new attachments)
             if (attachment.id < 0) {
-              console.log(`📎 DEBUG: Creating attachment:`, {
+              console.log(`­ƒôÄ DEBUG: Creating attachment:`, {
                 filename: attachment.filename,
                 originalFilename: attachment.originalFilename,
                 fileType: attachment.fileType,
@@ -685,7 +691,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
                 base64Data: attachment.base64Data,
                 description: attachment.description
               });
-              console.log(`📎 Created attachment: ${attachment.originalFilename}`);
+              console.log(`­ƒôÄ Created attachment: ${attachment.originalFilename}`);
             }
           }
         }
@@ -741,7 +747,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (patch.lineItems) {
       await this.client.exec(`DELETE FROM offer_line_items WHERE offer_id = ?`, [id]);
       
-      console.log(`🔧 UPDATE: Starting with ${patch.lineItems.length} total items`);
+      console.log(`­ƒöº UPDATE: Starting with ${patch.lineItems.length} total items`);
       
       // Create ID mapping for frontend negative IDs to database positive IDs
       const idMapping: Record<number, number> = {};
@@ -750,25 +756,25 @@ export class SQLiteAdapter implements PersistenceAdapter {
       const mainItems = patch.lineItems.filter(item => !item.parentItemId);
       const subItems = patch.lineItems.filter(item => item.parentItemId);
       
-      console.log(`🔧 UPDATE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
-      console.log(`🔧 UPDATE: Main items:`, mainItems.map(i => `${i.id}:${i.title}`));
-      console.log(`🔧 UPDATE: Sub items:`, subItems.map(i => `${i.id}:${i.title} (parent: ${i.parentItemId})`));
+      console.log(`­ƒöº UPDATE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+      console.log(`­ƒöº UPDATE: Main items:`, mainItems.map(i => `${i.id}:${i.title}`));
+      console.log(`­ƒöº UPDATE: Sub items:`, subItems.map(i => `${i.id}:${i.title} (parent: ${i.parentItemId})`));
 
       // Insert main items first and build ID mapping for ALL IDs
       for (const item of mainItems) {
         const mappedItem = mapToSQL(item);
         const mainItemResult = await this.client.exec(
-          `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, item.itemType || 'standalone', item.sourcePackageId || null]
+          `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, item.itemType || 'standalone', item.sourcePackageId || null, mappedItem.price_display_mode || 'default']
         );
 
         // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
         idMapping[item.id] = Number(mainItemResult.lastInsertRowid);
         
-        console.log(`🔧 ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
+        console.log(`­ƒöº ID Mapping: Frontend ID ${item.id} ÔåÆ Database ID ${idMapping[item.id]}`);
       }
       
-      console.log(`🔧 UPDATE: Final ID mapping:`, idMapping);
+      console.log(`­ƒöº UPDATE: Final ID mapping:`, idMapping);
 
       // Then insert sub-items with correct parent references
       for (const item of subItems) {
@@ -778,18 +784,18 @@ export class SQLiteAdapter implements PersistenceAdapter {
         let resolvedParentId = null;
         if (item.parentItemId) {
           resolvedParentId = idMapping[item.parentItemId] || null;
-          console.log(`🔧 Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
+          console.log(`­ƒöº Sub-Item ID Mapping: Sub-Item ${item.id} ÔåÆ Parent ${item.parentItemId} ÔåÆ Resolved Parent DB ID ${resolvedParentId}`);
         }
 
         const subItemResult = await this.client.exec(
-          `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, item.itemType || 'individual_sub', item.sourcePackageId || null]
+          `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, item.itemType || 'individual_sub', item.sourcePackageId || null, mappedItem.price_display_mode || 'default']
         );
 
         // Map sub-item ID as well for potential nested sub-items
         idMapping[item.id] = Number(subItemResult.lastInsertRowid);
         
-        console.log(`🔧 Sub-Item inserted with parent_item_id: ${resolvedParentId}`);
+        console.log(`­ƒöº Sub-Item inserted with parent_item_id: ${resolvedParentId}`);
       }
 
       // Process attachments for all line items
@@ -799,7 +805,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
       for (const item of patch.lineItems) {
         if (item.attachments && item.attachments.length > 0) {
           const dbLineItemId = idMapping[item.id];
-          console.log(`📎 UPDATE: Processing ${item.attachments.length} attachments for line item ${item.id} (DB ID: ${dbLineItemId})`);
+          console.log(`­ƒôÄ UPDATE: Processing ${item.attachments.length} attachments for line item ${item.id} (DB ID: ${dbLineItemId})`);
           
           for (const attachment of item.attachments) {
             // Create all attachments (both new and existing ones being re-saved)
@@ -813,7 +819,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
               base64Data: attachment.base64Data,
               description: attachment.description
             });
-            console.log(`📎 UPDATE: Created attachment: ${attachment.originalFilename}`);
+            console.log(`­ƒôÄ UPDATE: Created attachment: ${attachment.originalFilename}`);
           }
         }
       }
@@ -833,22 +839,22 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   // INVOICES
   async listInvoices(): Promise<Invoice[]> {
-    console.log('🔧 [SQLiteAdapter.listInvoices] Starting invoices query...');
+    console.log('­ƒöº [SQLiteAdapter.listInvoices] Starting invoices query...');
     
     const query = convertSQLQuery(`SELECT * FROM invoices ORDER BY createdAt DESC`);
-    console.log('🔧 [SQLiteAdapter.listInvoices] Main query:', query);
+    console.log('­ƒöº [SQLiteAdapter.listInvoices] Main query:', query);
     
     const invoices = await this.client.query<Omit<Invoice, "lineItems">>(query);
-    console.log('🔧 [SQLiteAdapter.listInvoices] Raw invoices from DB:', invoices.length, invoices[0]);
+    console.log('­ƒöº [SQLiteAdapter.listInvoices] Raw invoices from DB:', invoices.length, invoices[0]);
     
     const result: Invoice[] = [];
     for (const invoice of invoices) {
       const mappedInvoice = mapFromSQL(invoice) as Omit<Invoice, "lineItems">;
-      console.log('🔧 [SQLiteAdapter.listInvoices] Mapped invoice:', mappedInvoice);
+      console.log('­ƒöº [SQLiteAdapter.listInvoices] Mapped invoice:', mappedInvoice);
       
       // FIX: Use consistent field-mapping instead of manual aliases
-      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoice_line_items WHERE invoiceId = ? ORDER BY id`);
-      console.log('🔧 [SQLiteAdapter.listInvoices] LineItem query:', lineItemQuery);
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, priceDisplayMode FROM invoice_line_items WHERE invoiceId = ? ORDER BY id`);
+      console.log('­ƒöº [SQLiteAdapter.listInvoices] LineItem query:', lineItemQuery);
       
       const lineItems = await this.client.query<{
         id: number;
@@ -858,9 +864,10 @@ export class SQLiteAdapter implements PersistenceAdapter {
         unitPrice: number;
         total: number;
         parentItemId: number | null;
+        priceDisplayMode?: string;
       }>(lineItemQuery, [invoice.id]);
 
-      console.log('🔧 [SQLiteAdapter.listInvoices] LineItems for invoice', invoice.id, ':', lineItems);
+      console.log('­ƒöº [SQLiteAdapter.listInvoices] LineItems for invoice', invoice.id, ':', lineItems);
 
       result.push({
         ...mappedInvoice,
@@ -871,12 +878,13 @@ export class SQLiteAdapter implements PersistenceAdapter {
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           total: item.total,
-          parentItemId: item.parentItemId || undefined
+          parentItemId: item.parentItemId || undefined,
+          priceDisplayMode: (item.priceDisplayMode as 'default' | 'included' | 'hidden' | 'optional' | undefined) || undefined
         }))
       });
     }
     
-    console.log('🔧 [SQLiteAdapter.listInvoices] Final result:', result.length, 'invoices');
+    console.log('­ƒöº [SQLiteAdapter.listInvoices] Final result:', result.length, 'invoices');
     return result;
   }
 
@@ -886,7 +894,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (!rows[0]) return null;
 
     const invoice = mapFromSQL(rows[0]) as Omit<Invoice, "lineItems">;
-    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId FROM invoice_line_items WHERE invoiceId = ? ORDER BY id`);
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, priceDisplayMode FROM invoice_line_items WHERE invoiceId = ? ORDER BY id`);
     const lineItems = await this.client.query<{
       id: number;
       title: string;
@@ -895,17 +903,18 @@ export class SQLiteAdapter implements PersistenceAdapter {
       unit_price: number;
       total: number;
       parent_item_id: number | null;
+      price_display_mode?: string;
     }>(lineItemQuery, [id]);
 
     // Load attachments for each line item
     const lineItemsWithAttachments = await Promise.all(
       lineItems.map(async (item) => {
-        console.log(`🔍 [DB] Loading attachments for invoice line item ${item.id} in invoice ${id}`);
+        console.log(`­ƒöì [DB] Loading attachments for invoice line item ${item.id} in invoice ${id}`);
         const attachments = await this.getInvoiceAttachments(id, item.id);
-        console.log(`🔍 [DB] Found ${attachments.length} attachments for invoice line item ${item.id}`);
+        console.log(`­ƒöì [DB] Found ${attachments.length} attachments for invoice line item ${item.id}`);
         if (attachments.length > 0) {
           attachments.forEach((att, index) => {
-            console.log(`🔍 [DB] Invoice Attachment ${index + 1}: ${att.originalFilename} (base64 length: ${att.base64Data?.length || 'NULL'})`);
+            console.log(`­ƒöì [DB] Invoice Attachment ${index + 1}: ${att.originalFilename} (base64 length: ${att.base64Data?.length || 'NULL'})`);
           });
         }
         const mappedItem = mapFromSQL(item);
@@ -917,6 +926,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
           unitPrice: mappedItem.unitPrice,
           total: mappedItem.total,
           parentItemId: mappedItem.parentItemId || undefined,
+          priceDisplayMode: (mappedItem.priceDisplayMode as 'default' | 'included' | 'hidden' | 'optional' | undefined) || undefined,
           attachments: attachments
         };
       })
@@ -962,7 +972,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
     const invoiceId = result.lastInsertRowid;
 
-    // 🎯 CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance
+    // ­ƒÄ» CRITICAL FIX: ID Mapping System for FOREIGN KEY constraint compliance
     // Create ID mapping for frontend negative IDs to database positive IDs
     const idMapping: Record<number, number> = {};
 
@@ -970,21 +980,21 @@ export class SQLiteAdapter implements PersistenceAdapter {
     const mainItems = data.lineItems.filter(item => !item.parentItemId);
     const subItems = data.lineItems.filter(item => item.parentItemId);
 
-    console.log(`🔧 CREATE INVOICE: Starting with ${data.lineItems.length} total items`);
-    console.log(`🔧 CREATE INVOICE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+    console.log(`­ƒöº CREATE INVOICE: Starting with ${data.lineItems.length} total items`);
+    console.log(`­ƒöº CREATE INVOICE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
 
     // Insert main items first and build ID mapping for ALL IDs
     for (const item of mainItems) {
       const mappedItem = mapToSQL(item);
       const itemResult = await this.client.exec(
-        `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [invoiceId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null]
+        `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [invoiceId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, mappedItem.price_display_mode || 'default']
       );
 
       // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
       idMapping[item.id] = Number(itemResult.lastInsertRowid);
       
-      console.log(`🔧 CREATE INVOICE ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
+      console.log(`­ƒöº CREATE INVOICE ID Mapping: Frontend ID ${item.id} ÔåÆ Database ID ${idMapping[item.id]}`);
     }
 
     // Then insert sub-items with correct parent references
@@ -995,12 +1005,12 @@ export class SQLiteAdapter implements PersistenceAdapter {
       let resolvedParentId = null;
       if (item.parentItemId) {
         resolvedParentId = idMapping[item.parentItemId] || null;
-        console.log(`🔧 CREATE INVOICE Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
+        console.log(`­ƒöº CREATE INVOICE Sub-Item ID Mapping: Sub-Item ${item.id} ÔåÆ Parent ${item.parentItemId} ÔåÆ Resolved Parent DB ID ${resolvedParentId}`);
       }
 
       const itemResult = await this.client.exec(
-        `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [invoiceId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId]
+        `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [invoiceId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, mappedItem.price_display_mode || 'default']
       );
 
       // Map sub-item ID as well for potential nested sub-items
@@ -1011,12 +1021,12 @@ export class SQLiteAdapter implements PersistenceAdapter {
     for (const item of data.lineItems) {
       if (item.attachments && item.attachments.length > 0) {
         const dbLineItemId = idMapping[item.id];
-        console.log(`📎 Processing ${item.attachments.length} attachments for invoice line item ${item.id} (DB ID: ${dbLineItemId})`);
+        console.log(`­ƒôÄ Processing ${item.attachments.length} attachments for invoice line item ${item.id} (DB ID: ${dbLineItemId})`);
         
         for (const attachment of item.attachments) {
           // Only create attachments with negative IDs (new attachments)
           if (attachment.id < 0) {
-            console.log(`📎 DEBUG: Creating invoice attachment:`, {
+            console.log(`­ƒôÄ DEBUG: Creating invoice attachment:`, {
               filename: attachment.filename,
               originalFilename: attachment.originalFilename,
               fileType: attachment.fileType,
@@ -1034,7 +1044,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
               base64Data: attachment.base64Data,
               description: attachment.description
             });
-            console.log(`📎 Created invoice attachment: ${attachment.originalFilename}`);
+            console.log(`­ƒôÄ Created invoice attachment: ${attachment.originalFilename}`);
           }
         }
       }
@@ -1091,7 +1101,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (patch.lineItems) {
       await this.client.exec(`DELETE FROM invoice_line_items WHERE invoice_id = ?`, [id]);
       
-      console.log(`🔧 UPDATE INVOICE: Starting with ${patch.lineItems.length} total items`);
+      console.log(`­ƒöº UPDATE INVOICE: Starting with ${patch.lineItems.length} total items`);
       
       // Create ID mapping for frontend negative IDs to database positive IDs
       const idMapping: Record<number, number> = {};
@@ -1100,25 +1110,25 @@ export class SQLiteAdapter implements PersistenceAdapter {
       const mainItems = patch.lineItems.filter(item => !item.parentItemId);
       const subItems = patch.lineItems.filter(item => item.parentItemId);
       
-      console.log(`🔧 UPDATE INVOICE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
-      console.log(`🔧 UPDATE INVOICE: Main items:`, mainItems.map(i => `${i.id}:${i.title}`));
-      console.log(`🔧 UPDATE INVOICE: Sub items:`, subItems.map(i => `${i.id}:${i.title} (parent: ${i.parentItemId})`));
+      console.log(`­ƒöº UPDATE INVOICE: Found ${mainItems.length} main items and ${subItems.length} sub-items`);
+      console.log(`­ƒöº UPDATE INVOICE: Main items:`, mainItems.map(i => `${i.id}:${i.title}`));
+      console.log(`­ƒöº UPDATE INVOICE: Sub items:`, subItems.map(i => `${i.id}:${i.title} (parent: ${i.parentItemId})`));
 
       // Insert main items first and build ID mapping for ALL IDs
       for (const item of mainItems) {
         const mappedItem = mapToSQL(item);
         const mainItemResult = await this.client.exec(
-          `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null]
+          `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, mappedItem.price_display_mode || 'default']
         );
 
         // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
         idMapping[item.id] = Number(mainItemResult.lastInsertRowid);
         
-        console.log(`🔧 UPDATE INVOICE ID Mapping: Frontend ID ${item.id} → Database ID ${idMapping[item.id]}`);
+        console.log(`­ƒöº UPDATE INVOICE ID Mapping: Frontend ID ${item.id} ÔåÆ Database ID ${idMapping[item.id]}`);
       }
       
-      console.log(`🔧 UPDATE INVOICE: Final ID mapping:`, idMapping);
+      console.log(`­ƒöº UPDATE INVOICE: Final ID mapping:`, idMapping);
 
       // Then insert sub-items with correct parent references
       for (const item of subItems) {
@@ -1128,18 +1138,18 @@ export class SQLiteAdapter implements PersistenceAdapter {
         let resolvedParentId = null;
         if (item.parentItemId) {
           resolvedParentId = idMapping[item.parentItemId] || null;
-          console.log(`🔧 UPDATE INVOICE Sub-Item ID Mapping: Sub-Item ${item.id} → Parent ${item.parentItemId} → Resolved Parent DB ID ${resolvedParentId}`);
+          console.log(`­ƒöº UPDATE INVOICE Sub-Item ID Mapping: Sub-Item ${item.id} ÔåÆ Parent ${item.parentItemId} ÔåÆ Resolved Parent DB ID ${resolvedParentId}`);
         }
 
         const subItemResult = await this.client.exec(
-          `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId]
+          `INSERT INTO invoice_line_items (invoice_id, title, description, quantity, unit_price, total, parent_item_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, mappedItem.price_display_mode || 'default']
         );
 
         // Map sub-item ID as well for potential nested sub-items
         idMapping[item.id] = Number(subItemResult.lastInsertRowid);
         
-        console.log(`🔧 UPDATE INVOICE Sub-Item inserted with parent_item_id: ${resolvedParentId}`);
+        console.log(`­ƒöº UPDATE INVOICE Sub-Item inserted with parent_item_id: ${resolvedParentId}`);
       }
     }
 
@@ -1564,39 +1574,39 @@ export class SQLiteAdapter implements PersistenceAdapter {
 
   // READY STATUS
   async ready(): Promise<void> {
-    console.log('🔧 [SQLiteAdapter.ready] Starting readiness check...');
+    console.log('­ƒöº [SQLiteAdapter.ready] Starting readiness check...');
     
     try {
       // Test if DbClient is available
       if (!this.client) {
         throw new Error('DbClient not initialized');
       }
-      console.log('🔧 [SQLiteAdapter.ready] DbClient available');
+      console.log('­ƒöº [SQLiteAdapter.ready] DbClient available');
       
       // Test if window.rawalite.db is available
       if (typeof window === 'undefined' || !window.rawalite?.db) {
         throw new Error('window.rawalite.db API not available');
       }
-      console.log('🔧 [SQLiteAdapter.ready] window.rawalite.db API available');
+      console.log('­ƒöº [SQLiteAdapter.ready] window.rawalite.db API available');
       
       // Test actual database connection with a simple query
       const testResult = await this.client.query('SELECT 1 as test');
       if (!testResult || testResult.length === 0) {
         throw new Error('Database connection test failed');
       }
-      console.log('🔧 [SQLiteAdapter.ready] Database connection test successful');
+      console.log('­ƒöº [SQLiteAdapter.ready] Database connection test successful');
       
       // Test table existence
       const tables = await this.client.query("SELECT name FROM sqlite_master WHERE type='table'");
-      console.log('🔧 [SQLiteAdapter.ready] Found tables:', tables.map((t: any) => t.name));
+      console.log('­ƒöº [SQLiteAdapter.ready] Found tables:', tables.map((t: any) => t.name));
       
       if (tables.length === 0) {
         throw new Error('No tables found in database');
       }
       
-      console.log('🔧 [SQLiteAdapter.ready] All checks passed - adapter is ready');
+      console.log('­ƒöº [SQLiteAdapter.ready] All checks passed - adapter is ready');
     } catch (error) {
-      console.error('🔧 [SQLiteAdapter.ready] Readiness check failed:', error);
+      console.error('­ƒöº [SQLiteAdapter.ready] Readiness check failed:', error);
       throw error;
     }
   }

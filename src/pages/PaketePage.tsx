@@ -112,9 +112,22 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
 
   async function handleCreate(values: PackageFormValues){
     try {
+      // Convert Array-Indices back to DB-IDs for persistence
+      const processedLineItems = values.lineItems.map((item, index) => {
+        const dbId = index + 1;
+        return {
+          ...item,
+          id: dbId,
+          // Convert parentItemId from Array-Index to DB-ID
+          parentItemId: item.parentItemId !== undefined 
+            ? (item.parentItemId as number) + 1  // Array-Index → DB-ID
+            : undefined
+        };
+      });
+
       await createPackage({ 
         internalTitle: values.internalTitle,
-        lineItems: values.lineItems.map((item, index) => ({ ...item, id: index + 1 })),
+        lineItems: processedLineItems,
         parentPackageId: values.parentPackageId,
         addVat: values.addVat
       });
@@ -130,9 +143,22 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
     if(!current) return;
     
     try {
+      // Convert Array-Indices back to DB-IDs for persistence
+      const processedLineItems = values.lineItems.map((item, index) => {
+        const dbId = index + 1;
+        return {
+          ...item,
+          id: dbId,
+          // Convert parentItemId from Array-Index to DB-ID
+          parentItemId: item.parentItemId !== undefined 
+            ? (item.parentItemId as number) + 1  // Array-Index → DB-ID
+            : undefined
+        };
+      });
+
       await updatePackage(current.id, { 
         internalTitle: values.internalTitle,
-        lineItems: values.lineItems.map((item, index) => ({ ...item, id: index + 1 })),
+        lineItems: processedLineItems,
         parentPackageId: values.parentPackageId,
         addVat: values.addVat
       });
@@ -247,13 +273,23 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
           <PackageForm
             initial={{ 
               internalTitle: current.internalTitle,
-              lineItems: current.lineItems.map(li => ({ 
-                title: li.title, 
-                quantity: li.quantity, 
-                amount: li.amount,
-                parentItemId: li.parentItemId,
-                description: li.description
-              })),
+              lineItems: (() => {
+                // Convert DB-IDs to Array-Indices for PackageForm compatibility
+                const dbToIndexMap: Record<number, number> = {};
+                
+                // Create mapping: DB-ID → Array-Index
+                current.lineItems.forEach((item, index) => {
+                  dbToIndexMap[item.id] = index;
+                });
+                
+                return current.lineItems.map(li => ({ 
+                  title: li.title, 
+                  quantity: li.quantity, 
+                  unitPrice: li.unitPrice,
+                  parentItemId: li.parentItemId ? dbToIndexMap[li.parentItemId] : undefined,
+                  description: li.description
+                }));
+              })(),
               addVat: current.addVat,
               parentPackageId: current.parentPackageId
             }}
