@@ -20,7 +20,7 @@ Completed session summaries and archived development contexts
 - **Lessons Learned:** [LESSONS-LEARNED-package-total-localization-number-formatting.md](../08-ui/lessons/LESSONS-LEARNED-package-total-localization-number-formatting.md)
 - **Status:** ✅ COMPLETED - Branch: `feature/unify-package-unitprice` - Commit: `5c40455d`
 - **Summary:** Unified `PackageLineItem.amount` → `unitPrice` for consistency with OfferLineItem/InvoiceLineItem (6 files, 23 changes)
-- **Post-Implementation Issue:** ❌ PackageForm Total Display uses wrong locale formatting (toFixed() instead of formatCurrency()) - documented in Lessons Learned
+- **Post-Implementation Issue:** ✅ FIXED (2025-10-15) - PackageForm Total Display now uses formatCurrency() with German locale - See Lessons Learned for details
 
 ### **📋 plan/**
 Session planning and development context preparation
