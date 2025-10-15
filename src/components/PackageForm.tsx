@@ -601,7 +601,7 @@ export default function PackageForm({
                 <span>📊 {values.lineItems.length} Items</span>
                 <span>📦 {values.lineItems.filter(item => item.parentItemId === undefined || item.parentItemId === null).length} Haupt</span>
                 <span>↳ {values.lineItems.filter(item => item.parentItemId !== undefined).length} Sub</span>
-                <span>💰 €{values.lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0).toFixed(2)}</span>
+                <span>💰 {formatCurrency(values.lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0))}</span>
               </div>
               
               {/* Quick Actions */}
@@ -672,7 +672,7 @@ export default function PackageForm({
                               )}
                             </div>
                             <div style={{ fontSize: "10px", opacity: 0.8 }}>
-                              €{parentTotal.toFixed(2)}
+                              {formatCurrency(parentTotal)}
                             </div>
                           </div>
                           
@@ -693,7 +693,7 @@ export default function PackageForm({
                                   <span>#{subItemIndex + 1} {sub.title}</span>
                                 </div>
                                 <div style={{ fontSize: "9px", opacity: 0.7 }}>
-                                  €{subTotal.toFixed(2)}
+                                  {formatCurrency(subTotal)}
                                 </div>
                               </div>
                             );
@@ -1461,7 +1461,7 @@ export default function PackageForm({
           MwSt. hinzufügen
         </label>
         <div style={{ fontSize: "18px", fontWeight: "bold" }}>
-          Total: {formatCurrency(total)}
+          Summe: {formatCurrency(total)}
           {values.addVat && (
             <span style={{ fontSize: "12px", opacity: 0.8, display: "block" }}>
               zzgl. MwSt.

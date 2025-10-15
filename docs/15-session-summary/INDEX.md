@@ -10,6 +10,18 @@ Completed session summaries and archived development contexts
 - Project handover documentation
 - Long-term development context preservation
 
+### **📋 Refactoring Plans & Implementations**
+
+#### **PackageLineItem.unitPrice Refactoring (2025-10-14)**
+- **Planning:** [SESSION-2025-10-14-PACKAGELINEITEM-UNITPRICE-PLANNING.md](./SESSION-2025-10-14-PACKAGELINEITEM-UNITPRICE-PLANNING.md)
+- **Implementation:** [SESSION-2025-10-14-PACKAGELINEITEM-UNITPRICE-IMPLEMENTATION.md](./SESSION-2025-10-14-PACKAGELINEITEM-UNITPRICE-IMPLEMENTATION.md)
+- **Detailed Plan:** [PLAN_UNIFY_PACKAGE_UNITPRICE.md](./PLAN_UNIFY_PACKAGE_UNITPRICE.md)
+- **Quick Reference:** [PLAN_UNIFY_PACKAGE_UNITPRICE_QUICKREF.md](./PLAN_UNIFY_PACKAGE_UNITPRICE_QUICKREF.md)
+- **Lessons Learned:** [LESSONS-LEARNED-package-total-localization-number-formatting.md](../08-ui/lessons/LESSONS-LEARNED-package-total-localization-number-formatting.md)
+- **Status:** ✅ COMPLETED - Branch: `feature/unify-package-unitprice` - Commit: `5c40455d`
+- **Summary:** Unified `PackageLineItem.amount` → `unitPrice` for consistency with OfferLineItem/InvoiceLineItem (6 files, 23 changes)
+- **Post-Implementation Issue:** ❌ PackageForm Total Display uses wrong locale formatting (toFixed() instead of formatCurrency()) - documented in Lessons Learned
+
 ### **📋 plan/**
 Session planning and development context preparation
 - Session briefings and development goals
