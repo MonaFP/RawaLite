@@ -1,5 +1,7 @@
 # 00-meta - Project Meta-Documentation
 
+> **⚠️ CRITICAL:** [CRITICAL_KI-FAILURE-MODES.md](CRITICAL_KI-FAILURE-MODES.md) - **MANDATORY READ vor jeder KI-Session**
+
 > **Purpose:** Project management, KI instructions, standards, and organizational documentation
 
 ## 📋 **Thematic Organization**

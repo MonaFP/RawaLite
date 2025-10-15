@@ -56,10 +56,21 @@ describe('Critical Fix Pattern Validation', () => {
     expect(sourceCode).toMatch(/server:\s*{\s*port:\s*5174\s*}/);
   });
 
-  test('CRITICAL: Port Consistency in electron/main.ts', () => {
-    const sourceCode = readFileSync('electron/main.ts', 'utf8');
+  test('CRITICAL: Port Consistency in main window loader', () => {
+    // After IPC refactoring (Step 1), createWindow() was extracted to electron/windows/main-window.ts
+    // Check both locations for port 5174
+    const mainSource = readFileSync('electron/main.ts', 'utf8');
+    const windowSource = readFileSync('electron/windows/main-window.ts', 'utf8');
     
-    // REQUIRED: Port 5174 for localhost
-    expect(sourceCode).toMatch(/win\.loadURL\('http:\/\/localhost:5174'\)/);
+    // REQUIRED: Port 5174 in either main.ts OR main-window.ts
+    const hasPortInMain = /win\.loadURL\('http:\/\/localhost:5174'\)/.test(mainSource);
+    const hasPortInWindow = /win\.loadURL\('http:\/\/localhost:5174'\)/.test(windowSource);
+    
+    expect(hasPortInMain || hasPortInWindow).toBe(true);
+    
+    // If in main-window.ts, verify it's properly exported (function name is 'createWindow')
+    if (hasPortInWindow) {
+      expect(windowSource).toMatch(/export\s+(async\s+)?function\s+createWindow/);
+    }
   });
 });

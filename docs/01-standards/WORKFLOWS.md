@@ -151,6 +151,7 @@ git push origin feature/add-advanced-search
 - [ ] Unit Tests decken neue Funktionalität ab
 - [ ] Integration Tests für komplexe Features
 - [ ] Manual Testing durchgeführt
+- [ ] PDF-Sub-Items visuell geprüft (Angebot/Rechnung/Paket PDF-Export mit Sub-Items)
 - [ ] Edge Cases getestet
 
 ## 📚 **Documentation**
@@ -264,6 +265,7 @@ pnpm lint
 pnpm test
 pnpm e2e
 pnpm build
+pnpm validate:line-items   # Requires RAWALITE_DB_PATH or --db path
 
 # 6. Create Release Commit
 git add .

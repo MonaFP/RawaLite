@@ -155,6 +155,9 @@ gh release view v1.0.X --json assets  # MUST have assets
 🔺🔺🔺🔺 Unit (60-70%): Business logic, hooks
 ```
 
+### **Manual QA Pflicht (bei Line-Item/PDF-Änderungen):**
+- [ ] PDF-Sub-Items visuell prüfen (Angebot/Rechnung/Paket)
+
 ### **Quick Test Commands:**
 ```bash
 pnpm test:unit          # Fast feedback, development
@@ -303,6 +306,7 @@ pnpm lint              # Code quality
 # Validation
 pnpm validate:critical-fixes    # Preserve critical fixes
 pnpm validate:migrations        # Database consistency
+pnpm validate:line-items      # Line item hierarchy integrity (requires DB path)
 ```
 
 ---

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import DbClient from '../src/services/DbClient';
+import DbClient from '../../src/services/DbClient';
 
 // Mock window.rawalite API for testing
 const mockRawalite = {

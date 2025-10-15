@@ -30,6 +30,12 @@ import * as migration017 from './017_add_update_history';
 import * as migration018 from './018_add_auto_update_preferences';
 import * as migration019 from './019_mini_fix_delivery';
 import * as migration020 from './020_cleanup_v1041_settings';
+import * as migration021 from './021_unify_package_unit_price';
+import * as migration022 from './022_add_invoice_attachments';
+import * as migration023 from './023_add_line_item_hierarchy_level';
+import * as migration024 from './024_restore_package_line_item_metadata';
+import * as migration025 from './025_add_price_display_mode';
+import * as migration026 from './026_add_price_display_mode_to_packages';
 
 export const migrations: Migration[] = [
   {
@@ -69,7 +75,7 @@ export const migrations: Migration[] = [
     down: migration005.down
   },
   {
-    version: 6,
+    version: 7,
     name: '006_fix_missing_circles',
     up: migration006.up,
     down: migration006.down
@@ -157,6 +163,42 @@ export const migrations: Migration[] = [
     name: '020_cleanup_v1041_settings',
     up: migration020.up,
     down: migration020.down
+  },
+  {
+    version: 21,
+    name: '021_unify_package_unit_price',
+    up: migration021.up,
+    down: migration021.down
+  },
+  {
+    version: 22,
+    name: '022_add_invoice_attachments',
+    up: migration022.up,
+    down: migration022.down
+  },
+  {
+    version: 23,
+    name: '023_add_line_item_hierarchy_level',
+    up: migration023.up,
+    down: migration023.down
+  },
+  {
+    version: 24,
+    name: '024_restore_package_line_item_metadata',
+    up: migration024.up,
+    down: migration024.down
+  },
+  {
+    version: 25,
+    name: '025_add_price_display_mode',
+    up: migration025.up,
+    down: migration025.down
+  },
+  {
+    version: 26,
+    name: '026_add_price_display_mode_to_packages',
+    up: migration026.up,
+    down: migration026.down
   }
 ];
 

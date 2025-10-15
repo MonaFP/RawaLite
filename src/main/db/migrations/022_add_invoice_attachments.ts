@@ -1,5 +1,5 @@
 /**
- * Migration 020: Add Invoice Attachments System
+ * Migration 022: Add Invoice Attachments System
  * 
  * Creates the invoice_attachments table for storing image files
  * and other attachments linked to invoice line items.
@@ -15,7 +15,7 @@
 import type Database from 'better-sqlite3';
 
 export function up(db: Database.Database): void {
-  console.log('🔄 Running migration 020: Add invoice attachments system...');
+  console.log('🔄 Running migration 022: Add invoice attachments system...');
 
   // Create invoice_attachments table
   db.exec(`

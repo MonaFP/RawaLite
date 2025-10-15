@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock the Database module
-vi.mock('../src/main/db/Database', () => ({
+vi.mock('../../src/main/db/Database', () => ({
   getDb: vi.fn().mockReturnValue({
     exec: vi.fn(),
     prepare: vi.fn().mockReturnValue({
@@ -18,7 +18,7 @@ vi.mock('../src/main/db/Database', () => ({
 }));
 
 // Mock LoggingService
-vi.mock('../src/services/LoggingService', () => ({
+vi.mock('../../src/services/LoggingService', () => ({
   LoggingService: {
     log: vi.fn(),
     logError: vi.fn()
@@ -72,9 +72,9 @@ vi.mock('../src/main/db/migrations/index', () => ({
 }));
 
 // Import after mocking
-import * as MigrationService from '../src/main/db/MigrationService';
-import * as Database from '../src/main/db/Database';
-import { migrations } from '../src/main/db/migrations/index';
+import * as MigrationService from '../../src/main/db/MigrationService';
+import * as Database from '../../src/main/db/Database';
+import { migrations } from '../../src/main/db/migrations/index';
 import fs from 'node:fs';
 
 describe('MigrationService', () => {

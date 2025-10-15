@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { NummernkreisService } from '../src/services/NummernkreisService.ts';
+import { NummernkreisService } from '../../src/services/NummernkreisService';
 
 // Mock window.rawalite für Test-Umgebung
 const mockRawalite = {

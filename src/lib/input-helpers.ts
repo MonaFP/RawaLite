@@ -11,13 +11,23 @@
 /**
  * Formatiert einen numerischen Wert für die Anzeige im Input-Feld
  * @param value - Der numerische Wert
- * @returns Leer-String für 0, sonst den Wert als String
+ * @param showDecimals - Ob Dezimalstellen angezeigt werden sollen (default: false)
+ * @returns Leer-String für 0, sonst den Wert als String (mit Dezimalstellen wenn showDecimals=true)
  */
-export function formatNumberInputValue(value: number): string {
+export function formatNumberInputValue(value: number, showDecimals: boolean = false): string {
   // Zeige leeres Feld statt "0" für bessere UX
   if (value === 0 || isNaN(value)) {
     return '';
   }
+  
+  // Formatiere mit deutschen Dezimaltrennzeichen wenn gewünscht
+  if (showDecimals) {
+    return value.toLocaleString('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+  
   return value.toString();
 }
 

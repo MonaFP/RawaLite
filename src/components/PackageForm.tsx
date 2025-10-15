@@ -43,6 +43,13 @@ export default function PackageForm({
     priceDisplayMode: 'default' as 'default' | 'included' | 'hidden' | 'optional'
   });
 
+  // 🔧 FIX: Dual-State Pattern für unitPrice Eingabe (verhindert Formatierung während Eingabe)
+  const [editingUnitPrice, setEditingUnitPrice] = useState<string>('');
+  const [isEditingUnitPrice, setIsEditingUnitPrice] = useState(false);
+  
+  // 🔧 FIX: Editing-State für bestehende Line-Items (Index → editingValue)
+  const [editingLineItems, setEditingLineItems] = useState<Record<number, string>>({});
+
   // 🔍 DEBUG: State Update Flow Monitoring
   useEffect(() => {
     console.log('🔍 CURRENT ITEM UPDATED:', {
@@ -951,11 +958,34 @@ export default function PackageForm({
                     className={fieldErrors[`item_${parentItemIndex}_quantity`] ? 'error' : ''}
                   />
                   <input 
-                    type="number"
-                    placeholder="1000"
-                    value={formatNumberInputValue(parentItem.unitPrice)}
-                    onChange={e => updateLineItem(parentItemIndex, "unitPrice", parseNumberInput(e.target.value))}
-                    style={getNumberInputStyles()}
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="1.000,00"
+                    value={editingLineItems[parentItemIndex] !== undefined 
+                      ? editingLineItems[parentItemIndex] 
+                      : formatNumberInputValue(parentItem.unitPrice, true)
+                    }
+                    onFocus={() => {
+                      setEditingLineItems(prev => ({
+                        ...prev,
+                        [parentItemIndex]: parentItem.unitPrice === 0 ? '' : parentItem.unitPrice.toString().replace('.', ',')
+                      }));
+                    }}
+                    onChange={e => {
+                      setEditingLineItems(prev => ({
+                        ...prev,
+                        [parentItemIndex]: e.target.value
+                      }));
+                    }}
+                    onBlur={() => {
+                      const parsed = parseNumberInput(editingLineItems[parentItemIndex] || '0');
+                      updateLineItem(parentItemIndex, "unitPrice", parsed);
+                      setEditingLineItems(prev => {
+                        const newState = { ...prev };
+                        delete newState[parentItemIndex];
+                        return newState;
+                      });
+                    }}
                     disabled={isSubmitting}
                     className={fieldErrors[`item_${parentItemIndex}_unitPrice`] ? 'error' : ''}
                   />
@@ -1134,11 +1164,34 @@ export default function PackageForm({
                         className={fieldErrors[`item_${subItemIndex}_quantity`] ? 'error' : ''}
                       />
                       <input 
-                        type="number"
-                        placeholder="0"
-                        value={formatNumberInputValue(subItem.unitPrice)}
-                        onChange={e => updateLineItem(subItemIndex, "unitPrice", parseNumberInput(e.target.value))}
-                        style={getNumberInputStyles()}
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0,00"
+                        value={editingLineItems[subItemIndex] !== undefined 
+                          ? editingLineItems[subItemIndex] 
+                          : formatNumberInputValue(subItem.unitPrice, true)
+                        }
+                        onFocus={() => {
+                          setEditingLineItems(prev => ({
+                            ...prev,
+                            [subItemIndex]: subItem.unitPrice === 0 ? '' : subItem.unitPrice.toString().replace('.', ',')
+                          }));
+                        }}
+                        onChange={e => {
+                          setEditingLineItems(prev => ({
+                            ...prev,
+                            [subItemIndex]: e.target.value
+                          }));
+                        }}
+                        onBlur={() => {
+                          const parsed = parseNumberInput(editingLineItems[subItemIndex] || '0');
+                          updateLineItem(subItemIndex, "unitPrice", parsed);
+                          setEditingLineItems(prev => {
+                            const newState = { ...prev };
+                            delete newState[subItemIndex];
+                            return newState;
+                          });
+                        }}
                         disabled={isSubmitting}
                         className={fieldErrors[`item_${subItemIndex}_unitPrice`] ? 'error' : ''}
                       />
@@ -1373,11 +1426,22 @@ export default function PackageForm({
             disabled={isSubmitting}
           />
           <input 
-            type="number"
-            placeholder="0"
-            value={formatNumberInputValue(currentItem.unitPrice)}
-            onChange={e => setCurrentItem(prev => ({ ...prev, unitPrice: parseNumberInput(e.target.value) }))}
-            style={getNumberInputStyles()}
+            type="text"
+            inputMode="decimal"
+            placeholder="0,00"
+            value={isEditingUnitPrice ? editingUnitPrice : formatNumberInputValue(currentItem.unitPrice, true)}
+            onFocus={() => {
+              setIsEditingUnitPrice(true);
+              setEditingUnitPrice(currentItem.unitPrice === 0 ? '' : currentItem.unitPrice.toString().replace('.', ','));
+            }}
+            onChange={e => {
+              setEditingUnitPrice(e.target.value);
+            }}
+            onBlur={() => {
+              const parsed = parseNumberInput(editingUnitPrice);
+              setCurrentItem(prev => ({ ...prev, unitPrice: parsed }));
+              setIsEditingUnitPrice(false);
+            }}
             disabled={isSubmitting}
           />
           <select
@@ -1512,6 +1576,19 @@ export default function PackageForm({
           padding: 10px 12px; 
           border-radius: 10px; 
           font-family: inherit;
+        }
+        
+        /* 🔧 FIX: Spinner komplett entfernen (Webkit/Chrome) */
+        .package-form input[type="number"]::-webkit-inner-spin-button,
+        .package-form input[type="number"]::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        
+        /* 🔧 FIX: Spinner komplett entfernen (Firefox) */
+        .package-form input[type="number"] {
+          -moz-appearance: textfield;
+          appearance: textfield;
         }
         
         .package-form select option {

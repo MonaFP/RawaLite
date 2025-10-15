@@ -18,6 +18,7 @@ import { ipcMain, BrowserWindow, dialog, app, shell } from 'electron';
 import { writeFileSync, statSync, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { generateTemplateHTML } from './pdf-templates';
 
 /**
  * Register all PDF core IPC handlers
@@ -127,10 +128,8 @@ async function handlePdfGenerate(event: any, options: {
     }
     
     // 4. Generate HTML content (NOW SYNC, using preprocessed attachments with correct field mapping)
-    // Import from pdf-templates module (will be created in Phase 2)
-    console.log('📝 [PDF-CORE] HTML generation placeholder - will be implemented in Phase 2');
-    // const htmlContent = generateTemplateHTML({ ...options, data: preprocessedData });
-    const htmlContent = `<html><body><h1>PDF Generation - Phase 2 Implementation Needed</h1></body></html>`;
+    console.log('📝 [PDF-CORE] Generating HTML content using pdf-templates module...');
+    const htmlContent = generateTemplateHTML({ ...options, data: preprocessedData });
     
     const { settings } = options.data;
     

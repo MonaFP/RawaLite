@@ -900,9 +900,47 @@ class HealthMonitor {
 
 ---
 
-## 📋 **Aktuelle Architektur-Status (Stand: 01.10.2025)**
+## � **Main.ts Modular Architecture (Refactor v1.0.42.5)**
+
+### **Modulare Struktur - October 2025**
+
+Die `electron/main.ts` wurde vollständig refactored zu einer modularen Architektur:
+
+#### **📁 electron/windows/ - Window Management Modules**
+```typescript
+electron/windows/
+├── main-window.ts     // Hauptfenster Creation & Configuration
+└── update-window.ts   // Update-Manager Window mit Security Settings
+```
+
+#### **📁 electron/ipc/ - Thematic IPC Handler Modules**  
+```typescript
+electron/ipc/
+├── paths.ts           // Pfad-Handler für Dokumente/Exports
+├── filesystem.ts      // Dateisystem-Operationen
+├── status.ts          // Status-Updates & Entity-Status [CRITICAL FIX-012]
+├── numbering.ts       // Nummernkreis-System für Angebote/Rechnungen
+├── pdf-core.ts        // PDF-Generierung & Templates [CRITICAL FIX-007]
+├── pdf-templates.ts   // PDF Template-Generator
+├── database.ts        // Database-Handler [CRITICAL FIX-012]
+├── backup.ts          // Backup-System mit Integrity Checks
+├── files.ts           // File-Operations & Upload-Management
+└── update-manager.ts  // Update-System Integration
+```
+
+#### **🎯 Main.ts Refactor Benefits**
+- **97% Code Reduction**: Von 2565+ → 92 Zeilen
+- **12 Extracted Modules**: Klare Trennung der Verantwortlichkeiten  
+- **All Critical Fixes Preserved**: FIX-007, FIX-012 vollständig beibehalten
+- **Improved Maintainability**: Modulare Struktur für bessere Wartbarkeit
+- **Type Safety**: Vollständige TypeScript-Integration aller Module
+
+---
+
+## �📋 **Aktuelle Architektur-Status (Stand: 13.10.2025)**
 
 ### **✅ Komplett implementiert:**
+- **Main.ts Modular Refactor**: 100% - Vollständige Modularisierung abgeschlossen
 - **SQLite Database Layer**: 100% - better-sqlite3 mit Field-Mapping
 - **IPC Security Architecture**: 100% - Sichere Process-Trennung
 - **React Frontend**: 100% - Alle Business-Entitäten implementiert

@@ -53,6 +53,14 @@ export class FieldMapper {
     'parentPackageId': 'parent_package_id',
     'addVat': 'add_vat',
     
+    // LineItem Felder (KRITISCH für Package/Offer/Invoice)
+    'unitPrice': 'unit_price',
+    'hierarchyLevel': 'hierarchy_level',
+    'itemOrigin': 'item_origin',
+    'sourcePackageItemId': 'source_package_item_id',
+    'sortOrder': 'sort_order',
+    'clientTempId': 'client_temp_id',
+    
     // Offer/Invoice Felder
     'customerId': 'customer_id',
     'offerId': 'offer_id',
@@ -70,7 +78,6 @@ export class FieldMapper {
     'rejectedAt': 'rejected_at',
     
     // LineItem Felder (KRITISCH für Packages/Offers/Invoices)
-    'unitPrice': 'unit_price',
     'parentItemId': 'parent_item_id',
     'packageId': 'package_id',
     'invoiceId': 'invoice_id',
@@ -108,6 +115,9 @@ export class FieldMapper {
     'discountValue': 'discount_value',
     'discountAmount': 'discount_amount',
     'subtotalBeforeDiscount': 'subtotal_before_discount',
+    
+    // Price Display Mode Felder (KRITISCH für SubItem Preisanzeige v1.0.42.6)
+    'priceDisplayMode': 'price_display_mode',
     
     // Tabellennamen (für SQL-Queries)
     'packageLineItems': 'package_line_items',

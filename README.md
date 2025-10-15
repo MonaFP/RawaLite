@@ -8,6 +8,12 @@
 [![Electron](https://img.shields.io/badge/electron-31.2.0-brightgreen)](https://electronjs.org/)
 [![React](https://img.shields.io/badge/react-18.3.1-blue)](https://reactjs.org/)
 
+## 🎯 **Start hier**
+
+- **🤖 KI-Entwicklung:** [docs/00-meta/CRITICAL_KI-FAILURE-MODES.md](docs/00-meta/CRITICAL_KI-FAILURE-MODES.md) - **MANDATORY READ vor jeder Session**
+- **📚 Dokumentation:** [docs/00-meta/INDEX.md](docs/00-meta/INDEX.md) - Vollständige Projekt-Dokumentation
+- **🛡️ Critical Fixes:** [docs/00-meta/critical-fixes/CRITICAL-FIXES-REGISTRY.md](docs/00-meta/critical-fixes/CRITICAL-FIXES-REGISTRY.md) - Geschützte Code-Patterns
+
 ## 🚀 **Schnellstart**
 
 ```bash

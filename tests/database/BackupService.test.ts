@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock the Database module
-vi.mock('../src/main/db/Database', () => ({
+vi.mock('../../src/main/db/Database', () => ({
   getDb: vi.fn().mockReturnValue({
     backup: vi.fn().mockResolvedValue(undefined),
     exec: vi.fn(),
@@ -44,8 +44,8 @@ vi.mock('electron', () => ({
 }));
 
 // Import after mocking
-import * as BackupService from '../src/main/db/BackupService';
-import * as Database from '../src/main/db/Database';
+import * as BackupService from '../../src/main/db/BackupService';
+import * as Database from '../../src/main/db/Database';
 import fs from 'node:fs';
 
 describe('BackupService', () => {

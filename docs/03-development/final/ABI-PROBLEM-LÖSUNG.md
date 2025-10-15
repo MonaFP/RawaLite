@@ -95,3 +95,130 @@ Das führt automatisch electron-rebuild aus und löst das ABI-Problem.
 - Electron ist noch bei einer älteren Node.js Version
 
 **Lösung ist einfach:** Immer `pnpm rebuild:electron` vor dem Build! 🎯
+
+---
+
+## 🔥 EBUSY: Resource Busy or Locked (Windows File Lock Issue)
+
+### 🚨 Problem
+
+Beim `pnpm dist` erscheint folgender Fehler:
+
+```
+EBUSY: resource busy or locked, copyfile 
+'C:\Users\ramon\Desktop\RawaLite\dist-web\icon.png' 
+=> 'C:\Users\ramon\Desktop\RawaLite\dist-release\win-unpacked\resources\icon.png'
+
+Command failed with exit code 1
+```
+
+**Symptom:** `icon.png` kann nicht kopiert werden, weil die Datei gesperrt ist.
+
+### 🔍 Ursache
+
+Häufige Ursachen für Windows File Locks:
+
+1. **Electron Dev Server läuft noch** → `icon.png` ist geladen
+2. **Antivirus scannt gerade die Datei** → Windows Defender/andere AV Software
+3. **Windows Explorer Thumbnail Cache** → Vorschau hält Datei offen
+4. **Vorheriger Build-Prozess nicht sauber beendet** → electron-builder hält Dateien
+
+### ✅ Lösung
+
+#### Option 1: Prozesse sauber beenden (EMPFOHLEN)
+
+```powershell
+# Alle Electron/Node Prozesse beenden
+pnpm run clean-processes
+
+# Dann neu bauen
+pnpm dist
+```
+
+#### Option 2: Vollständiger Clean Build
+
+```powershell
+# 1. Alle Prozesse killen
+Get-Process | Where-Object {$_.ProcessName -match "electron|node"} | Stop-Process -Force
+
+# 2. Vollständiger Clean
+pnpm clean:full
+
+# 3. Rebuild Native Modules
+pnpm rebuild:electron
+
+# 4. Build + Dist
+pnpm build && pnpm dist
+```
+
+#### Option 3: Windows File Lock umgehen
+
+```powershell
+# Temporär Antivirus für dist-release Ordner ausschließen
+# Oder: dist-release löschen und neu erstellen
+Remove-Item -Path "dist-release" -Recurse -Force -ErrorAction SilentlyContinue
+pnpm dist
+```
+
+### 🛠️ Permanent Fix: Pre-Dist Cleanup Script
+
+Füge folgendes Script zu `package.json` hinzu:
+
+```json
+{
+  "scripts": {
+    "predist": "node scripts/prebuild-cleanup.mjs && pnpm rebuild:electron",
+    "dist:safe": "pnpm clean:full && pnpm build && pnpm dist"
+  }
+}
+```
+
+**Vorteil:** `predist` Hook wird automatisch vor `pnpm dist` ausgeführt.
+
+### 📋 Prävention - Best Practices
+
+1. **Immer Dev Server stoppen vor Build:**
+   ```powershell
+   # Ctrl+C im Dev Terminal, dann:
+   pnpm dist
+   ```
+
+2. **Windows Defender Ausnahmen setzen:**
+   - `C:\Users\ramon\Desktop\RawaLite\node_modules\`
+   - `C:\Users\ramon\Desktop\RawaLite\dist-release\`
+   - Schnellerer Build + keine File Locks
+
+3. **Nutze `dist:safe` statt `dist`:**
+   ```powershell
+   pnpm dist:safe  # Führt automatisch Cleanup durch
+   ```
+
+### 🚀 Empfohlener Dist-Workflow
+
+```powershell
+# 1. Dev Server beenden (falls läuft)
+# Ctrl+C im Terminal
+
+# 2. Vollständiger Clean + Dist
+pnpm dist:safe
+
+# Oder manuell:
+pnpm clean:full
+pnpm rebuild:electron
+pnpm build
+pnpm dist
+```
+
+### ⚠️ Wenn nichts hilft
+
+```powershell
+# Neustart hilft immer (released alle File Locks)
+# Oder: Einzelne Datei entsperren mit PowerShell
+$file = "C:\Users\ramon\Desktop\RawaLite\dist-release\win-unpacked\resources\icon.png"
+if (Test-Path $file) { 
+  Remove-Item $file -Force 
+}
+pnpm dist
+```
+
+**Zusammenfassung:** Hauptursache ist meist laufender Dev Server oder Antivirus. Lösung: `pnpm clean-processes` vor dist! 🎯

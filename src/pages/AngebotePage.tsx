@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Table } from '../components/Table';
 import { OfferForm } from '../components/OfferForm';
 import { StatusControl } from '../components/StatusControl';
@@ -9,6 +9,7 @@ import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { PDFService } from '../services/PDFService';
+import { usePersistence } from '../contexts/PersistenceContext';
 import type { Offer } from '../persistence/adapter';
 
 interface AngebotePageProps {
@@ -24,68 +25,23 @@ export default function AngebotePage({ title = "Angebote" }: AngebotePageProps) 
   const { showSuccess, showError } = useNotifications();
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Offer | null>(null);
+  const { adapter } = usePersistence();
 
   // Hilfsfunktion zum Laden eines Angebots mit Anhängen
-  const loadOfferWithAttachments = async (offerId: number) => {
-    console.log('🔄 Loading offer with attachments...', offerId);
-    
-    // 1. Angebot aus DB laden
-    const offerRows = await window.rawalite.db.query('SELECT * FROM offers WHERE id = ?', [offerId]);
-    if (!offerRows || offerRows.length === 0) {
+  const loadOfferWithAttachments = useCallback(async (offerId: number) => {
+    if (!adapter) {
+      throw new Error('Datenbankadapter nicht bereit');
+    }
+
+    console.log('🔄 Loading offer with attachments via adapter...', offerId);
+    const offerWithAttachments = await adapter.getOffer(offerId);
+
+    if (!offerWithAttachments) {
       throw new Error('Angebot nicht gefunden');
     }
-    const offerFromDb = offerRows[0];
-    
-    // 2. Line Items laden
-    const lineItemRows = await window.rawalite.db.query(
-      'SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id FROM offer_line_items WHERE offer_id = ? ORDER BY id', 
-      [offerId]
-    );
-    
-    // 3. Anhänge für jedes Line Item laden mit Feldmappings
-    for (const lineItem of lineItemRows) {
-      // 3a. Feldmappings für Line Items (snake_case -> camelCase)
-      lineItem.unitPrice = lineItem.unit_price;
-      lineItem.parentItemId = lineItem.parent_item_id;
-      lineItem.itemType = lineItem.item_type;
-      lineItem.sourcePackageId = lineItem.source_package_id;
-      
-      console.log(`🔍 [PDF DEBUG] Line Item ${lineItem.id} field mapping:`, {
-        originalUnitPrice: lineItem.unit_price,
-        mappedUnitPrice: lineItem.unitPrice,
-        quantity: lineItem.quantity,
-        total: lineItem.total
-      });
-      
-      const attachmentRows = await window.rawalite.db.query(
-        'SELECT id, offer_id, line_item_id, original_filename, file_type, file_size, base64_data FROM offer_attachments WHERE line_item_id = ?',
-        [lineItem.id]
-      );
-      
-      // Feldmappings für Anhänge (snake_case -> camelCase)
-      lineItem.attachments = (attachmentRows || []).map((attachment: any) => ({
-        id: attachment.id,
-        offerId: attachment.offer_id,
-        lineItemId: attachment.line_item_id,
-        originalFilename: attachment.original_filename,
-        filename: attachment.original_filename, // Alias für Template-Kompatibilität
-        fileType: attachment.file_type,
-        fileSize: attachment.file_size,
-        base64Data: attachment.base64_data
-      }));
-      
-      console.log(`📎 Line Item ${lineItem.id}: Found ${lineItem.attachments.length} attachments`);
-      lineItem.attachments.forEach((att: any, index: number) => {
-        console.log(`📎   - Attachment ${index + 1}: ${att.originalFilename} (${att.fileType}, ${att.base64Data ? 'has base64' : 'no base64'})`);
-      });
-    }
-    
-    // 4. Komplettes Angebot mit Anhängen zusammenbauen
-    return {
-      ...offerFromDb,
-      lineItems: lineItemRows
-    };
-  };
+
+    return offerWithAttachments;
+  }, [adapter]);
 
   const columns = useMemo(() => ([
     { key: "offerNumber", header: "Nummer" },

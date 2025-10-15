@@ -1,4 +1,12 @@
-# RawaLite – Kurz-Instructions für KI**If Critical Pattern Missing:** STOP immediately, re-implement from registry, test thoroughly.
+# RawaLite – Kurz-Instructions für KI
+
+> **⚠️ CRITICAL:** [../CRITICAL_KI-FAILURE-MODES.md](../CRITICAL_KI-FAILURE-MODES.md) - **MANDATORY READ - Session-Killer-Fehler verhindern**
+> **🛡️ NEVER violate:** [../critical-fixes/CRITICAL-FIXES-REGISTRY.md](../critical-fixes/CRITICAL-FIXES-REGISTRY.md) - Geschützte Code-Patterns
+> **🏗️ ALWAYS use:** Field-Mapper + convertSQLQuery() - Nie hardcoded snake_case SQL
+> **📱 ELECTRON-specific:** `!app.isPackaged` für Environment-Detection - Nie process.env.NODE_ENV
+> **📚 BEFORE coding:** docs/ semantic_search für verwandte Probleme - Nie ohne Dokumentations-Review
+
+**If Critical Pattern Missing:** STOP immediately, re-implement from registry, test thoroughly.
 
 ## 📁 DOCUMENTATION STRUCTURE RULES - MANDATORY
 

@@ -118,4 +118,14 @@ export function registerFilesystemHandlers(): void {
       throw error
     }
   })
+
+  ipcMain.handle('fs:appendFile', async (event, filePath: string, data: string | Uint8Array, options?: { encoding?: string }) => {
+    try {
+      await fs.appendFile(filePath, data, options as any)
+      return true
+    } catch (error) {
+      console.error(`Failed to append file ${filePath}:`, error)
+      throw error
+    }
+  })
 }

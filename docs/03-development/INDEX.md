@@ -20,6 +20,10 @@
 - [LESSONS-LEARNED-react-hooks-anti-patterns.md](active/LESSONS-LEARNED-react-hooks-anti-patterns.md) - React hooks best practices
 - [POWERSHELL_PACKAGE_JSON_BEST_PRACTICES.md](active/POWERSHELL_PACKAGE_JSON_BEST_PRACTICES.md) - PowerShell integration patterns
 
+### **📋 Refactoring Plans**
+- [PLAN_UNIFY_PACKAGE_UNITPRICE.md](PLAN_UNIFY_PACKAGE_UNITPRICE.md) - 📋 **GEPLANT** - Vereinheitlichung PackageLineItem.amount → unitPrice
+- [PLAN_UNIFY_PACKAGE_UNITPRICE_QUICKREF.md](PLAN_UNIFY_PACKAGE_UNITPRICE_QUICKREF.md) - Quick Reference für Umsetzung
+
 ## 🔗 **Related Topics**
 
 - [Standards](../01-standards/) - Code standards and conventions
@@ -29,8 +33,9 @@
 
 ## 📈 **Status**
 
-- **Last Updated:** 2025-10-12
+- **Last Updated:** 2025-10-14
 - **Active Issues:** 3 (Parallel execution, React patterns, PowerShell integration)
+- **Planned Refactorings:** 1 (PackageLineItem.amount → unitPrice)
 - **Documentation Status:** Complete - Development workflows documented
 - **Setup Coverage:** Full development environment setup covered
 - **Dev-Prod Separation:** ✅ **PRODUCTION VALIDATED** - Comprehensive implementation documented

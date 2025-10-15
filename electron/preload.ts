@@ -89,6 +89,8 @@ contextBridge.exposeInMainWorld('rawalite', {
       ipcRenderer.invoke('fs:readFile', filePath, encoding) as Promise<string | Uint8Array>,
     writeFile: (filePath: string, data: string | Uint8Array, encoding?: string) => 
       ipcRenderer.invoke('fs:writeFile', filePath, data, encoding) as Promise<boolean>,
+    appendFile: (filePath: string, data: string | Uint8Array, encoding?: string) =>
+      ipcRenderer.invoke('fs:appendFile', filePath, data, { encoding }) as Promise<boolean>,
   },
   // 📁 File Management API for Attachments
   files: {

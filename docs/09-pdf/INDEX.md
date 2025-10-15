@@ -10,6 +10,9 @@ PDF-Generierung, Rechnungs-/Angebots-Templates und PDF-Workflows.
 #### 📋 Root-Dateien
 - **PDF-LAYOUT-OPTIMIZATIONS-V1-5-2.md** → Layout-Verbesserungen mit minimalen Rändern und Header
 - **IMAGE-UPLOAD-FEATURE.md** → ✅ **COMPLETE:** Image Upload System für Angebote mit PDF-Integration
+- **ISSUE-REPORT-PDF-UND-SUBITEM-PREISE-2025-10-14.md** → 📊 **ANALYSIS:** 3 PDF/UI Issues (Anmerkungen Layout, Theme Colors, SubItem Pricing)
+- **ANMERKUNGEN-STYLING-FIX-2025-10-14.md** → ✅ **FIXED:** Issues #1 & #2 (Anmerkungen Breite + Theme-Farben Integration v1.0.42.6)
+- **SUBITEM-PRICING-FLEXIBILITY-IMPLEMENTATION-2025-10-14.md** → ✅ **IMPLEMENTED:** Issue #3 (SubItem priceDisplayMode: default/included/hidden/optional)
 
 #### ✅ final/
 - **pdf-anhang-seite-implementation.md** → ✅ **COMPLETE:** Separate lesbare Anhang-Seite in PDF-Ausgabe

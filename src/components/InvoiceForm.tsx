@@ -406,8 +406,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </div>
 
           <div style={{display:"flex", flexDirection:"column", gap:"8px"}}>
+            {/* React.Fragment-basierte Gruppierung: Parent-Items mit ihren Sub-Items gruppiert */}
             {parentItems.map(item => (
-              <div key={item.id} style={{
+              <React.Fragment key={`parent-${item.id}`}>
+                <div style={{
                 border: "1px solid rgba(255,255,255,.1)",
                 background: "rgba(17,24,39,.4)",
                 borderRadius: "6px",
@@ -529,7 +531,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                       marginTop:"4px",
                       padding:"12px"
                     }}>
-                      <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:"8px", alignItems:"start", marginBottom:"8px"}}>
+                      <div style={{display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr 120px auto", gap:"8px", alignItems:"start", marginBottom:"8px"}}>
                         <div>
                           <input
                             type="text"
@@ -545,9 +547,19 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                             placeholder="Menge"
                             value={subItem.quantity}
                             onChange={(e) => updateLineItem(subItem.id, 'quantity', parseFloat(e.target.value) || 0)}
-                            style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
+                            style={{
+                              width:"100%", 
+                              padding:"6px", 
+                              border:"1px solid rgba(255,255,255,.1)", 
+                              borderRadius:"4px", 
+                              background:"rgba(17,24,39,.8)", 
+                              color:"var(--muted)", 
+                              fontSize:"14px",
+                              opacity: subItem.priceDisplayMode === 'included' || subItem.priceDisplayMode === 'hidden' ? 0.5 : 1
+                            }}
                             min="0"
                             step="0.01"
+                            disabled={subItem.priceDisplayMode === 'included' || subItem.priceDisplayMode === 'hidden'}
                           />
                         </div>
                         <div>
@@ -556,13 +568,58 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                             placeholder="Einzelpreis"
                             value={formatNumberInputValue(subItem.unitPrice)}
                             onChange={(e) => updateLineItem(subItem.id, 'unitPrice', parseNumberInput(e.target.value))}
-                            style={{...getNumberInputStyles(), width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
+                            style={{
+                              ...getNumberInputStyles(), 
+                              width:"100%", 
+                              padding:"6px", 
+                              border:"1px solid rgba(255,255,255,.1)", 
+                              borderRadius:"4px", 
+                              background:"rgba(17,24,39,.8)", 
+                              color:"var(--muted)", 
+                              fontSize:"14px",
+                              opacity: subItem.priceDisplayMode === 'included' || subItem.priceDisplayMode === 'hidden' ? 0.5 : 1
+                            }}
                             min="0"
+                            disabled={subItem.priceDisplayMode === 'included' || subItem.priceDisplayMode === 'hidden'}
                           />
                         </div>
                         <div style={{padding:"6px", fontSize:"14px", fontWeight:"500"}}>
-                          €{subItem.total.toFixed(2)}
+                          {subItem.priceDisplayMode === 'included' ? (
+                            <span style={{color:"var(--accent)", fontStyle:"italic", fontSize:"13px"}}>inkl.</span>
+                          ) : subItem.priceDisplayMode === 'hidden' ? (
+                            <span style={{color:"var(--muted)", fontSize:"14px"}}>—</span>
+                          ) : subItem.priceDisplayMode === 'optional' ? (
+                            <span style={{color:"var(--muted)", fontStyle:"italic", fontSize:"11px"}}>optional</span>
+                          ) : (
+                            <span>€{subItem.total.toFixed(2)}</span>
+                          )}
                         </div>
+                        <select
+                          value={subItem.priceDisplayMode || 'default'}
+                          onChange={(e) => {
+                            const mode = e.target.value as 'default' | 'included' | 'hidden' | 'optional';
+                            updateLineItem(subItem.id, 'priceDisplayMode', mode);
+                            
+                            // Bei 'included' oder 'hidden': Preise auf 0 setzen
+                            if (mode === 'included' || mode === 'hidden') {
+                              updateLineItem(subItem.id, 'unitPrice', 0);
+                              updateLineItem(subItem.id, 'quantity', 1);
+                            }
+                          }}
+                          style={{
+                            padding:"6px", 
+                            border:"1px solid rgba(255,255,255,.1)", 
+                            borderRadius:"4px", 
+                            background:"rgba(17,24,39,.8)", 
+                            color:"var(--muted)",
+                            fontSize:"12px"
+                          }}
+                        >
+                          <option value="default">Preis</option>
+                          <option value="included">inkl.</option>
+                          <option value="hidden">versteckt</option>
+                          <option value="optional">optional</option>
+                        </select>
                         <div>
                           <button
                             type="button"
@@ -625,7 +682,8 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                       </div>
                     </div>
                   ))}
-              </div>
+                </div>
+              </React.Fragment>
             ))}
           </div>
         </div>

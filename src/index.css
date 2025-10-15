@@ -517,10 +517,9 @@ body{
 }
 
 .line-item--sub {
-  margin-left: 40px; /* Reduziert von 120px extreme indentation */
-  border: 4px solid #ff0000;
-  border-left: 8px solid #00ff00;
-  background: rgba(255, 0, 0, 0.3);
+  margin-left: 24px; /* Konsistent mit PackageForm/OfferForm/InvoiceForm */
+  border-left: 4px solid var(--accent);
+  background: rgba(96, 165, 250, 0.1);
 }
 
 .line-item--orphaned {

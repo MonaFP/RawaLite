@@ -466,7 +466,7 @@ Summe: {formatCurrency(total)}
 **Detailed Documentation:** 
 → `docs/08-ui/lessons/LESSONS-LEARNED-package-total-localization-number-formatting.md`
 
-**Status:** ❌ **NICHT GELÖST** (2025-10-15)
+**Status:** ⚠️ **UNTER ANALYSE** (2025-10-15) - Console zeigt deutsches Format, User meldet "3 Nachkommastellen"
 
 ### **Versuchte Fixes (Fehlgeschlagen):**
 

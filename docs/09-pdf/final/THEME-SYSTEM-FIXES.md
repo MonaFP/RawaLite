@@ -190,6 +190,52 @@ const themeColors = {
 - **Bei Farbänderungen:** Zentrale Theme-Definition aktualisieren
 - **Testing:** Alle Themes in PDF-Ausgabe validieren
 
+---
+
+## 🎯 Addendum: Sub-Item Styling & Glyph-Fallback (14.10.2025)
+
+### Hintergrund
+Sub-Items werden in PDF-Tabellen bislang kaum unterscheidbar dargestellt. Zudem rendern manche PDF-Fonts das Symbol ↳ nicht zuverlässig. Dieses Addendum definiert verbindliche Styles und Fallback-Regeln.
+
+### Pflicht-Styles
+```css
+/* Sub-Item Hervorhebung */
+tr.sub-item td:first-child {
+  padding-left: 20px;
+  position: relative;
+  color: ${secondaryColor};
+}
+
+tr.sub-item td:first-child::before {
+  content: var(--sub-item-prefix, '›');
+  position: absolute;
+  left: 6px;
+  color: ${accentColor};
+  font-weight: bold;
+}
+
+tr.sub-item {
+  border-left: 2px solid ${accentColor};
+}
+```
+
+### Template-Kommentar (Pflicht)
+```html
+<!-- Sub-Item Indentation:
+     - Uses CSS custom property --sub-item-prefix to allow glyph fallback.
+     - Default symbol is ↳; fallback ist › (&rsaquo;) für Font-Kompatibilität.
+     - Do not remove the ::before rule – required for PDF readability. -->
+```
+
+### QA-Erweiterung
+Bei allen Änderungen an Line-Items oder PDF-Templates ist der manuelle Test **„PDF-Sub-Items visuell prüfen“** auszuführen (siehe `docs/01-standards/WORKFLOWS.md` und `docs/01-standards/QUICK-REFERENCE.md`).
+
+### Auswirkungen
+- Schriftarten-sichere Darstellung der Hierarchie.
+- Einheitliche Einrückung in allen Dokumenttypen (Angebot, Rechnung, Paket).
+- Dokumentierte Pflichtprüfung für zukünftige Anpassungen.
+
+
 ## 🏗️ Technische Implementierung
 
 ### Dateien geändert:

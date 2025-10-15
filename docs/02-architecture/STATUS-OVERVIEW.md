@@ -1,8 +1,8 @@
 # RawaLite App - Status mit Ungelösten Problemen
 
-**Stand:** 30. September 2025  
-**Version:** 1.0.0  
-**Entwicklung:** 97.8% vollständig ✅  
+**Stand:** 13. Oktober 2025  
+**Version:** 1.0.42.5  
+**Entwicklung:** 98.5% vollständig ✅  
 **Production:** 🔴 BLOCKIERT durch Build-Probleme
 
 ## ⚠️ KRITISCHE PROBLEME
@@ -64,7 +64,9 @@ Die Migration von `sql.js` zu `better-sqlite3` hat Production-Builds gebrochen:
 | Field Mapper | Database | 100% | ✅ | camelCase ↔ snake_case vollständig |
 | **Electron Backend** | | **100%** | ✅ | |
 | IPC APIs | Backend | 100% | ✅ | 15+ APIs vollständig implementiert |
-| main.ts | Electron Main | 100% | ✅ | Vollständig funktional |
+| main.ts (Modular) | Electron Main | 100% | ✅ | **REFACTORED:** 97% Reduktion (2565→92 Zeilen) |
+| electron/windows/* | Window Management | 100% | ✅ | 2 Module: main-window.ts, update-window.ts |
+| electron/ipc/* | IPC Handlers | 100% | ✅ | 10 Module: thematisch getrennte Handler |
 | preload.ts | Security Bridge | 100% | ✅ | Sicherheitsschicht vollständig |
 | **Build System** | | **100%** | ✅ | |
 | Frontend Build | Build | 100% | ✅ | 388.68kB, erfolgreich kompiliert |
@@ -86,6 +88,15 @@ Die Migration von `sql.js` zu `better-sqlite3` hat Production-Builds gebrochen:
 | SQLite-Datenbank | ✅ | Vollständig (21/21 Methoden) |
 | Electron-Integration | ✅ | Vollständig (IPC + Security) |
 | Build-System | ✅ | Vollständig (alle Targets) |
+
+## ✅ Kürzlich Abgeschlossen (v1.0.42.5)
+
+### Main.ts Modular Refactor - October 2025
+- **97% Code Reduction:** Von 2565+ Zeilen → 92 Zeilen
+- **12 Extracted Modules:** Vollständige Modularisierung
+- **Critical Fixes Preserved:** FIX-007, FIX-012 intakt
+- **TypeScript Build:** ✅ Erfolgreich validiert
+- **All Tests Pass:** ✅ Keine Regressionen
 
 ## Verbleibende Arbeiten (1.5%)
 

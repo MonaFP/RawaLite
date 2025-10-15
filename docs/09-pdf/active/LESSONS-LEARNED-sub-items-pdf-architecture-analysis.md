@@ -208,17 +208,14 @@ Die Template-Struktur ist korrekt implementiert. Sub-Items sind **NICHT** außer
 ---
 
 ## 📝 Status
-- [ ] **Template-Struktur validieren:** Sub-Items HTML-Generierung
-- [ ] **Tabellen-Boundaries prüfen:** `<tbody>` compliance
-- [ ] **HTML-Concatenation validieren:** Parent+Sub-Items joining
-- [ ] **User-Feedback einholen:** Template-Struktur Korrektheit
+- [x] Phase 1–3 umgesetzt (Details siehe `docs/09-pdf/plan/SUB-ITEMS-PDF-HIERARCHY-PLAN.md`).
+- [ ] Phase 4 offen: SQL-Checker + verpflichtende Release-Checks.
 
 ---
 
-## 🤖 AI-Prompts Mini-Header
-🚨 **KI-DEBUGGING REGELN** 🚨  
-- ❌ NIEMALS Reverse Logic annehmen (funktioniert ≠ korrekt)
-- ❌ NIEMALS komplexe Data-Pipeline vermuten ohne Template-Check
-- ✅ Template-Struktur ZUERST validieren bei Rendering-Problemen
-- ✅ User-Insights priorisieren über eigene Theorien
-- ✅ Jede fehlerhafte Annahme dokumentieren
+## 📌 Weiterführende Planung
+Siehe Plan-Datei unter `docs/09-pdf/plan/SUB-ITEMS-PDF-HIERARCHY-PLAN.md` (aktualisiert am 14.10.2025).
+
+### Phase-4-Notizen
+- `pnpm validate:line-items` (siehe `scripts/validate-line-item-hierarchy.mjs`) prüft Parent-Referenzen & `hierarchy_level`.
+- QA-Check „PDF-Sub-Items visuell prüfen“ ist fester Bestandteil der Release-Workflows.

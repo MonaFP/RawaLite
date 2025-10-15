@@ -2,7 +2,7 @@
 
 > **Fenster-Creation Module** extrahieren aus main.ts
 > 
-> **Risiko:** Low-Medium | **Dauer:** 1-2 Stunden | **Status:** PENDING
+> **Risiko:** Low-Medium | **Dauer:** 1-2 Stunden | **Status:** ✅ COMPLETED
 
 ---
 

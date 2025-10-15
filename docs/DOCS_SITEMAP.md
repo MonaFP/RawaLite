@@ -4,11 +4,10 @@ docs
 │   │   ├── CRITICAL-FIXES-REGISTRY.md
 │   │   ├── INDEX.md
 │   │   └── TROUBLESHOOTING.md
+│   ├── CRITICAL_KI-FAILURE-MODES.md
 │   ├── final
 │   │   ├── CROSS-REF-settings-schema-migration.md
 │   │   ├── DOCUMENTATION-UPDATE-SESSION-v1.0.13.md
-│   │   ├── DOWNLOAD-VERIFICATION-BUG.md
-│   │   ├── GITHUB_API_MIGRATION.md
 │   │   ├── LESSONS-LEARNED-autofill-devtools-errors.md
 │   │   ├── LESSONS-LEARNED-DOCUMENTATION-REORGANIZATION.md
 │   │   ├── LESSONS-LEARNED-ICO-FORMAT-ERROR.md
@@ -36,27 +35,27 @@ docs
 │   ├── CODING-STANDARDS.md
 │   ├── DOCUMENTATION-QUALITY-TRACKING.md
 │   ├── DOCUMENTATION-STRUCTURE-GUIDE.md
-│   ├── final
-│   │   ├── SESSION-BRIEFING-2025-10-04.md
-│   │   ├── SESSION-HANDOVER-PLAN-2024-10-04.md
-│   │   └── SYSTEMATIC-FIX-PRESERVATION-STRATEGY.md
-│   ├── HOTFIX-WORKFLOW-PROMPT.md
 │   ├── INDEX.md
-│   ├── plan
 │   ├── QUICK-REFERENCE.md
-│   ├── SCHEMA-CONSISTENCY-STANDARDS.md
-│   ├── sessions
-│   ├── standards.md
 │   ├── TESTING-STANDARDS.md
-│   ├── wip
 │   └── WORKFLOWS.md
 ├── 02-architecture
 │   ├── ARCHITEKTUR.md
 │   ├── final
-│   │   ├── ARCHITEKTUR-update-system-hybrid-components.md
 │   │   ├── ELECTRON-BUILDER-FILE-LOCKING-VSCODE.md
 │   │   ├── ERR_FILE_NOT_FOUND_FIX_COMPLETE.md
 │   │   ├── ERR_FILE_NOT_FOUND_QUICKREF.md
+│   │   ├── MAIN-TS-REFACTOR-PLAN.md
+│   │   ├── REFACTOR-COMPLETION-REPORT.md
+│   │   ├── refactor-steps
+│   │   │   ├── CRITICAL-FIXES-IMPACT.md
+│   │   │   ├── DOCUMENTATION-REQUIREMENTS.md
+│   │   │   ├── STEP-00-PREPARATION.md
+│   │   │   ├── STEP-01-02-WINDOWS.md
+│   │   │   ├── STEP-03-09-IPC.md
+│   │   │   ├── STEP-10-13-INTEGRATION.md
+│   │   │   ├── TESTING-STRATEGY.md
+│   │   │   └── WORKFLOW-PROTOCOL.md
 │   │   ├── REPOSITORY-STATUS-POST-v1.0.13-SESSION.md
 │   │   ├── SQLITE-MIGRATION-ARCHITECTURE.md
 │   │   ├── SYSTEM-ANALYSIS-TODO-PLAN.md
@@ -75,6 +74,9 @@ docs
 │       ├── BUILD_CACHE_PROCESS_MANAGEMENT.md
 │       └── ELECTRON-BUILDER-FILE-LOCKING.md
 ├── 03-development
+│   ├── active
+│   │   ├── sustainable-architecture-fix.md
+│   │   └── version-bump-automation-solution.md
 │   ├── BUILD-INSTALLATION-MATRIX.md
 │   ├── debugging.md
 │   ├── DEV_GUIDE.md
@@ -84,6 +86,7 @@ docs
 │   │   ├── BETTER-SQLITE3-ELECTRON-FIX.md
 │   │   ├── DATA-IMPORT-IMPLEMENTATION.md
 │   │   ├── DEV-ALL-PARALLEL-EXECUTION-ISSUE.md
+│   │   ├── DEV-PROD-SEPARATION-IMPLEMENTATION.md
 │   │   ├── LESSONS-LEARNED-BUILD-DIST-PROBLEMS.md
 │   │   ├── LESSONS-LEARNED-dev-prod-asset-loading-problems.md
 │   │   ├── LESSONS-LEARNED-dev-prod-build-discrepancies.md
@@ -92,6 +95,7 @@ docs
 │   │   ├── POWERSHELL_PACKAGE_JSON_BEST_PRACTICES.md
 │   │   └── STATUSBERICHT-dev-prod-unterschiede-logo-assets.md
 │   ├── INDEX.md
+│   ├── MINI-FIX-DELIVERY-SYSTEM-PLAN.md
 │   ├── plan
 │   ├── sessions
 │   │   └── SESSION-REPORT-v1.0.10-DEVELOPMENT.md
@@ -104,7 +108,6 @@ docs
 │   ├── sessions
 │   └── wip
 ├── 05-database
-│   ├── active
 │   ├── backup
 │   │   ├── active
 │   │   └── solved
@@ -128,6 +131,7 @@ docs
 │   │   ├── LESSONS-LEARNED-settings-schema-migration.md
 │   │   ├── LESSONS-LEARNED-SQLITE-BOOLEAN-BINDING.md
 │   │   ├── LESSONS-LEARNED-sqlite-nummernkreis-system.md
+│   │   ├── MAPPING_IMPLEMENTATION_PLAN.md
 │   │   ├── MAPPING_PROGRESS_REPORT.md
 │   │   ├── MIGRATION-011-offer-line-items-extension.md
 │   │   ├── MIGRATION-013-DISCOUNT-SYSTEM.md
@@ -143,7 +147,6 @@ docs
 │   ├── INSTALL.md
 │   ├── INSTALLATION-GUIDE.md
 │   ├── plan
-│   │   └── MAPPING_IMPLEMENTATION_PLAN.md
 │   ├── sessions
 │   └── wip
 ├── 06-paths
@@ -184,10 +187,12 @@ docs
 │   │   ├── LESSONS-LEARNED-status-update-refresh-problems.md
 │   │   ├── LESSONS-LEARNED-status-updates-css-refactoring.md
 │   │   ├── LESSONS-LEARNED-SUB-ITEM-POSITIONING-ISSUE.md
+│   │   ├── LESSONS-LEARNED-subitems-hierarchy-management-architecture-failure.md
 │   │   ├── LESSONS-LEARNED-timesheets-redesign.md
 │   │   ├── LESSONS-LEARNED-v1-5-2-theme-navigation-system.md
 │   │   ├── LOGO-MANAGEMENT-WORKFLOW.md
 │   │   ├── numerische-eingabefelder-ux-verbesserung.md
+│   │   ├── PACKAGE-FORM-UI-PATTERN-MODERNIZATION-2025-10-13.md
 │   │   ├── pdf-einzelpreis-angebote-field-mapping.md
 │   │   ├── SEARCH-AND-FILTER-SYSTEM.md
 │   │   ├── session-summary-erfolgreiche-problemloesung.md
@@ -199,29 +204,35 @@ docs
 │   │   ├── V1-5-2-ENHANCED-NAVIGATION.md
 │   │   └── V1-5-2-HEADERSTATISTICS-COMPONENT.md
 │   ├── INDEX.md
+│   ├── lessons
+│   │   └── LESSONS-LEARNED-duplicate-items-react-state-management.md
 │   ├── plan
 │   ├── sessions
 │   ├── V1-5-2-CONTEXT-ARCHITECTURE.md
 │   └── wip
+│       └── SUBITEMS-HIERARCHY-MANAGEMENT-PLAN.md
 ├── 09-pdf
+│   ├── active
+│   │   └── LESSONS-LEARNED-sub-items-pdf-architecture-analysis.md
 │   ├── final
 │   │   ├── LESSONS-LEARNED-container-page-breaks.md
 │   │   ├── LESSONS-LEARNED-IMAGE-UPLOAD-SYSTEM.md
 │   │   ├── LESSONS-LEARNED-PDF-ATTACHMENTS-NOTES.md
 │   │   ├── LESSONS-LEARNED-PDF-FIELD-MAPPING.md
 │   │   ├── LESSONS-LEARNED-pdf-logo-field-mapping.md
+│   │   ├── LESSONS-LEARNED-sub-items-dev-prod-consistency-fix.md
 │   │   ├── pdf-anhang-seite-architektur.md
 │   │   ├── pdf-anhang-seite-benutzerhandbuch.md
 │   │   ├── pdf-anhang-seite-implementation.md
 │   │   ├── PDF-ATTACHMENTS-FIX-PLAN-2025-10-12.md
 │   │   ├── PDF-EINZELPREIS-RUNDUNGSFEHLER-LOSUNG.md
 │   │   ├── PDF-LAYOUT-OPTIMIZATIONS-V1-5-2.md
+│   │   ├── TECHNICAL-SUMMARY-IMAGE-UPLOAD.md
 │   │   ├── THEME-SYSTEM-FIXES.md
 │   │   └── TIMESHEET-DAY-GROUPING-FEATURE.md
 │   ├── INDEX.md
 │   ├── plan
 │   ├── sessions
-│   ├── TECHNICAL-SUMMARY-IMAGE-UPLOAD.md
 │   └── wip
 │       └── IMAGE-UPLOAD-FEATURE.md
 ├── 10-security
@@ -262,15 +273,16 @@ docs
 │   │   └── UPDATE_DEVELOPMENT.md
 │   ├── INDEX.md
 │   ├── plan
-│   ├── README-READY-TO-START.md
 │   ├── sessions
-│   ├── UPDATE-SYSTEM-ARCHITECTURE.md
-│   ├── UPDATE_SYSTEM_ARCHITECTURE.md
-│   ├── UPDATE_TESTING.md
 │   └── wip
 ├── 12-update-manager
 │   ├── final
+│   │   ├── ARCHIVED-READY-TO-START-v1.0.7.md
+│   │   ├── ARCHIVED-UPDATE_SYSTEM_ARCHITECTURE-v1.0.7.md
 │   │   ├── CHAT-SESSION-SUMMARY-2025-10-01.md
+│   │   ├── COMPLETED-GITHUB_API_MIGRATION.md
+│   │   ├── DEPRECATED-GitHubCliService.md
+│   │   ├── DOWNLOAD-VERIFICATION-BUG.md
 │   │   ├── REPOSITORY-STATUS-POST-v1.0.10-SESSION.md
 │   │   └── SESSION-REPORT-v1.0.10-DEVELOPMENT.md
 │   ├── HYBRID-COMPONENT-ARCHITECTURE.md
@@ -293,14 +305,27 @@ docs
 │   │   └── RÜCKWÄRTSKOMPATIBILITÄT-IMPLEMENTATION-SUMMARY_11.10.2025.md
 │   ├── INDEX.md
 │   ├── plan
+│   │   ├── FIXPLAN-main-ts-field-mapping-standards.md
+│   │   └── FIXPLAN-package-price-display-field-mapping.md
 │   ├── sessions
+│   │   ├── SESSION-2025-10-13-14-subitems-packageform-pdf-fixes.md
+│   │   ├── SESSION-2025-10-13-field-mapping-subitems-analysis.md
+│   │   └── SUBITEMS-PDF-PROBLEM-ANALYSIS.md
 │   └── wip
 ├── 15-session-summary
 │   ├── final
 │   ├── INDEX.md
 │   ├── plan
+│   ├── SESSION-2025-10-14-SCHEMA-FIXES-AND-KI-FAILURE-ANALYSIS.md
 │   ├── sessions
 │   │   └── CHAT_SUMMARY_PDF_ATTACHMENTS_12.10.2025.md
+│   ├── standards-legacy-final
+│   │   ├── SESSION-BRIEFING-2025-10-04.md
+│   │   ├── SESSION-HANDOVER-PLAN-2024-10-04.md
+│   │   └── SYSTEMATIC-FIX-PRESERVATION-STRATEGY.md
+│   ├── standards-legacy-plan
+│   ├── standards-legacy-sessions
+│   ├── standards-legacy-wip
 │   └── wip
 ├── DOCS_SITEMAP.md
 └── INDEX.md
