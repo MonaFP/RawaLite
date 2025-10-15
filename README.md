@@ -21,7 +21,7 @@
 pnpm install
 
 # Entwicklung starten
-pnpm dev
+pnpm dev:all
 
 # Production Build
 pnpm dist
@@ -69,7 +69,7 @@ pnpm dist
 pnpm install
 
 # Development Mode
-pnpm dev                # Startet Vite + Electron
+pnpm dev:all                # Startet Vite + Electron
 
 # Testing
 pnpm test              # Unit Tests (Vitest)
