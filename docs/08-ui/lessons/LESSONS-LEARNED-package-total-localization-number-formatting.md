@@ -442,43 +442,99 @@ grep -r "de-DE" dist-web/assets/*.js
 
 ## 📌 **CURRENT STATUS**
 
-### ✅ **PROBLEM STATUS:**
-- [x] **Falsche Zahlenformatierung:** ✅ **BEHOBEN** (2025-10-15, Lines 604, 675, 695)
-- [x] **Englische UI-Labels:** ✅ **BEHOBEN** (2025-10-15, Line 1464 "Total:" → "Summe:")
-- [x] **Inkonsistente Formatierung:** ✅ **BEHOBEN** (Alle 4 Stellen verwenden jetzt formatCurrency())
-- [ ] **Browser Locale Override:** ℹ️ **NICHT RELEVANT** (formatCurrency() funktioniert korrekt)
+### ❌ **PROBLEM STATUS:**
+- [ ] **Falsche Zahlenformatierung:** ❌ **NICHT BEHOBEN** (Lines 604, 675, 695 - formatCurrency() implementiert, Problem besteht)
+- [ ] **Englische UI-Labels:** ❌ **NICHT BEHOBEN** (Line 1464 "Total:" → "Summe:" implementiert, Problem besteht)
+- [ ] **Inkonsistente Formatierung:** ⚠️ **TEILWEISE** (Code verwendet formatCurrency(), aber Output ist falsch)
+- [ ] **Browser Locale Override:** 🔴 **WAHRSCHEINLICH HAUPTURSACHE** (formatCurrency() wird ignoriert)
 
-### ✅ **ANALYSE STATUS:**
-- [x] Root Cause identifiziert (toFixed() vs formatCurrency())
+### ⚠️ **ANALYSE STATUS:**
+- [x] Root Cause FALSCH identifiziert (toFixed() vs formatCurrency() war NICHT das Problem)
 - [x] Betroffene Stellen dokumentiert (4 Locations)
 - [x] Lösungs-Strategie definiert (3 Phasen)
 - [x] Test-Strategie definiert (Runtime Checks)
-- [x] **Phase 1 Fixes implementiert** (2025-10-15)
-- [x] **Validierung erfolgreich** (TypeScript + Critical Fixes)
+- [x] **Phase 1 Fixes implementiert** (2025-10-15) - ❌ **ERFOLGLOS**
+- [x] **Validierung technisch erfolgreich** (TypeScript + Critical Fixes)
+- [ ] **User-Verifikation FEHLGESCHLAGEN** (Problem besteht weiterhin)
 
-### ✅ **IMPLEMENTIERT (2025-10-15):**
+### ❌ **PHASE 1 IMPLEMENTIERT ABER ERFOLGLOS (2025-10-15):**
 **Branch:** `feature/unify-package-unitprice`  
 **Commit:** `efd17e79` - "fix(i18n): PackageForm deutsche Zahlenformatierung und UI-Labels"
 
 **Durchgeführte Änderungen:**
-1. ✅ Line 604: Quick-Stats → `formatCurrency(values.lineItems.reduce(...))`
-2. ✅ Line 675: Parent-Total → `formatCurrency(parentTotal)`
-3. ✅ Line 695: Sub-Total → `formatCurrency(subTotal)`
-4. ✅ Line 1464: `"Total:"` → `"Summe:"`
+1. ❌ Line 604: Quick-Stats → `formatCurrency(values.lineItems.reduce(...))` - NICHT WIRKSAM
+2. ❌ Line 675: Parent-Total → `formatCurrency(parentTotal)` - NICHT WIRKSAM
+3. ❌ Line 695: Sub-Total → `formatCurrency(subTotal)` - NICHT WIRKSAM
+4. ❌ Line 1464: `"Total:"` → `"Summe:"` - NICHT WIRKSAM
 
-**Validierung:**
+**Technische Validierung:**
 - ✅ `pnpm typecheck` - PASSED
 - ✅ `pnpm validate:critical-fixes` - 15/15 PASSED
 - ✅ Grep Check: Keine `toFixed(2)` mehr in PackageForm.tsx
 - ✅ Pre-Commit Hook: Erfolgreich validiert
 
-**Aufwand:** ~15 Minuten (genau wie geschätzt)
+**ABER:** ❌ **User-Feedback: Problem besteht weiterhin nach Implementation**
 
-### 🔜 **OPTIONALE NEXT STEPS:**
-1. ~~**Phase 1 Fixes implementieren**~~ ✅ ERLEDIGT
-2. **Runtime Locale Tests durchführen** (Optional - formatCurrency funktioniert)
-3. **User-Feedback einholen** (Manuelle Verifizierung in App)
-4. **Systematic I18n Review** (Alle Components checken - Future Work)
+**Aufwand:** ~15 Minuten (Code-Änderung erfolgreich, aber Problem NICHT gelöst)
+
+### � **NEUE ROOT CAUSE HYPOTHESEN (NACH FEHLGESCHLAGENEM FIX):**
+
+**Die bisherige Analyse war FALSCH. Das Problem liegt NICHT in toFixed() vs formatCurrency().**
+
+**Wahrscheinliche echte Ursachen:**
+
+#### **H1: Electron Browser Locale Override (Wahrscheinlichkeit: 90%)**
+```typescript
+// formatCurrency() verwendet toLocaleString('de-DE')
+// ABER: Electron/Chromium könnte System-Locale verwenden
+(180000).toLocaleString('de-DE', { minimumFractionDigits: 2 })
+// SOLLTE: "180.000,00" liefern
+// LIEFERT ABER: "180,000.00" wenn Browser-Locale auf en-US steht
+```
+
+**Test benötigt:**
+```typescript
+// In Browser DevTools Console (in der App):
+console.log('Test:', (180000).toLocaleString('de-DE', { minimumFractionDigits: 2 }));
+// Expected: "180.000,00"
+// Actual: ???
+```
+
+#### **H2: Intl Polyfill fehlt in Production Build (Wahrscheinlichkeit: 60%)**
+- Vite Build entfernt Intl-Polyfills durch Tree-shaking
+- Production Build verhält sich anders als Development
+- `Intl.NumberFormat` nicht verfügbar zur Laufzeit
+
+#### **H3: Vite Build-Zeit Transformation (Wahrscheinlichkeit: 40%)**
+- `toLocaleString()` wird während Build transformiert
+- Locale-Parameter wird entfernt oder überschrieben
+- Minification ändert Locale-Behavior
+
+### 🚨 **CRITICAL NEXT STEPS (PHASE 2):**
+1. **Runtime Locale Verification** (ZWINGEND ERFORDERLICH)
+   ```typescript
+   // In App DevTools Console testen:
+   console.log('Intl available?', typeof Intl !== 'undefined');
+   console.log('Test Format:', (180000).toLocaleString('de-DE', {minimumFractionDigits: 2}));
+   console.log('Navigator Locale:', navigator.language);
+   ```
+
+2. **Electron Locale Configuration** (ZWINGEND ERFORDERLICH)
+   ```typescript
+   // electron/main.ts
+   app.commandLine.appendSwitch('lang', 'de-DE');
+   app.commandLine.appendSwitch('locale', 'de-DE');
+   ```
+
+3. **Production Build Testing** (ZWINGEND ERFORDERLICH)
+   - Build erstellen: `pnpm build && pnpm dist`
+   - Installierte App starten
+   - Gleiche DevTools Tests durchführen
+
+4. **Manuelle App-Verifizierung** (ZWINGEND ERFORDERLICH)
+   - Package mit €180.000 erstellen
+   - Screenshot von tatsächlichem Output machen
+   - Mit erwartetem Format vergleichen
 
 ---
 

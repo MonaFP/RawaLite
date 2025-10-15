@@ -466,36 +466,41 @@ Summe: {formatCurrency(total)}
 **Detailed Documentation:** 
 → `docs/08-ui/lessons/LESSONS-LEARNED-package-total-localization-number-formatting.md`
 
-**Status:** ✅ **BEHOBEN** (2025-10-15)
+**Status:** ❌ **NICHT GELÖST** (2025-10-15)
 
-### **Implementierte Fixes:**
+### **Versuchte Fixes (Fehlgeschlagen):**
 
 **Commit:** `efd17e79` - "fix(i18n): PackageForm deutsche Zahlenformatierung und UI-Labels"
 
-**Änderungen:**
-1. ✅ **Line 604:** `toFixed(2)` → `formatCurrency()` (Quick-Stats Total)
-2. ✅ **Line 675:** `toFixed(2)` → `formatCurrency()` (Parent-Item Total)
-3. ✅ **Line 695:** `toFixed(2)` → `formatCurrency()` (Sub-Item Total)
-4. ✅ **Line 1464:** `"Total:"` → `"Summe:"` (Deutsches UI-Label)
+**Durchgeführte Änderungen:**
+1. ❌ **Line 604:** `toFixed(2)` → `formatCurrency()` (Quick-Stats Total)
+2. ❌ **Line 675:** `toFixed(2)` → `formatCurrency()` (Parent-Item Total)
+3. ❌ **Line 695:** `toFixed(2)` → `formatCurrency()` (Sub-Item Total)
+4. ❌ **Line 1464:** `"Total:"` → `"Summe:"` (Deutsches UI-Label)
 
-**Validierung:**
+**Technische Validierung:**
 - ✅ TypeScript Compilation: PASSED
 - ✅ Critical Fixes Validation: 15/15 PASSED
 - ✅ Grep Check: Keine `toFixed(2)` mehr in PackageForm.tsx
 - ✅ Grep Check: "Total:" ersetzt durch "Summe:"
 
-**Ergebnis:**
-```typescript
-// VORHER: €180,000 (englisches Format, kein deutsches Label)
-Total: €180,000
+**User-Verifikation:**
+- ❌ **Problem besteht weiterhin** - User-Feedback nach Implementation
 
-// NACHHER: €180.000,00 (deutsches Format mit Tausenderpunkt)
-Summe: €180.000,00
-```
+**Vermutete tiefere Ursachen:**
+1. **Browser Locale Override:** Electron/Chromium ignoriert `toLocaleString('de-DE')`
+2. **Intl Polyfill fehlt:** `Intl.NumberFormat` nicht verfügbar in Production Build
+3. **Vite Build Transformation:** `toLocaleString()` wird während Build transformiert
+4. **Runtime Environment:** Production Build verhält sich anders als Development
 
-**Aufwand:** 15 Minuten (wie geschätzt in Lessons Learned)
+**Nächste Schritte benötigt:**
+- Runtime Locale Verification Tests durchführen (siehe Lessons Learned Phase 2)
+- Electron Locale Configuration explizit setzen
+- Production Build testen mit verschiedenen System-Locales
+- Manual Testing in gebauter App durchführen
 
 ---
 
 *Implementiert: 2025-10-14 | Branch: feature/unify-package-unitprice | Commit: 5c40455d*  
-*Post-Implementation Issue discovered: 2025-10-14 | Analyzed & Fixed: 2025-10-15 | Commit: efd17e79*
+*Post-Implementation Issue discovered: 2025-10-14 | Fix attempted but failed: 2025-10-15 | Commit: efd17e79*  
+*Status: ❌ REQUIRES FURTHER INVESTIGATION*
