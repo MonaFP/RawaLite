@@ -167,7 +167,7 @@ function validateCriticalFixes() {
     console.log(colors.red(colors.bold('\n🚨 CRITICAL FIXES VALIDATION FAILED!')));
     console.log(colors.red('   DO NOT PROCEED WITH BUILD/RELEASE!'));
     console.log(colors.yellow('\n📋 ACTION REQUIRED:'));
-    console.log(colors.yellow('   1. Check docs/00-meta/CRITICAL-FIXES-REGISTRY.md'));
+    console.log(colors.yellow('   1. Check docs/00-meta/final/CRITICAL-FIXES-REGISTRY.md'));
     console.log(colors.yellow('   2. Re-implement missing patterns'));
     console.log(colors.yellow('   3. Run validation again'));
     process.exit(1);

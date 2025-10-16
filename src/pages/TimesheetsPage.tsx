@@ -109,9 +109,7 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
     {
       field: 'total',
       label: 'Gesamtbetrag',
-      type: 'numberRange',
-      min: 0,
-      step: 0.01
+      type: 'numberRange'
     },
     {
       field: 'customerId',

@@ -81,25 +81,25 @@ export const migrations: Migration[] = [
     down: migration006.down
   },
   {
-    version: 7,
+    version: 8,
     name: '007_fix_packages_invoice_schema',
     up: migration007.up,
     down: migration007.down
   },
   {
-    version: 8,
+    version: 9,
     name: '008_fix_offers_schema',
     up: migration008.up,
     down: migration008.down
   },
   {
-    version: 9,
+    version: 10,
     name: '009_add_timesheets',
     up: migration009.up,
     down: migration009.down
   },
   {
-    version: 10,
+    version: 11,
     name: '010_add_timesheets_numbering',
     up: migration010.up,
     down: migration010.down

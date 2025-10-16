@@ -107,10 +107,10 @@ node tests/debug/debug-*.js
 ## 🔗 **Cross-References**
 
 ### **Zu Dokumentation:**
-- **Critical Fixes Registry:** `docs/00-meta/CRITICAL-FIXES-REGISTRY.md`
-- **Database Documentation:** `docs/05-database/`
-- **Update System Architecture:** `docs/11-deployment/UPDATE-SYSTEM-ARCHITECTURE.md`
-- **Testing Strategy:** `docs/04-testing/`
+- **Critical Fixes Registry:** [PATHS.md](../docs/PATHS.md#CRITICAL_FIXES)
+- **Database Documentation:** [PATHS.md](../docs/PATHS.md#DATA_INDEX)
+- **Update System Architecture:** [PATHS.md](../docs/PATHS.md#UPDATE_SYSTEM_ARCHITECTURE)
+- **Testing Strategy:** [PATHS.md](../docs/PATHS.md#TESTING_STANDARDS)
 
 ### **Zu Source Code:**
 - **Database Layer:** `src/main/db/`
@@ -128,7 +128,7 @@ node tests/debug/debug-*.js
 ### **Critical Fix Tests:**
 - **Immer hinzufügen** für neue kritische Fixes
 - **Pattern-Detection** für Regression-Schutz
-- **Registry Update** in `docs/00-meta/CRITICAL-FIXES-REGISTRY.md`
+- **Registry Update** in `docs/00-meta/final/CRITICAL-FIXES-REGISTRY.md`
 
 ---
 

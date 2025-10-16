@@ -9,7 +9,7 @@ import React from 'react';
  * "no such column: next_customer_number" errors that crash Settings page
  * 
  * SOLUTION: Temporary disable component until proper DatabaseService integration
- * SEE: docs/12-lessons/LESSONS-LEARNED-v1041-AutoUpdatePreferences-crash.md
+ * SEE: docs/06-lessons/final/LESSONS-LEARNED-v1041-AutoUpdatePreferences-crash.md
  */
 export const AutoUpdatePreferences: React.FC = () => {
   // EMERGENCY HOTFIX v1.0.42: Disable problematic component

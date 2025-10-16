@@ -14,9 +14,6 @@ importers:
       bindings:
         specifier: ^1.5.0
         version: 1.5.0
-      dexie:
-        specifier: ^4.2.1
-        version: 4.2.1
       html2canvas:
         specifier: ^1.4.1
         version: 1.4.1
@@ -1552,9 +1549,6 @@ packages:
 
   detect-node@2.1.0:
     resolution: {integrity: sha512-T0NIuQpnTvFDATNuHN5roPwSBG83rFsuO+MXXH9/3N1eFbn4wcPjttvjMLEPWJ0RGUYgQE7cGgS3tNxbqCGM7g==}
-
-  dexie@4.2.1:
-    resolution: {integrity: sha512-Ckej0NS6jxQ4Po3OrSQBFddayRhTCic2DoCAG5zacOfOVB9P2Q5Xc5uL/nVa7ZVs+HdMnvUPzLFCB/JwpB6Csg==}
 
   dir-compare@4.2.0:
     resolution: {integrity: sha512-2xMCmOoMrdQIPHdsTawECdNPwlVFB9zGcz3kuhmBO6U3oU+UQjsue0i8ayLKpgBcm+hcXPMVSGUN9d+pvJ6+VQ==}
@@ -4976,8 +4970,6 @@ snapshots:
 
   detect-node@2.1.0:
     optional: true
-
-  dexie@4.2.1: {}
 
   dir-compare@4.2.0:
     dependencies:

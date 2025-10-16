@@ -77,7 +77,9 @@ export const OfferForm: React.FC<OfferFormProps> = ({
 
   // Calculate totals using discount calculator
   const totals = calculateDocumentTotals(
-    lineItems.map(item => ({ quantity: item.quantity, unitPrice: item.unitPrice })),
+    lineItems
+      .filter(item => item.priceDisplayMode !== 'included' && item.priceDisplayMode !== 'hidden')
+      .map(item => ({ quantity: item.quantity, unitPrice: item.unitPrice })),
     discountType,
     discountValue,
     vatRate,
@@ -87,7 +89,10 @@ export const OfferForm: React.FC<OfferFormProps> = ({
   // 🐛 DEBUG: Log calculation details for intermittent discount bug
   console.log('🧮 [OfferForm] Discount calculation debug:', {
     lineItemsLength: lineItems.length,
-    lineItemsTotalInput: lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0),
+    lineItemsFiltered: lineItems.filter(item => item.priceDisplayMode !== 'included' && item.priceDisplayMode !== 'hidden').length,
+    lineItemsTotalInput: lineItems
+      .filter(item => item.priceDisplayMode !== 'included' && item.priceDisplayMode !== 'hidden')
+      .reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0),
     discountType,
     discountValue,
     calculatedTotals: {

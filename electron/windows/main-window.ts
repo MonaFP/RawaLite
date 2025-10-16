@@ -49,7 +49,6 @@ export function createWindow(): BrowserWindow {
   if (isDev) {
     // Vite dev server - FIX-005: Port 5174
     win.loadURL('http://localhost:5174')
-    win.webContents.openDevTools({ mode: 'detach' })
   } else {
     // Production version: HTML lies as extraResource directly in resources folder
     const htmlPath = path.join(process.resourcesPath, 'index.html')

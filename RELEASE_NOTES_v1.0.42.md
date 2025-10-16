@@ -86,7 +86,7 @@ package.json scripts → pnpm commands → Git hooks → VS Code tasks → GitHu
 ## 📚 **Neue Dokumentation**
 
 ### **Erstellt:**
-- `docs/03-development/active/version-bump-automation-solution.md` - Vollständige Lösungsdokumentation
+- [PATHS.md](docs/PATHS.md#VERSION_BUMP_AUTOMATION) - Vollständige Lösungsdokumentation
 - `scripts/validate-migration-index.mjs` - Migration Validation Script
 - `scripts/setup-git-hooks.ps1` - Automatische Hook Installation
 - `.vscode/tasks.json` - VS Code Release Tasks

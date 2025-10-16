@@ -27,6 +27,7 @@ export default function App(){
       case '/einstellungen': return 'Einstellungen';
       default: 
         if (location.pathname.startsWith('/angebote/')) return 'Angebot Details';
+        if (location.pathname.startsWith('/pakete/') && location.pathname.endsWith('/edit')) return 'Paket bearbeiten';
         return 'RawaLite';
     }
   };
@@ -103,6 +104,8 @@ export default function App(){
       <main className="main">
         <Outlet />
       </main>
+      
+
     </div>
   );
 }

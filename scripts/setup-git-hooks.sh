@@ -15,7 +15,7 @@ if git diff --cached --name-only | grep -q "package.json"; then
   if ! pnpm validate:critical-fixes; then
     echo "❌ COMMIT BLOCKED: Critical fixes validation failed!"
     echo "📋 Required actions:"
-    echo "  1. Check docs/00-meta/CRITICAL-FIXES-REGISTRY.md"
+    echo "  1. Check docs/00-meta/final/CRITICAL-FIXES-REGISTRY.md"
     echo "  2. Restore missing critical patterns"
     echo "  3. Run: pnpm validate:critical-fixes"
     echo "  4. Try commit again"
@@ -52,7 +52,7 @@ else
   # Basic validation for regular commits
   if ! pnpm validate:critical-fixes; then
     echo "❌ COMMIT BLOCKED: Critical fixes validation failed!"
-    echo "📋 Check docs/00-meta/CRITICAL-FIXES-REGISTRY.md for required patterns"
+    echo "📋 Check docs/00-meta/final/CRITICAL-FIXES-REGISTRY.md for required patterns"
     exit 1
   fi
   

@@ -19,8 +19,8 @@ export function useAutoUpdatePreferences() {
     notificationStyle: 'subtle',
     reminderInterval: 4,
     autoDownload: false,
-    installPrompt: 'manual',
-    updateChannel: 'stable'
+    installPrompt: 'manual'
+    // NOTE: updateChannel removed - deprecated Mini-Fix feature
   });
   
   const [loading, setLoading] = useState(true);
@@ -35,8 +35,8 @@ export function useAutoUpdatePreferences() {
         notificationStyle: settings.companyData.autoUpdateNotificationStyle ?? 'subtle',
         reminderInterval: settings.companyData.autoUpdateReminderInterval ?? 4,
         autoDownload: settings.companyData.autoUpdateAutoDownload ?? false,
-        installPrompt: settings.companyData.autoUpdateInstallPrompt ?? 'manual',
-        updateChannel: (settings as any).updateChannel ?? 'stable'
+        installPrompt: settings.companyData.autoUpdateInstallPrompt ?? 'manual'
+        // NOTE: updateChannel removed - deprecated Mini-Fix feature
       });
       setLoading(false);
     }
@@ -53,20 +53,18 @@ export function useAutoUpdatePreferences() {
       setPreferences(updatedPrefs);
 
       // AutoUpdate-spezifische Felder über companyData
-      if (key !== 'updateChannel') {
-        const settingsUpdate = {
-          ...settings.companyData,
-          autoUpdateEnabled: updatedPrefs.enabled,
-          autoUpdateCheckFrequency: updatedPrefs.checkFrequency as 'startup' | 'daily' | 'weekly',
-          autoUpdateNotificationStyle: updatedPrefs.notificationStyle as 'subtle' | 'prominent',
-          autoUpdateReminderInterval: updatedPrefs.reminderInterval,
-          autoUpdateAutoDownload: updatedPrefs.autoDownload,
-          autoUpdateInstallPrompt: updatedPrefs.installPrompt as 'immediate' | 'scheduled' | 'manual'
-        };
+      // NOTE: All preferences are now supported through settings system
+      const settingsUpdate = {
+        ...settings.companyData,
+        autoUpdateEnabled: updatedPrefs.enabled,
+        autoUpdateCheckFrequency: updatedPrefs.checkFrequency as 'startup' | 'daily' | 'weekly',
+        autoUpdateNotificationStyle: updatedPrefs.notificationStyle as 'subtle' | 'prominent',
+        autoUpdateReminderInterval: updatedPrefs.reminderInterval,
+        autoUpdateAutoDownload: updatedPrefs.autoDownload,
+        autoUpdateInstallPrompt: updatedPrefs.installPrompt as 'immediate' | 'scheduled' | 'manual'
+      };
 
-        await updateCompanyData(settingsUpdate);
-      }
-      // Note: updateChannel is not supported in this version
+      await updateCompanyData(settingsUpdate);
     } catch (err) {
       console.error('[AutoUpdatePreferences] Update error:', err);
       setError(err instanceof Error ? err.message : 'Speichern fehlgeschlagen');
@@ -86,8 +84,8 @@ export function useAutoUpdatePreferences() {
         notificationStyle: 'subtle',
         reminderInterval: 4,
         autoDownload: false,
-        installPrompt: 'manual',
-        updateChannel: 'stable'
+        installPrompt: 'manual'
+        // NOTE: updateChannel removed - deprecated Mini-Fix feature
       };
 
       setPreferences(defaultPrefs);

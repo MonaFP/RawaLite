@@ -64,9 +64,7 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
     {
       field: 'total',
       label: 'Rechnungsbetrag',
-      type: 'numberRange',
-      min: 0,
-      step: 0.01
+      type: 'numberRange'
     },
     {
       field: 'customerId',

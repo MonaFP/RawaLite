@@ -496,6 +496,10 @@ export default function PackageForm({
   const total = values.lineItems.reduce((sum, item) => {
     // Nur Hauptpositionen zählen (ohne parentItemId)
     if (!item.parentItemId) {
+      // Auch priceDisplayMode berücksichtigen: 'included' und 'hidden' nicht zählen
+      if (item.priceDisplayMode === 'included' || item.priceDisplayMode === 'hidden') {
+        return sum;
+      }
       return sum + (item.quantity * item.unitPrice);
     }
     return sum;
@@ -608,7 +612,14 @@ export default function PackageForm({
                 <span>📊 {values.lineItems.length} Items</span>
                 <span>📦 {values.lineItems.filter(item => item.parentItemId === undefined || item.parentItemId === null).length} Haupt</span>
                 <span>↳ {values.lineItems.filter(item => item.parentItemId !== undefined).length} Sub</span>
-                <span>💰 {formatCurrency(values.lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0))}</span>
+                <span>💰 {formatCurrency(values.lineItems.reduce((sum, item) => {
+                  // Nur Items mit priceDisplayMode 'default' oder 'optional' zählen
+                  // 'included' und 'hidden' sind bereits im Parent-Preis enthalten oder nicht relevant
+                  if (item.priceDisplayMode === 'included' || item.priceDisplayMode === 'hidden') {
+                    return sum;
+                  }
+                  return sum + (item.quantity * item.unitPrice);
+                }, 0))}</span>
               </div>
               
               {/* Quick Actions */}
@@ -1524,9 +1535,9 @@ export default function PackageForm({
           />
           MwSt. hinzufügen
         </label>
-        <div style={{ fontSize: "18px", fontWeight: "bold" }}>
+        <div style={{ fontSize: "18px", fontWeight: "bold" }} key={`total-${total}`}>
           Summe: {formatCurrency(total)}
-          {values.addVat && (
+          {!!values.addVat && (
             <span style={{ fontSize: "12px", opacity: 0.8, display: "block" }}>
               zzgl. MwSt.
             </span>

@@ -135,23 +135,21 @@ export function validateDiscount(
  * @returns Formatted currency string in German format (e.g., "€1.234,56")
  */
 export function formatCurrency(amount: number, showCurrency: boolean = true): string {
-  // 🔧 FIX: Use Intl.NumberFormat for guaranteed German locale formatting
-  if (showCurrency) {
-    const formatter = new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-    return formatter.format(amount || 0);
-  } else {
-    const formatter = new Intl.NumberFormat('de-DE', {
-      style: 'decimal',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-    return formatter.format(amount || 0);
-  }
+  // 🔧 FIX: Explicit number conversion to prevent String-to-Intl issues
+  // Eingabewert explizit in eine Zahl umwandeln
+  const n = Number(amount);
+  const safeAmount = Number.isFinite(n) ? n : 0;
+
+  const options: Intl.NumberFormatOptions = {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    ...(showCurrency
+      ? { style: 'currency', currency: 'EUR' }
+      : { style: 'decimal' }),
+  };
+
+  const formatter = new Intl.NumberFormat('de-DE', options);
+  return formatter.format(safeAmount);
 }
 
 /**

@@ -58,7 +58,9 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
 
   // Calculate totals using discount calculator
   const totals = calculateDocumentTotals(
-    lineItems.map(item => ({ quantity: item.quantity, unitPrice: item.unitPrice })),
+    lineItems
+      .filter(item => item.priceDisplayMode !== 'included' && item.priceDisplayMode !== 'hidden')
+      .map(item => ({ quantity: item.quantity, unitPrice: item.unitPrice })),
     discountType,
     discountValue,
     vatRate,

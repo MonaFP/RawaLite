@@ -47,29 +47,18 @@ vi.mock('electron', () => ({
   }
 }));
 
-// Mock migrations
-vi.mock('../src/main/db/migrations/index', () => ({
-  migrations: [
-    {
-      version: 1,
-      name: 'Initial tables',
+// Mock migrations - Import real migrations but with mocked functions
+vi.mock('../../src/main/db/migrations/index', () => {
+  // Import the actual migrations array structure but mock the functions
+  return {
+    migrations: Array.from({ length: 26 }, (_, i) => ({
+      version: i + 1,
+      name: `Migration ${i + 1}`,
       up: vi.fn(),
       down: vi.fn()
-    },
-    {
-      version: 2,
-      name: 'Add indexes',
-      up: vi.fn(),
-      down: vi.fn()
-    },
-    {
-      version: 3,
-      name: 'Add foreign keys',
-      up: vi.fn(),
-      down: vi.fn()
-    }
-  ]
-}));
+    }))
+  };
+});
 
 // Import after mocking
 import * as MigrationService from '../../src/main/db/MigrationService';
@@ -106,11 +95,11 @@ describe('MigrationService', () => {
       expect(mockTransaction).toHaveBeenCalled();
       expect(migrations[1].up).toHaveBeenCalledWith(mockDb); // Migration 2
       expect(migrations[2].up).toHaveBeenCalledWith(mockDb); // Migration 3
-      expect(Database.setUserVersion).toHaveBeenCalledWith(3);
+      expect(Database.setUserVersion).toHaveBeenCalledWith(26);
     });
 
     it('should skip if no migrations needed', async () => {
-      (Database.getUserVersion as any).mockReturnValue(3); // Already at latest
+      (Database.getUserVersion as any).mockReturnValue(26); // Already at latest
 
       await MigrationService.runAllMigrations();
 
@@ -185,7 +174,7 @@ describe('MigrationService', () => {
 
       expect(status).toMatchObject({
         currentVersion: 1,
-        targetVersion: 3,
+        targetVersion: 26,
         pendingMigrations: expect.arrayContaining([
           expect.objectContaining({ version: 2 }),
           expect.objectContaining({ version: 3 })
@@ -194,13 +183,13 @@ describe('MigrationService', () => {
     });
 
     it('should return empty pending migrations if up to date', () => {
-      (Database.getUserVersion as any).mockReturnValue(3);
+      (Database.getUserVersion as any).mockReturnValue(26);
 
       const status = MigrationService.getMigrationStatus();
 
       expect(status).toMatchObject({
-        currentVersion: 3,
-        targetVersion: 3,
+        currentVersion: 26,
+        targetVersion: 26,
         pendingMigrations: []
       });
     });

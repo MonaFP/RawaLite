@@ -1,18 +1,49 @@
 # 🏢 RawaLite
 
 > **Moderne Desktop-Anwendung für Rechnungs- und Angebotsverwaltung**  
-> Electron + React + TypeScript + SQLite
+> Electron + React + TypeScript + SQLite  
+> **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
 
 [![Version](https://img.shields.io/badge/version-1.8.117-blue)](https://github.com/MonaFP/RawaLite/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Electron](https://img.shields.io/badge/electron-31.2.0-brightgreen)](https://electronjs.org/)
 [![React](https://img.shields.io/badge/react-18.3.1-blue)](https://reactjs.org/)
 
+## 📋 **SCHEMA-ÜBERSICHT**
+
+### **Naming Convention:**
+```
+[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md
+
+Beispiel: VALIDATED_GUIDE-README-QUICKSTART-2025-10-16.md
+```
+
+### **STATUS-PRÄFIXE:**
+- `VALIDATED_` - Validierte, stabile Dokumentation (verlässliche Quelle)
+- `SOLVED_` - Gelöste Probleme und Fixes (fertige Lösung)
+- `LESSON_` - Lessons Learned und Debugging (vergleichende Analyse)
+- `WIP_` - Work in Progress (nur Orientierung)
+- `COMPLETED_` - Abgeschlossene Implementierungen (fertige Reports)
+- `PLAN_` - Planungsdokumente und Roadmaps (Entwurfsstatus)
+- `DEPRECATED_` - Veraltete, ersetzte Dokumentation (ignorieren)
+
+### **TYP-KATEGORIEN:**
+- `GUIDE-` - Leitfäden, Anleitungen
+- `FIX-` - Lessons Learned, Debugging, Fixes, Problems
+- `IMPL-` - Implementierungen, Features
+- `REPORT-` - Berichte, Analysen, Completion-Reports
+- `REGISTRY-` - Listen, Registries, Collections
+- `TEMPLATE-` - Vorlagen, Templates
+- `TRACKING-` - Status-Tracking, Quality-Tracking
+- `PLAN-` - Planungsdokumente, Roadmaps
+
+---
+
 ## 🎯 **Start hier**
 
-- **🤖 KI-Entwicklung:** [docs/00-meta/CRITICAL_KI-FAILURE-MODES.md](docs/00-meta/CRITICAL_KI-FAILURE-MODES.md) - **MANDATORY READ vor jeder Session**
-- **📚 Dokumentation:** [docs/00-meta/INDEX.md](docs/00-meta/INDEX.md) - Vollständige Projekt-Dokumentation
-- **🛡️ Critical Fixes:** [docs/00-meta/critical-fixes/CRITICAL-FIXES-REGISTRY.md](docs/00-meta/critical-fixes/CRITICAL-FIXES-REGISTRY.md) - Geschützte Code-Patterns
+- **🤖 KI-Entwicklung:** [docs/00-meta/final/CRITICAL_KI-FAILURE-MODES.md](docs/00-meta/final/CRITICAL_KI-FAILURE-MODES.md) - **MANDATORY READ vor jeder Session**
+- **📚 Dokumentation:** [docs/INDEX.md](docs/INDEX.md) - Vollständige Projekt-Dokumentation
+- **🛡️ Critical Fixes:** [docs/00-meta/final/CRITICAL-FIXES-REGISTRY.md](docs/00-meta/final/CRITICAL-FIXES-REGISTRY.md) - Geschützte Code-Patterns
 
 ## 🚀 **Schnellstart**
 

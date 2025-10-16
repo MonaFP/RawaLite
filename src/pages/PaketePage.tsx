@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Table } from "../components/Table";
 import { SearchAndFilterBar, useTableSearch, FilterConfig } from "../components/SearchAndFilter";
 import type { Package } from "../persistence/adapter";
@@ -12,16 +13,26 @@ interface PaketePageProps{
   title?: string;
 }
 
+// **State-Restore Interface** für SessionStorage
+interface PackageListState {
+  search: string;
+  filters: Record<string, any>;
+  sort: { field: string; direction: 'asc' | 'desc' } | null;
+  scrollPosition: number;
+}
+
+const LIST_STATE_STORAGE_KEY = 'ui:packages:liststate';
+
 export default function PaketePage({ title = "Pakete" }: PaketePageProps){
-  const { packages, loading, error, createPackage, updatePackage, deletePackage } = usePackages();
-  const [mode, setMode] = useState<"list"|"create"|"edit">("list");
-  const [current, setCurrent] = useState<Package | null>(null);
+  const { packages, loading, error, createPackage, deletePackage } = usePackages();
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<"list"|"create">("list");
   const { showError, showSuccess } = useNotifications();
   const { withLoading } = useLoading();
 
-  // Separate main packages and subpackages
-  const mainPackages = packages.filter(p => !p.parentPackageId);
-  const subPackages = packages.filter(p => p.parentPackageId);
+  // **State-Restore Refs** für Scroll-Position und List-State
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const listStateRef = useRef<PackageListState | null>(null);
 
   // Search and Filter Configuration for Packages
   const searchFieldMapping = useMemo(() => ({
@@ -44,16 +55,12 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
     {
       field: 'total',
       label: 'Preis',
-      type: 'numberRange',
-      min: 0,
-      step: 0.01
+      type: 'numberRange'
     },
     {
       field: 'lineItems',
       label: 'Anzahl Positionen',
-      type: 'numberRange',
-      min: 0,
-      step: 1
+      type: 'numberRange'
     }
   ], []);
 
@@ -67,6 +74,67 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
     filteredData,
     activeFilterCount
   } = useTableSearch(packages, searchFieldMapping);
+
+  // **State-Restore Functions** - SessionStorage basiert
+  const saveListState = () => {
+    const currentState: PackageListState = {
+      search: searchTerm,
+      filters: filters,
+      sort: null, // TODO: Erweitern wenn Sortierung implementiert
+      scrollPosition: listContainerRef.current?.scrollTop || 0
+    };
+    
+    try {
+      sessionStorage.setItem(LIST_STATE_STORAGE_KEY, JSON.stringify(currentState));
+      listStateRef.current = currentState;
+    } catch (error) {
+      // SessionStorage kann fehlschlagen (private mode, quota exceeded)
+      console.warn('Failed to save list state to sessionStorage:', error);
+    }
+  };
+
+  const restoreListState = () => {
+    try {
+      const savedState = sessionStorage.getItem(LIST_STATE_STORAGE_KEY);
+      if (savedState) {
+        const state: PackageListState = JSON.parse(savedState);
+        
+        // Restore search and filters
+        setSearchTerm(state.search);
+        if (state.filters) {
+          Object.entries(state.filters).forEach(([field, value]) => {
+            setFilter(field, value);
+          });
+        }
+        
+        // Restore scroll position (after next render)
+        if (state.scrollPosition > 0) {
+          requestAnimationFrame(() => {
+            if (listContainerRef.current) {
+              listContainerRef.current.scrollTop = state.scrollPosition;
+            }
+          });
+        }
+        
+        listStateRef.current = state;
+        return true;
+      }
+    } catch (error) {
+      console.warn('Failed to restore list state from sessionStorage:', error);
+    }
+    return false;
+  };
+
+  // **State-Restore Effect** - beim Mount ausführen
+  useEffect(() => {
+    restoreListState();
+  }, []); // Empty deps - nur einmal beim Mount
+
+  // **Enhanced Navigation Function** - mit State-Sicherung
+  const navigateToEdit = (packageId: number) => {
+    saveListState(); // Zustand vor Navigation sichern
+    navigate(`/pakete/${packageId}/edit`);
+  };
 
   const columns = useMemo(()=>([
     { key: "internalTitle", header: "Bezeichnung" },
@@ -92,7 +160,7 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
           <button 
             className="btn btn-secondary" 
             style={{ padding: "4px 8px", fontSize: "12px" }} 
-            onClick={()=>{ setCurrent(row); setMode("edit"); }}
+            onClick={() => navigateToEdit(row.id)}
             disabled={loading}
           >
             Bearbeiten
@@ -136,38 +204,6 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
     } catch (err) {
       // Error handling is done in usePackages and PackageForm
       console.error('Error creating package:', err);
-    }
-  }
-
-  async function handleEdit(values: PackageFormValues){
-    if(!current) return;
-    
-    try {
-      // Convert Array-Indices back to DB-IDs for persistence
-      const processedLineItems = values.lineItems.map((item, index) => {
-        const dbId = index + 1;
-        return {
-          ...item,
-          id: dbId,
-          // Convert parentItemId from Array-Index to DB-ID
-          parentItemId: item.parentItemId !== undefined 
-            ? (item.parentItemId as number) + 1  // Array-Index → DB-ID
-            : undefined
-        };
-      });
-
-      await updatePackage(current.id, { 
-        internalTitle: values.internalTitle,
-        lineItems: processedLineItems,
-        parentPackageId: values.parentPackageId,
-        addVat: values.addVat
-      });
-      setMode("list");
-      setCurrent(null);
-      // Success notification is handled in PackageForm
-    } catch (err) {
-      // Error handling is done in usePackages and PackageForm
-      console.error('Error updating package:', err);
     }
   }
 
@@ -243,11 +279,14 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
         totalCount={packages.length}
       />
       
-      <Table<Package>
-        columns={columns as any}
-        data={filteredData}
-        emptyMessage="Keine Pakete gefunden."
-      />
+      {/* **List Container** mit Scroll-Ref für State-Restore */}
+      <div ref={listContainerRef} style={{ overflow: 'auto', maxHeight: '70vh' }}>
+        <Table<Package>
+          columns={columns as any}
+          data={filteredData}
+          emptyMessage="Keine Pakete gefunden."
+        />
+      </div>
 
       {mode === "create" && (
         <div style={{marginTop:"24px", paddingTop:"24px", borderTop:"1px solid rgba(255,255,255,.1)"}}>
@@ -259,43 +298,6 @@ export default function PaketePage({ title = "Pakete" }: PaketePageProps){
             onSubmit={handleCreate}
             onCancel={()=>setMode("list")}
             submitLabel="Paket erstellen"
-            packages={packages}
-          />
-        </div>
-      )}
-
-      {mode === "edit" && current && (
-        <div style={{marginTop:"24px", paddingTop:"24px", borderTop:"1px solid rgba(255,255,255,.1)"}}>
-          <div style={{marginBottom:"16px"}}>
-            <h3 style={{margin:"0 0 4px 0"}}>Paket bearbeiten</h3>
-            <div style={{opacity:.7}}>Bearbeite das Paket "{current.internalTitle}".</div>
-          </div>
-          <PackageForm
-            initial={{ 
-              internalTitle: current.internalTitle,
-              lineItems: (() => {
-                // Convert DB-IDs to Array-Indices for PackageForm compatibility
-                const dbToIndexMap: Record<number, number> = {};
-                
-                // Create mapping: DB-ID → Array-Index
-                current.lineItems.forEach((item, index) => {
-                  dbToIndexMap[item.id] = index;
-                });
-                
-                return current.lineItems.map(li => ({ 
-                  title: li.title, 
-                  quantity: li.quantity, 
-                  unitPrice: li.unitPrice,
-                  parentItemId: li.parentItemId ? dbToIndexMap[li.parentItemId] : undefined,
-                  description: li.description
-                }));
-              })(),
-              addVat: current.addVat,
-              parentPackageId: current.parentPackageId
-            }}
-            onSubmit={handleEdit}
-            onCancel={()=>{ setMode("list"); setCurrent(null); }}
-            submitLabel="Paket aktualisieren"
             packages={packages}
           />
         </div>

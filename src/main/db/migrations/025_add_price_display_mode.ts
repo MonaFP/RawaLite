@@ -6,7 +6,7 @@
  * instead of always displaying prices.
  * 
  * @since v1.0.42.6
- * @see docs/09-pdf/ISSUE-REPORT-PDF-UND-SUBITEM-PREISE-2025-10-14.md
+ * @see docs/04-ui/final/PDF-ISSUE-REPORT-PDF-UND-SUBITEM-PREISE-2025-10-14.md
  */
 
 import type { Database } from 'better-sqlite3';

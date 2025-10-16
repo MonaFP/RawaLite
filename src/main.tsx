@@ -18,6 +18,7 @@ import KundenPage from "./pages/KundenPage";
 import AngebotePage from "./pages/AngebotePage";
 import AngebotDetailPage from "./pages/AngebotDetailPage";
 import PaketePage from "./pages/PaketePage";
+import PackageEditPage from "./pages/PackageEditPage";
 import RechnungenPage from "./pages/RechnungenPage";
 import TimesheetsPage from "./pages/TimesheetsPage";
 import EinstellungenPage from "./pages/EinstellungenPage";
@@ -49,6 +50,10 @@ const routerConfig = [
       {
         path: "pakete",
         element: <PaketePage />,
+      },
+      {
+        path: "pakete/:id/edit",
+        element: <PackageEditPage />,
       },
       {
         path: "rechnungen",

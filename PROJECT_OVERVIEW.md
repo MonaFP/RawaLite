@@ -1,14 +1,47 @@
 # 🏢 RaWaLite - Project Overview
 
-> **Vollständige Anwendungsübersicht** - Letzte Aktualisierung: 30. September 2025
+> **Vollständige Anwendungsübersicht** - Letzte Aktualisierung: 30. September 2025  
+> **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
+
+## 📋 **SCHEMA-ÜBERSICHT**
+
+### **Naming Convention:**
+```
+[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md
+
+Beispiel: VALIDATED_GUIDE-PROJECT-OVERVIEW-2025-10-16.md
+```
+
+### **STATUS-PRÄFIXE:**
+- `VALIDATED_` - Validierte, stabile Dokumentation (verlässliche Quelle)
+- `SOLVED_` - Gelöste Probleme und Fixes (fertige Lösung)
+- `LESSON_` - Lessons Learned und Debugging (vergleichende Analyse)
+- `WIP_` - Work in Progress (nur Orientierung)
+- `COMPLETED_` - Abgeschlossene Implementierungen (fertige Reports)
+- `PLAN_` - Planungsdokumente und Roadmaps (Entwurfsstatus)
+- `DEPRECATED_` - Veraltete, ersetzte Dokumentation (ignorieren)
+
+### **TYP-KATEGORIEN:**
+- `GUIDE-` - Leitfäden, Anleitungen
+- `FIX-` - Lessons Learned, Debugging, Fixes, Problems
+- `IMPL-` - Implementierungen, Features
+- `REPORT-` - Berichte, Analysen, Completion-Reports
+- `REGISTRY-` - Listen, Registries, Collections
+- `TEMPLATE-` - Vorlagen, Templates
+- `TRACKING-` - Status-Tracking, Quality-Tracking
+- `PLAN-` - Planungsdokumente, Roadmaps
+
+---
 
 ## 📚 **Dokumentation**
 
 **Diese Datei bietet die technische Projektübersicht. Für strukturierte Entwickler-Dokumentation siehe:**
-- **[docs/](docs/)** - Vollständige Dokumentationsstruktur mit thematischen Bereichen
-- **[docs/00-standards/](docs/00-standards/)** - Entwicklungsstandards und Workflows  
-- **[docs/10-architecture/](docs/10-architecture/)** - System-Architektur und Design
-- **[docs/50-persistence/](docs/50-persistence/)** - Database-System und Installation
+
+> **📋 Vollständige Struktur:** Siehe [docs/PATHS.md](docs/PATHS.md) für zentrale Pfad-Verwaltung aller Dokumentation.
+
+- **[docs/](docs/)** - Vollständige Dokumentationsstruktur mit 7 semantischen Bereichen (00-meta bis 06-lessons)
+- **[docs/PATHS.md](docs/PATHS.md#CORE_INDEX)** - Standards und Architektur  
+- **[docs/PATHS.md](docs/PATHS.md#DATA_INDEX)** - Database-System und Installation
 
 ## 🔍 **Technologie-Stack**
 
@@ -21,11 +54,10 @@
 
 ### Datenbank & Persistence
 - **Primary:** better-sqlite3 12.4.1 (Native SQLite mit WAL Mode)
-- **Secondary:** IndexedDB via Dexie 4.0.8 (Browser-Fallback)
 - **Backup:** Integrated Hot-Backup System
 - **Migration:** user_version-based Schema Migrations
 - **Field Mapping:** Dual-layer camelCase↔snake_case Architecture (Production Ready)
-- **Legacy:** SQL.js 1.13.0 (Deprecated, Migration Support)
+- **Legacy:** SQL.js 1.13.0 (Deprecated, Migration Support only)
 
 ### Testing & Development
 - **Unit Tests:** Vitest 1.6.0
@@ -65,8 +97,7 @@ src/persistence/
 
 src/adapters/
 ├── SQLiteAdapter.ts           # Main Database Adapter (better-sqlite3)
-├── SettingsAdapter.ts         # Settings-specific Adapter
-└── IndexedDBAdapter.ts        # Browser-Storage Fallback
+└── SettingsAdapter.ts         # Settings-specific Adapter
 ```
 
 ### Business Logic (React Hooks)

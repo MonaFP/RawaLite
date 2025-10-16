@@ -116,4 +116,4 @@ Theme-spezifische Focus-Farben werden automatisch angewendet.
 
 ## 📖 Dokumentation
 
-Vollständige Dokumentation: `docs/12-lessons/LESSONS-LEARNED-status-updates-css-refactoring.md`
+Vollständige Dokumentation: [PATHS.md](../../../docs/PATHS.md#STATUS_DROPDOWN_COMPLETE_FIX)
