@@ -13,6 +13,7 @@
 - **Development Guide:** [PATHS.md](../PATHS.md#DEVELOPMENT_GUIDE) - Complete setup and processes
 - **Debugging Guide:** [PATHS.md](../PATHS.md#DEBUGGING_GUIDE) - Strategies and tools
 - **PowerShell Best Practices:** [PATHS.md](../PATHS.md#POWERSHELL_BEST_PRACTICES) - Package.json automation
+- **✅ ROOT_ Migration:** [final/VALIDATED_IMPL-CRITICAL-DOCS-ROOT-MIGRATION_2025-10-17.md](final/VALIDATED_IMPL-CRITICAL-DOCS-ROOT-MIGRATION_2025-10-17.md) - KI-Critical Documents Root Migration (+40% Session Efficiency)
 
 #### **🔧 Build & Production**
 - **ABI Problem Solution:** [PATHS.md](../PATHS.md#ABI_PROBLEM_SOLUTION) - Native module fixes

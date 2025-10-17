@@ -3,10 +3,8 @@
 /* Focus Mode Bar - separater Bereich zwischen Header und Content */
 .focus-mode-bar {
   grid-area: focus-bar; /* CSS Grid Area für korrekte Positionierung */
-  background: linear-gradient(135deg, 
-    var(--accent, #1e3a2e) 0%, 
-    var(--sidebar-green, #2d5a42) 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--accent) 15%, transparent 85%); /* 🎨 Theme-basiert statt hardcoded */
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%); /* 🎨 Theme-basiert statt hardcoded */
   padding: 8px 16px;
   min-height: 40px;
   display: flex;
@@ -44,10 +42,8 @@
 /* Focus Bar Area - unter dem Header als optische zweite Zeile */
 .focus-bar-area {
   grid-area: focus-bar;
-  background: linear-gradient(135deg, 
-    var(--accent, #1e3a2e) 0%, 
-    var(--sidebar-green, #2d5a42) 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--accent) 15%, transparent 85%); /* 🎨 Theme-basiert statt hardcoded */
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%); /* 🎨 Theme-basiert statt hardcoded */
   padding: 8px 16px;
   min-height: 40px;
   display: flex;
@@ -233,7 +229,7 @@ body[data-focus-mode="free"] .app {
 
 /* Focus Mode Toggle Button - einfach und stabil */
 .focus-mode-toggle {
-  background: var(--accent, #1e3a2e);
+  background: var(--accent);  /* 🎨 Theme-basierte Hauptfarbe */
   color: var(--card-bg, white);
   border: none;
   border-radius: 6px;
@@ -258,7 +254,7 @@ body[data-focus-mode="free"] .app {
 }
 
 .focus-mode-toggle:hover {
-  background: var(--accent-hover, #0f2419);
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* 🎨 Theme-basierte Hover mit Transparenz */
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }

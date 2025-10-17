@@ -492,8 +492,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
       const mappedOffer = mapFromSQL(offer) as Omit<Offer, "lineItems">;
       console.log('­ƒöº [SQLiteAdapter.listOffers] Mapped offer:', mappedOffer);
       
-      // FIX: Use snake_case field names and mapFromSQL for consistency
-      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
+      // FIX: Use snake_case field names and mapFromSQL for consistency + sort_order for proper positioning
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode, sort_order FROM offer_line_items WHERE offer_id = ? ORDER BY sort_order, id`);
       console.log('­ƒöº [SQLiteAdapter.listOffers] LineItem query:', lineItemQuery);
       
       const lineItems = await this.client.query<{
@@ -507,6 +507,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
         item_type?: string;
         source_package_id?: number;
         price_display_mode?: string;
+        sort_order?: number;
       }>(lineItemQuery, [offer.id]);
 
       console.log('­ƒöº [SQLiteAdapter.listOffers] LineItems for offer', offer.id, ':', lineItems);
@@ -524,7 +525,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
             unitPrice: mappedItem.unitPrice,
             total: mappedItem.total,
             parentItemId: mappedItem.parentItemId || undefined,
-            priceDisplayMode: (mappedItem.priceDisplayMode as 'default' | 'included' | 'hidden' | 'optional' | undefined) || undefined
+            priceDisplayMode: (mappedItem.priceDisplayMode as 'default' | 'included' | 'hidden' | 'optional' | undefined) || undefined,
+            sortOrder: mappedItem.sortOrder || 0
           };
         })
       });
@@ -540,7 +542,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (!rows[0]) return null;
 
     const offer = mapFromSQL(rows[0]) as Omit<Offer, "lineItems">;
-    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode FROM offer_line_items WHERE offer_id = ? ORDER BY id`);
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode, sort_order FROM offer_line_items WHERE offer_id = ? ORDER BY sort_order, id`);
     const lineItems = await this.client.query<{
       id: number;
       title: string;
@@ -552,6 +554,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
       item_type?: string;
       source_package_id?: number;
       price_display_mode?: string;
+      sort_order?: number;
     }>(lineItemQuery, [id]);
 
     // Load attachments for each line item
@@ -578,6 +581,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
           total: mappedItem.total,
           parentItemId: mappedItem.parentItemId || undefined,
           priceDisplayMode: (mappedItem.priceDisplayMode as 'default' | 'included' | 'hidden' | 'optional' | undefined) || undefined,
+          sortOrder: mappedItem.sortOrder || 0,
           attachments: attachments
         };
       })
@@ -633,8 +637,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
     for (const item of mainItems) {
       const mappedItem = mapToSQL(item);
       const itemResult = await this.client.exec(
-        `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, item.itemType || 'standalone', item.sourcePackageId || null, mappedItem.price_display_mode || 'default']
+        `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, item.itemType || 'standalone', item.sourcePackageId || null, mappedItem.price_display_mode || 'default', item.sortOrder || 0]
       );
 
       // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
@@ -655,8 +659,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
       }
 
       const itemResult = await this.client.exec(
-        `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, item.itemType || 'individual_sub', item.sourcePackageId || null, mappedItem.price_display_mode || 'default']
+        `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [offerId, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, item.itemType || 'individual_sub', item.sourcePackageId || null, mappedItem.price_display_mode || 'default', item.sortOrder || 0]
       );
 
       // Map sub-item ID as well for potential nested sub-items
@@ -764,8 +768,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
       for (const item of mainItems) {
         const mappedItem = mapToSQL(item);
         const mainItemResult = await this.client.exec(
-          `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, item.itemType || 'standalone', item.sourcePackageId || null, mappedItem.price_display_mode || 'default']
+          `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, null, item.itemType || 'standalone', item.sourcePackageId || null, mappedItem.price_display_mode || 'default', item.sortOrder || 0]
         );
 
         // Map ALL IDs (both negative frontend IDs AND positive existing IDs) to new database IDs
@@ -788,8 +792,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
         }
 
         const subItemResult = await this.client.exec(
-          `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, item.itemType || 'individual_sub', item.sourcePackageId || null, mappedItem.price_display_mode || 'default']
+          `INSERT INTO offer_line_items (offer_id, title, description, quantity, unit_price, total, parent_item_id, item_type, source_package_id, price_display_mode, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, mappedItem.title, mappedItem.description || null, mappedItem.quantity, mappedItem.unit_price, mappedItem.total, resolvedParentId, item.itemType || 'individual_sub', item.sourcePackageId || null, mappedItem.price_display_mode || 'default', item.sortOrder || 0]
         );
 
         // Map sub-item ID as well for potential nested sub-items
@@ -852,8 +856,8 @@ export class SQLiteAdapter implements PersistenceAdapter {
       const mappedInvoice = mapFromSQL(invoice) as Omit<Invoice, "lineItems">;
       console.log('­ƒöº [SQLiteAdapter.listInvoices] Mapped invoice:', mappedInvoice);
       
-      // FIX: Use consistent field-mapping instead of manual aliases
-      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, priceDisplayMode FROM invoice_line_items WHERE invoiceId = ? ORDER BY id`);
+      // FIX: Use consistent field-mapping instead of manual aliases + sort_order for proper positioning  
+      const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, priceDisplayMode FROM invoice_line_items WHERE invoiceId = ? ORDER BY sort_order, id`);
       console.log('­ƒöº [SQLiteAdapter.listInvoices] LineItem query:', lineItemQuery);
       
       const lineItems = await this.client.query<{
@@ -894,7 +898,7 @@ export class SQLiteAdapter implements PersistenceAdapter {
     if (!rows[0]) return null;
 
     const invoice = mapFromSQL(rows[0]) as Omit<Invoice, "lineItems">;
-    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, priceDisplayMode FROM invoice_line_items WHERE invoiceId = ? ORDER BY id`);
+    const lineItemQuery = convertSQLQuery(`SELECT id, title, description, quantity, unitPrice, total, parentItemId, priceDisplayMode FROM invoice_line_items WHERE invoiceId = ? ORDER BY sort_order, id`);
     const lineItems = await this.client.query<{
       id: number;
       title: string;

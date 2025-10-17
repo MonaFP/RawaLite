@@ -7,6 +7,8 @@ import { useLoading } from '../contexts/LoadingContext';
 import { ValidationError, handleError } from '../lib/errors';
 import { calculateDocumentTotals, validateDiscount, formatCurrency } from '../lib/discount-calculator';
 import { formatNumberInputValue, parseNumberInput, getNumberInputStyles } from '../lib/input-helpers';
+import { SortableLineItems } from './ui/SortableLineItems';
+import { DraggableLineItem } from './ui/DraggableLineItem';
 
 interface OfferFormProps {
   offer?: Offer;
@@ -301,6 +303,157 @@ export const OfferForm: React.FC<OfferFormProps> = ({
     setLineItems(items => items.filter(item => item.id !== id && item.parentItemId !== id));
   };
 
+  const reorderLineItems = (fromIndex: number, toIndex: number) => {
+    // Die Indizes kommen vom gefilterten und sortierten parent items Array
+    let parentItems = lineItems.filter(item => !item.parentItemId).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+    
+    // 🔧 AUTO-FIX: Initialisiere sortOrder-Werte wenn sie alle gleich oder null sind
+    const sortOrders = parentItems.map(p => p.sortOrder || 0);
+    const uniqueSortOrders = [...new Set(sortOrders)];
+    const needsInitialization = uniqueSortOrders.length <= 1 || uniqueSortOrders.every(s => s === 0);
+    
+    if (needsInitialization) {
+      console.log('🔧 Initializing sortOrder values - all items have same or zero sortOrder');
+      
+      // Setze aufsteigende sortOrder-Werte (10, 20, 30, ...)
+      const updatedItems = lineItems.map(item => {
+        if (!item.parentItemId) {
+          const index = parentItems.findIndex(p => p.id === item.id);
+          const newSortOrder = (index + 1) * 10;
+          console.log(`🔧 Setting item ${item.id} sortOrder: ${item.sortOrder || 0} → ${newSortOrder}`);
+          return { ...item, sortOrder: newSortOrder };
+        }
+        return item;
+      });
+      
+      // ✅ Persist sortOrder values to database immediately (only for existing offers)
+      if (offer?.id && adapter) {
+        console.log('💾 Persisting sortOrder values to database for offer ID:', offer.id);
+        adapter.updateOffer(offer.id, { lineItems: updatedItems }).catch(error => {
+          console.error('❌ Failed to persist sortOrder values:', error);
+        });
+      } else {
+        console.log('ℹ️ Skipping database persistence (new offer or no adapter)');
+      }
+      
+      setLineItems(updatedItems);
+      
+      // Aktualisiere parentItems mit neuen sortOrder-Werten 
+      parentItems = updatedItems.filter(item => !item.parentItemId).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+      
+      console.log('✅ SortOrder initialization complete - continuing with reorder');
+    }
+    
+    const fromItem = parentItems[fromIndex];
+    
+    console.log('🔄 reorderLineItems called:', { 
+      fromIndex, 
+      toIndex, 
+      fromItem: fromItem?.id, 
+      totalParentItems: parentItems.length,
+      parentItemsIds: parentItems.map(p => p.id),
+      parentItemsSortOrders: parentItems.map(p => ({ id: p.id, sortOrder: p.sortOrder }))
+    });
+    
+    if (!fromItem || fromIndex === toIndex) {
+      console.log('❌ Early return - invalid items or same position');
+      return;
+    }
+    
+    // WICHTIG: @dnd-kit's toIndex ist die Position des Items, ÜBER das gezogen wird
+    // Nicht die finale Insertion-Position. Wir müssen arrayMove-Logik verwenden.
+    
+    // Simuliere arrayMove um die tatsächliche finale Position zu berechnen
+    const itemsCopy = [...parentItems];
+    const [movedItem] = itemsCopy.splice(fromIndex, 1);
+    itemsCopy.splice(toIndex, 0, movedItem);
+    
+    // Finde die neue Position des bewegten Items im resultierenden Array
+    const finalIndex = itemsCopy.findIndex(item => item.id === fromItem.id);
+    
+    console.log('🎯 ArrayMove simulation:', {
+      fromIndex,
+      toIndex,
+      finalIndex,
+      fromItemId: fromItem.id,
+      beforeMove: parentItems.map((p, idx) => ({ idx, id: p.id, sortOrder: p.sortOrder })),
+      afterMove: itemsCopy.map((p, idx) => ({ idx, id: p.id, sortOrder: p.sortOrder })),
+      simulationValid: finalIndex !== -1
+    });
+    
+    // Berechne sortOrder basierend auf der finalen Position
+    let newSortOrder: number;
+    
+    if (finalIndex === 0) {
+      // An den Anfang bewegen
+      const firstItem = itemsCopy[1]; // Das zweite Item (da wir das erste sind)
+      newSortOrder = firstItem ? (firstItem.sortOrder || 0) - 10 : 10;
+      console.log('🎯 Moving to start:', { newSortOrder, firstItemSortOrder: firstItem?.sortOrder });
+    } else if (finalIndex >= itemsCopy.length - 1) {
+      // An das Ende bewegen
+      const lastItem = itemsCopy[itemsCopy.length - 2]; // Das vorletzte Item
+      newSortOrder = lastItem ? (lastItem.sortOrder || 0) + 10 : 10;
+      console.log('🎯 Moving to end:', { newSortOrder, lastItemSortOrder: lastItem?.sortOrder });
+    } else {
+      // Zwischen zwei Items einfügen
+      const prevItem = itemsCopy[finalIndex - 1];
+      const nextItem = itemsCopy[finalIndex + 1];
+      const prevSortOrder = prevItem?.sortOrder || 0;
+      const nextSortOrder = nextItem?.sortOrder || 0;
+      
+      console.log('🎯 Middle position calculation:', { 
+        finalIndex,
+        prevItem: prevItem?.id,
+        nextItem: nextItem?.id,
+        prevSortOrder, 
+        nextSortOrder
+      });
+      
+      // Berechne Position zwischen den Nachbarn
+      if (Math.abs(nextSortOrder - prevSortOrder) <= 1) {
+        // Zu wenig Platz - verwende Dezimalstellen
+        newSortOrder = prevSortOrder + (nextSortOrder - prevSortOrder) / 2;
+        if (newSortOrder === prevSortOrder || newSortOrder === nextSortOrder) {
+          newSortOrder = prevSortOrder + 0.1;
+        }
+      } else {
+        // Genug Platz - verwende ganzzahligen Mittelpunkt
+        newSortOrder = Math.round((prevSortOrder + nextSortOrder) / 2);
+      }
+    }
+    
+    console.log('🔢 Calculated new sortOrder:', { 
+      itemId: fromItem.id, 
+      oldSortOrder: fromItem.sortOrder, 
+      newSortOrder,
+      finalIndex,
+      totalParentItems: parentItems.length,
+      sortOrderRange: parentItems.map((item, idx) => ({ idx, id: item.id, sortOrder: item.sortOrder }))
+    });
+    
+    // Update das bewegte Item
+    setLineItems(items => {
+      const updatedItems = items.map(item => {
+        if (item.id === fromItem.id) {
+          console.log(`✅ Updating item ${item.id}: sortOrder ${item.sortOrder} → ${newSortOrder}`);
+          return { ...item, sortOrder: newSortOrder };
+        }
+        return item;
+      });
+      
+      // Verificiere das Update
+      const updatedItem = updatedItems.find(item => item.id === fromItem.id);
+      console.log('🔍 State update verification:', {
+        itemId: fromItem.id,
+        oldSortOrder: fromItem.sortOrder,
+        newSortOrder: updatedItem?.sortOrder,
+        updateSuccessful: updatedItem?.sortOrder === newSortOrder
+      });
+      
+      return updatedItems;
+    });
+  };
+
   const addFromPackage = async (packageId: number) => {
     if (!adapter) return;
     
@@ -563,7 +716,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
               onClick={() => addSubItem()}
               disabled={isSubmitting}
               className="btn btn-success"
-              style={{fontSize:"14px", padding:"6px 12px", backgroundColor:"#16a34a"}}
+              style={{fontSize:"14px", padding:"6px 12px", backgroundColor:"var(--ok)"}} /* 🎨 Theme-basiert */
             >
               Sub-Position hinzufügen
             </button>
@@ -577,13 +730,23 @@ export const OfferForm: React.FC<OfferFormProps> = ({
 
           <div style={{display:"flex", flexDirection:"column", gap:"8px"}}>
             {/* React.Fragment-basierte Gruppierung: Parent-Items mit ihren Sub-Items gruppiert */}
-            {lineItems
-              .filter(item => !item.parentItemId) // Nur Parent-Items
-              .map(parentItem => {
-                const subItems = lineItems.filter(item => item.parentItemId === parentItem.id);
-                
-                return (
-                <React.Fragment key={`parent-${parentItem.id}`}>
+            <SortableLineItems 
+              items={lineItems.filter(item => !item.parentItemId).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))}
+              onReorder={reorderLineItems}
+            >
+              {lineItems
+                .filter(item => !item.parentItemId) // Nur Parent-Items
+                .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)) // Sortierung nach sortOrder
+                .map(parentItem => {
+                  const subItems = lineItems.filter(item => item.parentItemId === parentItem.id);
+                  
+                  return (
+                  <DraggableLineItem 
+                    key={`parent-${parentItem.id}`} 
+                    item={parentItem}
+                    isDisabled={isSubmitting}
+                  >
+                    <React.Fragment>
                   {/* Parent-Item */}
                   <div style={{
                     border: "1px solid rgba(255,255,255,.1)",
@@ -628,7 +791,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                           onClick={() => addSubItem(parentItem.id)}
                           disabled={isSubmitting}
                           className="btn btn-success"
-                          style={{fontSize:"12px", padding:"4px 8px", backgroundColor:"#16a34a"}}
+                          style={{fontSize:"12px", padding:"4px 8px", backgroundColor:"var(--ok)"}} /* 🎨 Theme-basiert */
                           title="Sub-Position hinzufügen"
                         >
                           Sub
@@ -686,7 +849,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                               <button
                                 type="button"
                                 onClick={() => removeAttachment(parentItem.id, attachment.id)}
-                                style={{position: "absolute", top: "-4px", right: "-4px", background: "#ef4444", color: "white", border: "none", borderRadius: "50%", width: "16px", height: "16px", fontSize: "10px", cursor: "pointer"}}
+                                style={{position: "absolute", top: "-4px", right: "-4px", background: "var(--danger)", color: "white", border: "none", borderRadius: "50%", width: "16px", height: "16px", fontSize: "10px", cursor: "pointer"}} /* 🎨 Theme-basiert */
                                 title="Bild entfernen"
                                 disabled={isSubmitting}
                               >
@@ -846,7 +1009,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => removeAttachment(subItem.id, attachment.id)}
-                                    style={{position: "absolute", top: "-3px", right: "-3px", background: "#ef4444", color: "white", border: "none", borderRadius: "50%", width: "14px", height: "14px", fontSize: "9px", cursor: "pointer"}}
+                                    style={{position: "absolute", top: "-3px", right: "-3px", background: "var(--danger)", color: "white", border: "none", borderRadius: "50%", width: "14px", height: "14px", fontSize: "9px", cursor: "pointer"}} /* 🎨 Theme-basiert */
                                     title="Bild entfernen"
                                     disabled={isSubmitting}
                                   >
@@ -860,8 +1023,10 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                       </div>
                     ))}
                 </React.Fragment>
+                </DraggableLineItem>
                 );
               })}
+            </SortableLineItems>
             
             {/* Orphaned sub-items (itemType === 'individual_sub' but no parentItemId) */}
             {lineItems

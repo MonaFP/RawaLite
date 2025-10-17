@@ -105,6 +105,9 @@ export class FieldMapper {
     'hourlyRate': 'hourly_rate',
     'isBreak': 'is_break',
     
+    // Status Versioning (KRITISCH für StatusControl - Migration 015)
+    'version': 'version',  // Optimistic locking version field
+    
     // Numbering Circles & Numbers
     'lastNumber': 'last_number',
     'offerNumber': 'offer_number',

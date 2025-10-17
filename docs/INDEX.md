@@ -14,11 +14,11 @@
 - **TYP-KATEGORIEN:** `GUIDE-`, `FIX-`, `IMPL-`, `REPORT-`, `REGISTRY-`, `TEMPLATE-`, `TRACKING-`, `PLAN-`
 - **Beispiel:** `VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md`
 
-### 00-meta/ - Meta-Dokumentation ✅ **UPDATED (16.10.2025)**
-- **Critical Registry:** [PATHS.md](PATHS.md#CRITICAL_FIXES) - ✅ **[15 AKTIVE FIXES]** Registry aller kritischen Fixes
-- **KI Instructions:** [PATHS.md](PATHS.md#KI_INSTRUCTIONS) - ✅ **[VALIDATED SYSTEM]** KI-Instructions mit VALIDATED- Präfix-System  
-- **KI Failure Modes:** [PATHS.md](PATHS.md#KI_FAILURE_MODES) - **[MANDATORY READ]** Session-Killer-Fehler verhindern
-- **PATHS.md System:** [PATHS.md](PATHS.md) - ✅ **[104+ PATH CONSTANTS]** Zentrale Pfad-Verwaltung für alle Dokumentationen
+### 00-meta/ - Meta-Dokumentation ✅ **ROOT_ MIGRATION COMPLETED (17.10.2025)**
+- **Critical Registry:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - ✅ **[15 AKTIVE FIXES]** Registry aller kritischen Fixes
+- **KI Instructions:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) - ✅ **[VALIDATED SYSTEM]** KI-Instructions mit ROOT_ Anti-Move Protection  
+- **KI Failure Modes:** [ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md](ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md) - **[MANDATORY READ]** Session-Killer-Fehler verhindern
+- **PATHS.md System:** [VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md](VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md) - ✅ **[104+ PATH CONSTANTS]** Zentrale Pfad-Verwaltung für alle Dokumentationen
 
 ### 01-core/ - Standards & Core Architecture ✅ **UPDATED (16.10.2025)**
 - **Coding Standards:** [PATHS.md](PATHS.md#CODING_STANDARDS) - TypeScript, React, Database Standards

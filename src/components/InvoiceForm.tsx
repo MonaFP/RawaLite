@@ -5,6 +5,8 @@ import { usePersistence } from '../contexts/PersistenceContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { calculateDocumentTotals, validateDiscount, formatCurrency } from '../lib/discount-calculator';
 import { formatNumberInputValue, parseNumberInput, getNumberInputStyles } from '../lib/input-helpers';
+import { SortableLineItems } from './ui/SortableLineItems';
+import { DraggableLineItem } from './ui/DraggableLineItem';
 
 interface InvoiceFormProps {
   invoice?: Invoice;
@@ -114,6 +116,40 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
 
   const removeLineItem = (id: number) => {
     setLineItems(items => items.filter(item => item.id !== id && item.parentItemId !== id));
+  };
+
+  // 🚀 Position Reordering: Drag-Drop Support
+  const reorderLineItems = async (fromIndex: number, toIndex: number) => {
+    console.log('🔄 Reordering invoice line items from index', fromIndex, 'to index', toIndex);
+    
+    // Create new array with reordered items
+    const items = [...lineItems];
+    const [removed] = items.splice(fromIndex, 1);
+    items.splice(toIndex, 0, removed);
+    
+    // Assign new sortOrder values with gaps of 10 for future insertions
+    const withSortOrder = items.map((item, index) => ({
+      ...item,
+      sortOrder: (index + 1) * 10
+    }));
+    
+    console.log('✅ New invoice order with sortOrder:', withSortOrder.map(item => ({ id: item.id, title: item.title, sortOrder: item.sortOrder })));
+    setLineItems(withSortOrder);
+
+    // 💾 Persist to database if invoice exists (not for new invoices)
+    if (invoice?.id && adapter) {
+      try {
+        console.log('💾 Persisting sortOrder changes to database...');
+        await adapter.updateInvoice(invoice.id, {
+          ...invoice,
+          lineItems: withSortOrder
+        });
+        console.log('✅ sortOrder changes persisted to database');
+      } catch (error) {
+        console.error('❌ Failed to persist sortOrder changes:', error);
+        showError('Fehler beim Speichern der Reihenfolge-Änderung');
+      }
+    }
   };
 
   const handleImageUpload = async (lineItemId: number, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -308,7 +344,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }
   };
 
-  const parentItems = lineItems.filter(item => !item.parentItemId);
+  const parentItems = lineItems.filter(item => !item.parentItemId).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
   return (
     <div className="card" style={{maxWidth:"800px", margin:"0 auto"}}>
@@ -408,9 +444,15 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </div>
 
           <div style={{display:"flex", flexDirection:"column", gap:"8px"}}>
-            {/* React.Fragment-basierte Gruppierung: Parent-Items mit ihren Sub-Items gruppiert */}
-            {parentItems.map(item => (
-              <React.Fragment key={`parent-${item.id}`}>
+            <SortableLineItems 
+              items={parentItems}
+              onReorder={reorderLineItems}
+              disabled={false}
+            >
+              {/* React.Fragment-basierte Gruppierung: Parent-Items mit ihren Sub-Items gruppiert */}
+              {parentItems.map(item => (
+                <DraggableLineItem key={`parent-${item.id}`} item={item} isDisabled={false}>
+                  <React.Fragment key={`fragment-${item.id}`}>
                 <div style={{
                 border: "1px solid rgba(255,255,255,.1)",
                 background: "rgba(17,24,39,.4)",
@@ -509,7 +551,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                           <button
                             type="button"
                             onClick={() => removeAttachment(item.id, attachment.id)}
-                            style={{position: "absolute", top: "-4px", right: "-4px", background: "#ef4444", color: "white", border: "none", borderRadius: "50%", width: "16px", height: "16px", fontSize: "10px", cursor: "pointer"}}
+                            style={{position: "absolute", top: "-4px", right: "-4px", background: "var(--danger)", color: "white", border: "none", borderRadius: "50%", width: "16px", height: "16px", fontSize: "10px", cursor: "pointer"}} /* 🎨 Theme-basiert */
                             title="Bild entfernen"
                           >
                             ×
@@ -672,7 +714,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => removeAttachment(subItem.id, attachment.id)}
-                                  style={{position: "absolute", top: "-4px", right: "-4px", background: "#ef4444", color: "white", border: "none", borderRadius: "50%", width: "16px", height: "16px", fontSize: "10px", cursor: "pointer"}}
+                                  style={{position: "absolute", top: "-4px", right: "-4px", background: "var(--danger)", color: "white", border: "none", borderRadius: "50%", width: "16px", height: "16px", fontSize: "10px", cursor: "pointer"}} /* 🎨 Theme-basiert */
                                   title="Bild entfernen"
                                 >
                                   ×
@@ -685,8 +727,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     </div>
                   ))}
                 </div>
-              </React.Fragment>
-            ))}
+                  </React.Fragment>
+                </DraggableLineItem>
+              ))}
+            </SortableLineItems>
           </div>
         </div>
 
@@ -702,7 +746,13 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   name="discountType"
                   value="none"
                   checked={discountType === 'none'}
-                  onChange={(e) => setDiscountType(e.target.value as 'none')}
+                  onChange={(e) => {
+                    setDiscountType(e.target.value as 'none');
+                    // CRITICAL FIX: Reset discountValue when "Kein Rabatt" selected
+                    if (e.target.value === 'none') {
+                      setDiscountValue(0);
+                    }
+                  }}
                 />
                 <span>Kein Rabatt</span>
               </label>

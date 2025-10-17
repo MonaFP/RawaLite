@@ -12,25 +12,29 @@
   --status-draft-bg: #f9fafb;
   --status-draft-border: #d1d5db;
 
-  --status-sent-color: #f59e0b;     /* Warmes Orange statt knalliges Blau */
+  --status-sent-color: #f5d4a9;     /* Dezentes Pastel Orange */
   --status-sent-bg: #fffbeb;
   --status-sent-border: #fed7aa;
 
-  --status-accepted-color: #22c55e; /* Harmonisches Grün */
+  --status-accepted-color: #9be69f; /* Dezentes Pastel Grün */
   --status-accepted-bg: #f0fdf4;
   --status-accepted-border: #bbf7d0;
 
-  --status-rejected-color: #ef4444; /* Harmonisches Rot */
+  --status-rejected-color: #cf9ad6; /* Dezentes Pastel Lila */
   --status-rejected-bg: #fef2f2;
   --status-rejected-border: #fecaca;
 
-  --status-paid-color: #22c55e;     /* Konsistent mit accepted */
+  --status-paid-color: #9be69f;     /* Konsistent mit accepted - Pastel Grün */
   --status-paid-bg: #f0fdf4;
   --status-paid-border: #bbf7d0;
 
-  --status-overdue-color: #ef4444;  /* Konsistent mit rejected */
+  --status-overdue-color: #cf9ad6;  /* Konsistent mit rejected - Pastel Lila */
   --status-overdue-bg: #fef2f2;
   --status-overdue-border: #fecaca;
+
+  --status-cancelled-color: #8abbd1; /* Dezentes Pastel Blau */
+  --status-cancelled-bg: #f8fafc;
+  --status-cancelled-border: #cbd5e1;
 
   /* Status Element Basis-Variablen */
   --status-font-size: 14px;
@@ -83,6 +87,12 @@
   color: var(--status-overdue-color);
   background-color: var(--status-overdue-bg);
   border-color: var(--status-overdue-border);
+}
+
+.status-state-cancelled {
+  color: var(--status-cancelled-color);
+  background-color: var(--status-cancelled-bg);
+  border-color: var(--status-cancelled-border);
 }
 
 /* Reset für Status-Elemente - überschreibt globale Styles */

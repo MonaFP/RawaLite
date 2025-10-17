@@ -26,11 +26,6 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [current, setCurrent] = useState<Invoice | null>(null);
 
-  // DEBUG: Log the invoices data
-  console.log('🔍 [RECHNUNGEN PAGE] invoices from useInvoices:', invoices);
-  console.log('🔍 [RECHNUNGEN PAGE] invoicesLoading:', invoicesLoading);
-  console.log('🔍 [RECHNUNGEN PAGE] invoicesError:', invoicesError);
-
   // Search and Filter Configuration for Invoices
   const searchFieldMapping = useMemo(() => ({
     invoiceNumber: 'invoiceNumber',
@@ -104,11 +99,11 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
       header: "Status", 
       render: (row: Invoice) => {
         const statusColors = {
-          draft: '#6b7280',     // Harmonisches Grau - konsistent mit Dashboard
-          sent: '#f59e0b',      // Warmes Orange statt knalliges Blau  
-          paid: '#22c55e',      // Harmonisches Grün - konsistent mit Dashboard
-          overdue: '#ef4444',   // Harmonisches Rot - konsistent mit Dashboard
-          cancelled: '#6b7280'  // Harmonisches Grau - konsistent mit Dashboard
+          draft: '#b2c2c0',     // Sanftes Grau (aus Webby Palette)
+          sent: '#f5d4a9',      // Sanftes Beige (aus Pastel Oranges)  
+          paid: '#9be69f',      // Sanftes Grün (aus Cool Pastel)
+          overdue: '#cf9ad6',   // Sanftes Rosa/Lila (aus Webby Palette)
+          cancelled: '#8abbd1'  // Sanftes Blau (aus Webby Palette)
         };
         const statusTexts = {
           draft: 'Entwurf',
@@ -214,26 +209,6 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
           onError={(error) => {
             showError(`Status-Änderung fehlgeschlagen: ${error.message}`);
           }}
-          className="status-dropdown-override"
-          buttonStyle={{
-            backgroundColor: 'var(--card-bg)',
-            color: 'var(--text-primary)', 
-            padding: '8px 12px',
-            border: '1px solid var(--accent)',
-            borderRadius: '4px',
-            fontSize: '12px',
-            minWidth: '120px',
-            fontFamily: 'inherit',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-          }}
-          dropdownStyle={{
-            backgroundColor: 'var(--card-bg)',
-            border: '1px solid var(--accent)',
-            borderRadius: '6px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            backdropFilter: 'blur(8px)'
-          } as React.CSSProperties}
         />
       )
     }
@@ -333,113 +308,6 @@ export default function RechnungenPage({ title = "Rechnungen" }: RechnungenPageP
       />
       
       <div className="table-responsive">
-        <div className="table-card-view">
-          {/* Card Layout für Mobile (wird per CSS aktiviert) */}
-          <div className="table-cards">
-            {filteredData.map((invoice) => {
-              const customer = customers.find(c => c.id === invoice.customerId);
-              return (
-                <div key={`card-${invoice.id}`} className="table-card">
-                  <div className="table-card-header">
-                    <span className="table-card-title">
-                      {customer ? customer.name : 'Unbekannt'}
-                    </span>
-                    <span className="table-card-number">{invoice.invoiceNumber}</span>
-                  </div>
-                  <div className="table-card-content">
-                    <div className="table-card-row">
-                      <span className="table-card-label">Titel:</span>
-                      <span className="table-card-value">{invoice.title}</span>
-                    </div>
-                    <div className="table-card-row">
-                      <span className="table-card-label">Status:</span>
-                      <div className="table-card-value">
-                        <StatusControl
-                          kind="invoice"
-                          row={{ ...invoice, version: invoice.id }}
-                          onUpdated={() => {
-                            // Refresh invoices data
-                            window.location.reload();
-                          }}
-                          onError={(error) => showError(error.message)}
-                        />
-                      </div>
-                    </div>
-                    <div className="table-card-row">
-                      <span className="table-card-label">Betrag:</span>
-                      <span className="table-card-value">€{invoice.total?.toFixed(2) || '0.00'}</span>
-                    </div>
-                    <div className="table-card-row">
-                      <span className="table-card-label">Fällig am:</span>
-                      <span className="table-card-value">{invoice.dueDate || '-'}</span>
-                    </div>
-                  </div>
-                  <div className="table-card-actions">
-                    <button
-                      className="responsive-btn"
-                      onClick={() => handlePreviewPDF(invoice)}
-                      title="Vorschau"
-                    >
-                      <span className="btn-icon">👁</span>
-                      <span className="btn-text">Vorschau</span>
-                    </button>
-                    <button
-                      className="responsive-btn"
-                      onClick={async () => {
-                        const customer = customers.find(c => c.id === invoice.customerId);
-                        if (!customer) {
-                          showError('Kunde nicht gefunden');
-                          return;
-                        }
-                        try {
-                          const logoData = settings?.companyData?.logo || null;
-                          const result = await PDFService.exportInvoiceToPDF(invoice, customer, settings, false, currentTheme, undefined, logoData);
-                          if (result.success) {
-                            showSuccess('PDF erfolgreich generiert');
-                          } else {
-                            showError(`PDF Export fehlgeschlagen: ${result.error}`);
-                          }
-                        } catch (error) {
-                          console.error('PDF Export failed:', error);
-                          showError('PDF Export fehlgeschlagen');
-                        }
-                      }}
-                      title="PDF"
-                    >
-                      <span className="btn-icon">📄</span>
-                      <span className="btn-text">PDF</span>
-                    </button>
-                    <button
-                      className="responsive-btn"
-                      onClick={() => {
-                        setCurrent(invoice);
-                        setMode("edit");
-                      }}
-                      title="Bearbeiten"
-                    >
-                      <span className="btn-icon">✏️</span>
-                      <span className="btn-text">Bearbeiten</span>
-                    </button>
-                    <button
-                      className="responsive-btn"
-                      onClick={async () => {
-                        if (confirm(`Rechnung ${invoice.invoiceNumber} wirklich löschen?`)) {
-                          await deleteInvoice(invoice.id);
-                        }
-                      }}
-                      title="Löschen"
-                      style={{ color: '#dc3545' }}
-                    >
-                      <span className="btn-icon">🗑️</span>
-                      <span className="btn-text">Löschen</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        
         <Table<Invoice>
           columns={columns as any}
           data={filteredData}

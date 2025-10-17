@@ -149,10 +149,10 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
       header: "Status", 
       render: (row: Timesheet) => {
         const statusColors = {
-          'draft': '#6b7280',   // Harmonisches Grau - konsistent mit Dashboard
-          'sent': '#f59e0b',    // Warmes Orange statt knalliges Blau
-          'accepted': '#22c55e', // Harmonisches Grün - konsistent mit Dashboard  
-          'rejected': '#ef4444' // Harmonisches Rot - konsistent mit Dashboard
+          'draft': '#b2c2c0',   // Sanftes Grau (aus Webby Palette)
+          'sent': '#f5d4a9',    // Sanftes Beige (aus Pastel Oranges)
+          'accepted': '#9be69f', // Sanftes Grün (aus Cool Pastel)  
+          'rejected': '#cf9ad6' // Sanftes Rosa/Lila (aus Webby Palette)
         };
         const statusLabels = {
           'draft': 'Entwurf',
@@ -245,32 +245,38 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
         </div>
       ) 
     },
-    { 
-      key: "statusUpdate", 
-      header: "Status ändern", 
+    {
+      key: "statusControl",
+      header: "Status ändern",
       render: (row: Timesheet) => (
-        <select
-          value={row.status}
-          onChange={(e) => handleStatusChange(row.id, e.target.value as Timesheet['status'])}
-          className="timesheets-status-dropdown"
-          style={{
-            backgroundColor: '#ffffff',
-            color: '#1f2937',
-            padding: '8px 12px',
-            border: '2px solid #007bff',
-            borderRadius: '4px',
-            fontSize: '12px',
-            cursor: 'pointer',
-            minWidth: '120px',
-            position: 'relative',
-            zIndex: 9999
+        <StatusControl
+          row={{
+            id: row.id,
+            status: row.status as any,
+            version: (row as any).version || 0
           }}
-        >
-          <option value="draft">Entwurf</option>
-          <option value="sent">Versendet</option>
-          <option value="accepted">Akzeptiert</option>
-          <option value="rejected">Abgelehnt</option>
-        </select>
+          kind="timesheet"
+          onUpdated={(updatedEntity) => {
+            // Update the timesheet in the list with new status and version
+            const updatedTimesheet = {
+              ...row,
+              status: updatedEntity.status,
+              version: updatedEntity.version,
+              updatedAt: updatedEntity.updated_at,
+              sentAt: updatedEntity.sent_at,
+              acceptedAt: updatedEntity.accepted_at,
+              rejectedAt: updatedEntity.rejected_at
+            };
+            
+            // Update the timesheet via the hook (this will trigger a re-render)
+            updateTimesheet(row.id, updatedTimesheet);
+            
+            showSuccess(`Status erfolgreich geändert zu: ${updatedEntity.status}`);
+          }}
+          onError={(error) => {
+            showError(`Status-Änderung fehlgeschlagen: ${error.message}`);
+          }}
+        />
       )
     }
   ]), [customers]);
@@ -285,42 +291,6 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
     await updateTimesheet(current.id, timesheetData);
     setMode("list");
     setCurrent(null);
-  }
-
-  async function handleStatusChange(timesheetId: number, newStatus: Timesheet['status']) {
-    try {
-      const timesheet = timesheets.find(t => t.id === timesheetId);
-      if (!timesheet) return;
-      
-      // Prepare status date fields
-      const now = new Date().toISOString();
-      const statusDates: Partial<Timesheet> = {};
-      
-      switch (newStatus) {
-        case 'sent':
-          statusDates.sentAt = now;
-          break;
-        case 'accepted':
-          statusDates.acceptedAt = now;
-          break;
-        case 'rejected':
-          statusDates.rejectedAt = now;
-          break;
-      }
-      
-      await updateTimesheet(timesheetId, { ...timesheet, status: newStatus, ...statusDates });
-      
-      // Success notification
-      const statusLabels = {
-        'draft': 'Entwurf',
-        'sent': 'Versendet',
-        'accepted': 'Akzeptiert',
-        'rejected': 'Abgelehnt'
-      };
-      showSuccess(`Leistungsnachweis-Status auf "${statusLabels[newStatus]}" geändert`);
-    } catch (error) {
-      showError('Fehler beim Ändern des Status');
-    }
   }
 
   async function handleRemove(id: number) {
@@ -640,126 +610,11 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
       />
       
       <div className="table-responsive">
-        <div className="table-card-view">
-          {/* Card Layout für Mobile (wird per CSS aktiviert) */}
-          <div className="table-cards">
-            {filteredData.map((timesheet) => {
-              const customer = customers.find(c => c.id === timesheet.customerId);
-              return (
-                <div key={`card-${timesheet.id}`} className="table-card">
-                  <div className="table-card-header">
-                    <span className="table-card-title">
-                      {customer ? customer.name : 'Unbekannt'}
-                    </span>
-                    <span className="table-card-number">{timesheet.timesheetNumber}</span>
-                  </div>
-                  <div className="table-card-content">
-                    <div className="table-card-row">
-                      <span className="table-card-label">Titel:</span>
-                      <span className="table-card-value">{timesheet.title}</span>
-                    </div>
-                    <div className="table-card-row">
-                      <span className="table-card-label">Zeitraum:</span>
-                      <span className="table-card-value">{timesheet.startDate} - {timesheet.endDate}</span>
-                    </div>
-                    <div className="table-card-row">
-                      <span className="table-card-label">Stunden:</span>
-                      <span className="table-card-value">
-                        {timesheet.activities.reduce((sum, act) => sum + act.hours, 0).toFixed(1)}h
-                      </span>
-                    </div>
-                    <div className="table-card-row">
-                      <span className="table-card-label">Status:</span>
-                      <div className="table-card-value">
-                        <StatusControl
-                          kind="timesheet"
-                          row={{ ...timesheet, version: timesheet.id }}
-                          onUpdated={() => {
-                            // Refresh timesheets data
-                            window.location.reload();
-                          }}
-                          onError={(error: Error) => showError(error.message)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="table-card-actions">
-                    <button
-                      className="responsive-btn"
-                      onClick={() => handlePreviewPDF(timesheet)}
-                      title="Vorschau"
-                    >
-                      <span className="btn-icon">👁</span>
-                      <span className="btn-text">Vorschau</span>
-                    </button>
-                    <button
-                      className="responsive-btn"
-                      onClick={async () => {
-                        const customer = customers.find(c => c.id === timesheet.customerId);
-                        if (!customer) {
-                          showError('Kunde nicht gefunden');
-                          return;
-                        }
-                        try {
-                          const logoData = settings?.companyData?.logo || null;
-                          const result = await PDFService.exportTimesheetToPDF(timesheet, customer, settings, false, currentTheme, undefined, logoData);
-                          if (result.success) {
-                            showSuccess('PDF erfolgreich generiert');
-                          } else {
-                            showError(`PDF Export fehlgeschlagen: ${result.error}`);
-                          }
-                        } catch (error) {
-                          console.error('PDF Export failed:', error);
-                          showError('PDF Export fehlgeschlagen');
-                        }
-                      }}
-                      title="PDF"
-                    >
-                      <span className="btn-icon">📄</span>
-                      <span className="btn-text">PDF</span>
-                    </button>
-                    <button
-                      className="responsive-btn"
-                      onClick={() => {
-                        setCurrent(timesheet);
-                        setMode("edit");
-                      }}
-                      title="Bearbeiten"
-                    >
-                      <span className="btn-icon">✏️</span>
-                      <span className="btn-text">Bearbeiten</span>
-                    </button>
-                    <button
-                      className="responsive-btn"
-                      onClick={() => handleDuplicate(timesheet)}
-                      title="Kopieren"
-                    >
-                      <span className="btn-icon">📋</span>
-                      <span className="btn-text">Kopieren</span>
-                    </button>
-                    <button
-                      className="responsive-btn"
-                      onClick={async () => {
-                        if (confirm(`Leistungsnachweis ${timesheet.timesheetNumber} wirklich löschen?`)) {
-                          await handleRemove(timesheet.id);
-                        }
-                      }}
-                      title="Löschen"
-                      style={{ color: '#dc3545' }}
-                    >
-                      <span className="btn-icon">🗑️</span>
-                      <span className="btn-text">Löschen</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        
+           
         <Table<Timesheet>
           columns={columns as any}
           data={filteredData}
+          getRowKey={(timesheet) => `timesheet-${timesheet.id}-${timesheet.status}-${timesheet.updatedAt}`}
           emptyMessage="Keine Leistungsnachweise gefunden."
         />
       </div>

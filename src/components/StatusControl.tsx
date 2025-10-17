@@ -76,11 +76,22 @@ export function StatusControl({
   className,
   disabled = false
 }: StatusControlProps) {
+  console.log('🏗️ StatusControl MOUNTED:', {
+    kind,
+    entityId: row.id,
+    status: row.status,
+    version: row.version,
+    disabled,
+    timestamp: Date.now()
+  });
+  
   // State management
   const [isOpen, setIsOpen] = useState(false);
   const [anchor, setAnchor] = useState<DOMRect | null>(null);
   const [currentStatus, setCurrentStatus] = useState<EntityStatus>(row.status);
   const [isUpdating, setIsUpdating] = useState(false);
+  
+  // Debug logging removed for clean UI
   
   // Refs
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -124,10 +135,21 @@ export function StatusControl({
   
   // Handle status selection
   const handleStatusSelect = useCallback(async (newStatus: EntityStatus) => {
+    console.log('🔍 StatusControl handleStatusSelect called:', {
+      kind,
+      entityId: row.id,
+      oldStatus: currentStatus,
+      newStatus,
+      unchanged: newStatus === currentStatus
+    });
+    
     setIsOpen(false);
     
     // Skip if status unchanged
-    if (newStatus === currentStatus) return;
+    if (newStatus === currentStatus) {
+      console.log('⚠️ StatusControl skipping - status unchanged');
+      return;
+    }
     
     // Optimistic update
     setCurrentStatus(newStatus);
@@ -200,70 +222,94 @@ export function StatusControl({
     }
   }, [currentStatus, row, kind, onUpdated, onError]);
   
-  // Open dropdown
-  const openDropdown = useCallback(() => {
-    if (disabled || isUpdating) return;
+  // Toggle dropdown (open/close)
+  const toggleDropdown = useCallback(() => {
+    console.log('🔍 StatusControl toggleDropdown called:', {
+      kind,
+      entityId: row.id,
+      disabled,
+      isUpdating,
+      currentIsOpen: isOpen,
+      triggerExists: !!triggerRef.current
+    });
     
+    if (disabled || isUpdating) {
+      console.log('⚠️ StatusControl toggleDropdown blocked:', { disabled, isUpdating });
+      return;
+    }
+    
+    // If already open, close it
+    if (isOpen) {
+      console.log('✅ StatusControl closing dropdown:', { kind, entityId: row.id });
+      setIsOpen(false);
+      setAnchor(null);
+      return;
+    }
+    
+    // If closed, open it
     const triggerElement = triggerRef.current;
-    if (!triggerElement) return;
+    if (!triggerElement) {
+      console.log('❌ StatusControl toggleDropdown - no trigger element');
+      return;
+    }
     
     const rect = triggerElement.getBoundingClientRect();
+    console.log('✅ StatusControl opening dropdown:', { rect, kind, entityId: row.id });
     setAnchor(rect);
     setIsOpen(true);
-  }, [disabled, isUpdating]);
+  }, [disabled, isUpdating, kind, row.id, isOpen]);
   
   // Get available statuses for current entity type
   const availableStatuses = validStatuses[kind];
   
-  // Default styles (integrates with RawaLite design system)
-  const defaultButtonStyle: React.CSSProperties = {
-    ...buttonStyle
+  // 🎨 CSS Variables: Nutze dezente Pastel-Farben aus status-core.css
+  const getStatusCSSVariable = (status: string) => {
+    return `var(--status-${status}-color, #6b7280)`;
   };
   
-  const defaultDropdownStyle: React.CSSProperties = {
+  const statusBgColor = getStatusCSSVariable(currentStatus);
+  
+  // Minimale Inline Styles nur für dynamische Werte
+  const dynamicButtonStyle: React.CSSProperties = {
+    backgroundColor: statusBgColor,
+    opacity: disabled ? 0.6 : 1,
+    ...buttonStyle  // Allow external overrides
+  };
+  
+  // Minimale Dropdown Styles nur für dynamische Positionierung
+  const dynamicDropdownStyle: React.CSSProperties = {
     position: 'fixed',
-    top: anchor ? anchor.bottom + 6 : 0,
+    top: anchor ? anchor.bottom + 4 : 0,
     left: anchor ? anchor.left : 0,
-    zIndex: 9999,
     minWidth: anchor ? anchor.width : 120,
-    maxWidth: '200px',
-    ...dropdownStyle
+    maxWidth: '220px',
+    ...dropdownStyle  // Allow external overrides
   };
   
-  const getOptionStyle = (isSelected: boolean): React.CSSProperties => ({
-    display: 'block',
-    width: '100%',
-    padding: '8px 12px',
-    border: 'none',
-    backgroundColor: isSelected ? 'var(--accent, #f0f0f0)' : 'transparent',
-    color: isSelected ? 'var(--card-bg, #fff)' : 'var(--text-primary, inherit)',
-    textAlign: 'left',
-    cursor: 'pointer',
-    fontSize: '12px',
-    fontFamily: 'inherit',
-    fontWeight: isSelected ? '600' : '400',
-    borderRadius: '3px',
-    margin: '1px 0',
-    transition: 'all 0.15s ease'
-  });
+  // Keine getOptionStyle Funktion mehr nötig - verwende CSS-Klassen
   
-  // Render trigger button with integrated design
+  // Render trigger button with integrated design + EMERGENCY CSS OVERRIDE
   const triggerButton = (
     <button
       ref={triggerRef}
-      onClick={openDropdown}
+      onClick={toggleDropdown}
       disabled={disabled || isUpdating}
-      style={defaultButtonStyle}
+      style={dynamicButtonStyle}
       className={`status-control-button ${className || ''}`}
       aria-haspopup="listbox"
       aria-expanded={isOpen}
       title={isUpdating ? 'Status wird aktualisiert...' : `Status ändern (aktuell: ${statusLabels[currentStatus]})`}
     >
-      <span>{statusLabels[currentStatus]}</span>
+      <span style={{ flex: 1, textAlign: 'left' }}>{statusLabels[currentStatus]}</span>
       {isUpdating ? (
-        <span style={{ fontSize: '10px' }}>⏳</span>
+        <span style={{ fontSize: '11px', opacity: 0.8 }}>⏳</span>
       ) : (
-        <span style={{ fontSize: '10px', color: 'var(--muted, #999)' }}>▼</span>
+        <span style={{ 
+          fontSize: '10px', 
+          color: 'rgba(255, 255, 255, 0.7)', 
+          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          transition: 'transform 0.2s ease'
+        }}>▼</span>
       )}
     </button>
   );
@@ -272,7 +318,7 @@ export function StatusControl({
   const dropdown = isOpen && anchor && (
     <div
       ref={dropdownRef}
-      style={defaultDropdownStyle}
+      style={dynamicDropdownStyle}
       className="status-control-dropdown"
       role="listbox"
       aria-label="Status auswählen"
@@ -281,6 +327,7 @@ export function StatusControl({
         <button
           key={status}
           onClick={() => handleStatusSelect(status)}
+
           className={`status-control-option ${status === currentStatus ? 'selected' : ''}`}
           role="option"
           aria-selected={status === currentStatus}

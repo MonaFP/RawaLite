@@ -56,6 +56,7 @@ Beispiel: VALIDATED_GUIDE-LESSONS-LEARNED-INDEX-2025-10-16.md
 - **ARCH-SESSION-2025-10-13-documentation-update-v1.0.13.md** - Documentation updates
 
 #### **📋 Implementation Sessions**
+- **COMPLETED_REPORT-POSITION-REORDERING-IMPLEMENTATION-SESSION-2025-10-16.md** - ✅ **Line Items Position Reordering Implementation Session**
 - **IMPL-SESSION-2025-10-13-subitems-packageform-pdf-fixes.md** - Sub-items implementation
 - **SESSION-2025-10-14-PACKAGELINEITEM-UNITPRICE-IMPLEMENTATION.md** - Package unit price fixes
 

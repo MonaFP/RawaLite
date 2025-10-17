@@ -1,9 +1,9 @@
 # 04-ui - User Interface & PDF Generation
 
 > **Purpose:** UI Components, UX Design, PDF Generation, and Visual Systems  
-> **Last Updated:** 2025-10-15  
+> **Last Updated:** 2025-10-16 (Search/Filter System Implementation Complete)  
 > **Status:** ✅ ACTIVE  
-> **Consolidates:** ui + pdf + visual design + theming  
+> **Consolidates:** ui + pdf + visual design + theming + search/filter  
 > **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
 
 ## 📋 **SCHEMA-ÜBERSICHT**
@@ -41,6 +41,9 @@ Beispiel: VALIDATED_GUIDE-UI-COMPONENTS-INDEX-2025-10-16.md
 ### **📂 final/** - Completed UI Documentation
 
 #### **🎨 UI Components & Patterns**
+- **COMPLETED_IMPL-LINE-ITEMS-POSITION-REORDERING-2025-10-16.md** - ✅ **Line Items Drag-Drop Position Reordering System**
+- **SOLVED_IMPL-SEARCH-AND-FILTER-SYSTEM-2025-10-15.md** - ✅ **Universal Search/Filter System (ALL 5 Pages Complete)**
+- **SOLVED_FIX-RABATT-BERECHNUNG-STATUS-SYNC-BUG-2025-10-16.md** - ✅ **Rabatt-System State-Sync Fix**
 - **UI-PATTERNS-table-forms.md** - Table-like forms design pattern
 - **COMPONENT-AUDIT-REPORT-2025-10-14.md** - UI component audit results
 - **SUB-ITEM-VISUAL-HIERARCHY-FIX-2025-10-04.md** - ✅ **Sub-item hierarchy solution**
@@ -69,7 +72,8 @@ Beispiel: VALIDATED_GUIDE-UI-COMPONENTS-INDEX-2025-10-16.md
 - **PDF-SUB-ITEMS-PDF-HIERARCHY-PLAN.md** - PDF hierarchy planning
 
 ### **📂 sessions/** - UI Sessions
-- Currently empty
+- **COMPLETED_REPORT-ANGEBOTE-SEARCH-FILTER-IMPLEMENTATION-SESSION-2025-10-16.md** - ✅ **Search/Filter Implementation Session Report**  
+- **LESSON_BUG-RABATT-BERECHNUNG-STATUS-SYNC-2025-10-16.md** - ✅ **Rabatt-System Bug Analysis & Fix**
 
 ### **📂 wip/** - Work-in-Progress
 - **SUBITEMS-HIERARCHY-MANAGEMENT-PLAN.md** - Sub-items hierarchy planning
@@ -80,9 +84,10 @@ Beispiel: VALIDATED_GUIDE-UI-COMPONENTS-INDEX-2025-10-16.md
 ## 🎯 **Quick Navigation**
 
 ### **🎨 For UI Development:**
-1. ✅ **UI Patterns:** [PATHS.md](../PATHS.md#UI_PATTERNS_TABLE_FORMS) - Table-like forms design
-2. ✅ **Components:** [PATHS.md](../PATHS.md#HEADERSTATISTICS_COMPONENT) - Statistics component
-3. ✅ **Navigation:** [PATHS.md](../PATHS.md#ENHANCED_NAVIGATION) - Enhanced navigation
+1. ✅ **Search/Filter System:** [SOLVED_IMPL-SEARCH-AND-FILTER-SYSTEM-2025-10-15.md](final/SOLVED_IMPL-SEARCH-AND-FILTER-SYSTEM-2025-10-15.md) - Universal search system
+2. ✅ **UI Patterns:** [PATHS.md](../PATHS.md#UI_PATTERNS_TABLE_FORMS) - Table-like forms design
+3. ✅ **Components:** [PATHS.md](../PATHS.md#HEADERSTATISTICS_COMPONENT) - Statistics component
+4. ✅ **Navigation:** [PATHS.md](../PATHS.md#ENHANCED_NAVIGATION) - Enhanced navigation
 
 ### **📄 For PDF Development:**
 - **PDF Architecture:** [PATHS.md](../PATHS.md#PDF_ANHANG_SEITE_ARCHITEKTUR) - PDF attachment system
@@ -95,6 +100,8 @@ Beispiel: VALIDATED_GUIDE-UI-COMPONENTS-INDEX-2025-10-16.md
 - **Theme Fixes:** [PATHS.md](../PATHS.md#THEME_SYSTEM_FIXES) - Theme system fixes
 
 ### **🔧 For Component Fixes:**
+- **Search/Filter System:** [SOLVED_IMPL-SEARCH-AND-FILTER-SYSTEM-2025-10-15.md](final/SOLVED_IMPL-SEARCH-AND-FILTER-SYSTEM-2025-10-15.md) - ✅ **Universal Search System (Complete)**
+- **Rabatt-System Fix:** [SOLVED_FIX-RABATT-BERECHNUNG-STATUS-SYNC-BUG-2025-10-16.md](final/SOLVED_FIX-RABATT-BERECHNUNG-STATUS-SYNC-BUG-2025-10-16.md) - ✅ **State-Sync Bug behoben**
 - **Status Dropdown:** [PATHS.md](../PATHS.md#STATUS_DROPDOWN_COMPLETE_FIX) - Complete dropdown fix
 - **Responsive Design:** [PATHS.md](../PATHS.md#RESPONSIVE_TABLE_DESIGN) - Responsive patterns
 - **Currency Format:** [PATHS.md](../PATHS.md#FORMAT_CURRENCY_FIX) - Currency formatting fix

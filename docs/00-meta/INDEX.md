@@ -7,9 +7,9 @@
 ## 📁 **Standard Folder Structure**
 
 ### **📂 final/** - Completed Meta-Documentation
-- **VALIDATED_REGISTRY-CRITICAL-FIXES-2025-10-15.md** - ✅ **Registry aller geschützten Fixes (15 aktive)**
-- **VALIDATED_GUIDE-KI-FAILURE-MODES-2025-10-15.md** - ✅ **MANDATORY READ vor jeder KI-Session**
-- **VALIDATED_GUIDE-INSTRUCTIONS-KI-2025-10-15.md** - ✅ **Kurz-Instructions für KI-Sessions**
+- **ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md** - ✅ **Registry aller geschützten Fixes (15 aktive) - NOW IN /docs ROOT!**
+- **ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md** - ✅ **MANDATORY READ vor jeder KI-Session - NOW IN /docs ROOT!**
+- **ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md** - ✅ **Kurz-Instructions für KI-Sessions - NOW IN /docs ROOT!**
 - **VALIDATED_GUIDE-KI-PREFIX-RECOGNITION-RULES-2025-10-15.md** - ✅ **Präfix-System für Dokumentations-Status**
 - **VALIDATED_GUIDE-TROUBLESHOOTING-2025-10-15.md** - Problem-Solving Strategies & Debug Guides
 - **VALIDATED_TEMPLATE-KI-SESSION-BRIEFING-2025-10-15.md** - Template für neue KI-Sessions
@@ -36,9 +36,9 @@
 ## 🎯 **Quick Navigation**
 
 ### **🚨 CRITICAL for ALL KI-Sessions:**
-1. ✅ **ALWAYS read first:** [final/VALIDATED_REGISTRY-CRITICAL-FIXES-2025-10-15.md](final/VALIDATED_REGISTRY-CRITICAL-FIXES-2025-10-15.md)
-2. ✅ **Session prep:** [final/VALIDATED_GUIDE-KI-FAILURE-MODES-2025-10-15.md](final/VALIDATED_GUIDE-KI-FAILURE-MODES-2025-10-15.md)
-3. ✅ **KI Guidelines:** [final/VALIDATED_GUIDE-INSTRUCTIONS-KI-2025-10-15.md](final/VALIDATED_GUIDE-INSTRUCTIONS-KI-2025-10-15.md)
+1. ✅ **ALWAYS read first:** [../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md)
+2. ✅ **Session prep:** [../ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md](../ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md)
+3. ✅ **KI Guidelines:** [../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md)
 4. ✅ **Präfix-System:** [final/VALIDATED_GUIDE-KI-PREFIX-RECOGNITION-RULES-2025-10-15.md](final/VALIDATED_GUIDE-KI-PREFIX-RECOGNITION-RULES-2025-10-15.md)
 
 ### **📋 Documentation Standards:**

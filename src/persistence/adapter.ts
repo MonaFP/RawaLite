@@ -263,6 +263,7 @@ export interface Timesheet {
   sentAt?: string;
   acceptedAt?: string;
   rejectedAt?: string;
+  version?: number;  // Optimistic locking version for StatusControl
   createdAt: string;
   updatedAt: string;
 }

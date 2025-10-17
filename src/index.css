@@ -6,35 +6,71 @@
 @import url('./styles/status-updates/status-themes.css');
 @import url('./styles/focus-mode.css');
 
+/* Drag-Drop Line Items Styles */
+.draggable-line-item {
+  position: relative;
+  cursor: grab;
+  /* Schnellere Transitions nur für Hintergrund/Farben, NICHT für Transform */
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.draggable-line-item:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.draggable-line-item.is-dragging {
+  cursor: grabbing;
+  z-index: 999;
+  /* ENTFERNT: transform: scale(0.98); - Das verursacht das Ruckeln */
+  /* Keine Transform-Transition während des Ziehens */
+  transition: none;
+}
+
+.draggable-line-item.is-over {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Drag overlay improvements */
+.dnd-overlay {
+  pointer-events: none;
+  z-index: 1000;
+  /* Verhindert Aufblähen beim Absetzen */
+  transition: none !important;
+  transform: none !important;
+  animation: none !important;
+}
+
 :root{
   --bg:#0f172a;        /* slate-900 */
   --panel:#111827;     /* gray-900 */
   --muted:#cbd5e1;     /* slate-300 */
   --foreground:#374151; /* gray-700 for better contrast */
-  --accent:#1e3a2e;    /* sidebar-green for primary actions and headings */
+  --accent:#8b9dc3;    /* 🎨 DEZENTE PASTELL: Standard mit Anthrazit-Blau (unterscheidet sich von Sage) */
   --accent-2:#f472b6;  /* pink-400 */
   --ok:#22c55e;        /* green-500 */
   --warn:#f59e0b;      /* amber-500 */
   --danger:#ef4444;    /* red-500 */
   
   /* Neue Farben für professionelles Design */
-  --sidebar-bg: linear-gradient(160deg, #1e3a2e 0%, #0f2419 40%, #0a1b0f 100%);
-  --sidebar-green: #1e3a2e; /* Hauptfarbe aus dem Sidebar-Gradient für Buttons */
-  --sidebar-green-hover: #0f2419; /* Dunklere Variante für Hover-Effekte */
+  --sidebar-bg: linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%); /* Pastell-basiert */
+  --sidebar-green: #4a5d5a; /* Pastell-Sage statt knalligem Grün */
+  --sidebar-green-hover: #3a4d4a; /* Dunklere Variante für Hover-Effekte */
   --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
   --main-bg-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
   
   /* Theme-unabhängige Basis-Variablen */
-  --accent-hover: var(--sidebar-green-hover);
+  --accent-hover: #c1d0bc; /* Pastell-Sage Hover */
   --card-bg: rgba(255,255,255,0.98);
   --text-primary: #1e293b;
   --text-secondary: #374151;
 }
 
-/* 🎨 Beautiful Pastel Themes - v1.5.2 - ORIGINALE DEZENTE PASTELLTÖNE */
+/* 🎨 Beautiful Pastel Themes - v1.5.3 - DEZENTE PASTELLTÖNE (Standards-konform) */
 [data-theme="sage"] {
-  --accent: #7dd3a0;                   /* Original Salbeigrün-Akzent */
-  --accent-hover: #6bb98a;             /* Dunklerer Hover */
+  --accent: #d2ddcf;                   /* 🎨 DEZENTE PASTELL: Sage aus Pastelles Palette */
+  --accent-hover: #c1d0bc;             /* 10% dunkler für Hover-Effekt */
   --sidebar-bg: linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%);
   --sidebar-green: #4a5d5a;
   --sidebar-green-hover: #3a4d4a;
@@ -45,8 +81,8 @@
 }
 
 [data-theme="sky"] {
-  --accent: #87ceeb;                   /* Original Himmelblau-Akzent */
-  --accent-hover: #6bb5d1;             /* Dunklerer Hover */
+  --accent: #a2d1ec;                   /* 🎨 DEZENTE PASTELL: Sky aus Webby Palette */
+  --accent-hover: #91c4dc;             /* 10% dunkler für Hover-Effekt */
   --sidebar-bg: linear-gradient(160deg, #4a5b6b 0%, #3d4e5e 40%, #324151 100%);
   --sidebar-green: #4a5b6b;
   --sidebar-green-hover: #3d4e5e;
@@ -57,8 +93,8 @@
 }
 
 [data-theme="lavender"] {
-  --accent: #b19cd9;                   /* Original Lavendel-Akzent */
-  --accent-hover: #9a82c7;             /* Dunklerer Hover */
+  --accent: #cf9ad6;                   /* 🎨 DEZENTE PASTELL: Status Rejected (bereits pastell-konform) */
+  --accent-hover: #c189cc;             /* 10% dunkler für Hover-Effekt */
   --sidebar-bg: linear-gradient(160deg, #5a4d6b 0%, #4d405e 40%, #403351 100%);
   --sidebar-green: #5a4d6b;
   --sidebar-green-hover: #4d405e;
@@ -69,8 +105,8 @@
 }
 
 [data-theme="peach"] {
-  --accent: #f4a28c;                   /* Original Pfirsich-Akzent */
-  --accent-hover: #e6906f;             /* Dunklerer Hover */
+  --accent: #feecd4;                   /* 🎨 DEZENTE PASTELL: Peach aus Pastelles Palette */
+  --accent-hover: #eeddc1;             /* 10% dunkler für Hover-Effekt */
   --sidebar-bg: linear-gradient(160deg, #6b5a4d 0%, #5e4d40 40%, #514033 100%);
   --sidebar-green: #6b5a4d;
   --sidebar-green-hover: #5e4d40;
@@ -81,8 +117,8 @@
 }
 
 [data-theme="rose"] {
-  --accent: #e6a8b8;                   /* Original Rosé-Akzent */
-  --accent-hover: #d48ca0;             /* Dunklerer Hover */
+  --accent: #feb2a8;                   /* 🎨 DEZENTE PASTELL: Rose aus Pastellea Palette */
+  --accent-hover: #ed9e94;             /* 10% dunkler für Hover-Effekt */
   --sidebar-bg: linear-gradient(160deg, #6b4d5a 0%, #5e4050 40%, #513343 100%);
   --sidebar-green: #6b4d5a;
   --sidebar-green-hover: #5e4050;
@@ -124,8 +160,8 @@ body{
   justify-content: flex-end;
   align-items: center;
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--accent) 15%, transparent 85%); /* 🎨 Theme-basiert statt hardcoded */
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%); /* 🎨 Theme-basiert statt hardcoded */
 }
 
 /* 🧭 Enhanced Navigation - Header Mode (200px Sidebar) */
@@ -293,32 +329,63 @@ body{
 }
 
 .btn-primary {
-  background: var(--accent, var(--sidebar-green));
+  background: #6b7280;                     /* Einheitliches Grau für alle Buttons */
   color: white;
 }
 
 .btn-primary:hover {
-  background: var(--accent-hover, var(--sidebar-green-hover));
+  background: var(--accent-hover, var(--accent));   /* Fallback für ältere Browser */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* Theme-basierte Hover mit Transparenz */
 }
 
 .btn-success {
-  background: #10b981;
+  background: #6b7280;                     /* Einheitliches Grau */
   color: white;
+}
+
+.btn-success:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt festes Grün */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
 }
 
 .btn-secondary {
-  background: #6b7280;
+  background: #6b7280;                     /* Bleibt gleich */
   color: white;
+}
+
+.btn-secondary:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover hinzufügen */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+.btn-info {
+  background: #6b7280;                     /* Einheitliches Grau wie alle anderen */
+  color: white;
+}
+
+.btn-info:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-basierte Hover-Farbe */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
 }
 
 .btn-danger {
-  background: #ef4444;
+  background: #6b7280;                     /* Grau statt Rot */
   color: white;
 }
 
+.btn-danger:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt hartem Rot */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
 .btn-warning {
-  background: #f59e0b;
+  background: #6b7280;                     /* Grau statt Orange */
   color: white;
+}
+
+.btn-warning:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt hartem Orange */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
 }
 
 /* Input field styles for better contrast - exclude status dropdowns */
@@ -1224,35 +1291,110 @@ body{
   }
 }
 
-/* ====== STATUSCONTROL COMPONENT INTEGRATION ====== */
-/* Modernes Design für die neue StatusControl Komponente */
+/* ====== GLOBAL DROPDOWN SYSTEM ====== */
+/* 
+  Universelle Dropdown-Standards für die gesamte RawaLite App
+  
+  USAGE EXAMPLES:
+  
+  Basic Dropdown Button:
+  <button className="dropdown-button" onClick={toggleDropdown}>
+    Options <span>▼</span>
+  </button>
+  
+  Compact Dropdown:
+  <button className="dropdown-button compact">
+    Select
+  </button>
+  
+  Large Dropdown:
+  <button className="dropdown-button large">
+    Choose Option <span>▼</span>
+  </button>
+  
+  Dropdown Menu:
+  <div className="dropdown-menu" style={{top: rect.bottom, left: rect.left}}>
+    <button className="dropdown-option">Option 1</button>
+    <button className="dropdown-option selected">Option 2</button>
+    <button className="dropdown-option">Option 3</button>
+  </div>
+  
+  MIGRATION FROM <select> TO NEW STANDARDS:
+  
+  Old:
+  <select className="custom-select" value={value} onChange={handleChange}>
+    <option value="option1">Option 1</option>
+    <option value="option2">Option 2</option>
+  </select>
+  
+  New:
+  <button className="dropdown-button" onClick={toggleDropdown}>
+    {selectedLabel} <span>▼</span>
+  </button>
+  {isOpen && (
+    <div className="dropdown-menu" style={{top: rect.bottom, left: rect.left}}>
+      <button 
+        className={`dropdown-option ${value === 'option1' ? 'selected' : ''}`}
+        onClick={() => handleSelect('option1')}
+      >
+        Option 1
+      </button>
+      <button 
+        className={`dropdown-option ${value === 'option2' ? 'selected' : ''}`}
+        onClick={() => handleSelect('option2')}
+      >
+        Option 2
+      </button>
+    </div>
+  )}
+  
+  NATIVE SELECT STYLING (für Fallback/Einfachheit):
+  Wenn native <select> beibehalten wird, verwende 'dropdown-select' Klasse
+*/
+
+/* Base Dropdown Button - kann für alle Dropdown-Trigger verwendet werden */
+.dropdown-button,
 .status-control-button {
-  background: var(--card-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--accent);
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  background: #6b7280;                     /* Einheitliches Grau wie .btn */
+  color: white;                             /* Weiße Schrift wie andere Buttons */
+  border: none;                             /* Kein Border wie .btn */
+  border-radius: 6px;                       /* Abgerundete Ecken wie .btn */
+  padding: 8px 12px;                        /* Konsistente Padding */
+  font-size: 12px;                         /* Kleinere Schrift für Kompaktheit */
+  font-weight: 500;                         /* Gleiche Schriftstärke wie .btn */
+  transition: all 0.2s ease;               /* Smooth transitions */
   min-width: 120px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  cursor: pointer;
+  font-family: inherit;
 }
 
+.dropdown-button:hover:not(:disabled),
 .status-control-button:hover:not(:disabled) {
-  border-color: var(--accent-hover, var(--accent));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
+  background: var(--accent-hover, var(--accent));   /* Fallback für ältere Browser */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* Theme-basierte Hover mit Transparenz */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Gleicher Schatten wie .btn:hover */
+  transform: translateY(-1px);               /* Gleicher Lift-Effekt wie .btn:hover */
 }
 
+.dropdown-button:focus,
 .status-control-button:focus {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
+.dropdown-button:disabled,
+.status-control-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Base Dropdown Menu - universell für alle Dropdowns */
+.dropdown-menu,
 .status-control-dropdown {
   background: var(--card-bg);
   border: 1px solid var(--accent);
@@ -1261,8 +1403,13 @@ body{
   backdrop-filter: blur(8px);
   padding: 4px;
   z-index: 9999;
+  min-width: 120px;
+  max-width: 280px;
+  position: fixed;
 }
 
+/* Base Dropdown Option - für alle Dropdown-Items */
+.dropdown-option,
 .status-control-option {
   display: block;
   width: 100%;
@@ -1279,8 +1426,71 @@ body{
   transition: all 0.15s ease;
 }
 
+.dropdown-option:hover,
 .status-control-option:hover {
   background: var(--muted, #f8f9fa);
+}
+
+.dropdown-option.selected,
+.status-control-option.selected {
+  background: var(--accent);
+  color: var(--card-bg);
+  font-weight: 600;
+}
+
+.dropdown-option.selected:hover,
+.status-control-option.selected:hover {
+  background: var(--accent-hover, var(--accent));
+}
+
+/* Native Select Styling (für Fallback-Szenarien) */
+.dropdown-select,
+select.dropdown-select {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  min-width: 120px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdown-select:hover,
+select.dropdown-select:hover {
+  border-color: var(--accent-hover, var(--accent));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-select:focus,
+select.dropdown-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Dropdown Variants - für spezielle Anwendungsfälle */
+.dropdown-button.compact {
+  min-width: 80px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.dropdown-button.large {
+  min-width: 160px;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+.dropdown-menu.compact {
+  min-width: 80px;
+}
+
+.dropdown-menu.large {
+  min-width: 200px;
+  max-width: 320px;
 }
 
 .status-control-option.selected {
@@ -1293,29 +1503,39 @@ body{
   background: var(--accent-hover, var(--accent));
 }
 
-/* Dark theme anpassungen */
+/* Dark theme support für alle Dropdowns */
+[data-theme="dark"] .dropdown-button,
 [data-theme="dark"] .status-control-button {
-  background: var(--panel);
-  color: var(--muted);
-  border-color: var(--accent);
+  background: #6b7280;                     /* Gleiche Grau-Basis auch im Dark Theme */
+  color: white;                             /* Weiße Schrift beibehalten */
 }
 
+[data-theme="dark"] .dropdown-button:hover:not(:disabled),
+[data-theme="dark"] .status-control-button:hover:not(:disabled) {
+  background: var(--accent-hover, var(--accent));   /* Fallback für ältere Browser */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* Theme-basierte Hover auch im Dark */
+}
+
+[data-theme="dark"] .dropdown-menu,
 [data-theme="dark"] .status-control-dropdown {
   background: var(--panel);
   border-color: var(--accent);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
+[data-theme="dark"] .dropdown-option,
 [data-theme="dark"] .status-control-option {
   color: var(--muted);
 }
 
+[data-theme="dark"] .dropdown-option:hover,
 [data-theme="dark"] .status-control-option:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Touch-optimized mobile styles */
+/* Responsive & Mobile Optimierung für alle Dropdowns */
 @media (max-width: 768px) {
+  .dropdown-button,
   .status-control-button {
     min-height: 44px; /* Touch-friendly height */
     min-width: 100px;
@@ -1323,33 +1543,33 @@ body{
     font-size: 14px;
   }
   
+  .dropdown-menu,
+  .status-control-dropdown {
+    max-width: calc(100vw - 32px); /* Responsive width */
+    font-size: 14px;
+  }
+  
+  .dropdown-option,
+  .status-control-option {
+    padding: 12px 16px; /* Larger touch targets */
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dropdown-button,
+  .status-control-button {
+    width: 100%; /* Full width on very small screens */
+    min-width: unset;
+  }
+}
+  
   .status-control-dropdown {
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
     border-width: 2px;
   }
   
-  .status-control-option {
-    min-height: 44px; /* Touch-friendly height */
-    padding: 12px 16px;
-    font-size: 14px;
-    margin: 2px 0;
-  }
-}
 
-/* Extra small mobile devices */
-@media (max-width: 480px) {
-  .status-control-button {
-    min-width: 90px;
-    font-size: 12px;
-    padding: 8px 10px;
-  }
-  
-  .status-control-option {
-    min-height: 40px;
-    padding: 10px 14px;
-    font-size: 13px;
-  }
-}
 
 /* ====== STATUS DROPDOWN CSS ISOLATION ====== */
 /* Überschreibt ALLE Tabellen-CSS-Regeln für das Status-Dropdown */
@@ -1454,48 +1674,6 @@ body{
   /* TABLE CSS OVERRIDES - Tabellen-Vererbung komplett überschreiben */
   white-space: normal !important;        /* Override .table td { white-space: nowrap; } */
   width: auto !important;               /* Override .table td:nth-child(8) { width: 12%; } */
-  max-width: none !important;           /* Override potential max-width restrictions */
-  overflow: visible !important;         /* Override .table td { overflow: hidden; } */
-  text-overflow: clip !important;       /* Override text-overflow */
-  display: inline-block !important;     /* Override table cell display */
-  box-sizing: border-box !important;    /* Ensure proper box model */
-  line-height: 1.4 !important;         /* Override table line-height */
-  vertical-align: baseline !important;  /* Override table vertical-align */
-  
-  /* FORM ELEMENT OVERRIDES */
-  appearance: auto !important;          /* Ensure native dropdown appearance */
-  -webkit-appearance: auto !important;  /* Safari/Chrome */
-  -moz-appearance: auto !important;     /* Firefox */
-  outline: none !important;            /* Clean outline */
-  margin: 0 !important;                /* Reset any inherited margins */
-  
-  /* INTERACTION OVERRIDES */
-  pointer-events: auto !important;     /* Ensure click events work */
-  user-select: auto !important;        /* Allow text selection in dropdown */
-  
-  /* LAYOUT OVERRIDES */
-  float: none !important;              /* Reset any float inheritance */
-  clear: both !important;              /* Clear any floats */
-  transform: none !important;          /* Reset any transforms */
-}
-
-/* Leistungsnachweise: Status-Dropdown in Spalte 7 */
-.timesheets-status-dropdown {
-  /* BASIS STYLING mit !important */
-  background-color: #ffffff !important;
-  color: #1f2937 !important;
-  padding: 8px 12px !important;
-  border: 2px solid #007bff !important;
-  border-radius: 4px !important;
-  font-size: 12px !important;
-  cursor: pointer !important;
-  min-width: 120px !important;
-  position: relative !important;
-  z-index: 9999 !important;
-  
-  /* TABLE CSS OVERRIDES - Tabellen-Vererbung komplett überschreiben */
-  white-space: normal !important;        /* Override .table td { white-space: nowrap; } */
-  width: auto !important;               /* Override .table td:nth-child(7) { width: 20%; } */
   max-width: none !important;           /* Override potential max-width restrictions */
   overflow: visible !important;         /* Override .table td { overflow: hidden; } */
   text-overflow: clip !important;       /* Override text-overflow */
