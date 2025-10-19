@@ -1,0 +1,129 @@
+/* 🎯 MAIN CONTENT STYLES - Ausgelagert aus index.css */
+/* 📅 Erstellt: 2025-10-19 */
+/* 🎨 Main Content Area & Background Styles */
+
+/* Main Content Area */
+.main {
+  grid-area: main;
+  padding: 18px 20px 40px;
+  background: var(--main-bg, linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%));
+  background-attachment: fixed;
+  position: relative;
+}
+
+/* Main Content Decorative Pattern */
+.main::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* Main Content in Focus Modes */
+body[data-focus-mode="zen"] .main,
+body[data-focus-mode="mini"] .main,
+body[data-focus-mode="free"] .main {
+  padding: 16px 24px;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  background: var(--main-bg, linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%));
+  color: var(--text-primary, #1e293b);
+}
+
+/* Content Containers */
+.content-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.content-wrapper {
+  background: rgba(255,255,255,0.95);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+/* Page Headers within Main */
+.page-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(0,0,0,0.1);
+}
+
+.page-title {
+  font-size: 1.5em;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 0.9em;
+  color: var(--text-secondary, #64748b);
+  margin-top: 4px;
+}
+
+/* Responsive Main Content */
+@media (max-width: 1024px) {
+  .main {
+    padding: 16px 18px 32px;
+  }
+  
+  .content-wrapper {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 12px 16px 24px;
+  }
+  
+  .content-wrapper {
+    padding: 16px;
+    border-radius: 8px;
+  }
+  
+  .page-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+  
+  .page-title {
+    font-size: 1.3em;
+  }
+  
+  body[data-focus-mode="zen"] .main,
+  body[data-focus-mode="mini"] .main,
+  body[data-focus-mode="free"] .main {
+    padding: 12px 16px;
+  }
+}
+
+/* Print Styles for Main Content */
+@media print {
+  .main {
+    background: white !important;
+    padding: 0 !important;
+  }
+  
+  .main::before {
+    display: none !important;
+  }
+  
+  .content-wrapper {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+}

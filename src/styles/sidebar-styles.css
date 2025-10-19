@@ -1,0 +1,108 @@
+/* 🎯 SIDEBAR STYLES - Ausgelagert aus index.css */
+/* 📅 Erstellt: 2025-10-19 */
+/* 🔧 Sidebar Varianten & Navigation Styles */
+
+/* Main Sidebar (Full Sidebar Mode) */
+.sidebar {
+  grid-area: sidebar;
+  background: var(--sidebar-bg);
+  border-right: 1px solid rgba(255,255,255,.08);
+  padding: 16px 12px;
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  box-shadow: 2px 0 10px rgba(0,0,0,.2);
+}
+
+/* Compact Sidebar Styles for Header Mode */
+.compact-sidebar {
+  width: 200px !important;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation Only Sidebar */
+.navigation-only-sidebar {
+  width: 200px !important;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Brand/Logo Section */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 8px 16px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.brand .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2));
+  box-shadow: 0 0 20px var(--accent);
+}
+
+/* Navigation Menu */
+.nav {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 10px 12px;
+  margin: 4px 4px;
+  border-radius: 10px;
+  transition: background .2s, color .2s, transform .06s;
+}
+
+.nav a:hover {
+  background: rgba(96,165,250,.12);
+  color: white;
+}
+
+.nav a[aria-current="page"] {
+  background: rgba(96,165,250,.2);
+  color: white;
+}
+
+/* Sidebar Statistics Cards */
+.sidebar-stats {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-stats .stat-card {
+  padding: 8px 10px;
+  background-color: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Responsive Sidebar Styles */
+@media (max-width: 768px) {
+  .sidebar,
+  .compact-sidebar,
+  .navigation-only-sidebar {
+    width: 180px !important;
+    padding: 12px 8px;
+  }
+  
+  .nav a {
+    padding: 8px 10px;
+    font-size: 0.9em;
+  }
+}

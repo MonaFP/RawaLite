@@ -1,4 +1,11 @@
 
+/* 🏗️ LAYOUT & NAVIGATION MODULES - Ausgelagert 2025-10-19 */
+@import url('./styles/layout-grid.css');
+@import url('./styles/header-styles.css');
+@import url('./styles/sidebar-styles.css');
+@import url('./styles/main-content.css');
+
+/* 🎯 STATUS & FOCUS MODULES (bestehend) */
 @import url('./styles/status-updates/status-core.css');
 @import url('./styles/status-updates/status-layout-minimal.css');
 @import url('./styles/status-updates/status-dropdowns.css');
@@ -162,127 +169,6 @@ body{
   padding: 8px 16px;
   background: color-mix(in srgb, var(--accent) 15%, transparent 85%); /* 🎨 Theme-basiert statt hardcoded */
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%); /* 🎨 Theme-basiert statt hardcoded */
-}
-
-/* 🧭 Enhanced Navigation - Header Mode (200px Sidebar) */
-[data-navigation-mode="header"] .app {
-  grid-template-columns: 200px 1fr;
-  grid-template-rows: auto auto 1fr;
-  grid-template-areas:
-    "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main";
-}
-
-/* 🧭 Enhanced Navigation - Sidebar Mode (240px Sidebar) */
-[data-navigation-mode="sidebar"] .app {
-  grid-template-columns: 240px 1fr;
-  grid-template-rows: auto auto 1fr;
-  grid-template-areas:
-    "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main";
-}
-
-/* 🧭 Enhanced Navigation - Full Sidebar Mode (240px Sidebar) */
-[data-navigation-mode="full-sidebar"] .app {
-  grid-template-columns: 240px 1fr;
-  grid-template-rows: auto auto 1fr;
-  grid-template-areas:
-    "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main";
-}
-
-.sidebar{
-  grid-area: sidebar;
-  background: var(--sidebar-bg);
-  border-right:1px solid rgba(255,255,255,.08);
-  padding:16px 12px;
-  position: sticky;
-  top:0;
-  min-height:100vh;
-  box-shadow: 2px 0 10px rgba(0,0,0,.2);
-}
-
-/* Compact Sidebar Styles for Header Mode */
-.compact-sidebar {
-  width: 200px !important;
-  padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-.brand{
-  display:flex; align-items:center; gap:10px;
-  margin: 0 8px 16px;
-  font-weight:700; letter-spacing:.2px;
-}
-.brand .dot{ width:10px; height:10px; border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2)); box-shadow:0 0 20px var(--accent); }
-
-.nav{
-  list-style:none; padding:0; margin:8px 0 0;
-}
-.nav a{
-  display:flex; align-items:center; gap:10px;
-  color:var(--muted);
-  text-decoration:none;
-  padding:10px 12px; margin:4px 4px;
-  border-radius:10px;
-  transition: background .2s, color .2s, transform .06s;
-}
-.nav a:hover{ background:rgba(96,165,250,.12); color:white; }
-.nav a[aria-current="page"]{ background:rgba(96,165,250,.2); color:white; }
-
-.header{
-  grid-area: header;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:10px 16px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-  background: var(--sidebar-bg);
-  color: var(--muted);
-  box-shadow: 0 1px 3px rgba(0,0,0,.15);
-}
-
-.header .title{ 
-  font-weight:600; 
-  color: white;
-}
-
-.header-controls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.header > *:last-child {
-  color: white;
-  font-weight: 500;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
-.header .title{ font-weight:600; }
-
-.main{
-  grid-area: main;
-  padding: 18px 20px 40px;
-  background: var(--main-bg, linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%));
-  background-attachment: fixed;
-  position: relative;
-}
-
-.main::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px),
-    radial-gradient(circle at 75% 75%, rgba(0,0,0,0.05) 1px, transparent 1px);
-  background-size: 20px 20px;
-  pointer-events: none;
-  opacity: 0.3;
 }
 
 .card{

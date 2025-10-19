@@ -1,0 +1,52 @@
+/* 🎯 LAYOUT GRID STYLES - Ausgelagert aus index.css */
+/* 📅 Erstellt: 2025-10-19 */
+/* 🎨 CSS Grid Layouts für Navigation Modi */
+
+/* Base App Grid Layout */
+.app {
+  display: grid;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--foreground);
+}
+
+/* Focus Bar Area */
+.focus-bar-area {
+  grid-area: focus-bar;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 16px;
+  background: color-mix(in srgb, var(--accent) 15%, transparent 85%); /* 🎨 Theme-basiert statt hardcoded */
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%); /* 🎨 Theme-basiert statt hardcoded */
+}
+
+/* 🧭 Enhanced Navigation - Header Mode (200px Sidebar) */
+[data-navigation-mode="header"] .app {
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar focus-bar"
+    "sidebar main";
+}
+
+/* 🧭 Enhanced Navigation - Sidebar Mode (240px Sidebar) */
+[data-navigation-mode="sidebar"] .app {
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar focus-bar"
+    "sidebar main";
+}
+
+/* 🧭 Enhanced Navigation - Full Sidebar Mode (240px Sidebar) */
+[data-navigation-mode="full-sidebar"] .app {
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar focus-bar"
+    "sidebar main";
+}

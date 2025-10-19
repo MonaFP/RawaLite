@@ -1,0 +1,195 @@
+/* 🎯 HEADER STYLES - Ausgelagert aus index.css */
+/* 📅 Erstellt: 2025-10-19 */
+/* 🎨 Header Varianten & Navigation Components */
+
+/* Main Header Base */
+.header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: var(--sidebar-bg);
+  color: var(--muted);
+  box-shadow: 0 1px 3px rgba(0,0,0,.15);
+}
+
+.header .title {
+  font-weight: 600;
+  color: white;
+}
+
+/* Header Controls Section */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Header Right Section */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Header Last Child (Version Info) */
+.header > *:last-child {
+  color: white;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Mini Header for Focus Mode */
+.header-mini {
+  height: 32px !important;
+  padding: 4px 12px !important;
+  font-size: 0.85em !important;
+  min-height: 32px !important;
+}
+
+.header-mini .title {
+  font-size: 0.9em !important;
+  margin: 0 !important;
+  line-height: 24px !important;
+}
+
+.header-mini .header-controls {
+  gap: 8px !important;
+  font-size: 0.75em !important;
+}
+
+/* Header Navigation Component */
+.header-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 16px;
+}
+
+.header-navigation .nav-items {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-navigation .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--muted);
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.header-navigation .nav-item:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.header-navigation .nav-item.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* Header Statistics Component */
+.header-statistics {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 24px;
+  gap: 16px;
+  height: 80px;
+  background-color: var(--background-primary, var(--sidebar-bg));
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,.08));
+}
+
+.header-statistics .company-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 200px;
+}
+
+.header-statistics .stats-cards {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.header-statistics .stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  min-width: 80px;
+}
+
+.header-statistics .stat-value {
+  font-size: 1.2em;
+  font-weight: 600;
+  color: white;
+}
+
+.header-statistics .stat-label {
+  font-size: 0.8em;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Responsive Header Styles */
+@media (max-width: 1024px) {
+  .header-statistics {
+    padding: 8px 16px;
+    gap: 12px;
+  }
+  
+  .header-statistics .stats-cards {
+    gap: 8px;
+  }
+  
+  .header-statistics .stat-card {
+    min-width: 60px;
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 8px 12px;
+  }
+  
+  .header-controls {
+    gap: 8px;
+  }
+  
+  .header-navigation .nav-items {
+    gap: 12px;
+  }
+  
+  .header-navigation .nav-item {
+    padding: 6px 8px;
+    font-size: 0.9em;
+  }
+  
+  .header-statistics {
+    flex-direction: column;
+    height: auto;
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .header-statistics .stats-cards {
+    width: 100%;
+    justify-content: space-around;
+  }
+}
