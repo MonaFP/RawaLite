@@ -36,6 +36,7 @@ import * as migration023 from './023_add_line_item_hierarchy_level';
 import * as migration024 from './024_restore_package_line_item_metadata';
 import * as migration025 from './025_add_price_display_mode';
 import * as migration026 from './026_add_price_display_mode_to_packages';
+import * as migration027 from './027_add_theme_system';
 
 export const migrations: Migration[] = [
   {
@@ -199,6 +200,12 @@ export const migrations: Migration[] = [
     name: '026_add_price_display_mode_to_packages',
     up: migration026.up,
     down: migration026.down
+  },
+  {
+    version: 27,
+    name: '027_add_theme_system',
+    up: migration027.up,
+    down: migration027.down
   }
 ];
 

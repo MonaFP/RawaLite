@@ -1,7 +1,7 @@
 # CRITICAL KI-FAILURE-MODES
 
 > **⚠️ MANDATORY READ vor jeder Session - Diese Fehler NIEMALS wiederholen**  
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (ROOT_ Migration für KI-Accessibility)  
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (CRITICAL Workflow Compliance Enhancement nach v1.0.43 Fehlern)  
 > **Status:** KRITISCH - Session-Killer Prevention  
 > **Schema:** `ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
@@ -37,9 +37,27 @@ Diese Datei: ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md
 
 ---
 
-## 🚨 **SESSION-KILLER FAILURE MODES**
+## 🚨 **SESSION-KILLER FAILURE MODES (Enhanced 18.10.2025)**
 
 Diese Fehler führen zu sofortigem Session-Abbruch und müssen verhindert werden:
+
+### **❌ NEW CRITICAL FAILURE MODE (18.10.2025): Release-Workflow-Violations**
+
+**Problem:** KI ignoriert etablierte Release-Workflows und verwendet unsichere Befehle
+
+**Symptome:**
+- `pnpm version` direkt verwendet (npm config conflicts)
+- Release-Schritte übersprungen oder abgekürzt
+- GitHub Actions workflow_dispatch API-Inkonsistenzen ignoriert
+- Pre-flight Validationen ausgelassen
+
+**Prävention:**
+- ✅ **MANDATORY:** `pnpm safe:version` ONLY - nie `pnpm version` direkt
+- ✅ **MANDATORY:** KI-SESSION-BRIEFING Protokoll EXAKT befolgen
+- ✅ **MANDATORY:** `npm config list` check vor Version-Operationen
+- ✅ **MANDATORY:** Manual fallback wenn GitHub Actions fehlschlagen
+
+**Impact:** v1.0.43 Release-Fehler - Workflow-Deviation führte zu manuellen Korrekturen
 
 ### **❌ FAILURE MODE 1: Kritische Fixes ignorieren**
 
@@ -186,18 +204,20 @@ pnpm build && pnpm dist
 
 ## 📊 **FAILURE STATISTICS**
 
-### **Most Common Session Killers:**
+### **Most Common Session Killers (Updated 18.10.2025):**
 1. **Critical Fix Removal** (40%) - Restored from registry
 2. **Documentation Chaos** (25%) - ROOT_ system implemented
 3. **Schema Violations** (20%) - Template system established
 4. **Anti-Pattern Code** (10%) - Guidelines strengthened
 5. **Version/Release Issues** (5%) - Validation improved
+6. **🚨 NEW: Release-Workflow-Violations** (NEW) - safe:version mandatory, KI-SESSION-BRIEFING enforcement
 
-### **Recovery Time:**
+### **Recovery Time (Updated 18.10.2025):**
 - **Critical Fix:** 15-30 minutes (pattern restoration)
 - **Documentation:** 5-15 minutes (path correction)
 - **Schema:** 2-5 minutes (format correction)
 - **Anti-Pattern:** 1-10 minutes (code replacement)
+- **🚨 NEW: Release-Workflow:** 30-60 minutes (manual release creation, asset upload)
 
 ---
 

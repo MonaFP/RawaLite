@@ -1,9 +1,14 @@
 # CSS/THEME/NAVIGATION ARCHITEKTUR-ÜBERSICHT
 
-> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Initiale Dokumentation nach Status-Color Korrekturen)  
+> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 19.10.2025 (CSS Modularization Implementation - 4 neue Layout-Module hinzugefügt)  
 > **Status:** Production Ready | **Typ:** Architecture Registry  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-CSS-THEME-NAVIGATION-ARCHITECTURE_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
+
+> **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
+> **Required:** Follow [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before CSS/Theme changes
+> **Critical:** Preserve responsive design patterns and status color system integrity
+> **🎯 NEW:** CSS Modularization completed - 4 neue Layout-Module verfügbar (2025-10-19)
 
 ## 📋 **SCHEMA-ÜBERSICHT**
 
@@ -63,27 +68,39 @@ color: #f59e0b;
 
 ---
 
-## 📂 **2. CSS-DATEI ARCHITEKTUR**
+## 📂 **2. CSS-DATEI ARCHITEKTUR (UPDATED 2025-10-19: MODULAR STRUCTURE)**
 
-### **Modulare CSS-Struktur**
+### **Modulare CSS-Struktur (Enhanced v1.0.44+)**
 
 ```
 src/
-├── index.css                                    # MASTER CSS FILE
+├── index.css (1438 Zeilen) ⬇️ -15.5%           # MASTER CSS FILE
 └── styles/
-    ├── status-updates/                          # STATUS-SPECIFIC MODULE
-    │   ├── status-core.css                      # ✅ CSS Variables (PASTEL!)
-    │   ├── status-badges.css                    # Badge components
-    │   ├── status-dropdowns.css                 # Dropdown styling
-    │   ├── status-themes.css                    # Theme integration
-    │   ├── status-layout-minimal.css            # Layout containers
-    │   └── README.md                            # Module documentation
-    └── focus-mode.css                           # Focus mode styling
+    ├── layout-grid.css ✅ NEU                   # Navigation Grid Layouts (52 Zeilen)
+    ├── header-styles.css ✅ NEU                 # Header Components (195 Zeilen)
+    ├── sidebar-styles.css ✅ NEU                # Sidebar Variants (108 Zeilen)
+    ├── main-content.css ✅ NEU                  # Main Content Area (129 Zeilen)
+    ├── focus-mode.css                           # Focus mode styling (bestehend)
+    └── status-updates/                          # STATUS-SPECIFIC MODULE (bestehend)
+        ├── status-core.css                      # ✅ CSS Variables (PASTEL!)
+        ├── status-badges.css                    # Badge components
+        ├── status-dropdowns.css                 # Dropdown styling
+        ├── status-themes.css                    # Theme integration
+        ├── status-layout-minimal.css            # Layout containers
+        └── README.md                            # Module documentation
 ```
 
-### **CSS Import Chain (Master)**
+### **CSS Import Chain (Master - Updated 2025-10-19)**
 ```css
-/* src/index.css - MASTER IMPORT */
+/* src/index.css - MASTER IMPORT - MODULAR ARCHITECTURE */
+
+/* 🏗️ LAYOUT & NAVIGATION MODULES - Neu 2025-10-19 */
+@import url('./styles/layout-grid.css');        /* CSS Grid für Navigation Modi */
+@import url('./styles/header-styles.css');      /* Header & Navigation Components */
+@import url('./styles/sidebar-styles.css');     /* Sidebar Varianten & Navigation */
+@import url('./styles/main-content.css');       /* Main Content & App Grid */
+
+/* 🎯 STATUS & FOCUS MODULES - Bestehend */
 @import url('./styles/status-updates/status-core.css');           /* CSS Variables */
 @import url('./styles/status-updates/status-layout-minimal.css'); /* Layouts */
 @import url('./styles/status-updates/status-dropdowns.css');      /* Dropdowns */
@@ -92,11 +109,15 @@ src/
 @import url('./styles/focus-mode.css');                          /* Focus modes */
 ```
 
-### **CSS Datei Details**
+### **CSS Datei Details (Enhanced 2025-10-19)**
 
 | **CSS Datei** | **Zweck** | **Größe** | **Dependencies** | **Critical** |
 |---------------|-----------|-----------|------------------|--------------|
-| **`index.css`** | Master CSS + Global styles | ~1701 Zeilen | Importiert alle Module | ✅ |
+| **`index.css`** | Master CSS + Global styles | **1438 Zeilen** ⬇️ -15.5% | Importiert alle Module | ✅ |
+| **`layout-grid.css`** ✅ **NEU** | **Navigation Grid Layouts** | **52 Zeilen** | **KEINE** | ✅ **FOUNDATION** |
+| **`header-styles.css`** ✅ **NEU** | **Header & Navigation Components** | **195 Zeilen** | layout-grid.css | ✅ **LAYOUT** |
+| **`sidebar-styles.css`** ✅ **NEU** | **Sidebar Varianten & Navigation** | **108 Zeilen** | layout-grid.css | ✅ **LAYOUT** |
+| **`main-content.css`** ✅ **NEU** | **Main Content & App Grid** | **129 Zeilen** | layout-grid.css | ✅ **LAYOUT** |
 | **`status-core.css`** | **CSS Variables (PASTEL)** | ~108 Zeilen | **KEINE** | ✅ **MASTER** |
 | **`status-badges.css`** | Badge components | ~95 Zeilen | status-core.css | ✅ |
 | **`status-dropdowns.css`** | Dropdown isolation | ~120 Zeilen | status-core.css | ✅ |
@@ -134,10 +155,60 @@ document.body.setAttribute('data-theme', theme);
 - **Accent Colors:** Theme-spezifisch (Button hovers, Focus states)
 - **Background:** Theme-spezifisch (Sidebar, Cards)
 - **Typography:** Theme-agnostic (konsistente Lesbarkeit)
+- **PDF Generation:** Database-Theme-System Integration mit dynamischen Farben ✅
 
 ---
 
-## 🧭 **4. NAVIGATION SYSTEM ARCHITEKTUR**
+## 📄 **4. PDF-THEME-SYSTEM INTEGRATION**
+
+### **Database-Theme-System ↔ PDF Generation**
+
+**Architektur-Integration:**
+```
+Database-Theme-System (Migration 027)
+    ↓
+DatabaseThemeManager.tsx (React Context)
+    ↓
+PDFService.getCurrentPDFTheme() (Theme Mapping)
+    ↓
+electron/ipc/pdf-templates.ts (Color Application)
+    ↓
+HTML Templates mit dynamischen Theme-Farben
+```
+
+**Theme Color Mappings (Production-Ready):**
+
+| Theme | Primary Color | Secondary | Accent | PDF Integration Status |
+|-------|---------------|-----------|--------|----------------------|
+| **sage** | `#7ba87b` | `#5a735a` | `#6b976b` | ✅ Tested & Validated |
+| **peach** | `#b8a27b` | `#73655a` | `#a7916b` | ✅ Tested & Validated |
+| **sky** | `#7ba2b8` | `#5a6573` | `#6b8ea7` | ✅ Available |
+| **lavender** | `#b87ba8` | `#735a73` | `#a76b97` | ✅ Available |
+| **rose** | `#b87ba2` | `#735a65` | `#a76b91` | ✅ Available |
+| **default** | `#1e3a2e` | `#2a4a35` | `#f472b6` | ✅ Available |
+
+**Critical Integration Points (PRESERVE):**
+```typescript
+// PDF Theme Color Extraction - electron/ipc/pdf-templates.ts
+const primaryColor = options.theme?.theme?.primary || options.theme?.primary || '#7ba87b';
+//                   Database Theme System          Legacy Support          Fallback
+
+// Theme Data Flow - src/services/PDFService.ts
+const pdfTheme = currentTheme ? this.getCurrentPDFTheme(currentTheme, customColors) : null;
+```
+
+**Validation Status:**
+- ✅ Database-Theme-System fully functional
+- ✅ Dynamic color switching in PDFs confirmed  
+- ✅ Fallback mechanism (Salbeigrün) working
+- ✅ All 6 themes available for PDF generation
+- ✅ Live testing completed 2025-10-18
+
+> **📚 Detailed Documentation:** [SOLVED_FIX-PDF-THEME-COLOR-INTEGRATION-DEBUG_2025-10-18.md](../12-lessons/sessions/SOLVED_FIX-PDF-THEME-COLOR-INTEGRATION-DEBUG_2025-10-18.md)
+
+---
+
+## 🧭 **5. NAVIGATION SYSTEM ARCHITEKTUR**
 
 ### **3-Navigation-Modi System**
 

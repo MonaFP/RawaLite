@@ -3,12 +3,16 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, createHashRouter, RouterProvider } from "react-router-dom";
 import App from "./App";
 import "./index.css";
+
+// 🎨 DATABASE-THEME-SYSTEM INTEGRATION für CSS Module - Phase 1B
+import "./styles/load-theme-integration.js";
+
 import PersistenceProvider from "./PersistenceProvider";
 import { LoadingProvider, LoadingOverlay } from "./contexts/LoadingContext";
 import { NotificationProvider, NotificationContainer } from "./contexts/NotificationContext";
 import { SettingsProvider } from "./contexts/SettingsContext";
 import { NumberingProvider } from "./contexts/NumberingContext";
-import { ThemeProvider } from "./contexts/ThemeContext";
+import { DatabaseThemeProvider } from "./contexts/DatabaseThemeManager";
 import { NavigationProvider } from "./contexts/NavigationContext";
 import { FocusModeProvider } from "./contexts/FocusModeContext";
 
@@ -87,7 +91,7 @@ const router = import.meta.env.PROD
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider>
+    <DatabaseThemeProvider>
       <NavigationProvider>
         <FocusModeProvider>
           <LoadingProvider>
@@ -105,6 +109,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           </LoadingProvider>
         </FocusModeProvider>
       </NavigationProvider>
-    </ThemeProvider>
+    </DatabaseThemeProvider>
   </React.StrictMode>
 );

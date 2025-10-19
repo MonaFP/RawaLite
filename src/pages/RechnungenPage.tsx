@@ -7,7 +7,7 @@ import { useInvoices } from '../hooks/useInvoices';
 import { useCustomers } from '../hooks/useCustomers';
 import { useOffers } from '../hooks/useOffers';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../contexts/DatabaseThemeManager';
 import { useNotifications } from '../contexts/NotificationContext';
 import { PDFService } from '../services/PDFService';
 import type { Invoice } from '../persistence/adapter';

@@ -122,6 +122,17 @@ export class FieldMapper {
     // Price Display Mode Felder (KRITISCH für SubItem Preisanzeige v1.0.42.6)
     'priceDisplayMode': 'price_display_mode',
     
+    // Theme System Felder (KRITISCH für Database-Theme-System v1.0.42.7)
+    'themeKey': 'theme_key',
+    'isSystemTheme': 'is_system_theme',
+    'isActive': 'is_active',
+    'themeId': 'theme_id',
+    'colorKey': 'color_key',
+    'colorValue': 'color_value',
+    'userId': 'user_id',
+    'activeThemeId': 'active_theme_id',
+    'fallbackThemeKey': 'fallback_theme_key',
+    
     // Tabellennamen (für SQL-Queries)
     'packageLineItems': 'package_line_items',
     'offerLineItems': 'offer_line_items',

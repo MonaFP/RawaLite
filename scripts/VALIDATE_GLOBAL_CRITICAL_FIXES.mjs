@@ -100,6 +100,14 @@ const CRITICAL_FIXES = {
     file: 'src/adapters/SQLiteAdapter.ts', 
     pattern: /CREATE PACKAGE:.*?Starting with.*?total items[\s\S]*?Found.*?main items and.*?sub-items/,
     description: 'Package Line Items Foreign Key Constraint ID Mapping for parent-child relationships'
+  },
+
+  // Database-Theme-System Critical Fixes (FIX-016, FIX-017, FIX-018)
+  // NOTE: These patterns will be validated once the theme system is fully implemented
+  'migration-027-integrity': {
+    file: 'src/main/db/migrations/027_add_theme_system.ts',
+    pattern: /CREATE TABLE IF NOT EXISTS themes[\s\S]*?CREATE TABLE IF NOT EXISTS theme_colors[\s\S]*?CREATE TABLE IF NOT EXISTS user_theme_preferences/,
+    description: 'Migration 027 theme system tables integrity (FIX-017)'
   }
 };
 
@@ -167,7 +175,7 @@ function validateCriticalFixes() {
     console.log(colors.red(colors.bold('\n🚨 CRITICAL FIXES VALIDATION FAILED!')));
     console.log(colors.red('   DO NOT PROCEED WITH BUILD/RELEASE!'));
     console.log(colors.yellow('\n📋 ACTION REQUIRED:'));
-    console.log(colors.yellow('   1. Check docs/00-meta/final/CRITICAL-FIXES-REGISTRY.md'));
+    console.log(colors.yellow('   1. Check docs/ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md'));
     console.log(colors.yellow('   2. Re-implement missing patterns'));
     console.log(colors.yellow('   3. Run validation again'));
     process.exit(1);
@@ -198,6 +206,25 @@ function validateAntiPatterns() {
       file: 'src/components/NavigationOnlySidebar.tsx',
       pattern: /src=['"][\/]rawalite-logo\.png['"]/,
       description: 'Absolute logo paths that fail in production Electron builds'
+    },
+
+    // NEW Theme System Anti-Patterns
+    'direct-theme-table-access': {
+      file: 'src/',
+      pattern: /db\.prepare\(['"]SELECT \* FROM themes['"]\)\.all\(\)/,
+      description: 'Direct theme table access bypassing DatabaseThemeService (violates FIX-018)'
+    },
+
+    'hardcoded-theme-colors': {
+      file: 'src/',
+      pattern: /colors:\s*{\s*primary:\s*['"]#[0-9a-fA-F]{6}['"]/,
+      description: 'Hardcoded theme colors in components (violates theme system patterns)'
+    },
+
+    'static-pdf-colors': {
+      file: 'src/services/PDFService.ts',
+      pattern: /primaryColor:\s*['"]#[0-9a-fA-F]{6}['"]/,
+      description: 'Static PDF colors instead of dynamic theme extraction (violates FIX-016)'
     }
   };
   

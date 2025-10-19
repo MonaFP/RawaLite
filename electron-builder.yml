@@ -25,6 +25,10 @@ asarUnpack:
   - "**/*.node"
 electronVersion: "31.7.7"
 icon: public/rawalite-logo.png
+publish:
+  provider: github
+  owner: MonaFP
+  repo: RawaLite
 win:
   target:
     - target: nsis

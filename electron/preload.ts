@@ -307,6 +307,27 @@ contextBridge.exposeInMainWorld('rawalite', {
         version: number;
       } | null>,
   },
+  // 🎨 Theme Management API
+  themes: {
+    getAllThemes: () => 
+      ipcRenderer.invoke('themes:get-all') as Promise<any[]>,
+    getThemeByKey: (themeKey: string) => 
+      ipcRenderer.invoke('themes:get-by-key', themeKey) as Promise<any | null>,
+    getThemeById: (id: number) => 
+      ipcRenderer.invoke('themes:get-by-id', id) as Promise<any | null>,
+    getUserActiveTheme: (userId?: string) => 
+      ipcRenderer.invoke('themes:get-user-active', userId) as Promise<any | null>,
+    setUserTheme: (userId: string, themeId: number, themeKey: string) => 
+      ipcRenderer.invoke('themes:set-user-theme', userId, themeId, themeKey) as Promise<boolean>,
+    createTheme: (themeData: any, colors: Record<string, string>) => 
+      ipcRenderer.invoke('themes:create', themeData, colors) as Promise<any | null>,
+    updateTheme: (id: number, updates: any) => 
+      ipcRenderer.invoke('themes:update', id, updates) as Promise<boolean>,
+    updateThemeColors: (themeId: number, colors: Record<string, string>) => 
+      ipcRenderer.invoke('themes:update-colors', themeId, colors) as Promise<boolean>,
+    deleteTheme: (id: number) => 
+      ipcRenderer.invoke('themes:delete', id) as Promise<boolean>,
+  },
 });
 
 // 📄 PDF API (v1.7.5 Rollback) - Separate namespace for compatibility

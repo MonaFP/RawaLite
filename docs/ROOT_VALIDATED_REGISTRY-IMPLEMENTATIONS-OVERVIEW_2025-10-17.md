@@ -1,9 +1,13 @@
 # 🏗️ Implementations Overview - RawaLite Project
 
-> **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (ROOT_ Migration für KI-Accessibility)  
+> **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (PDF-Theme-System Integration Documentation)  
 > **Status:** VALIDATED - Aktuelle Implementierungen | **Typ:** Implementations Registry  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-IMPLEMENTATIONS-OVERVIEW_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
+
+> **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
+> **Required Reading:** [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before implementation changes
+> **Validation:** All implementations must preserve critical patterns from CRITICAL-FIXES-REGISTRY
 
 > **🏗️ VOLLSTÄNDIGE ÜBERSICHT aller Haupt-Implementierungen in RawaLite**  
 > **🎯 Zweck:** KI-Session Start-Referenz für System-Verständnis
@@ -60,6 +64,8 @@
 - **Technology:** Puppeteer + HTML Templates
 - **Assets:** `assets/pdf/` (LOKAL, keine externen Links)
 - **Templates:** `src/templates/pdf/`
+- **Theme Integration:** Dynamic Database-Theme-System integration ✅
+- **Color Mapping:** 6 Pastel themes with fallback to Salbeigrün (`#7ba87b`)
 - **Guards:** `pnpm guard:pdf`, Asset-Validation
 
 ---

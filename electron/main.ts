@@ -20,6 +20,7 @@ import { registerBackupHandlers } from './ipc/backup'
 import { registerFileHandlers } from './ipc/files'
 import { registerUpdateManagerHandlers } from './ipc/update-manager'
 import { registerUpdateIpc } from './ipc/updates'
+import { initializeThemeIpc } from './ipc/themes'
 
 
 console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
@@ -62,6 +63,9 @@ app.whenReady().then(async () => {
     registerBackupHandlers();
     registerFileHandlers();
     registerUpdateManagerHandlers();
+    
+    // Initialize theme service with database
+    initializeThemeIpc(getDb());
     
     // Setup Update Event Forwarding to UI
     updateManager.onUpdateEvent((event) => {

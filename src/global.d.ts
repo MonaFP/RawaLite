@@ -175,6 +175,18 @@ declare interface Window {
         message?: string;
       }>;
     };
+    // 🎨 Theme Management API
+    themes: {
+      getAllThemes: () => Promise<any[]>;
+      getThemeByKey: (themeKey: string) => Promise<any | null>;
+      getThemeById: (id: number) => Promise<any | null>;
+      getUserActiveTheme: (userId?: string) => Promise<any | null>;
+      setUserTheme: (userId: string, themeId: number, themeKey: string) => Promise<boolean>;
+      createTheme: (themeData: any, colors: Record<string, string>) => Promise<any | null>;
+      updateTheme: (id: number, updates: any) => Promise<boolean>;
+      updateThemeColors: (themeId: number, colors: Record<string, string>) => Promise<boolean>;
+      deleteTheme: (id: number) => Promise<boolean>;
+    };
   };
   // 📄 PDF API (v1.7.5 Rollback for native Electron PDF generation)
   electronAPI?: {

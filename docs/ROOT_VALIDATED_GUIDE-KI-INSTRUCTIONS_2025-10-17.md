@@ -1,6 +1,6 @@
 # RawaLite – Kurz-Instructions für KI
 
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (ROOT_ Migration für KI-Accessibility)  
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (Database-Theme-System Development Rules Integration)  
 > **Status:** Production Ready | **Typ:** KI-Coding-Instructions  
 > **Schema:** `ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
@@ -25,7 +25,7 @@
 **VORGABEN:**
 1. **MANDATORY:** Jedes neue Dokument braucht Datums-Header
 2. **MANDATORY:** Bei JEDER Änderung "Letzte Aktualisierung" mit Grund erweitern  
-3. **MANDATORY:** Heutiges Datum verwenden: 17.10.2025
+3. **MANDATORY:** Heutiges Datum verwenden: 18.10.2025
 4. **MANDATORY:** Grund der Änderung spezifizieren (z.B. "ROOT_ Migration", "Bugfix XY")
 5. **FORBIDDEN:** Dokumente ohne Datums-Header erstellen oder ändern
 
@@ -214,6 +214,104 @@ Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
 
 **If Critical Pattern Missing:** STOP immediately, re-implement from registry, test thoroughly.
 
+## 🎨 THEME SYSTEM DEVELOPMENT RULES (Database-First Architecture)
+
+**Database-Theme-System ist ein kritisches System mit speziellen Entwicklungsregeln:**
+
+### **Theme Development Patterns (MANDATORY):**
+- **MANDATORY:** Use `DatabaseThemeService` for ALL theme operations
+- **MANDATORY:** Use field-mapper for ALL theme database queries
+- **MANDATORY:** Validate Migration 027 integrity before theme operations
+- **FORBIDDEN:** Direct theme table access outside service layer
+- **FORBIDDEN:** Hardcoded theme colors in components
+- **FORBIDDEN:** Bypassing DatabaseThemeService for theme CRUD operations
+
+### **Theme Database Access Rules:**
+```typescript
+// ✅ CORRECT: Service layer pattern
+const themes = await DatabaseThemeService.getAllThemes();
+const userTheme = await DatabaseThemeService.getUserTheme(userId);
+const themeColors = await DatabaseThemeService.getThemeColors(themeId);
+
+// ✅ CORRECT: Field-mapper integration
+const query = convertSQLQuery('SELECT * FROM themes WHERE is_system = ?', [true]);
+
+// ❌ FORBIDDEN: Direct database access
+// const themes = db.prepare('SELECT * FROM themes').all();
+// const directQuery = `SELECT * FROM themes WHERE name = '${themeName}'`;
+```
+
+### **PDF-Theme Integration Rules:**
+- **MANDATORY:** Use `getCurrentPDFTheme()` for PDF color extraction
+- **MANDATORY:** Parameter-based theme passing to PDF generation functions
+- **FORBIDDEN:** Static color definitions in PDF templates
+- **FORBIDDEN:** Hardcoded theme colors in PDF generation
+
+```typescript
+// ✅ CORRECT: Dynamic theme extraction for PDF
+const pdfTheme = await PDFService.getCurrentPDFTheme();
+const pdfOptions = { 
+  theme: pdfTheme, 
+  colorMode: 'dynamic',
+  colors: pdfTheme.colors 
+};
+
+// ❌ FORBIDDEN: Static colors
+// const pdfOptions = { colors: { primary: '#007bff' } };
+```
+
+### **Theme Schema Protection Rules:**
+- **MANDATORY:** Validate theme schema before ANY theme table modifications
+- **MANDATORY:** Use Migration 027 as reference schema
+- **FORBIDDEN:** Theme table modifications without proper migration
+- **FORBIDDEN:** Schema changes without validation scripts
+
+```typescript
+// ✅ CORRECT: Schema validation before changes
+const themeSchema = await db.pragma('table_info(themes)');
+const expectedColumns = ['id', 'name', 'display_name', 'is_system', 'created_at'];
+if (!validateThemeSchema(themeSchema, expectedColumns)) {
+  throw new Error('Theme schema validation failed');
+}
+```
+
+### **IPC Theme Communication Rules:**
+- **MANDATORY:** Use `ThemeIpcService` for frontend-backend communication
+- **MANDATORY:** Use whitelisted IPC channels for theme operations
+- **FORBIDDEN:** Direct IPC calls bypassing ThemeIpcService
+- **FORBIDDEN:** Dynamic IPC channel creation for themes
+
+```typescript
+// ✅ CORRECT: Service layer IPC
+const themes = await ThemeIpcService.getAllThemes();
+await ThemeIpcService.setUserTheme(userId, themeId);
+
+// ❌ FORBIDDEN: Direct IPC calls
+// const themes = await window.electronAPI.invoke('theme:get-all');
+```
+
+### **React Context Theme Rules:**
+- **MANDATORY:** Use `DatabaseThemeManager.tsx` context for theme state
+- **MANDATORY:** Theme state persistence through database + localStorage fallback
+- **FORBIDDEN:** Component-level theme state management
+- **FORBIDDEN:** Direct theme state mutations outside context
+
+```typescript
+// ✅ CORRECT: Context usage
+const { currentTheme, setTheme, isLoading } = useDatabaseTheme();
+
+// ❌ FORBIDDEN: Direct state management
+// const [theme, setTheme] = useState(defaultTheme);
+```
+
+### **Critical Files for Theme System (EXTRA CAUTION):**
+- `src/main/db/migrations/027_add_theme_system.ts` - Core theme schema (FIX-017)
+- `src/main/services/DatabaseThemeService.ts` - Service layer pattern (FIX-018)
+- `src/renderer/src/services/ThemeIpcService.ts` - IPC communication (FIX-018)
+- `src/contexts/DatabaseThemeManager.tsx` - React context layer
+- `electron/ipc/themes.ts` - IPC bridge layer
+- `src/services/PDFService.ts` - PDF theme integration
+
 ## 🔑 Kernregeln
 
 - **PNPM-only** – niemals `npm` oder `yarn` verwenden.  
@@ -235,10 +333,20 @@ Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
   - **Immer vor Installation neuen Build erstellen**: `pnpm build && pnpm dist`
   - Dann erst `.\install-local.cmd` ausführen
   - Sicherstellt aktuelle Code-Änderungen in der Installation
+- **🚨 VERSION MANAGEMENT (Critical Rule-Update 18.10.2025):**
+  - **FORBIDDEN:** `pnpm version patch/minor/major` (npm config conflicts detected)
+  - **MANDATORY:** `pnpm safe:version patch/minor/major` ONLY
+  - **MANDATORY:** Pre-check npm config: `npm config list` vor Version-Operationen
+  - **CRITICAL:** Violation caused v1.0.43 release errors
+- **🚨 RELEASE PROCESS (Zero-Tolerance Rules 18.10.2025):**
+  - **MANDATORY:** Follow KI-SESSION-BRIEFING Protokoll EXACTLY
+  - **MANDATORY:** Pre-flight validation: `pnpm validate:critical-fixes`
+  - **FORBIDDEN:** Skip any documented workflow steps
+  - **FORBIDDEN:** Use direct GitHub Actions ohne Troubleshooting
 
 ---
 
-## 🚫 Verbotene Muster (niemals generieren)
+## 🚫 Verbotene Muster (niemals generieren) - ERWEITERT 18.10.2025
 
 - `npm` oder `yarn` Befehle.  
 - `app.getPath()` außerhalb `paths.ts`.  
@@ -250,6 +358,11 @@ Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
 - Dynamische IPC-Kanäle.  
 - Node-APIs direkt im Renderer.
 - Lokale Installation ohne vorherigen Build (`.\install-local.cmd` ohne `pnpm build && pnpm dist`).
+- **🚨 NEW (18.10.2025):** `pnpm version` direkt (npm config conflicts)
+- **🚨 NEW (18.10.2025):** Workflow-Schritte überspringen oder abkürzen
+- **🚨 NEW (18.10.2025):** GitHub Actions workflow_dispatch ohne Fallback-Plan
+- **🚨 NEW (18.10.2025):** Release-Operationen ohne Critical-Fixes-Validation
+- **🚨 NEW (18.10.2025):** KI-SESSION-BRIEFING Protokoll ignorieren oder umgehen
 
 ---
 

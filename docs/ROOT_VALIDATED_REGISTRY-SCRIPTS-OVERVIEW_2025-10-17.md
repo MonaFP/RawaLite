@@ -1,9 +1,13 @@
 # Scripts Registry & Overview
 
-> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Initial Creation nach Schema-Modernisierung)  
+> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (KI-SESSION-BRIEFING Workflow Integration)  
 > **Status:** Production Ready | **Typ:** Scripts Registry  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Kritisch für Script-Management, NIEMALS verschieben!
+
+> **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
+> **MANDATORY:** Follow [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before modifying scripts
+> **CRITICAL:** All scripts follow KATEGORIE_SCOPE_SUBJECT_ACTION.ext schema pattern
 
 This document provides a comprehensive registry of all RawaLite automation scripts with detailed validation status and compliance tracking.
 

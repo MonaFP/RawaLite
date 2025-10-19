@@ -8,7 +8,7 @@ import { useTimesheets } from '../hooks/useTimesheets';
 import { useActivities } from '../hooks/useActivities';
 import { useCustomers } from '../hooks/useCustomers';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../contexts/DatabaseThemeManager';
 import { useNotifications } from '../contexts/NotificationContext';
 import { PDFService } from '../services/PDFService';
 import { 

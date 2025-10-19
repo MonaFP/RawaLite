@@ -9,6 +9,10 @@
 
 ### **📂 final/** - Completed Core Documentation
 
+#### **🏗️ System Architecture (NEW - 18.10.2025)**
+- **Complete System Architecture:** [VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md](final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md) - 6-layer architecture with Database-Theme-System integration
+- **Debugging Standards:** [VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md](final/VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md) - Systematic problem-solving approach
+
 #### **🏗️ Architecture & Standards**
 - **Architecture Overview:** [PATHS.md](../PATHS.md#ARCHITECTURE_OVERVIEW) - Complete system architecture
 - **Coding Standards:** [PATHS.md](../PATHS.md#CODING_STANDARDS) - TypeScript, React, Database standards  
@@ -42,9 +46,11 @@
 ## 🎯 **Quick Navigation**
 
 ### **🚀 For Development:**
-1. ✅ **Start here:** [PATHS.md](../PATHS.md#QUICK_REFERENCE) - 1-page KI reference
-2. ✅ **Coding rules:** [PATHS.md](../PATHS.md#CODING_STANDARDS) - Complete guidelines  
-3. ✅ **Architecture:** [PATHS.md](../PATHS.md#ARCHITECTURE_OVERVIEW) - System design
+1. ✅ **System Architecture:** [VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md](final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md) - Complete 6-layer system with Database-Theme-System
+2. ✅ **Debugging Approach:** [VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md](final/VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md) - Systematic problem-solving
+3. ✅ **Quick Reference:** [PATHS.md](../PATHS.md#QUICK_REFERENCE) - 1-page KI reference
+4. ✅ **Coding Standards:** [PATHS.md](../PATHS.md#CODING_STANDARDS) - Complete guidelines  
+5. ✅ **Legacy Architecture:** [PATHS.md](../PATHS.md#ARCHITECTURE_OVERVIEW) - System design
 
 ### **🔧 For Implementation:**
 - **Workflows:** [PATHS.md](../PATHS.md#WORKFLOWS) - Git, Release, Emergency procedures

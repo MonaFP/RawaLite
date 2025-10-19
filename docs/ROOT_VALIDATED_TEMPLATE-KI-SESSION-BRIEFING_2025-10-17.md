@@ -1,6 +1,6 @@
 # 🤖 KI-Session Briefing - Copy & Paste Template
 
-> **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (ROOT_ Migration für KI-Accessibility)  
+> **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (Theme-System Session Template hinzugefügt - Phase 3 Cross-References)  
 > **Status:** KRITISCH - Session-Start Template | **Typ:** KI-Template  
 > **Schema:** `ROOT_VALIDATED_TEMPLATE-KI-SESSION-BRIEFING_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
@@ -122,6 +122,30 @@ Neue KI-Session für Release/Deployment:
 Task-Kontext: [DEINE AUFGABE HIER EINFÜGEN]
 ```
 
+### 🎨 Für Theme-System-Tasks:
+```
+Neue KI-Session für Theme-System-Development:
+
+1. PFLICHT: docs/ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md lesen (FIX-016, FIX-017, FIX-018!)
+2. PFLICHT: docs/ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md lesen (Theme Development Rules!)
+3. Dann: Database-Theme-System Dokumentation in docs/04-ui/final/
+   - COMPLETED_IMPL-DATABASE-THEME-SYSTEM_2025-10-17.md
+   - COMPLETED_IMPL-MIGRATION-027-THEME-SYSTEM_2025-10-17.md  
+   - COMPLETED_IMPL-THEME-SERVICE-LAYER_2025-10-17.md
+4. Validiere: Migration 027 Schema ist unverändert
+5. Prüfe: pnpm validate:critical-fixes vor Theme-Änderungen
+6. ZWINGEND: DatabaseThemeService für alle Theme-Operationen verwenden
+7. ZWINGEND: Field-mapper für alle Theme-Database-Queries verwenden
+
+⚠️ THEME-SPECIFIC WARNINGS:
+   - NIEMALS direkte Theme-Table-Zugriffe außerhalb DatabaseThemeService
+   - NIEMALS Theme-Schema-Änderungen ohne Migration
+   - NIEMALS statische Farben in PDF-Templates
+   - IMMER Schema-Validation vor Theme-Table-Modifikationen
+
+Task-Kontext: [DEINE THEME-AUFGABE HIER EINFÜGEN]
+```
+
 ### 🐛 Für Debugging/Troubleshooting:
 ```
 Neue KI-Session für Debugging:
@@ -149,14 +173,15 @@ pnpm validate:docs-structure
 # Vor Releases:
 pnpm validate:critical-fixes && pnpm validate:docs-structure
 
-# Sichere Version-Befehle:
-pnpm safe:version patch
+# Sichere Version-Befehle (CRITICAL Update 18.10.2025):
+pnpm safe:version patch  # MANDATORY - nie pnpm version direkt!  
 pnpm safe:dist
+# 🚨 VERBOTEN: pnpm version (npm config conflicts!)
 ```
 
 ---
 
-## 🚨 Emergency Stop Conditions
+## 🚨 Emergency Stop Conditions (Enhanced 18.10.2025)
 
 **SOFORT STOPPEN wenn:**
 - ❌ Critical pattern aus REGISTRY fehlt
@@ -165,8 +190,12 @@ pnpm safe:dist
 - ❌ WriteStream.end() ohne Promise wrapper
 - ❌ Multiple process.on('close') handlers
 - ❌ Port-Änderungen von 5174 in dev
+- **❌ NEW:** `pnpm version` direkt verwendet (npm config conflicts!)
+- **❌ NEW:** Release-Workflow-Schritte übersprungen
+- **❌ NEW:** KI-SESSION-BRIEFING Protokoll nicht befolgt
+- **❌ NEW:** GitHub Actions workflow_dispatch ohne Fallback
 
-**Bei Zweifel:** Fragen, nicht raten!
+**Bei Zweifel:** Fragen, nicht raten! **Keine Improvisation bei Releases!**
 
 ---
 
@@ -215,4 +244,4 @@ pnpm safe:dist
 **Access:** Direct from /docs root für maximum KI accessibility  
 **Protection:** ROOT_ prefix prevents accidental reorganization
 
-*Letzte Aktualisierung: 2025-10-17 - ROOT_ Migration für verbesserte KI-Accessibility*
+*Letzte Aktualisierung: 2025-10-18 - CRITICAL Workflow Compliance Enhancement nach v1.0.43 Release-Fehlern*

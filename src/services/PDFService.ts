@@ -59,6 +59,9 @@ export class PDFService {
       const processedOffer = await this.processOfferAttachments(offer);
       
       // Generate theme data for PDF styling
+      console.log('🎨 [PDF-DEBUG] Input currentTheme for PDF generation:', currentTheme);
+      console.log('🎨 [PDF-DEBUG] Type of currentTheme:', typeof currentTheme);
+      console.log('🎨 [PDF-DEBUG] Truthy check:', !!currentTheme);
       const pdfTheme = currentTheme ? this.getCurrentPDFTheme(currentTheme, customColors) : null;
       console.log('🎨 Generated PDF theme data:', pdfTheme);
       
@@ -378,12 +381,14 @@ export class PDFService {
    * Helper method for PDF theme integration with v1.5.2 pastel themes
    */
   private static getCurrentPDFTheme(currentTheme: any, customColors: any): any {
-    console.log('🎨 Building PDF theme from current theme:', currentTheme);
+    console.log('🎨 [PDF-DEBUG] Building PDF theme from current theme:', currentTheme);
+    console.log('🎨 [PDF-DEBUG] Type of currentTheme:', typeof currentTheme);
+    console.log('🎨 [PDF-DEBUG] Custom colors:', customColors);
     
     // Use the passed currentTheme directly instead of reading from DOM
     // currentTheme should be the theme key like 'lavendel', 'himmelblau', etc.
     const currentThemeName = currentTheme || 'salbeigruen';
-    console.log('📋 Current theme name:', currentThemeName);
+    console.log('📋 [PDF-DEBUG] Current theme name resolved to:', currentThemeName);
     
     // v1.5.2 Pastel theme color mappings - Updated with correct theme names
     const pastelThemes = {
@@ -462,9 +467,10 @@ export class PDFService {
     // Get the current theme colors or fall back to sage (salbeigruen)
     const themeColors = pastelThemes[currentThemeName as keyof typeof pastelThemes] || pastelThemes.sage;
     
-    console.log('🎨 PDF theme colors selected:', themeColors);
+    console.log('🎨 [PDF-DEBUG] PDF theme colors selected:', themeColors);
+    console.log('🎨 [PDF-DEBUG] Available pastel themes:', Object.keys(pastelThemes));
     
-    return {
+    const result = {
       themeId: currentThemeName,
       theme: {
         primary: themeColors.primary,
@@ -474,6 +480,9 @@ export class PDFService {
         text: themeColors.text
       }
     };
+    
+    console.log('🎨 [PDF-DEBUG] Final PDF theme result:', result);
+    return result;
   }
 }
 

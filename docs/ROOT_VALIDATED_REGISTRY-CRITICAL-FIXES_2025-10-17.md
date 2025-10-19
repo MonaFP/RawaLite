@@ -1,13 +1,20 @@
 # CRITICAL FIXES REGISTRY
 
 > **NEVER REMOVE OR MODIFY THESE FIXES WITHOUT EXPLICIT APPROVAL**  
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (ROOT_ Migration für KI-Accessibility)  
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (Database-Theme-System Critical Fixes Integration - FIX-016, FIX-017, FIX-018)  
 > **Status:** ABSOLUT KRITISCH - Jede KI-Session muss diese prüfen  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
 
+> **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
+> **MANDATORY:** Befolge [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) für jede Session
+> **STEP 1:** Dieses Dokument FIRST lesen vor ANY code changes
+> **STEP 2:** `pnpm validate:critical-fixes` ausführen vor Änderungen
+> **STEP 3:** Bei Release-Tasks: safe:version workflow verwenden (nie direkt pnpm version)
+
 This registry contains all critical fixes that must be preserved across ALL versions.
 Any KI session MUST validate these patterns before making changes.
+**WORKFLOW:** Every session must start with [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) process.
 
 ## 📋 **SCHEMA-ÜBERSICHT**
 
@@ -273,39 +280,115 @@ These fixes are MANDATORY and must be preserved in ALL code changes.
 - **NEVER:** Use string concatenation for SQL queries
 - **Validation:** All database queries must use parameter binding
 
+### **FIX-016: Database-Theme-System Schema Protection**
+- **Files:** `src/main/db/migrations/027_add_theme_system.ts`, `src/main/services/DatabaseThemeService.ts`
+- **Issue:** Theme system schema modifications breaking user preferences
+- **Fix Pattern:** Schema validation before any theme-related changes
+- **Code:**
+  ```typescript
+  // Validate theme schema integrity before modifications
+  const themeSchema = await db.pragma('table_info(themes)');
+  const expectedColumns = ['id', 'name', 'display_name', 'is_system', 'created_at'];
+  if (!validateThemeSchema(themeSchema, expectedColumns)) {
+    throw new Error('Theme schema validation failed');
+  }
+  
+  // Validate theme_colors table structure
+  const colorsSchema = await db.pragma('table_info(theme_colors)');
+  const expectedColorColumns = ['id', 'theme_id', 'color_key', 'color_value', 'created_at'];
+  if (!validateThemeSchema(colorsSchema, expectedColorColumns)) {
+    throw new Error('Theme colors schema validation failed');
+  }
+  ```
+- **NEVER:** Modify theme tables (themes, theme_colors, user_theme_preferences) without schema validation
+- **Validation:** Theme preferences must persist across updates and schema changes
+
+### **FIX-017: Migration 027 Theme System Integrity**
+- **File:** `src/main/db/migrations/027_add_theme_system.ts`
+- **Issue:** Migration 027 corruption breaking entire theme system
+- **Fix Pattern:** Migration integrity validation and rollback protection
+- **Code:**
+  ```typescript
+  // Verify Migration 027 completion before theme operations
+  const migrationStatus = await db.get('SELECT * FROM migration_history WHERE migration_id = 27');
+  if (!migrationStatus || migrationStatus.status !== 'completed') {
+    throw new Error('Migration 027 not properly applied - Theme system unavailable');
+  }
+  
+  // Validate all 3 theme tables exist with correct structure
+  const requiredTables = ['themes', 'theme_colors', 'user_theme_preferences'];
+  for (const table of requiredTables) {
+    const tableInfo = await db.pragma(`table_info(${table})`);
+    if (!tableInfo || tableInfo.length === 0) {
+      throw new Error(`Theme system table ${table} missing - Migration 027 corrupted`);
+    }
+  }
+  ```
+- **NEVER:** Modify Migration 027 without complete system testing
+- **Validation:** All theme system functionality must work after migration changes
+
+### **FIX-018: DatabaseThemeService Pattern Preservation**
+- **Files:** `src/main/services/DatabaseThemeService.ts`, `src/renderer/src/services/ThemeIpcService.ts`
+- **Issue:** Direct theme table access bypassing service layer causing data inconsistency
+- **Fix Pattern:** Enforce service layer pattern for all theme operations
+- **Code:**
+  ```typescript
+  // CORRECT: Always use DatabaseThemeService for theme operations
+  const themes = await DatabaseThemeService.getAllThemes();
+  const userTheme = await DatabaseThemeService.getUserTheme(userId);
+  
+  // CORRECT: Use field-mapper for type safety
+  const query = convertSQLQuery('SELECT * FROM themes WHERE is_system = ?', [true]);
+  
+  // FORBIDDEN: Direct database access for themes
+  // const themes = db.prepare('SELECT * FROM themes').all(); // VIOLATES PATTERN
+  // const directQuery = `SELECT * FROM themes WHERE name = '${themeName}'`; // SQL INJECTION RISK
+  ```
+- **NEVER:** Access theme tables directly outside DatabaseThemeService
+- **NEVER:** Bypass field-mapper for theme-related queries
+- **Validation:** All theme operations must go through proper service layer
+
 ---
 
 ## 🔍 VALIDATION RULES FOR KI
 
-### **BEFORE ANY FILE EDIT:**
-1. **Check if file is in CRITICAL-FIXES-REGISTRY.md**
-2. **Verify all required patterns are preserved**
-3. **Never remove Promise-based patterns**
-4. **Never remove timeout/delay patterns**
-5. **Never add duplicate event handlers**
+### **BEFORE ANY FILE EDIT (KI-SESSION-BRIEFING Integration):**
+1. **MANDATORY:** Follow [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) process
+2. **Check if file is in CRITICAL-FIXES-REGISTRY.md**
+3. **Verify all required patterns are preserved**
+4. **Never remove Promise-based patterns**
+5. **Never remove timeout/delay patterns**
+6. **Never add duplicate event handlers**
 
-### **BEFORE ANY VERSION BUMP:**
-1. **Run:** `pnpm validate:critical-fixes`
-2. **Verify:** All fixes are present and functional
-3. **Test:** Download verification works
-4. **Confirm:** No regression detected
+### **BEFORE ANY VERSION BUMP (Enhanced Workflow 18.10.2025):**
+1. **MANDATORY:** Follow [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) for releases
+2. **Run:** `pnpm validate:critical-fixes`
+3. **MANDATORY:** Use `pnpm safe:version patch/minor/major` (NEVER `pnpm version` direkt)
+4. **Verify:** All fixes are present and functional
+5. **Test:** Download verification works
+6. **Confirm:** No regression detected
 
-### **FORBIDDEN OPERATIONS:**
+### **FORBIDDEN OPERATIONS (Enhanced 18.10.2025):**
 - ❌ Removing Promise-based WriteStream completion
 - ❌ Removing file system flush delays  
 - ❌ Adding duplicate event handlers
 - ❌ Changing established port configurations
 - ❌ Bypassing pre-release validation
+- **❌ NEW:** Using `pnpm version` direkt (npm config conflicts - use `pnpm safe:version`)
+- **❌ NEW:** Skipping KI-SESSION-BRIEFING workflow for releases
+- **❌ NEW:** Ignoring GitHub Actions workflow_dispatch failures without manual fallback
 
 ---
 
 ## 📊 FIX HISTORY
 
-### **v1.0.13 (Current)**
-- ✅ All 15 critical fixes verified and active
+### **v1.0.44 (Current)**
+- ✅ All 18 critical fixes verified and active (added Database-Theme-System protection)
+- ✅ Database-Theme-System protection: FIX-016, FIX-017, FIX-018 added
 - ✅ Validation script implemented: `scripts/validate-critical-fixes.mjs`
 - ✅ Pre-commit hooks enforcing fix preservation
 - ✅ Documentation updated with explicit patterns
+- ✅ Theme system schema protection active
 
 ### **v1.0.12**
 - ⚠️ FIX-006 (Asset Loading) was temporarily missing
@@ -323,11 +406,12 @@ These fixes are MANDATORY and must be preserved in ALL code changes.
 
 ### **If Critical Fix Is Missing:**
 1. **STOP all development immediately**
-2. **Identify which fix was removed**
-3. **Restore from this registry**
-4. **Run full validation suite**
-5. **Test affected functionality**
-6. **Document the incident**
+2. **Follow KI-SESSION-BRIEFING emergency protocols**
+3. **Identify which fix was removed**
+4. **Restore from this registry**
+5. **Run full validation suite**
+6. **Test affected functionality**
+7. **Document the incident**
 
 ### **If Validation Script Fails:**
 1. **DO NOT proceed with release**
@@ -351,9 +435,10 @@ These fixes are MANDATORY and must be preserved in ALL code changes.
 - Patterns evolve (with backward compatibility)
 - New validation rules are needed
 
-**Last Updated:** 2025-10-17 (ROOT_ Migration - improved KI accessibility and anti-move protection)
+**Last Updated:** 2025-10-18 (KI-SESSION-BRIEFING Workflow Integration + Release Workflow Enhancement)
 **Maintained By:** GitHub Copilot KI + Development Team
-**Validation Script:** `scripts/validate-critical-fixes.mjs`
+**Validation Script:** `scripts/VALIDATE_GLOBAL_CRITICAL_FIXES.mjs`
+**Required Reading:** [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) for all sessions
 
 ---
 

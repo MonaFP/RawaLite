@@ -1,9 +1,13 @@
 # Scripts Naming Schema & Standards Guide
 
-> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Initial Creation nach Schema-Modernisierung)  
+> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (KI-SESSION-BRIEFING Workflow Integration)  
 > **Status:** Production Ready | **Typ:** Schema Guide  
 > **Schema:** `ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Kritisch für Script-Management, NIEMALS verschieben!
+
+> **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
+> **Required:** Follow [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before script development
+> **Standard:** All scripts must use KATEGORIE_SCOPE_SUBJECT_ACTION.ext naming pattern
 
 This document defines the authoritative naming schema and standards for all RawaLite automation scripts.
 
