@@ -1,0 +1,278 @@
+/* 🎯 GLOBAL DROPDOWN SYSTEM - Ausgelagert aus index.css */
+/* 📅 Erstellt: 2025-10-19 (Phase 2) */
+/* 🔧 Universelle Dropdown-Standards für die gesamte RawaLite App */
+
+/* ====== GLOBAL DROPDOWN SYSTEM ====== */
+/* 
+  Universelle Dropdown-Standards für die gesamte RawaLite App
+  
+  USAGE EXAMPLES:
+  
+  Basic Dropdown Button:
+  <button className="dropdown-button" onClick={toggleDropdown}>
+    Options <span>▼</span>
+  </button>
+  
+  Compact Dropdown:
+  <button className="dropdown-button compact">
+    Select
+  </button>
+  
+  Large Dropdown:
+  <button className="dropdown-button large">
+    Choose Option <span>▼</span>
+  </button>
+  
+  Dropdown Menu:
+  <div className="dropdown-menu" style={{top: rect.bottom, left: rect.left}}>
+    <button className="dropdown-option">Option 1</button>
+    <button className="dropdown-option selected">Option 2</button>
+    <button className="dropdown-option">Option 3</button>
+  </div>
+  
+  MIGRATION FROM <select> TO NEW STANDARDS:
+  
+  Old:
+  <select className="custom-select" value={value} onChange={handleChange}>
+    <option value="option1">Option 1</option>
+    <option value="option2">Option 2</option>
+  </select>
+  
+  New:
+  <button className="dropdown-button" onClick={toggleDropdown}>
+    {selectedLabel} <span>▼</span>
+  </button>
+  {isOpen && (
+    <div className="dropdown-menu" style={{top: rect.bottom, left: rect.left}}>
+      <button 
+        className={`dropdown-option ${value === 'option1' ? 'selected' : ''}`}
+        onClick={() => handleSelect('option1')}
+      >
+        Option 1
+      </button>
+      <button 
+        className={`dropdown-option ${value === 'option2' ? 'selected' : ''}`}
+        onClick={() => handleSelect('option2')}
+      >
+        Option 2
+      </button>
+    </div>
+  )}
+  
+  NATIVE SELECT STYLING (für Fallback/Einfachheit):
+  Wenn native <select> beibehalten wird, verwende 'dropdown-select' Klasse
+*/
+
+/* Base Dropdown Button - kann für alle Dropdown-Trigger verwendet werden */
+.dropdown-button,
+.status-control-button {
+  background: #6b7280;                     /* Einheitliches Grau wie .btn */
+  color: white;                             /* Weiße Schrift wie andere Buttons */
+  border: none;                             /* Kein Border wie .btn */
+  border-radius: 6px;                       /* Abgerundete Ecken wie .btn */
+  padding: 8px 12px;                        /* Konsistente Padding */
+  font-size: 12px;                         /* Kleinere Schrift für Kompaktheit */
+  font-weight: 500;                         /* Gleiche Schriftstärke wie .btn */
+  transition: all 0.2s ease;               /* Smooth transitions */
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.dropdown-button:hover:not(:disabled),
+.status-control-button:hover:not(:disabled) {
+  background: var(--accent-hover, var(--accent));   /* Fallback für ältere Browser */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* Theme-basierte Hover mit Transparenz */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Gleicher Schatten wie .btn:hover */
+  transform: translateY(-1px);               /* Gleicher Lift-Effekt wie .btn:hover */
+}
+
+.dropdown-button:focus,
+.status-control-button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.dropdown-button:disabled,
+.status-control-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Base Dropdown Menu - universell für alle Dropdowns */
+.dropdown-menu,
+.status-control-dropdown {
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 4px;
+  z-index: 9999;
+  min-width: 120px;
+  max-width: 280px;
+  position: fixed;
+}
+
+/* Base Dropdown Option - für alle Dropdown-Items */
+.dropdown-option,
+.status-control-option {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  border-radius: 3px;
+  margin: 1px 0;
+  transition: all 0.15s ease;
+}
+
+.dropdown-option:hover,
+.status-control-option:hover {
+  background: var(--muted, #f8f9fa);
+}
+
+.dropdown-option.selected,
+.status-control-option.selected {
+  background: var(--accent);
+  color: var(--card-bg);
+  font-weight: 600;
+}
+
+.dropdown-option.selected:hover,
+.status-control-option.selected:hover {
+  background: var(--accent-hover, var(--accent));
+}
+
+/* Dropdown Variants */
+.dropdown-button.compact {
+  min-width: 80px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.dropdown-button.large {
+  min-width: 160px;
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+/* Native Select Styling (Fallback) */
+.dropdown-select {
+  background: var(--input-bg, #ffffff);
+  border: 1px solid var(--border-color, rgba(0,0,0,0.2));
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  min-width: 120px;
+  transition: all 0.2s ease;
+}
+
+.dropdown-select:hover {
+  border-color: var(--accent);
+  background-color: var(--input-bg-hover, #ffffff);
+}
+
+.dropdown-select:focus {
+  border-color: var(--accent);
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem var(--accent-shadow, rgba(13, 110, 253, 0.25));
+}
+
+/* Database-Theme-System Integration */
+[data-theme-source="database"] .dropdown-button,
+[data-theme-source="database"] .status-control-button {
+  background: var(--accent, #6b7280);
+  color: var(--card-bg, white);
+}
+
+[data-theme-source="database"] .dropdown-button:hover:not(:disabled),
+[data-theme-source="database"] .status-control-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+[data-theme-source="database"] .dropdown-menu,
+[data-theme-source="database"] .status-control-dropdown {
+  background: var(--card-bg, #ffffff);
+  border-color: var(--accent, #6b7280);
+}
+
+[data-theme-source="database"] .dropdown-option,
+[data-theme-source="database"] .status-control-option {
+  color: var(--text-primary, #495057);
+}
+
+[data-theme-source="database"] .dropdown-option:hover,
+[data-theme-source="database"] .status-control-option:hover {
+  background: var(--muted, #f8f9fa);
+}
+
+[data-theme-source="database"] .dropdown-option.selected,
+[data-theme-source="database"] .status-control-option.selected {
+  background: var(--accent, #6b7280);
+  color: var(--card-bg, white);
+}
+
+/* Responsive Global Dropdown Styles */
+@media (max-width: 1024px) {
+  .dropdown-button,
+  .status-control-button {
+    min-width: 100px;
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+  
+  .dropdown-button.large {
+    min-width: 140px;
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dropdown-button,
+  .status-control-button {
+    min-width: 90px;
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+  
+  .dropdown-button.compact {
+    min-width: 70px;
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+  
+  .dropdown-menu,
+  .status-control-dropdown {
+    min-width: 100px;
+    max-width: 240px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dropdown-button,
+  .status-control-button {
+    min-width: 80px;
+    padding: 5px 7px;
+    font-size: 9px;
+  }
+  
+  .dropdown-option,
+  .status-control-option {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+}

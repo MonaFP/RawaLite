@@ -1,0 +1,187 @@
+/* 🎯 STATUS DROPDOWN ISOLATION - Ausgelagert aus index.css */
+/* 📅 Erstellt: 2025-10-19 (Phase 2) */
+/* 🔧 CSS Isolation für Status-Dropdown in Tabellen-Kontext */
+
+/* ====== STATUS DROPDOWN CSS ISOLATION ====== */
+/* Überschreibt ALLE Tabellen-CSS-Regeln für das Status-Dropdown */
+.status-dropdown-override {
+  /* BASIS STYLING mit !important */
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  padding: 8px 12px !important;
+  border: 2px solid #007bff !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  min-width: 120px !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  
+  /* TABLE CSS OVERRIDES - Tabellen-Vererbung komplett überschreiben */
+  white-space: normal !important;        /* Override .table td { white-space: nowrap; } */
+  width: auto !important;               /* Override .table td:nth-child(8) { width: 12%; } */
+  max-width: none !important;           /* Override potential max-width restrictions */
+  overflow: visible !important;         /* Override .table td { overflow: hidden; } */
+  text-overflow: clip !important;       /* Override text-overflow */
+  display: inline-block !important;     /* Override table cell display */
+  box-sizing: border-box !important;    /* Ensure proper box model */
+  line-height: 1.4 !important;         /* Override table line-height */
+  vertical-align: baseline !important;  /* Override table vertical-align */
+  
+  /* FORM ELEMENT OVERRIDES */
+  appearance: auto !important;          /* Ensure native dropdown appearance */
+  -webkit-appearance: auto !important;  /* Safari/Chrome */
+  -moz-appearance: auto !important;     /* Firefox */
+  outline: none !important;            /* Clean outline */
+  margin: 0 !important;                /* Reset any inherited margins */
+  
+  /* INTERACTION OVERRIDES */
+  pointer-events: auto !important;     /* Ensure click events work */
+  user-select: auto !important;        /* Allow text selection in dropdown */
+  
+  /* LAYOUT OVERRIDES */
+  float: none !important;              /* Reset any float inheritance */
+  clear: both !important;              /* Clear any floats */
+  transform: none !important;          /* Reset any transforms */
+}
+
+/* PAGE-SPECIFIC DROPDOWN ISOLATION */
+/* Angebote: Status-Dropdown in Spalte 8 */
+.offers-status-dropdown {
+  /* BASIS STYLING mit !important */
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  padding: 8px 12px !important;
+  border: 2px solid #007bff !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  min-width: 120px !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  
+  /* ANGEBOTE-SPEZIFISCHE OVERRIDES */
+  width: auto !important;               /* Override .offers-table td:nth-child(8) rules */
+  max-width: 150px !important;          /* Limit für Angebote-Spalte */
+  white-space: normal !important;       /* Override table nowrap */
+  overflow: visible !important;         /* Override table overflow */
+  text-overflow: clip !important;       /* Override table text-overflow */
+}
+
+/* Rechnungen: Status-Dropdown in Spalte 7 */
+.invoices-status-dropdown {
+  /* BASIS STYLING mit !important */
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  padding: 8px 12px !important;
+  border: 2px solid #007bff !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  min-width: 120px !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  
+  /* RECHNUNGEN-SPEZIFISCHE OVERRIDES */
+  width: auto !important;               /* Override .invoices-table td:nth-child(7) rules */
+  max-width: 140px !important;          /* Limit für Rechnungen-Spalte */
+  white-space: normal !important;       /* Override table nowrap */
+  overflow: visible !important;         /* Override table overflow */
+}
+
+/* Pakete: Status-Dropdown in verschiedenen Spalten */
+.packages-status-dropdown {
+  /* BASIS STYLING mit !important */
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  padding: 8px 12px !important;
+  border: 2px solid #007bff !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  min-width: 120px !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  
+  /* PAKETE-SPEZIFISCHE OVERRIDES */
+  width: auto !important;               /* Override .packages-table td rules */
+  max-width: 130px !important;          /* Limit für Pakete-Spalte */
+  white-space: normal !important;       /* Override table nowrap */
+  overflow: visible !important;         /* Override table overflow */
+}
+
+/* Database-Theme-System Integration für Isolation */
+[data-theme-source="database"] .status-dropdown-override,
+[data-theme-source="database"] .offers-status-dropdown,
+[data-theme-source="database"] .invoices-status-dropdown,
+[data-theme-source="database"] .packages-status-dropdown {
+  background-color: var(--input-bg, #ffffff) !important;
+  color: var(--text-primary, #1f2937) !important;
+  border-color: var(--accent, #007bff) !important;
+}
+
+/* Theme Fallback für CSS Isolation */
+[data-theme-source="fallback"] .status-dropdown-override,
+[data-theme-source="emergency"] .status-dropdown-override {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border-color: #007bff !important;
+}
+
+/* Hover States für Isolation */
+.status-dropdown-override:hover,
+.offers-status-dropdown:hover,
+.invoices-status-dropdown:hover,
+.packages-status-dropdown:hover {
+  border-color: var(--accent-hover, #0056b3) !important;
+  background-color: var(--input-bg-hover, #f8f9fa) !important;
+  transform: none !important;  /* Override any transform inheritance */
+}
+
+/* Focus States für Isolation */
+.status-dropdown-override:focus,
+.offers-status-dropdown:focus,
+.invoices-status-dropdown:focus,
+.packages-status-dropdown:focus {
+  border-color: var(--accent, #007bff) !important;
+  outline: 2px solid var(--accent-shadow, rgba(0, 123, 255, 0.25)) !important;
+  outline-offset: 2px !important;
+  background-color: var(--input-bg-focus, #ffffff) !important;
+}
+
+/* Responsive Status Dropdown Isolation */
+@media (max-width: 1024px) {
+  .status-dropdown-override,
+  .offers-status-dropdown,
+  .invoices-status-dropdown,
+  .packages-status-dropdown {
+    min-width: 100px !important;
+    max-width: 120px !important;
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .status-dropdown-override,
+  .offers-status-dropdown,
+  .invoices-status-dropdown,
+  .packages-status-dropdown {
+    min-width: 90px !important;
+    max-width: 110px !important;
+    font-size: 10px !important;
+    padding: 5px 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-dropdown-override,
+  .offers-status-dropdown,
+  .invoices-status-dropdown,
+  .packages-status-dropdown {
+    min-width: 80px !important;
+    max-width: 100px !important;
+    font-size: 9px !important;
+    padding: 4px 6px !important;
+  }
+}
