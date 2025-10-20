@@ -1,6 +1,6 @@
 # RawaLite – Kurz-Instructions für KI
 
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (Database-Theme-System Development Rules Integration)  
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 20.10.2025 (Docs-Struktur-Korrektur - aktuelle Ordnerstruktur 00-meta bis 08-batch)  
 > **Status:** Production Ready | **Typ:** KI-Coding-Instructions  
 > **Schema:** `ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
@@ -39,7 +39,7 @@
 
 **BEFORE CREATING OR MOVING ANY DOCUMENTATION:**
 
-1. **MANDATORY:** Follow docs/ folder structure (00-meta to 13-deprecated)
+1. **MANDATORY:** Follow docs/ folder structure (00-meta to 08-batch + archive)
 2. **MANDATORY:** Check correct folder purpose before placement
 3. **MANDATORY:** Use consistent naming patterns (LESSONS-LEARNED-topic.md)
 4. **MANDATORY:** Update INDEX.md files when adding content
@@ -54,31 +54,25 @@
 docs/
 ├── ROOT_VALIDATED_*               Root-critical KI documents (NEVER move!)
 ├── 00-meta/           Meta-documentation, project management
-├── 01-standards/      Code standards, conventions, guidelines  
-├── 02-architecture/   System design, architecture decisions
-├── 03-development/    Development workflows, debugging, setup
-├── 04-testing/        Testing strategies, test documentation
-├── 05-database/       Database design, migrations, schemas
-├── 06-paths/          Path management, file system access
-├── 07-ipc/            IPC communication patterns
-├── 08-ui/             User interface design, components
-├── 09-pdf/            PDF generation, document handling
-├── 10-security/       Security concepts, authentication
-├── 11-deployment/     Deployment, updates, distribution
-├── 12-lessons/        Lessons learned, retrospectives
-├── 13-deprecated/     Deprecated/obsolete content
-├── 14-implementations/ Implementation details, code examples
-└── 15-session-summary/ Session notes and summaries
+├── 01-core/           Core system architecture, testing, standards  
+├── 02-dev/            Development workflows, debugging, implementation
+├── 03-data/           Database design, migrations, schemas
+├── 04-ui/             User interface design, components, PDF
+├── 05-deploy/         Deployment, updates, distribution
+├── 06-lessons/        Lessons learned, retrospectives, sessions
+├── 08-batch/          Batch processing and operations
+└── archive/           Deprecated/obsolete content
 
 Each folder MUST contain exactly: final/, wip/, plan/, sessions/
 ```
 
 **File Placement Rules:**
-- **Development workflows** → `03-development/`
-- **Architecture decisions** → `02-architecture/`
-- **Database related** → `05-database/`
-- **Deployment/Updates** → `11-deployment/`
-- **Lessons Learned** → `12-lessons/` (unless topic-specific)
+- **Development workflows** → `02-dev/`
+- **Core architecture** → `01-core/`
+- **Database related** → `03-data/`
+- **UI/PDF related** → `04-ui/`
+- **Deployment/Updates** → `05-deploy/`
+- **Lessons Learned** → `06-lessons/` (unless topic-specific)
 - **Cross-cutting concerns** → Use **cross-references**, not duplicates
 
 **Naming Standards:**
@@ -374,28 +368,23 @@ const { currentTheme, setTheme, isLoading } = useDatabaseTheme();
 
 ---
 
-## ✅ docs-Struktur
+## ✅ docs-Struktur (AKTUELLE SEMANTISCHE ORDNERSTRUKTUR)
 
-> **📋 Aktuelle Struktur:** Siehe [VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-16.md](VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-16.md) für vollständige Ordner-Inhalte und Details.
+> **📋 Complete Structure:** See [VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-16.md](VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-16.md) for detailed folder contents and current structure.
 
 - ** Änderung nur nach Abnahme und Aufforderung durch Entwickler **-
 - **hier ergänzen/aktualisieren bei neuen Inhalten** - 
 docs/
 ├── ROOT_VALIDATED_*               Root-critical KI documents (NEVER move!)
 ├── 00-meta/            Meta-documentation, project management
-├── 01-standards/       Code standards, conventions, guidelines  
-├── 02-architecture/    System design, architecture decisions
-├── 03-development/     Development workflows, debugging, setup
-├── 04-testing/         Testing strategies, test documentation
-├── 05-database/        Database design, migrations, schemas
-├── 06-paths/           Path management, file system access
-├── 07-ipc/             IPC communication patterns
-├── 08-ui/              User interface design, components
-├── 09-pdf/             PDF generation, document handling
-├── 10-security/        Security concepts, authentication
-├── 11-deployment/      Deployment, updates, distribution
-├── 12-lessons/         Lessons learned, retrospectives
-└── 13-deprecated/      Deprecated/obsolete content
+├── 01-core/            Core system architecture, testing, standards  
+├── 02-dev/             Development workflows, debugging, implementation
+├── 03-data/            Database design, migrations, schemas
+├── 04-ui/              User interface design, components, PDF
+├── 05-deploy/          Deployment, updates, distribution
+├── 06-lessons/         Lessons learned, retrospectives, sessions
+├── 08-batch/           Batch processing and operations
+└── archive/            Deprecated/obsolete content
 
 ---
 

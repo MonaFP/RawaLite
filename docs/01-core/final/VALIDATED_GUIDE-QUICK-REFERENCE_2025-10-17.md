@@ -43,9 +43,9 @@ Is it about...
 ├── Security/authentication? → 10-security/
 ├── Deployment/releases? → 11-deployment/
 ├── Update system/auto-updates? → 12-update-manager/
-├── Obsolete/deprecated content? → 13-deprecated/
-├── Technical implementations? → 14-implementations/
-└── Session logs/work summaries? → 15-session-summary/
+├── Obsolete/deprecated content? → archive/
+├── Technical implementations? → (integrated in relevant folders)
+└── Session logs/work summaries? → 06-lessons/sessions/
 ```
 
 **File Naming:** `LESSONS-LEARNED-topic.md`, `INDEX.md`, `IMPLEMENTATION-PLAN-feature.md`

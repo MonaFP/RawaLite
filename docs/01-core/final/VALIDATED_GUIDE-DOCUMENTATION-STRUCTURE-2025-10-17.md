@@ -62,7 +62,7 @@ Avoid overlap - each document should have a **clear singular home**.
 | **10-security/** | Security concepts, authentication | Security patterns, access control | Security architectures |
 | **11-deployment/** | Deployment, updates, distribution | Release processes, deployment guides | Deployment documentation |
 | **12-lessons/** | Lessons learned, retrospectives | Project lessons, insights | Historical project learning |
-| **13-deprecated/** | Deprecated/obsolete content | Old patterns, legacy documentation | Obsolete guides, old architectures |
+| **archive/** | Deprecated/obsolete content | Old patterns, legacy documentation | Obsolete guides, old architectures |
 | **14-implementations/** | Implementation details, specific solutions | Technical implementations, code solutions | Implementation guides |
 | **15-session-summary/** | Session summaries, work logs | Development session logs, progress tracking | Session documentation |
 
@@ -87,7 +87,7 @@ Is it about...
 ├── Security/authentication? → 10-security/
 ├── Deployment/releases? → 11-deployment/
 ├── Update system/auto-updates? → 12-update-manager/
-├── Deprecated/obsolete content? → 13-deprecated/
+├── Deprecated/obsolete content? → archive/
 ├── Technical implementations? → 14-implementations/
 └── Session logs/work summaries? → 15-session-summary/
 ```

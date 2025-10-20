@@ -98,18 +98,6 @@
 ### 11-deployment/ - Deployment & Updates
 - **[final/UPDATE_DEVELOPMENT.md](11-deployment/final/UPDATE_DEVELOPMENT.md)** - Update system implementation
 
-### 12-lessons/ - Lessons Learned ✅ **DEPRECATED STRUCTURE**
-- **[final/VALIDATED-2025-10-15_BUILD-INSTALLATION-MATRIX.md](12-lessons/deprecated/VALIDATED-2025-10-15_BUILD-INSTALLATION-MATRIX.md)** - ✅ **[VALIDATED]** Archived analysis
-
-### 13-deprecated/ - Deprecated Content
-- Legacy documentation and obsolete implementations
-
-### 14-implementations/ - Implementation Details
-- **[plan/FIXPLAN-main-ts-field-mapping-standards.md](14-implementations/plan/FIXPLAN-main-ts-field-mapping-standards.md)** - Field mapping standards
-
-### 15-session-summary/ - Session Summaries
-- **[sessions/SESSION-2025-10-14-*.md](15-session-summary/sessions/)** - Recent session documentation
-
 ## 🆕 Neue Features (Oktober 2025)
 
 ### ✅ **DATABASE-THEME-SYSTEM (17-18.10.2025):**
@@ -142,7 +130,7 @@
 - **Zuverlässige Status-Erkennung** für zukünftige KI-Sessions
 
 ### ✅ **DOKUMENTATIONS-STRUKTUR STANDARDISIERT (15.10.2025):**
-- **16-Ordner System durchgesetzt** (00-meta bis 15-session-summary)
+- **Semantische Ordnerstruktur durchgesetzt** (00-meta bis 08-batch + archive)
 - **Standard 4-Folder Pattern** in allen Ordnern: final/, wip/, plan/, sessions/
 - **Cross-Reference Cleanup** auf neue Struktur angepasst
 - **INDEX.md Aktualisierung** auf korrekte Link-Struktur
@@ -254,7 +242,7 @@
 ### 09-pdf/ - PDF-Generation
 - `THEME-SYSTEM-FIXES.md` - **[NEU]** Lösung der Theme-Color-Probleme für alle 6 Themes
 
-### 15-session-summary/ - Session Summaries & Retrospectives
+
 - Dokumentation von Chat-Sessions und wichtigen Erkenntnissen
 - Thematische Lessons Learned sind in entsprechende Fachbereiche verschoben
 
