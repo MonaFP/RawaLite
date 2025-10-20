@@ -1,7 +1,7 @@
 # 📁 RawaLite Documentation Standards Guide
 
 > **Comprehensive guide for maintaining KI-friendly documentation organization with quality tracking**  
-> **Version:** 3.0 (Post-Consolidation) | **Updated:** 2025-10-12  
+> **Version:** 3.0 (Post-Consolidation) | **Updated:** 2025-10-20 (Complete structure update to actual folders)  
 > **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
 
 ## 📋 **SCHEMA-ÜBERSICHT**
@@ -49,22 +49,15 @@ Avoid overlap - each document should have a **clear singular home**.
 
 | **Folder** | **Purpose** | **Contains** | **Examples** |
 |---|---|---|---|
-| **00-meta/** | Project management, meta-documentation | Instructions, guides, project status | `VALIDATED-2025-10-15_INSTRUCTIONS-KI.md`, `CRITICAL-FIXES-REGISTRY.md` |
-| **01-standards/** | Code standards, conventions, guidelines | Coding rules, patterns, style guides | `CODING-STANDARDS.md`, `TESTING-STANDARDS.md` |
-| **02-architecture/** | System design, technical architecture | System diagrams, design decisions | `ARCHITEKTUR.md`, electron configs |
-| **03-development/** | Development workflows, environment setup | Dev guides, debugging, workflows | `DEV_GUIDE.md`, debugging guides |
-| **04-testing/** | Testing strategies, test documentation | Test plans, testing guides | Unit test docs, E2E strategies |
-| **05-database/** | Database design, schemas, migrations | SQLite docs, schema changes | `SQLITE-DATABASE-SYSTEM.md`, migrations |
-| **06-paths/** | Path management, file system | Path utilities, file access patterns | `PATHS-SYSTEM-DOCUMENTATION.md` |
-| **07-ipc/** | Inter-process communication | IPC patterns, main↔renderer communication | `IPC-DATABASE-SECURITY.md` |
-| **08-ui/** | User interface, components, design | UI components, design patterns | Modal patterns, component docs |
-| **09-pdf/** | PDF generation, document handling | PDF creation, document processing | PDF generation guides |
-| **10-security/** | Security concepts, authentication | Security patterns, access control | Security architectures |
-| **11-deployment/** | Deployment, updates, distribution | Release processes, deployment guides | Deployment documentation |
-| **12-lessons/** | Lessons learned, retrospectives | Project lessons, insights | Historical project learning |
-| **archive/** | Deprecated/obsolete content | Old patterns, legacy documentation | Obsolete guides, old architectures |
-| **14-implementations/** | Implementation details, specific solutions | Technical implementations, code solutions | Implementation guides |
-| **15-session-summary/** | Session summaries, work logs | Development session logs, progress tracking | Session documentation |
+| **00-meta/** | Project management, meta-documentation | KI instructions, project standards, registry files | `ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS.md`, `VALIDATED_REGISTRY-CRITICAL-FIXES.md` |
+| **01-core/** | Core system architecture, testing standards | System design, architecture decisions, core standards | `VALIDATED_GUIDE-ARCHITECTURE.md`, `VALIDATED_GUIDE-TESTING-STANDARDS.md` |
+| **02-dev/** | Development workflows, debugging, implementation | Dev guides, debugging workflows, implementation docs | `VALIDATED_GUIDE-DEBUGGING.md`, `VALIDATED_GUIDE-DEVELOPMENT.md` |
+| **03-data/** | Database design, schemas, migrations | SQLite docs, migration guides, database architecture | `VALIDATED_GUIDE-SQLITE-DATABASE-SYSTEM.md`, migration docs |
+| **04-ui/** | User interface, components, PDF, themes | UI components, design patterns, PDF generation, theme system | Component docs, PDF guides, theme architecture |
+| **05-deploy/** | Deployment, updates, distribution | Release processes, update system, deployment guides | Deployment docs, update manager guides |
+| **06-lessons/** | Lessons learned, retrospectives, sessions | Project lessons, session reports, retrospectives | `COMPLETED_REPORT-*.md`, session summaries |
+| **08-batch/** | Batch processing, operations | Batch operations, bulk processing | Batch processing guides |
+| **archive/** | Deprecated/obsolete content | Old patterns, legacy documentation, deprecated files | Obsolete guides, old architectures |
 
 ---
 
@@ -75,21 +68,14 @@ Avoid overlap - each document should have a **clear singular home**.
 ```
 Is it about...
 ├── Project management/meta-info? → 00-meta/
-├── Coding standards/conventions? → 01-standards/
-├── System architecture/design? → 02-architecture/
-├── Development process/setup? → 03-development/
-├── Testing strategies/docs? → 04-testing/
-├── Database/schema/migrations? → 05-database/
-├── File paths/system access? → 06-paths/
-├── IPC/process communication? → 07-ipc/
-├── UI/components/interface? → 08-ui/
-├── PDF/document generation? → 09-pdf/
-├── Security/authentication? → 10-security/
-├── Deployment/releases? → 11-deployment/
-├── Update system/auto-updates? → 12-update-manager/
-├── Deprecated/obsolete content? → archive/
-├── Technical implementations? → 14-implementations/
-└── Session logs/work summaries? → 15-session-summary/
+├── Core system architecture/testing? → 01-core/
+├── Development workflows/debugging? → 02-dev/
+├── Database/schema/migrations? → 03-data/
+├── UI/components/PDF generation? → 04-ui/
+├── Deployment/updates/releases? → 05-deploy/
+├── Lessons learned/retrospectives? → 06-lessons/
+├── Batch processing/operations? → 08-batch/
+└── Deprecated/obsolete content? → archive/
 ```
 
 ### **Step 2: Check for Subtopics**
@@ -144,40 +130,40 @@ Many folders support **status-based** organization:
 
 **❌ Wrong Approach:**
 ```
-docs/05-database/IPC-DATABASE-SECURITY.md
-docs/10-security/IPC-DATABASE-SECURITY.md  <-- Duplicate!
+docs/03-data/IPC-DATABASE-SECURITY.md
+docs/01-core/IPC-DATABASE-SECURITY.md  <-- Duplicate!
 ```
 
 **✅ Correct Approach:**
 ```
-docs/07-ipc/solved/IPC-DATABASE-SECURITY.md  <-- Single source
-docs/05-database/INDEX.md  <-- References IPC security
-docs/10-security/INDEX.md  <-- References IPC security
+docs/01-core/final/IPC-DATABASE-SECURITY.md  <-- Single source
+docs/03-data/INDEX.md  <-- References IPC security
+docs/01-core/INDEX.md  <-- References IPC security
 ```
 
 ### **Cross-Reference Templates**
 
 **For related content:**
 ```markdown
-> **Related:** See [IPC Database Security](../07-ipc/solved/IPC-DATABASE-SECURITY.md) for implementation details
+> **Related:** See [IPC Database Security](../01-core/final/IPC-DATABASE-SECURITY.md) for implementation details
 ```
 
 **For prerequisites:**
 ```markdown
-> **Prerequisites:** Read [Architecture Overview](../02-architecture/ARCHITEKTUR.md) first
+> **Prerequisites:** Read [Architecture Overview](../01-core/final/VALIDATED_GUIDE-ARCHITECTURE.md) first
 ```
 
 **For follow-up content:**
 ```markdown
-> **Next Steps:** Continue with [Update Manager Guide](../12-update-manager/final/UPDATE-SYSTEM-ARCHITECTURE.md)
+> **Next Steps:** Continue with [Update Manager Guide](../05-deploy/final/VALIDATED_GUIDE-UPDATER-UPDATE-SYSTEM-ARCHITECTURE.md)
 ```
 
 **For cross-cutting concerns:**
 ```markdown
 > **See Also:** 
-> - [Database Integration](../05-database/SQLITE-DATABASE-SYSTEM.md)
-> - [Security Patterns](../10-security/INDEX.md)
-> - [Testing Strategy](../04-testing/INDEX.md)
+> - [Database Integration](../03-data/final/VALIDATED_GUIDE-SQLITE-DATABASE-SYSTEM.md)
+> - [Core Architecture](../01-core/final/VALIDATED_GUIDE-ARCHITECTURE.md)
+> - [Development Guide](../02-dev/final/VALIDATED_GUIDE-DEVELOPMENT.md)
 ```
 
 ---
@@ -250,7 +236,7 @@ Before submitting documentation changes:
 ### **When Structure Changes**
 
 1. **Update this guide first** - maintain single source of truth
-2. **Update VALIDATED-2025-10-15_INSTRUCTIONS-KI.md** - ensure KI compliance
+2. **Update ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS.md** - ensure KI compliance
 3. **Update all INDEX.md files** - maintain navigation
 4. **Add migration notes** - document what changed
 5. **Validate all cross-references** - fix broken links

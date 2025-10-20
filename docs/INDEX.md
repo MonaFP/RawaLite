@@ -72,31 +72,7 @@
 - **[final/ELECTRON-BUILDER-FILE-LOCKING-VSCODE.md](02-architecture/final/ELECTRON-BUILDER-FILE-LOCKING-VSCODE.md)** - ✅ **[SOLVED]** VS Code File-Locking Problem
 
 ### 03-development/ - Development Workflows
-- **[wip/VALIDATED-2025-10-15_DEV-ALL-PARALLEL-EXECUTION-ISSUE.md](03-development/wip/VALIDATED-2025-10-15_DEV-ALL-PARALLEL-EXECUTION-ISSUE.md)** - ✅ **[VALIDATED]** Dev Execution Analysis
-
-### 04-testing/ - Testing Strategies
-- Test documentation and debugging procedures
-
-### 05-database/ - Database Design
-- **[final/MIGRATION-013-DISCOUNT-SYSTEM.md](05-database/final/MIGRATION-013-DISCOUNT-SYSTEM.md)** - ✅ **[CRITICAL FIX-006]** Discount System Schema
-
-### 06-paths/ - Path Management
-- Path utilities and file system access patterns
-
-### 07-ipc/ - IPC Communication
-- Inter-process communication patterns and security
-
-### 08-ui/ - User Interface & Components
-- **[final/SUB-ITEM-VISUAL-HIERARCHY-FIX-2025-10-04.md](08-ui/final/SUB-ITEM-VISUAL-HIERARCHY-FIX-2025-10-04.md)** - ✅ **[CRITICAL FIX-005]** Sub-Item System Solution
-
-### 09-pdf/ - PDF Generation
-- **[final/THEME-SYSTEM-FIXES.md](09-pdf/final/THEME-SYSTEM-FIXES.md)** - ✅ **[CRITICAL FIX-007]** PDF Theme System
-
-### 10-security/ - Security Concepts
-- Security guidelines and authentication patterns
-
-### 11-deployment/ - Deployment & Updates
-- **[final/UPDATE_DEVELOPMENT.md](11-deployment/final/UPDATE_DEVELOPMENT.md)** - Update system implementation
+- **[wip/VALIDATED-2025-10-15_DEV-ALL-PARALLEL-EXECUTION-ISSUE.md](02-dev/wip/WIP_FIX-DEV-ALL-PARALLEL-EXECUTION-ISSUE-2025-10-15.md)** - ✅ **[VALIDATED]** Dev Execution Analysis
 
 ## 🆕 Neue Features (Oktober 2025)
 
@@ -231,7 +207,7 @@
 ### 02-architecture/ - System Architecture
 - `TIMESHEETS-ARCHITECTURE.md` - **[NEU]** Vollständige Architektur-Dokumentation der TimesheetsPage
 
-### 05-database/ - Datenbank-Design
+### 03-data/ - Datenbank-Design
 - `MIGRATION-013-DISCOUNT-SYSTEM.md` - **[NEU]** Vollständige Dokumentation Migration 013 mit Rollback-Strategien
 
 ### 08-ui/ - User Interface & Components
@@ -239,7 +215,7 @@
 - `SUB-ITEM-IMPLEMENTATION-PLAN.md` - **[ABGESCHLOSSEN]** Implementierungsplan erfolgreich umgesetzt
 - `UI-PATTERNS-table-forms.md` - **[NEU]** Table-like Forms Pattern für konsistente UI
 
-### 09-pdf/ - PDF-Generation
+### 04-ui/ - UI & PDF-Generation
 - `THEME-SYSTEM-FIXES.md` - **[NEU]** Lösung der Theme-Color-Probleme für alle 6 Themes
 
 
@@ -247,9 +223,9 @@
 - Thematische Lessons Learned sind in entsprechende Fachbereiche verschoben
 
 **Thematisch reorganisierte Inhalte:**
-- **Database Lessons** → `05-database/final/` (Discount System, Migrations, Schema)
+- **Database Lessons** → `03-data/final/` (Discount System, Migrations, Schema)
 - **UI Lessons** → `08-ui/final/` (Sub-Items, Timesheets, Status Dropdowns)  
-- **PDF Lessons** → `09-pdf/final/` (Attachments, Themes, Field Mapping)
+- **PDF Lessons** → `04-ui/final/` (Attachments, Themes, Field Mapping)
 - **Deployment Lessons** → `11-deployment/final/` (Updates, Releases, NSIS)
 
 ## 🆕 Neue Inhalte (Oktober 2025)
@@ -287,24 +263,24 @@
 
 ### Für Entwickler:
 - **✅ Sub-Item System GELÖST** → `08-ui/final/SUB-ITEM-VISUAL-HIERARCHY-FIX-2025-10-04.md`
-- **Neue Features implementieren** → `05-database/final/LESSONS-LEARNED-DISCOUNT-PROJECT.md`
-- **Datenbank-Änderungen** → `05-database/final/MIGRATION-013-DISCOUNT-SYSTEM.md`
-- **PDF-Probleme** → `09-pdf/final/THEME-SYSTEM-FIXES.md`
+- **Neue Features implementieren** → `03-data/final/LESSONS-LEARNED-DISCOUNT-PROJECT.md`
+- **Datenbank-Änderungen** → `03-data/final/MIGRATION-013-DISCOUNT-SYSTEM.md`
+- **PDF-Probleme** → `04-ui/final/final_THEME/VALIDATED_GUIDE-CONTEXT-ARCHITECTURE.md`
 - **Kritische Fixes** → [PATHS.md](PATHS.md#CRITICAL_FIXES)
 - **🆕 Meta-Structure** → `00-meta/INDEX.md` - Thematische Navigation
 
 ### Für Projektmanagement:
 - **Sub-Item Implementation** → `08-ui/final/SUB-ITEM-IMPLEMENTATION-PLAN.md`
-- **Feature-Übersicht** → `05-database/final/DISCOUNT-SYSTEM-IMPLEMENTATION.md`
-- **Projekt-Erkenntnisse** → `05-database/final/LESSONS-LEARNED-DISCOUNT-PROJECT.md`
+- **Feature-Übersicht** → `03-data/final/DISCOUNT-SYSTEM-IMPLEMENTATION.md`
+- **Projekt-Erkenntnisse** → `03-data/final/LESSONS-LEARNED-DISCOUNT-PROJECT.md`
 - **System-Status** → [PATHS.md](PATHS.md#CRITICAL_FIXES)
 - **🆕 Reorganisation History** → `00-meta/reorganization/` - Workspace Changes
 
 ### Für Support:
-- **UI-Probleme** → `08-ui/final/SUB-ITEM-IMPLEMENTATION-PLAN.md`
-- **Rabattsystem-Troubleshooting** → `05-database/final/DISCOUNT-SYSTEM-IMPLEMENTATION.md`
-- **Theme-Probleme** → `09-pdf/final/THEME-SYSTEM-FIXES.md`
-- **Datenbank-Recovery** → `05-database/final/MIGRATION-013-DISCOUNT-SYSTEM.md`
+- **UI-Probleme** → `04-ui/final/COMPLETED_IMPL-SUB-ITEM-IMPLEMENTATION-PLAN.md`
+- **Rabattsystem-Troubleshooting** → `03-data/final/DISCOUNT-SYSTEM-IMPLEMENTATION.md`
+- **Theme-Probleme** → `04-ui/final/final_THEME/VALIDATED_GUIDE-CONTEXT-ARCHITECTURE.md`
+- **Datenbank-Recovery** → `03-data/final/MIGRATION-013-DISCOUNT-SYSTEM.md`
 
 ## ✅ Dokumentations-Status
 
