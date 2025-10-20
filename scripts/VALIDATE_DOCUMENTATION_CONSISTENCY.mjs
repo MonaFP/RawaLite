@@ -140,13 +140,14 @@ async function validateCriticalFixesIntegration() {
 }
 
 /**
- * 📋 Validate Schema Compliance
+ * 📋 Validate Schema Compliance (Enhanced)
  */
 async function validateSchemaCompliance() {
-  console.log('[📋] Schema Compliance Validation');
+  console.log('[📋] Schema Compliance Validation (Enhanced)');
   
   const files = await getAllMarkdownFiles(docsDir);
   let compliantFiles = 0;
+  const schemaViolations = [];
   
   for (const file of files) {
     try {
@@ -154,10 +155,27 @@ async function validateSchemaCompliance() {
       let isCompliant = true;
       const issues = [];
       
-      // Check filename format
-      if (!SCHEMA_PATTERNS.STANDARD_FORMAT.test(file.name) && !file.name.startsWith('ROOT_') && file.name !== 'INDEX.md' && file.name !== 'README.md') {
+      // Special handling for specific files that are allowed
+      const isSpecialFile = ['INDEX.md', 'README.md', 'PATHS.md'].includes(file.name) || 
+                          file.name.startsWith('ROOT_VALIDATED_');
+      
+      // Check filename format for regular files
+      if (!isSpecialFile && !SCHEMA_PATTERNS.STANDARD_FORMAT.test(file.name)) {
         isCompliant = false;
         issues.push('Non-compliant filename format');
+        
+        // Analyze specific violations
+        const hasValidPrefix = SCHEMA_PATTERNS.STATUS_PREFIXES.some(prefix => 
+          file.name.startsWith(prefix)
+        );
+        const hasValidType = SCHEMA_PATTERNS.TYPE_CATEGORIES.some(type => 
+          file.name.includes(type)
+        );
+        const hasValidDate = /\d{4}-\d{2}-\d{2}\.md$/.test(file.name);
+        
+        if (!hasValidPrefix) issues.push('Missing valid STATUS prefix (VALIDATED_, SOLVED_, etc.)');
+        if (!hasValidType) issues.push('Missing valid TYPE category (GUIDE-, FIX-, IMPL-, etc.)');
+        if (!hasValidDate) issues.push('Missing valid date format (YYYY-MM-DD.md)');
       }
       
       // Check date header (skip for INDEX.md files)
@@ -166,10 +184,19 @@ async function validateSchemaCompliance() {
         issues.push('Missing or invalid date header');
       }
       
+      // Check for current project date consistency
+      if (!content.includes('2025-10-') && !isSpecialFile) {
+        issues.push('Document not updated to current date range (2025-10-xx)');
+      }
+      
       if (isCompliant) {
         compliantFiles++;
         results.schemaCompliance.details.push(`✅ ${file.relativePath}`);
       } else {
+        schemaViolations.push({
+          file: file.relativePath,
+          issues: issues
+        });
         results.schemaCompliance.details.push(`❌ ${file.relativePath}: ${issues.join(', ')}`);
       }
       
@@ -180,46 +207,66 @@ async function validateSchemaCompliance() {
   
   results.schemaCompliance.valid = compliantFiles;
   results.schemaCompliance.total = files.length;
+  results.schemaCompliance.violations = schemaViolations;
   
-  console.log(`   ✅ Compliant files: ${compliantFiles}/${files.length} (${Math.round(compliantFiles/files.length*100)}%)`);
+  const percentage = Math.round(compliantFiles/files.length*100);
+  console.log(`   ✅ Compliant files: ${compliantFiles}/${files.length} (${percentage}%)`);
+  
+  // Report top schema violations
+  if (schemaViolations.length > 0) {
+    console.log(`   ❌ SCHEMA VIOLATIONS: ${schemaViolations.length}`);
+    schemaViolations.slice(0, 3).forEach((violation, index) => {
+      console.log(`      ${index + 1}. ${violation.file}`);
+      violation.issues.forEach(issue => console.log(`         - ${issue}`));
+    });
+    if (schemaViolations.length > 3) {
+      console.log(`      ... and ${schemaViolations.length - 3} more (see detailed report)`);
+    }
+  }
 }
 
 /**
- * 🔗 Validate Cross References
+ * 🔗 Validate Cross References (Enhanced with Full Repository Scan)
  */
 async function validateCrossReferences() {
-  console.log('[🔗] Cross-Reference Integrity Validation');
+  console.log('[🔗] Cross-Reference Integrity Validation (Enhanced)');
   
-  const files = await getAllMarkdownFiles(docsDir);
+  // Get ALL markdown files from entire repository
+  const allFiles = await getAllMarkdownFiles(rootDir);
+  const docsFiles = await getAllMarkdownFiles(docsDir);
+  
   let validReferences = 0;
   let totalReferences = 0;
+  const brokenLinks = [];
   
-  for (const file of files) {
+  for (const file of allFiles) {
     try {
       const content = await fs.readFile(file.path, 'utf-8');
       let match;
       
       // Find all internal markdown links
-      const linkPattern = /\[([^\]]+)\]\(([^)]+\.md[^)]*)\)/g;
+      const linkPattern = /\[([^\]]+)\]\(([^)]+)\)/g;
       while ((match = linkPattern.exec(content)) !== null) {
         totalReferences++;
-        const linkPath = match[2];
+        const [fullMatch, linkText, linkPath] = match;
         
-        // Skip external links and anchors
-        if (linkPath.startsWith('http') || linkPath.startsWith('#')) {
+        // Skip external links (http/https) and pure anchors
+        if (linkPath.startsWith('http://') || linkPath.startsWith('https://') || linkPath.startsWith('#')) {
           validReferences++;
           continue;
         }
         
         // Resolve relative link path
         let targetPath;
-        if (linkPath.startsWith('../')) {
+        if (linkPath.startsWith('../') || linkPath.startsWith('./')) {
+          targetPath = path.resolve(path.dirname(file.path), linkPath);
+        } else if (!path.isAbsolute(linkPath)) {
           targetPath = path.resolve(path.dirname(file.path), linkPath);
         } else {
-          targetPath = path.resolve(docsDir, linkPath);
+          targetPath = linkPath;
         }
         
-        // Remove anchor fragments
+        // Remove anchor fragments for file existence check
         const cleanPath = targetPath.split('#')[0];
         
         try {
@@ -227,7 +274,14 @@ async function validateCrossReferences() {
           validReferences++;
           results.crossReferences.details.push(`✅ ${file.relativePath} → ${linkPath}`);
         } catch {
-          results.crossReferences.details.push(`❌ ${file.relativePath} → ${linkPath} (broken)`);
+          brokenLinks.push({
+            file: file.relativePath,
+            linkText,
+            linkPath,
+            resolvedPath: path.relative(rootDir, cleanPath),
+            fullMatch
+          });
+          results.crossReferences.details.push(`❌ ${file.relativePath} → ${linkPath} (BROKEN: ${path.relative(rootDir, cleanPath)})`);
         }
       }
     } catch (error) {
@@ -237,9 +291,22 @@ async function validateCrossReferences() {
   
   results.crossReferences.valid = validReferences;
   results.crossReferences.total = totalReferences;
+  results.crossReferences.brokenLinks = brokenLinks;
   
   const percentage = totalReferences > 0 ? Math.round(validReferences/totalReferences*100) : 100;
   console.log(`   ✅ Valid references: ${validReferences}/${totalReferences} (${percentage}%)`);
+  
+  // Report broken links with details
+  if (brokenLinks.length > 0) {
+    console.log(`   ❌ BROKEN LINKS FOUND: ${brokenLinks.length}`);
+    brokenLinks.slice(0, 5).forEach((link, index) => {
+      console.log(`      ${index + 1}. ${link.file}: "${link.linkText}" → ${link.linkPath}`);
+      console.log(`         Resolved to: ${link.resolvedPath}`);
+    });
+    if (brokenLinks.length > 5) {
+      console.log(`      ... and ${brokenLinks.length - 5} more (see detailed report)`);
+    }
+  }
 }
 
 /**
