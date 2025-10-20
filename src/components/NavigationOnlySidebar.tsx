@@ -3,7 +3,11 @@ import { NavLink, useLocation } from 'react-router-dom';
 import logoUrl from '../assets/rawalite-logo.png';
 import SidebarUpdateWidget from './SidebarUpdateWidget';
 
-export const NavigationOnlySidebar: React.FC = () => {
+interface NavigationOnlySidebarProps {
+  className?: string;
+}
+
+export const NavigationOnlySidebar: React.FC<NavigationOnlySidebarProps> = ({ className = 'compact-sidebar' }) => {
   const location = useLocation();
 
   // 🎯 NEW: Open UpdateManager via IPC instead of old UpdateDialog
@@ -62,7 +66,7 @@ export const NavigationOnlySidebar: React.FC = () => {
   ];
 
   return (
-    <div className="sidebar navigation-only-sidebar" style={{
+    <div className={`sidebar navigation-only-sidebar ${className}`} style={{
       width: '240px',
       display: 'flex',
       flexDirection: 'column',

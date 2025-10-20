@@ -1,6 +1,6 @@
 # 🏗️ Implementations Overview - RawaLite Project
 
-> **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (PDF-Theme-System Integration Documentation)  
+> **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 19.10.2025 (Navigation-Database Integration Status Update + Migration 028)  
 > **Status:** VALIDATED - Aktuelle Implementierungen | **Typ:** Implementations Registry  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-IMPLEMENTATIONS-OVERVIEW_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
@@ -18,7 +18,7 @@
 
 | Komponente | Status | Version | Technologie | Validierung |
 |------------|--------|---------|-------------|-------------|
-| **Core Database** | ✅ Produktiv | SQLite 3.46+ | better-sqlite3 | Migration 019 |
+| **Core Database** | ✅ Produktiv | SQLite 3.46+ | better-sqlite3 | Migration 028 |
 | **Authentication** | ✅ Produktiv | v1.0 | Electron IPC | Secure Storage |
 | **PDF Generation** | ✅ Produktiv | v2.1 | Puppeteer + Templates | Asset Guards |
 | **Frontend Framework** | ✅ Produktiv | React 18.3 | TypeScript + Vite | Type-Safe |
@@ -34,7 +34,7 @@
 - **Location:** `src/persistence/`
 - **Key Files:** `SQLiteAdapter.ts`, `migrations/`, `database.ts`
 - **Pattern:** Field-Mapper + Adapter-Pattern
-- **Migration:** Aktuell bei `019-add-discounts-table.sql`
+- **Migration:** Aktuell bei Migration 028 (Navigation System)
 - **Guards:** `pnpm validate:migrations`, Schema-Validation
 - **CRITICAL:** NIEMALS snake_case SQL hardcoden - IMMER convertSQLQuery()
 
@@ -85,6 +85,8 @@
 | Service | Location | Zweck | Status |
 |---------|----------|-------|--------|
 | **DatabaseService** | `src/main/services/DatabaseService.ts` | Database-Abstraction | ✅ Produktiv |
+| **DatabaseThemeService** | `src/main/services/DatabaseThemeService.ts` | Theme CRUD + Validation | ✅ Produktiv |
+| **DatabaseNavigationService** | `src/services/DatabaseNavigationService.ts` | Navigation Preferences | ✅ Produktiv |
 | **UpdateManagerService** | `src/main/services/UpdateManagerService.ts` | Auto-Updates + GitHub | ✅ Produktiv |
 | **GitHubApiService** | `src/main/services/GitHubApiService.ts` | Release-Download + Verify | ✅ Produktiv |
 | **AuthService** | `src/main/services/AuthService.ts` | Session Management | ✅ Produktiv |
@@ -329,7 +331,8 @@ pnpm validate:ipc            # IPC security
 ## 🔮 **ZUKUNFTS-ROADMAP**
 
 ### 🎯 **Geplante Features**
-- **Discount System** - Migration 019 bereits vorbereitet
+- **Navigation Database Integration** - Migration 028 bereits implementiert ✅
+- **Database-Theme-System** - Migration 027 bereits implementiert ✅
 - **Advanced Reporting** - Extended PDF templates
 - **Multi-Language Support** - i18n infrastructure
 - **Plugin System** - Extensible architecture

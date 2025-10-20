@@ -327,6 +327,34 @@ contextBridge.exposeInMainWorld('rawalite', {
       ipcRenderer.invoke('themes:update-colors', themeId, colors) as Promise<boolean>,
     deleteTheme: (id: number) => 
       ipcRenderer.invoke('themes:delete', id) as Promise<boolean>,
+    // Header-specific theme methods (FIX-018 compliant)
+    getHeaderConfig: (userId?: string) => 
+      ipcRenderer.invoke('themes:get-header-config', userId) as Promise<any | null>,
+    setHeaderConfig: (userId: string, headerConfig: any) => 
+      ipcRenderer.invoke('themes:set-header-config', userId, headerConfig) as Promise<boolean>,
+    resetHeader: (userId?: string) => 
+      ipcRenderer.invoke('themes:reset-header', userId) as Promise<boolean>,
+  },
+  // 🧭 Navigation Management API
+  navigation: {
+    getUserPreferences: (userId?: string) => 
+      ipcRenderer.invoke('navigation:get-user-preferences', userId) as Promise<any>,
+    setUserPreferences: (userId: string, preferences: any) => 
+      ipcRenderer.invoke('navigation:set-user-preferences', userId, preferences) as Promise<boolean>,
+    setNavigationMode: (userId: string, navigationMode: string, sessionId?: string) => 
+      ipcRenderer.invoke('navigation:set-navigation-mode', userId, navigationMode, sessionId) as Promise<boolean>,
+    updateLayoutDimensions: (userId: string, headerHeight?: number, sidebarWidth?: number) => 
+      ipcRenderer.invoke('navigation:update-layout-dimensions', userId, headerHeight, sidebarWidth) as Promise<boolean>,
+    getLayoutConfig: (userId?: string) => 
+      ipcRenderer.invoke('navigation:get-layout-config', userId) as Promise<any>,
+    getModeHistory: (userId?: string, limit?: number) => 
+      ipcRenderer.invoke('navigation:get-mode-history', userId, limit) as Promise<any[]>,
+    getStatistics: (userId?: string) => 
+      ipcRenderer.invoke('navigation:get-statistics', userId) as Promise<Record<string, number>>,
+    resetPreferences: (userId?: string) => 
+      ipcRenderer.invoke('navigation:reset-preferences', userId) as Promise<boolean>,
+    validateSchema: () => 
+      ipcRenderer.invoke('navigation:validate-schema') as Promise<boolean>,
   },
 });
 

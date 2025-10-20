@@ -144,6 +144,44 @@ function registerThemeHandlers() {
     }
   });
 
+  // Header-specific theme operations
+  // FIX-018 Compliant: DatabaseThemeService pattern for header theme
+  ipcMain.handle('themes:get-header-config', async (_, userId: string = 'default') => {
+    try {
+      if (!themeService) {
+        throw new Error('Theme service not initialized');
+      }
+      return await themeService.getHeaderThemeConfig(userId);
+    } catch (error) {
+      console.error('[IPC:themes:get-header-config] Error:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('themes:set-header-config', async (_, userId: string, headerConfig: any) => {
+    try {
+      if (!themeService) {
+        throw new Error('Theme service not initialized');
+      }
+      return await themeService.setHeaderThemeConfig(userId, headerConfig);
+    } catch (error) {
+      console.error('[IPC:themes:set-header-config] Error:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('themes:reset-header', async (_, userId: string = 'default') => {
+    try {
+      if (!themeService) {
+        throw new Error('Theme service not initialized');
+      }
+      return await themeService.resetHeaderTheme(userId);
+    } catch (error) {
+      console.error('[IPC:themes:reset-header] Error:', error);
+      throw error;
+    }
+  });
+
   console.log('[ThemeIPC] Theme IPC handlers registered successfully');
 }
 
@@ -160,7 +198,10 @@ export function cleanupThemeIpc() {
     'themes:create',
     'themes:update',
     'themes:update-colors',
-    'themes:delete'
+    'themes:delete',
+    'themes:get-header-config',
+    'themes:set-header-config',
+    'themes:reset-header'
   ];
 
   channels.forEach(channel => {

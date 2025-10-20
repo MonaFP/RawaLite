@@ -1,0 +1,291 @@
+/* 🎯 HEADER-NAVIGATION NAVIGATION MODE */
+/* 📅 Erstellt: 2025-10-19 - Separated Navigation Mode CSS */
+/* 🎨 Navigation Header + Compact Statistics Sidebar */
+/* 🎨 FIX-016/017/018 Compliant: Database-Theme-System CSS Variables */
+
+/* =========================================
+   HEADER-NAVIGATION MODE CSS VARIABLES
+   ========================================= */
+
+/* Mode-specific Theme Variables für Header-Navigation */
+[data-navigation-mode="header-navigation"] {
+  /* Header Navigation Theme Variables */
+  --theme-header-bg: var(--header-bg, var(--sidebar-bg));
+  --theme-header-text: var(--header-text, var(--foreground));
+  --theme-header-border: var(--header-border, rgba(255,255,255,.08));
+  
+  /* Company Branding Theme Variables */
+  --theme-company-color: var(--company-name-color, white);
+  --theme-company-weight: var(--company-name-weight, 600);
+  
+  /* Navigation Items Theme Variables */
+  --theme-nav-bg: var(--nav-item-bg, transparent);
+  --theme-nav-text: var(--nav-item-text, rgba(255,255,255,0.8));
+  --theme-nav-border: var(--nav-item-border, transparent);
+  --theme-nav-active-bg: var(--nav-item-active-bg, rgba(255,255,255,0.2));
+  --theme-nav-active-text: var(--nav-item-active-text, white);
+  
+  /* Sidebar Theme Variables */
+  --theme-sidebar-bg: var(--sidebar-bg);
+  --theme-sidebar-text: var(--sidebar-text, var(--muted));
+  --theme-sidebar-border: var(--sidebar-border, rgba(255,255,255,.08));
+}
+
+/* =========================================
+   HEADER NAVIGATION COMPONENT
+   ========================================= */
+
+[data-navigation-mode="header-navigation"] .header-navigation {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 0 16px;
+  background: var(--theme-header-bg);
+  color: var(--theme-header-text);
+  border-bottom: 1px solid var(--theme-header-border);
+  box-sizing: border-box;
+}
+
+/* Left Section - Company & Page Title */
+[data-navigation-mode="header-navigation"] .header-navigation .left-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .company-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .company-name {
+  font-size: 1.1em;
+  font-weight: var(--theme-company-weight);
+  color: var(--theme-company-color);
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .company-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .page-title {
+  font-size: 1.2em;
+  font-weight: 500;
+  color: var(--theme-header-text);
+}
+
+/* Navigation Section - Header Navigation Mode */
+[data-navigation-mode="header-navigation"] .header-navigation .navigation-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 2;
+  justify-content: center;
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--theme-nav-text);
+  background: var(--theme-nav-bg);
+  border: 1px solid var(--theme-nav-border);
+  transition: all 0.2s ease;
+  font-size: 0.85em;
+  min-width: 60px;
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .nav-item:hover {
+  background: var(--theme-nav-active-bg);
+  color: var(--theme-nav-active-text);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .nav-item.active {
+  background: var(--theme-nav-active-bg);
+  color: var(--theme-nav-active-text);
+  border-color: var(--theme-nav-active-text);
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .nav-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .nav-label {
+  font-size: 0.75em;
+  text-align: center;
+}
+
+/* Right Section - Header Navigation Mode */
+[data-navigation-mode="header-navigation"] .header-navigation .right-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .settings-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--theme-nav-text);
+  background: var(--theme-nav-bg);
+  border: 1px solid var(--theme-nav-border);
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+}
+
+[data-navigation-mode="header-navigation"] .header-navigation .settings-link:hover,
+[data-navigation-mode="header-navigation"] .header-navigation .settings-link.active {
+  background: var(--theme-nav-active-bg);
+  color: var(--theme-nav-active-text);
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   NAVIGATION ONLY SIDEBAR COMPONENT
+   ========================================= */
+
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar {
+  grid-area: sidebar;
+  background: var(--theme-sidebar-bg);
+  border-right: 1px solid var(--theme-sidebar-border);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  gap: 24px;
+  color: var(--theme-sidebar-text);
+}
+
+/* Brand Section - Header Navigation Mode */
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 8px 16px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  color: white;
+}
+
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar .brand .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2));
+  box-shadow: 0 0 20px var(--accent);
+}
+
+/* Navigation Menu - Header Navigation Mode */
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar .nav {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar .nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--theme-sidebar-text);
+  text-decoration: none;
+  padding: 10px 12px;
+  margin: 4px 4px;
+  border-radius: 10px;
+  transition: background .2s, color .2s, transform .06s;
+}
+
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar .nav a:hover {
+  background: rgba(96,165,250,.12);
+  color: white;
+  transform: translateX(2px);
+}
+
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar .nav a[aria-current="page"] {
+  background: rgba(96,165,250,.2);
+  color: white;
+}
+
+/* Compact Statistics Section - Header Navigation Mode */
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar .sidebar-stats {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar .stat-card {
+  padding: 8px 10px;
+  background-color: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.2s ease;
+}
+
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar .stat-card:hover {
+  background-color: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+  transform: translateX(2px);
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+   ========================================= */
+
+@media (max-width: 1024px) {
+  [data-navigation-mode="header-navigation"] .header-navigation {
+    padding: 0 12px;
+  }
+  
+  [data-navigation-mode="header-navigation"] .header-navigation .navigation-section {
+    gap: 6px;
+  }
+  
+  [data-navigation-mode="header-navigation"] .header-navigation .nav-item {
+    padding: 6px 10px;
+    min-width: 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  [data-navigation-mode="header-navigation"] .header-navigation .left-section {
+    gap: 16px;
+  }
+  
+  [data-navigation-mode="header-navigation"] .header-navigation .navigation-section {
+    gap: 4px;
+    flex: 1.5;
+  }
+  
+  [data-navigation-mode="header-navigation"] .header-navigation .nav-item {
+    padding: 4px 8px;
+    font-size: 0.8em;
+  }
+  
+  [data-navigation-mode="header-navigation"] .navigation-only-sidebar {
+    padding: 16px 12px;
+    gap: 20px;
+  }
+}

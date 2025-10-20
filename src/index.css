@@ -5,6 +5,14 @@
 @import url('./styles/sidebar-styles.css');
 @import url('./styles/main-content.css');
 
+/* 🎯 NAVIGATION MODES - Separated CSS 2025-10-19 */
+@import url('./styles/navigation-modes/index.css');
+
+/* 🎯 COMPONENT SYSTEMS - Phase 3A Modularization 2025-10-19 */
+@import url('./styles/button-system.css');              /* Button Variants & Responsive System */
+@import url('./styles/form-system.css');                /* Form Fields & Validation System */
+@import url('./styles/table-system.css');               /* Table Layouts & Responsive Patterns */
+
 /* 🎯 STATUS & DROPDOWN MODULES - Phase 2 Modularization 2025-10-19 */
 @import url('./styles/status-dropdown-direct.css');      /* Status-Dropdown mit SVG-Pfeil */
 @import url('./styles/global-dropdown-system.css');     /* Universelle Dropdown-Standards */
@@ -149,32 +157,7 @@ body{
   background: var(--main-bg-dark);
 }
 
-.app{
-  display:grid;
-  grid-template-columns: 240px 1fr;
-  grid-template-rows: auto auto 1fr;
-  grid-template-areas:
-    "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main";
-  min-height:100%;
-}
-
-/* Header - nur der eigentliche Header */
-.header {
-  grid-area: header;
-}
-
-/* Focus Bar - direkt unter dem Header als zweite Zeile */
-.focus-bar-area {
-  grid-area: focus-bar;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 8px 16px;
-  background: color-mix(in srgb, var(--accent) 15%, transparent 85%); /* 🎨 Theme-basiert statt hardcoded */
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%); /* 🎨 Theme-basiert statt hardcoded */
-}
+/* ✅ Grid Layout & Header Styles moved to layout-grid.css and header-styles.css */
 
 .card{
   background: var(--card-bg, rgba(255,255,255,0.98));
@@ -188,149 +171,13 @@ body{
   z-index: 1;
 }
 
-/* Button styles */
-.btn {
-  display: inline-block;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: #6b7280;
-  color: white;
-}
+/* ✅ Button Styles moved to button-system.css (Phase 3A) */
 
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+/* ✅ Form field styles moved to form-system.css (Phase 3A) */
 
-.btn:active {
-  transform: translateY(0);
-}
+/* ✅ Table styles moved to table-system.css (Phase 3A) */
 
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-primary {
-  background: #6b7280;                     /* Einheitliches Grau für alle Buttons */
-  color: white;
-}
-
-.btn-primary:hover {
-  background: var(--accent-hover, var(--accent));   /* Fallback für ältere Browser */
-  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* Theme-basierte Hover mit Transparenz */
-}
-
-.btn-success {
-  background: #6b7280;                     /* Einheitliches Grau */
-  color: white;
-}
-
-.btn-success:hover {
-  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt festes Grün */
-  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
-}
-
-.btn-secondary {
-  background: #6b7280;                     /* Bleibt gleich */
-  color: white;
-}
-
-.btn-secondary:hover {
-  background: var(--accent-hover, var(--accent));   /* Theme-Hover hinzufügen */
-  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
-}
-
-.btn-info {
-  background: #6b7280;                     /* Einheitliches Grau wie alle anderen */
-  color: white;
-}
-
-.btn-info:hover {
-  background: var(--accent-hover, var(--accent));   /* Theme-basierte Hover-Farbe */
-  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
-}
-
-.btn-danger {
-  background: #6b7280;                     /* Grau statt Rot */
-  color: white;
-}
-
-.btn-danger:hover {
-  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt hartem Rot */
-  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
-}
-
-.btn-warning {
-  background: #6b7280;                     /* Grau statt Orange */
-  color: white;
-}
-
-.btn-warning:hover {
-  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt hartem Orange */
-  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
-}
-
-/* Input field styles for better contrast - exclude status dropdowns */
-.card input, .card textarea, .card select:not([class*="status-"]) {
-  background: rgba(255,255,255,0.9) !important;
-  border: 1px solid rgba(0,0,0,.2) !important;
-  color: var(--text-primary, #1e293b) !important;
-  border-radius: 6px !important;
-  padding: 8px 12px !important;
-}
-
-.card input:focus, .card textarea:focus, .card select:not([class*="status-"]):focus {
-  outline: none !important;
-  border-color: var(--accent, var(--sidebar-green)) !important;
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 30, 58, 46), 0.1) !important;
-}
-
-.card label {
-  color: var(--text-secondary, #374151) !important;
-  font-weight: 600 !important;
-}
-
-.table:not(.status-table){
-  width:100%; border-collapse: collapse;
-  background: rgba(255,255,255,0.02);
-  border-radius: 8px;
-  /* REMOVED: overflow: hidden - blockiert Dropdown-Menus */
-}
-.table:not(.status-table) th, .table:not(.status-table) td{
-  text-align:left; padding:10px 12px; border-bottom:1px solid rgba(0,0,0,.08);
-}
-.table:not(.status-table) th{ 
-  opacity:.9; 
-  font-weight:600; 
-  background: rgba(0,0,0,.03);
-  color: var(--text-secondary, #374151);
-}
-.table:not(.status-table) td {
-  color: var(--text-primary, #1f2937);
-}
-.table:not(.status-table) tr:hover {
-  background: rgba(0,0,0,.02);
-}
-
-/* Additional button styles */
-.button-small {
-  font-size: 0.8rem;
-  padding: 4px 8px;
-}
-
-.button-large {
-  font-size: 1.1rem;
-  padding: 12px 24px;
-}
+/* ✅ Additional button styles moved to button-system.css (Phase 3A) */
 
 /* Loading Styles */
 .loading-overlay {
@@ -564,181 +411,16 @@ body{
   opacity: 0.7;
 }
 
-/* ====== RESPONSIVE BUTTONS - TEXT VERSCHWINDET ====== */
-.responsive-btn {
-  padding: 4px 8px !important;
-  font-size: 12px !important;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-  min-width: 0;
-  flex-shrink: 1;
-}
+/* ✅ Responsive buttons moved to button-system.css (Phase 3A) */
 
-.btn-icon {
-  flex-shrink: 0;
-  font-size: 14px;
-}
-
-.btn-text {
-  flex-shrink: 1;
-  overflow: hidden;
-}
-
-/* Responsive Breakpoints - Text verschwindet bei kleinen Fenstern */
-@media (max-width: 1400px) {
-  .responsive-btn {
-    padding: 3px 6px !important;
-    font-size: 11px !important;
-  }
-}
-
-@media (max-width: 1200px) {
-  .btn-text {
-    display: none !important; /* Text komplett ausblenden */
-  }
-  
-  .responsive-btn {
-    padding: 6px !important;
-    min-width: 32px !important;
-    max-width: 32px !important;
-    justify-content: center;
-    gap: 0;
-  }
-}
-
-@media (max-width: 900px) {
-  .responsive-btn {
-    padding: 5px !important;
-    min-width: 28px !important;
-    max-width: 28px !important;
-    font-size: 10px !important;
-  }
-}
-
-/* ====== TABLE OVERFLOW PREVENTION - KEIN SCROLLBALKEN ====== */
+/* ✅ Table overflow prevention moved to table-system.css (Phase 3A) */
 .card {
   overflow: hidden;
 }
 
-.table {
-  table-layout: fixed;
-  width: 100%;
-  border-collapse: collapse;
-}
+/* ✅ Table column layouts moved to table-system.css (Phase 3A) */
 
-.table th,
-.table td {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 8px 4px;
-}
-
-/* Overflow hidden nur für Text-Zellen, NICHT für Status-Dropdown-Zellen */
-.table th:not(:last-child),
-.table td:not(:last-child) {
-  overflow: hidden;
-}
-
-/* ====== TABELLEN SPALTEN-BREITEN ====== */
-
-/* ANGEBOTE & RECHNUNGEN (8 Spalten) */
-/* Standard Desktop Layout */
-.table th:nth-child(1), .table td:nth-child(1) { width: 8%; }  /* Nummer */
-.table th:nth-child(2), .table td:nth-child(2) { width: 12%; } /* Kunde */
-.table th:nth-child(3), .table td:nth-child(3) { width: 20%; } /* Titel - mehr Platz */
-.table th:nth-child(4), .table td:nth-child(4) { width: 6%; }  /* Status - nur Kreis */
-.table th:nth-child(5), .table td:nth-child(5) { width: 10%; } /* Betrag */
-.table th:nth-child(6), .table td:nth-child(6) { width: 12%; } /* Gültig bis / Fällig am */
-.table th:nth-child(7), .table td:nth-child(7) { width: 16%; } /* Aktionen */
-.table th:nth-child(8), .table td:nth-child(8) { width: 16%; } /* Status ändern */
-
-/* LEISTUNGSNACHWEISE (9 Spalten) - Spezielle Regeln für mehr Spalten */
-.page-timesheets .table th:nth-child(1), .page-timesheets .table td:nth-child(1) { width: 8%; }  /* Nummer */
-.page-timesheets .table th:nth-child(2), .page-timesheets .table td:nth-child(2) { width: 12%; } /* Kunde */
-.page-timesheets .table th:nth-child(3), .page-timesheets .table td:nth-child(3) { width: 16%; } /* Titel */
-.page-timesheets .table th:nth-child(4), .page-timesheets .table td:nth-child(4) { width: 6%; }  /* Status - nur Kreis */
-.page-timesheets .table th:nth-child(5), .page-timesheets .table td:nth-child(5) { width: 10%; } /* Betrag */
-.page-timesheets .table th:nth-child(6), .page-timesheets .table td:nth-child(6) { width: 14%; } /* Zeitraum */
-.page-timesheets .table th:nth-child(7), .page-timesheets .table td:nth-child(7) { width: 8%; }  /* Stunden */
-.page-timesheets .table th:nth-child(8), .page-timesheets .table td:nth-child(8) { width: 14%; } /* Aktionen */
-.page-timesheets .table th:nth-child(9), .page-timesheets .table td:nth-child(9) { width: 12%; } /* Status ändern */
-
-/* Text-Umbruch und Overflow-Verhalten für bessere Darstellung */
-.table td {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 0; /* Trick für ellipsis bei table-layout: fixed */
-}
-
-/* Spezielle Behandlung für wichtige Spalten */
-.table th:nth-child(6), .table td:nth-child(6) { /* Zeitraum */
-  white-space: normal;
-  word-wrap: break-word;
-  min-width: 120px;
-}
-
-.table th:nth-child(8), .table td:nth-child(8) { /* Aktionen */
-  white-space: normal;
-  overflow: visible;
-}
-
-.table th:nth-child(9), .table td:nth-child(9) { /* Status ändern */
-  white-space: normal;
-  overflow: visible;
-}
-
-/* ====== RESPONSIVE TABLE DESIGN ====== */
-/* Large Desktop (1400px+) - Mehr Platz für wichtige Spalten */
-@media (min-width: 1400px) {
-  /* Angebote & Rechnungen (8 Spalten) */
-  .table th:nth-child(3), .table td:nth-child(3) { width: 22%; } /* Titel noch mehr Platz */
-  .table th:nth-child(6), .table td:nth-child(6) { width: 14%; } /* Gültig bis / Fällig am */
-  .table th:nth-child(7), .table td:nth-child(7) { width: 18%; } /* Aktionen */
-  
-  /* Leistungsnachweise (9 Spalten) */
-  .page-timesheets .table th:nth-child(3), .page-timesheets .table td:nth-child(3) { width: 18%; } /* Titel */
-  .page-timesheets .table th:nth-child(6), .page-timesheets .table td:nth-child(6) { width: 16%; } /* Zeitraum */
-  .page-timesheets .table th:nth-child(8), .page-timesheets .table td:nth-child(8) { width: 16%; } /* Aktionen */
-}
-
-/* Tablet Layout (768px - 1200px) */
-@media (max-width: 1200px) {
-  .table {
-    font-size: 12px;
-  }
-  
-  .table th, .table td {
-    padding: 6px 4px;
-  }
-  
-  /* ANGEBOTE & RECHNUNGEN (8 Spalten) - Kompakt */
-  .table th:nth-child(1), .table td:nth-child(1) { width: 6%; }  /* Nummer kompakter */
-  .table th:nth-child(2), .table td:nth-child(2) { width: 16%; } /* Kunde mehr Platz */
-  .table th:nth-child(3), .table td:nth-child(3) { width: 18%; } /* Titel */
-  .table th:nth-child(4), .table td:nth-child(4) { width: 8%; }  /* Status */
-  .table th:nth-child(5), .table td:nth-child(5) { width: 10%; } /* Betrag */
-  .table th:nth-child(6), .table td:nth-child(6) { 
-    display: none; /* Gültig bis / Fällig am ausblenden für mehr Platz */
-  }
-  .table th:nth-child(7), .table td:nth-child(7) { width: 20%; } /* Aktionen */
-  .table th:nth-child(8), .table td:nth-child(8) { width: 22%; } /* Status ändern - mehr Platz! */
-  
-  /* LEISTUNGSNACHWEISE (9 Spalten) - Spezielle Anpassungen */
-  .page-timesheets .table th:nth-child(1), .page-timesheets .table td:nth-child(1) { width: 6%; }  /* Nummer */
-  .page-timesheets .table th:nth-child(2), .page-timesheets .table td:nth-child(2) { width: 14%; } /* Kunde */
-  .page-timesheets .table th:nth-child(3), .page-timesheets .table td:nth-child(3) { width: 16%; } /* Titel */
-  .page-timesheets .table th:nth-child(4), .page-timesheets .table td:nth-child(4) { width: 8%; }  /* Status */
-  .page-timesheets .table th:nth-child(5), .page-timesheets .table td:nth-child(5) { width: 10%; } /* Betrag */
-  .page-timesheets .table th:nth-child(6), .page-timesheets .table td:nth-child(6) { 
-    display: none; /* Zeitraum ausblenden */
-  }
-  .page-timesheets .table th:nth-child(7), .page-timesheets .table td:nth-child(7) { width: 10%; } /* Stunden */
-  .page-timesheets .table th:nth-child(8), .page-timesheets .table td:nth-child(8) { width: 18%; } /* Aktionen */
-  .page-timesheets .table th:nth-child(9), .page-timesheets .table td:nth-child(9) { width: 18%; } /* Status ändern */
-}
+/* ✅ Responsive table breakpoints moved to table-system.css (Phase 3A) */
 
 /* ====== RESPONSIVE TIMESHEET EDIT FORMS ====== */
 
@@ -841,27 +523,7 @@ body{
     padding: 16px;
   }
   
-  .timesheet-grunddaten-mobile .form-group,
-  .timesheet-create-mobile .form-group {
-    margin-bottom: 12px;
-  }
-  
-  .timesheet-grunddaten-mobile label,
-  .timesheet-create-mobile label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 4px;
-    font-size: 14px;
-  }
-  
-  .timesheet-grunddaten-mobile .form-control,
-  .timesheet-create-mobile .form-control {
-    width: 100%;
-    padding: 8px 12px;
-    font-size: 16px; /* Touch-friendly */
-    border-radius: 6px;
-    box-sizing: border-box; /* Verhindert Überlappung */
-  }
+  /* Form styles moved to form-system.css */
   
   /* Mobile Aktionen-Bereich */
   .timesheet-create-mobile .timesheet-actions {
@@ -873,10 +535,7 @@ body{
     flex-wrap: wrap;
   }
   
-  .timesheet-create-mobile .btn {
-    white-space: nowrap; /* Verhindert Textumbruch in Buttons */
-    min-width: 0; /* Ermöglicht Flexbox-Shrinking */
-  }
+  /* Button styles moved to button-system.css */
   
   /* Positionen Mobile - Card Layout */
   .timesheet-positionen-header,
@@ -951,12 +610,7 @@ body{
     gap: 8px;
   }
   
-  .timesheet-add-position-mobile .add-button {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    margin-top: 8px;
-  }
+  /* Add button styles moved to button-system.css */
 }
 
 /* Desktop - Mobile Elemente ausblenden */
@@ -969,18 +623,7 @@ body{
   }
 }
 
-/* Medium Tablet (900px - 1200px) - Zusätzliche Anpassungen für Status ändern */
-@media (max-width: 1000px) {
-  /* Angebote & Rechnungen */
-  .table th:nth-child(8), .table td:nth-child(8) { 
-    width: 24%; /* Noch mehr Platz für Status ändern */
-  }
-  
-  /* Leistungsnachweise */
-  .page-timesheets .table th:nth-child(9), .page-timesheets .table td:nth-child(9) { 
-    width: 20%; /* Noch mehr Platz für Status ändern */
-  }
-}
+/* ✅ Medium tablet table adjustments moved to table-system.css (Phase 3A) */
 
 /* Mobile Layout (max-width: 768px) */
 @media (max-width: 768px) {
@@ -991,116 +634,15 @@ body{
     -webkit-overflow-scrolling: touch;
   }
   
-  .table {
-    font-size: 11px;
-    min-width: 600px; /* Minimum Breite für horizontales Scrollen */
-  }
-  
-  .table th, .table td {
-    padding: 4px 6px;
-    white-space: nowrap;
-  }
-  
-  /* Verstecke weitere Spalten auf Mobile */
-  .table th:nth-child(3), 
-  .table td:nth-child(3),
-  .table th:nth-child(5), 
-  .table td:nth-child(5),
-  .table th:nth-child(6), 
-  .table td:nth-child(6) { 
-    display: none; /* Titel, Betrag, Gültig bis ausblenden */
-  }
-  
-  /* Anpassung der verbleibenden Spalten */
-  .table th:nth-child(1), .table td:nth-child(1) { width: 15%; }  /* Nummer */
-  .table th:nth-child(2), .table td:nth-child(2) { width: 25%; } /* Kunde */
-  .table th:nth-child(4), .table td:nth-child(4) { width: 20%; } /* Status */
-  .table th:nth-child(7), .table td:nth-child(7) { width: 25%; } /* Aktionen */
-  .table th:nth-child(8), .table td:nth-child(8) { width: 15%; } /* Status ändern */
+  /* Mobile table styles moved to table-system.css */
 }
 
-/* Card Layout für sehr kleine Bildschirme (max-width: 480px) */
+/* ✅ Card view layout moved to table-system.css (Phase 3A) */
+
+/* FIX-007: Responsive card layout with proper media query isolation - CRITICAL PATTERN */
 @media (max-width: 480px) {
   .table-card-view {
     display: block;
-  }
-  
-  .table-card-view .table {
-    display: none; /* Verstecke normale Tabelle */
-  }
-  
-  .table-card {
-    display: block;
-    margin-bottom: 12px;
-    padding: 12px;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color, rgba(0,0,0,0.1));
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
-  
-  .table-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.1));
-  }
-  
-  .table-card-title {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 14px;
-  }
-  
-  .table-card-number {
-    font-size: 12px;
-    color: var(--text-secondary);
-    background: var(--muted, #f8f9fa);
-    padding: 2px 6px;
-    border-radius: 3px;
-  }
-  
-  .table-card-content {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-  
-  .table-card-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 0;
-  }
-  
-  .table-card-label {
-    font-size: 11px;
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
-  
-  .table-card-value {
-    font-size: 12px;
-    color: var(--text-primary);
-    text-align: right;
-  }
-  
-  .table-card-actions {
-    margin-top: 12px;
-    padding-top: 8px;
-    border-top: 1px solid var(--border-color, rgba(0,0,0,0.1));
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  
-  .table-card-actions .responsive-btn {
-    flex: 1;
-    min-width: 70px;
-    font-size: 10px;
-    padding: 6px 8px;
   }
 }
 

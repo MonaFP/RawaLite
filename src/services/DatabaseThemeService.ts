@@ -52,6 +52,44 @@ export interface ThemeWithColors extends Theme {
   colors: Record<string, string>;
 }
 
+export interface HeaderThemeConfig {
+  // Header Base Theme
+  headerBgColor: string;
+  headerTextColor: string;
+  headerBorderColor: string;
+  
+  // Company Branding Theme
+  companyNameColor: string;
+  companyNameWeight: string;
+  
+  // Navigation Items Theme
+  navItemBgColor: string;
+  navItemTextColor: string;
+  navItemBorderColor: string;
+  navItemActiveBgColor: string;
+  navItemActiveTextColor: string;
+  
+  // Statistics Cards Theme
+  statCardBgColor: string;
+  statCardBorderColor: string;
+  statCardTextColor: string;
+  statCardValueColor: string;
+  statCardSuccessColor: string;
+  statCardWarningColor: string;
+  statCardDangerColor: string;
+  
+  // Custom Page Titles
+  customTitles?: {
+    dashboard?: string;
+    customers?: string;
+    offers?: string;
+    packages?: string;
+    invoices?: string;
+    timesheets?: string;
+    settings?: string;
+  };
+}
+
 export class DatabaseThemeService {
   private db: Database.Database;
   
@@ -427,5 +465,208 @@ export class DatabaseThemeService {
   dispose(): void {
     // Note: better-sqlite3 statements are automatically cleaned up when database closes
     // This method is here for future extensibility
+  }
+
+  // === HEADER THEME OPERATIONS (FIX-016/017/018 Compliant) ===
+
+  /**
+   * Get Header-specific theme configuration
+   * FIX-018: DatabaseThemeService Pattern Preservation
+   * 
+   * @param userId User ID for personalized header themes
+   * @returns Header theme configuration with fallbacks
+   */
+  async getHeaderThemeConfig(userId: string = 'default'): Promise<HeaderThemeConfig | null> {
+    try {
+      const activeTheme = await this.getUserActiveTheme(userId);
+      if (!activeTheme) return null;
+
+      // Map theme colors to header configuration
+      const headerConfig: HeaderThemeConfig = {
+        // Header Base Theme
+        headerBgColor: activeTheme.colors['header-bg'] || activeTheme.colors['sidebar-bg'] || 'var(--sidebar-bg)',
+        headerTextColor: activeTheme.colors['header-text'] || activeTheme.colors['foreground'] || 'var(--foreground)',
+        headerBorderColor: activeTheme.colors['header-border'] || activeTheme.colors['border'] || 'rgba(255,255,255,.08)',
+        
+        // Company Branding Theme
+        companyNameColor: activeTheme.colors['company-name-color'] || activeTheme.colors['primary-text'] || 'white',
+        companyNameWeight: activeTheme.colors['company-name-weight'] || '600',
+        
+        // Navigation Items Theme
+        navItemBgColor: activeTheme.colors['nav-item-bg'] || 'transparent',
+        navItemTextColor: activeTheme.colors['nav-item-text'] || 'rgba(255,255,255,0.8)',
+        navItemBorderColor: activeTheme.colors['nav-item-border'] || 'transparent',
+        navItemActiveBgColor: activeTheme.colors['nav-item-active-bg'] || activeTheme.colors['accent-bg'] || 'rgba(255,255,255,0.2)',
+        navItemActiveTextColor: activeTheme.colors['nav-item-active-text'] || activeTheme.colors['accent-text'] || 'white',
+        
+        // Statistics Cards Theme
+        statCardBgColor: activeTheme.colors['stat-card-bg'] || 'rgba(255,255,255,0.1)',
+        statCardBorderColor: activeTheme.colors['stat-card-border'] || 'rgba(255,255,255,0.2)',
+        statCardTextColor: activeTheme.colors['stat-card-text'] || 'white',
+        statCardValueColor: activeTheme.colors['stat-card-value'] || 'white',
+        statCardSuccessColor: activeTheme.colors['stat-success'] || activeTheme.colors['success'] || '#22c55e',
+        statCardWarningColor: activeTheme.colors['stat-warning'] || activeTheme.colors['warning'] || '#f59e0b',
+        statCardDangerColor: activeTheme.colors['stat-danger'] || activeTheme.colors['error'] || '#ef4444',
+        
+        // Custom Page Titles (optional)
+        customTitles: this.parseCustomTitles(activeTheme.colors)
+      };
+
+      return headerConfig;
+    } catch (error) {
+      console.error('[DatabaseThemeService] Error getting header theme config:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Set Header-specific theme configuration
+   * FIX-016/017: Schema Protection with Field-Mapper integration
+   * 
+   * @param userId User ID for personalized themes
+   * @param headerConfig Header theme configuration
+   * @returns Success status
+   */
+  async setHeaderThemeConfig(userId: string = 'default', headerConfig: Partial<HeaderThemeConfig>): Promise<boolean> {
+    try {
+      const activeTheme = await this.getUserActiveTheme(userId);
+      if (!activeTheme) {
+        console.error('[DatabaseThemeService] No active theme found for user:', userId);
+        return false;
+      }
+
+      // Prevent modification of system themes
+      if (activeTheme.isSystemTheme) {
+        console.warn('[DatabaseThemeService] Cannot modify system theme. Creating custom theme variant.');
+        return await this.createHeaderThemeVariant(userId, activeTheme, headerConfig);
+      }
+
+      // Convert header config to theme colors with Field-Mapper patterns
+      const colorUpdates: Record<string, string> = { ...activeTheme.colors };
+
+      // Header Base Theme Updates
+      if (headerConfig.headerBgColor) colorUpdates['header-bg'] = headerConfig.headerBgColor;
+      if (headerConfig.headerTextColor) colorUpdates['header-text'] = headerConfig.headerTextColor;
+      if (headerConfig.headerBorderColor) colorUpdates['header-border'] = headerConfig.headerBorderColor;
+
+      // Company Branding Updates
+      if (headerConfig.companyNameColor) colorUpdates['company-name-color'] = headerConfig.companyNameColor;
+      if (headerConfig.companyNameWeight) colorUpdates['company-name-weight'] = headerConfig.companyNameWeight;
+
+      // Navigation Items Updates
+      if (headerConfig.navItemBgColor) colorUpdates['nav-item-bg'] = headerConfig.navItemBgColor;
+      if (headerConfig.navItemTextColor) colorUpdates['nav-item-text'] = headerConfig.navItemTextColor;
+      if (headerConfig.navItemBorderColor) colorUpdates['nav-item-border'] = headerConfig.navItemBorderColor;
+      if (headerConfig.navItemActiveBgColor) colorUpdates['nav-item-active-bg'] = headerConfig.navItemActiveBgColor;
+      if (headerConfig.navItemActiveTextColor) colorUpdates['nav-item-active-text'] = headerConfig.navItemActiveTextColor;
+
+      // Statistics Cards Updates
+      if (headerConfig.statCardBgColor) colorUpdates['stat-card-bg'] = headerConfig.statCardBgColor;
+      if (headerConfig.statCardBorderColor) colorUpdates['stat-card-border'] = headerConfig.statCardBorderColor;
+      if (headerConfig.statCardTextColor) colorUpdates['stat-card-text'] = headerConfig.statCardTextColor;
+      if (headerConfig.statCardValueColor) colorUpdates['stat-card-value'] = headerConfig.statCardValueColor;
+      if (headerConfig.statCardSuccessColor) colorUpdates['stat-success'] = headerConfig.statCardSuccessColor;
+      if (headerConfig.statCardWarningColor) colorUpdates['stat-warning'] = headerConfig.statCardWarningColor;
+      if (headerConfig.statCardDangerColor) colorUpdates['stat-danger'] = headerConfig.statCardDangerColor;
+
+      // Custom Page Titles Updates
+      if (headerConfig.customTitles) {
+        this.encodeCustomTitles(colorUpdates, headerConfig.customTitles);
+      }
+
+      // Update theme colors
+      return await this.updateThemeColors(activeTheme.id!, colorUpdates);
+    } catch (error) {
+      console.error('[DatabaseThemeService] Error setting header theme config:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Create custom theme variant for header modifications
+   * Used when user tries to modify system themes
+   */
+  private async createHeaderThemeVariant(
+    userId: string, 
+    baseTheme: ThemeWithColors, 
+    headerConfig: Partial<HeaderThemeConfig>
+  ): Promise<boolean> {
+    try {
+      const variantKey = `${baseTheme.themeKey}-header-custom-${Date.now()}`;
+      const variantName = `${baseTheme.name} (Header Customized)`;
+      
+      // Create new theme with header modifications
+      const newTheme: Omit<Theme, 'id' | 'createdAt' | 'updatedAt'> = {
+        themeKey: variantKey,
+        name: variantName,
+        description: `Custom header variant of ${baseTheme.name}`,
+        icon: baseTheme.icon,
+        isSystemTheme: false,
+        isActive: true
+      };
+
+      // Apply header config to base colors
+      const customColors = { ...baseTheme.colors };
+      if (headerConfig.headerBgColor) customColors['header-bg'] = headerConfig.headerBgColor;
+      if (headerConfig.headerTextColor) customColors['header-text'] = headerConfig.headerTextColor;
+      // ... apply all other header config properties
+
+      const createdTheme = await this.createTheme(newTheme, customColors);
+      if (!createdTheme) return false;
+
+      // Set as user's active theme
+      return await this.setUserTheme(userId, createdTheme.id!, variantKey);
+    } catch (error) {
+      console.error('[DatabaseThemeService] Error creating header theme variant:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Parse custom page titles from theme colors
+   * Field-Mapper compatible: camelCase ↔ snake_case conversion
+   */
+  private parseCustomTitles(colors: Record<string, string>): HeaderThemeConfig['customTitles'] {
+    const titles: HeaderThemeConfig['customTitles'] = {};
+    
+    if (colors['page-title-dashboard']) titles.dashboard = colors['page-title-dashboard'];
+    if (colors['page-title-customers']) titles.customers = colors['page-title-customers'];
+    if (colors['page-title-offers']) titles.offers = colors['page-title-offers'];
+    if (colors['page-title-packages']) titles.packages = colors['page-title-packages'];
+    if (colors['page-title-invoices']) titles.invoices = colors['page-title-invoices'];
+    if (colors['page-title-timesheets']) titles.timesheets = colors['page-title-timesheets'];
+    if (colors['page-title-settings']) titles.settings = colors['page-title-settings'];
+    
+    return Object.keys(titles).length > 0 ? titles : undefined;
+  }
+
+  /**
+   * Encode custom page titles into theme colors
+   * Field-Mapper compatible: camelCase ↔ snake_case conversion
+   */
+  private encodeCustomTitles(colors: Record<string, string>, customTitles: NonNullable<HeaderThemeConfig['customTitles']>): void {
+    if (customTitles.dashboard) colors['page-title-dashboard'] = customTitles.dashboard;
+    if (customTitles.customers) colors['page-title-customers'] = customTitles.customers;
+    if (customTitles.offers) colors['page-title-offers'] = customTitles.offers;
+    if (customTitles.packages) colors['page-title-packages'] = customTitles.packages;
+    if (customTitles.invoices) colors['page-title-invoices'] = customTitles.invoices;
+    if (customTitles.timesheets) colors['page-title-timesheets'] = customTitles.timesheets;
+    if (customTitles.settings) colors['page-title-settings'] = customTitles.settings;
+  }
+
+  /**
+   * Reset header theme to system defaults
+   * Removes all header-specific customizations
+   */
+  async resetHeaderTheme(userId: string = 'default'): Promise<boolean> {
+    try {
+      const systemTheme = await this.getThemeByKey('default');
+      if (!systemTheme) return false;
+
+      return await this.setUserTheme(userId, systemTheme.id!, 'default');
+    } catch (error) {
+      console.error('[DatabaseThemeService] Error resetting header theme:', error);
+      return false;
+    }
   }
 }

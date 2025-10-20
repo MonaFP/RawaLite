@@ -37,6 +37,8 @@ import * as migration024 from './024_restore_package_line_item_metadata';
 import * as migration025 from './025_add_price_display_mode';
 import * as migration026 from './026_add_price_display_mode_to_packages';
 import * as migration027 from './027_add_theme_system';
+import * as migration028 from './028_add_navigation_system';
+import * as migration029 from './029_add_focus_mode_system';
 
 export const migrations: Migration[] = [
   {
@@ -206,6 +208,18 @@ export const migrations: Migration[] = [
     name: '027_add_theme_system',
     up: migration027.up,
     down: migration027.down
+  },
+  {
+    version: 28,
+    name: '028_add_navigation_system',
+    up: migration028.up,
+    down: migration028.down
+  },
+  {
+    version: 29,
+    name: '029_add_focus_mode_system',
+    up: migration029.up,
+    down: migration029.down
   }
 ];
 

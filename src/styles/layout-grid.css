@@ -1,52 +1,124 @@
-/* 🎯 LAYOUT GRID STYLES - Ausgelagert aus index.css */
-/* 📅 Erstellt: 2025-10-19 */
+/* 🎯 LAYOUT GRID STYLES - Database-Theme-System Integration */
+/* 📅 Erstellt: 2025-10-19 | Updated: 2025-10-19 - Theme Variables Integration */
 /* 🎨 CSS Grid Layouts für Navigation Modi */
+/* 🎨 FIX-016/017/018 Compliant: Database-Theme-System CSS Variables */
 
-/* Base App Grid Layout */
+/* =========================================
+   NAVIGATION MODES CSS VARIABLES - REDESIGNED
+   ========================================= */
+
+/* Navigation Mode Dimensions - Database Theme Configurable */
+:root {
+  /* Grid Layout Theme Variables */
+  --theme-grid-bg: var(--bg);
+  --theme-grid-text: var(--foreground);
+  
+  /* Focus Bar Theme Variables */
+  --theme-focus-bar-bg: color-mix(in srgb, var(--accent) 15%, transparent 85%);
+  --theme-focus-bar-border: color-mix(in srgb, var(--accent) 20%, transparent 80%);
+  --theme-focus-bar-text: var(--foreground);
+  --theme-focus-bar-height: 40px;
+  
+  /* HEADER-STATISTICS Mode - Statistics Header + Compact Navigation Sidebar */
+  --header-statistics-sidebar-width: 240px;
+  --header-statistics-header-height: 85px; /* Höher für Statistics Cards */
+  
+  /* HEADER-NAVIGATION Mode - Navigation Header + Compact Statistics Sidebar */
+  --header-navigation-sidebar-width: 280px; /* Breiter für bessere Navigation */
+  --header-navigation-header-height: 72px;
+  
+  /* FULL-SIDEBAR Mode - Minimal Header + Full Sidebar */
+  --full-sidebar-sidebar-width: 240px;
+  --full-sidebar-header-height: 72px;
+}
+
+/* Base App Grid Layout - Database-Theme Integration */
 .app {
   display: grid;
   min-height: 100vh;
-  background: var(--bg);
-  color: var(--foreground);
+  background: var(--theme-grid-bg, var(--bg));
+  color: var(--theme-grid-text, var(--foreground));
 }
 
-/* Focus Bar Area */
+/* Focus Bar Area - Database-Theme Integration */
 .focus-bar-area {
   grid-area: focus-bar;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding: 8px 16px;
-  background: color-mix(in srgb, var(--accent) 15%, transparent 85%); /* 🎨 Theme-basiert statt hardcoded */
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%); /* 🎨 Theme-basiert statt hardcoded */
+  background: var(--theme-focus-bar-bg, color-mix(in srgb, var(--accent) 15%, transparent 85%));
+  border-bottom: 1px solid var(--theme-focus-bar-border, color-mix(in srgb, var(--accent) 20%, transparent 80%));
+  color: var(--theme-focus-bar-text, var(--foreground));
 }
 
-/* 🧭 Enhanced Navigation - Header Mode (200px Sidebar) */
-[data-navigation-mode="header"] .app {
-  grid-template-columns: 200px 1fr;
-  grid-template-rows: auto auto 1fr;
+/* =========================================
+   COMPONENT STYLES PER NAVIGATION MODE
+   ========================================= */
+
+/* 🎯 HEADER-STATISTICS Mode Components */
+[data-navigation-mode="header-statistics"] .header-statistics {
+  grid-area: header;
+  /* Header Statistics Component für Header-Statistics Mode */
+}
+
+[data-navigation-mode="header-statistics"] .compact-sidebar {
+  grid-area: sidebar;
+  /* Compact Sidebar für Header-Statistics Mode */
+}
+
+/* 🎯 HEADER-NAVIGATION Mode Components */
+[data-navigation-mode="header-navigation"] .header-navigation {
+  grid-area: header;
+  /* Header Navigation Component für Header-Navigation Mode */
+}
+
+[data-navigation-mode="header-navigation"] .navigation-only-sidebar {
+  grid-area: sidebar;
+  /* Navigation Only Sidebar für Header-Navigation Mode */
+}
+
+/* 🎯 FULL-SIDEBAR Mode Components */
+[data-navigation-mode="full-sidebar"] .header {
+  grid-area: header;
+  /* Standard Header für Full-Sidebar Mode */
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar {
+  grid-area: sidebar;
+  /* Full Sidebar für Full-Sidebar Mode */
+}
+
+/* =========================================
+   NAVIGATION MODES GRID LAYOUTS - SEPARATED & UNIQUE
+   ========================================= */
+
+/* 🎯 HEADER-STATISTICS Mode - Statistics Header + Compact Navigation Sidebar */
+[data-navigation-mode="header-statistics"] .app {
+  grid-template-columns: var(--header-statistics-sidebar-width, 240px) 1fr;
+  grid-template-rows: var(--header-statistics-header-height, 85px) var(--theme-focus-bar-height, 40px) 1fr;
   grid-template-areas:
     "sidebar header"
     "sidebar focus-bar"
     "sidebar main";
 }
 
-/* 🧭 Enhanced Navigation - Sidebar Mode (240px Sidebar) */
-[data-navigation-mode="sidebar"] .app {
-  grid-template-columns: 240px 1fr;
-  grid-template-rows: auto auto 1fr;
+/* 🎯 HEADER-NAVIGATION Mode - Navigation Header + Compact Statistics Sidebar */
+[data-navigation-mode="header-navigation"] .app {
+  grid-template-columns: var(--header-navigation-sidebar-width, 280px) 1fr;
+  grid-template-rows: var(--header-navigation-header-height, 72px) var(--theme-focus-bar-height, 40px) 1fr;
   grid-template-areas:
-    "sidebar header"
-    "sidebar focus-bar"
+    "header header"
+    "focus-bar focus-bar"
     "sidebar main";
 }
 
-/* 🧭 Enhanced Navigation - Full Sidebar Mode (240px Sidebar) */
+/* 🎯 FULL-SIDEBAR Mode - Minimal Header + Full Sidebar */
 [data-navigation-mode="full-sidebar"] .app {
-  grid-template-columns: 240px 1fr;
-  grid-template-rows: auto auto 1fr;
+  grid-template-columns: var(--full-sidebar-sidebar-width, 240px) 1fr;
+  grid-template-rows: var(--full-sidebar-header-height, 72px) var(--theme-focus-bar-height, 40px) 1fr;
   grid-template-areas:
-    "sidebar header"
-    "sidebar focus-bar"
+    "header header"
+    "focus-bar focus-bar"
     "sidebar main";
 }

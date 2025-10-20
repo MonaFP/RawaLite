@@ -42,7 +42,7 @@ export const FocusNavigation: React.FC = () => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  // Don't render if focus mode is not active
+  // Only show navigation dropdown when in focus mode
   if (!active) return null;
 
   const handleNavigation = (path: string) => {

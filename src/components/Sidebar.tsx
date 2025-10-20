@@ -5,7 +5,11 @@ import { useInvoices } from "../hooks/useInvoices";
 import { useTimesheets } from "../hooks/useTimesheets";
 import rawaliteLogo from '../assets/rawalite-logo.png';
 
-export default function Sidebar(){
+interface SidebarProps {
+  className?: string;
+}
+
+export default function Sidebar({ className = 'sidebar' }: SidebarProps = {}){
   const { settings, loading, error } = useUnifiedSettings();
   const { offers } = useOffers();
   const { invoices } = useInvoices();
@@ -54,7 +58,7 @@ export default function Sidebar(){
     { to: "/einstellungen", label: "Einstellungen" }
   ];
   return (
-    <aside className="sidebar">
+    <aside className={className}>
       <div style={{ marginBottom: "20px" }}>
         {/* RawaLite App Logo - in voller Spaltenbreite */}
         <div style={{ 

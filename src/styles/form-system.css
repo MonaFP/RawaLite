@@ -1,0 +1,173 @@
+/* =====================================================
+   FORM SYSTEM - Phase 3A Step 2
+   RawaLite v1.0.44+ Database-Theme Integration
+   ===================================================== */
+
+/* =====================================================
+   FORM FIELD BASICS
+   ===================================================== */
+
+/* Card Form Fields - Database-Theme System Integration */
+.card input, 
+.card textarea, 
+.card select:not([class*="status-"]) {
+  background: rgba(255,255,255,0.9) !important;
+  border: 1px solid rgba(0,0,0,.2) !important;
+  color: var(--text-primary, #1e293b) !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+}
+
+.card input:focus, 
+.card textarea:focus, 
+.card select:not([class*="status-"]):focus {
+  outline: none !important;
+  border-color: var(--accent, var(--sidebar-green)) !important;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 30, 58, 46), 0.1) !important;
+}
+
+/* Form Labels */
+.card label {
+  color: var(--text-secondary, #374151) !important;
+  font-weight: 600 !important;
+}
+
+/* =====================================================
+   FORM GROUPS & LAYOUTS
+   ===================================================== */
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
+}
+
+/* Form Labels */
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* =====================================================
+   RESPONSIVE FORM PATTERNS
+   ===================================================== */
+
+/* Mobile Form Optimization */
+@media (max-width: 768px) {
+  .timesheet-grunddaten-mobile .form-group,
+  .timesheet-create-mobile .form-group {
+    margin-bottom: 12px;
+  }
+  
+  .timesheet-grunddaten-mobile label,
+  .timesheet-create-mobile label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+  
+  .timesheet-grunddaten-mobile .form-control,
+  .timesheet-create-mobile .form-control {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 16px; /* Touch-friendly */
+    border-radius: 6px;
+    box-sizing: border-box; /* Verhindert Überlappung */
+  }
+}
+
+/* =====================================================
+   FORM VALIDATION STATES
+   ===================================================== */
+
+.form-control.is-valid {
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 3px rgba(var(--color-success-rgb), 0.1);
+}
+
+.form-control.is-invalid {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(var(--color-danger-rgb), 0.1);
+}
+
+.invalid-feedback {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-danger);
+}
+
+.valid-feedback {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-success);
+}
+
+/* =====================================================
+   SPECIALIZED FORM PATTERNS
+   ===================================================== */
+
+/* Inline Form Groups */
+.form-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-group-inline label {
+  margin-bottom: 0;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+.form-group-inline .form-control {
+  flex: 1;
+}
+
+/* Form Grid Layout */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .form-group-inline {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  
+  .form-group-inline label {
+    min-width: unset;
+  }
+}

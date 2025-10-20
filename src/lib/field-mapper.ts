@@ -133,11 +133,24 @@ export class FieldMapper {
     'activeThemeId': 'active_theme_id',
     'fallbackThemeKey': 'fallback_theme_key',
     
+    // Navigation System Felder (KRITISCH für Database-Navigation-System v1.0.45+)
+    'navigationMode': 'navigation_mode',
+    'headerHeight': 'header_height',
+    'sidebarWidth': 'sidebar_width',
+    'autoCollapse': 'auto_collapse',
+    'rememberFocusMode': 'remember_focus_mode',
+    'previousMode': 'previous_mode',
+    'newMode': 'new_mode',
+    'changedAt': 'changed_at',
+    'sessionId': 'session_id',
+    
     // Tabellennamen (für SQL-Queries)
     'packageLineItems': 'package_line_items',
     'offerLineItems': 'offer_line_items',
     'invoiceLineItems': 'invoice_line_items',
-    'numberingCircles': 'numbering_circles'
+    'numberingCircles': 'numbering_circles',
+    'userNavigationPreferences': 'user_navigation_preferences',
+    'navigationModeHistory': 'navigation_mode_history'
   };
 
   /**

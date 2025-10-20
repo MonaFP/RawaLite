@@ -1,23 +1,59 @@
-/* 🎯 HEADER STYLES - Ausgelagert aus index.css */
-/* 📅 Erstellt: 2025-10-19 */
+/* 🎯 HEADER STYLES - Database-Theme-System Integration */
+/* 📅 Erstellt: 2025-10-19 | Updated: 2025-10-19 - Theme Variables Integration */
 /* 🎨 Header Varianten & Navigation Components */
+/* 🎨 FIX-016/017/018 Compliant: Database-Theme-System CSS Variables */
 
-/* Main Header Base */
+/* =========================================
+   DATABASE-THEME-SYSTEM CSS VARIABLES
+   ========================================= */
+
+/* Theme Variables für Header Base */
+:root {
+  /* Header Base Theme Variables - Database-Theme-System Integration */
+  --theme-header-bg: var(--header-bg, var(--sidebar-bg));
+  --theme-header-text: var(--header-text, var(--foreground));
+  --theme-header-border: var(--header-border, rgba(255,255,255,.08));
+  
+  /* Company Branding Theme Variables - Database-Theme-System Integration */
+  --theme-company-color: var(--company-name-color, white);
+  --theme-company-weight: var(--company-name-weight, 600);
+  
+  /* Navigation Items Theme Variables - Database-Theme-System Integration */
+  --theme-nav-bg: var(--nav-item-bg, transparent);
+  --theme-nav-text: var(--nav-item-text, rgba(255,255,255,0.8));
+  --theme-nav-border: var(--nav-item-border, transparent);
+  --theme-nav-active-bg: var(--nav-item-active-bg, rgba(255,255,255,0.2));
+  --theme-nav-active-text: var(--nav-item-active-text, white);
+  
+  /* Statistics Cards Theme Variables - Database-Theme-System Integration */
+  --theme-stat-bg: var(--stat-card-bg, rgba(255,255,255,0.1));
+  --theme-stat-border: var(--stat-card-border, rgba(255,255,255,0.2));
+  --theme-stat-text: var(--stat-card-text, white);
+  --theme-stat-value: var(--stat-card-value, white);
+  --theme-stat-success: var(--stat-success, #22c55e);
+  --theme-stat-warning: var(--stat-warning, #f59e0b);
+  --theme-stat-danger: var(--stat-danger, #ef4444);
+}
+
+/* Main Header Base - Database-Theme Integration */
 .header {
   grid-area: header;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  background: var(--sidebar-bg);
-  color: var(--muted);
+  padding: 16px;
+  border-bottom: 1px solid var(--theme-header-border, rgba(255,255,255,.08));
+  background: var(--theme-header-bg, var(--sidebar-bg));
+  color: var(--theme-header-text, var(--muted));
   box-shadow: 0 1px 3px rgba(0,0,0,.15);
+  box-sizing: border-box;
+  height: 72px; /* ✅ ERHÖHT für Dashboard-Content: Title + Path + Date + Version */
+  min-height: 72px; /* ✅ Ausreichend für alle Header-Elemente */
 }
 
 .header .title {
-  font-weight: 600;
-  color: white;
+  font-weight: var(--theme-company-weight, 600);
+  color: var(--theme-company-color, white);
 }
 
 /* Header Controls Section */
@@ -25,6 +61,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  color: var(--theme-header-text, var(--foreground));
 }
 
 /* Header Right Section */
@@ -32,11 +69,12 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  color: var(--theme-header-text, var(--foreground));
 }
 
 /* Header Last Child (Version Info) */
 .header > *:last-child {
-  color: white;
+  color: var(--theme-company-color, white);
   font-weight: 500;
   text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
@@ -60,90 +98,265 @@
   font-size: 0.75em !important;
 }
 
-/* Header Navigation Component */
+/* Header Navigation Component - Database-Theme Integration */
 .header-navigation {
+  grid-area: header; /* ✅ Füllt Grid-Area vollständig aus */
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  height: 100%; /* ✅ Nimmt vollständige Header-Höhe ein */
   padding: 0 16px;
+  background: var(--theme-header-bg, var(--sidebar-bg));
+  color: var(--theme-header-text, var(--foreground));
+  box-sizing: border-box;
 }
 
-.header-navigation .nav-items {
+/* Header Statistics Component - Database-Theme Integration */
+.header-statistics {
+  grid-area: header;
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--theme-header-bg, var(--sidebar-bg));
+  color: var(--theme-header-text, var(--foreground));
+  border-bottom: 1px solid var(--theme-header-border, rgba(255,255,255,.08));
+  box-sizing: border-box;
+  gap: 24px;
+}
+
+/* Page Title Section - HeaderStatistics */
+.header-statistics .page-title-section {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header-statistics .page-title {
+  font-size: 1.3em;
+  font-weight: 600;
+  color: var(--theme-header-text, var(--foreground));
+  margin: 0;
+}
+
+/* Company Section - HeaderStatistics */
+.header-statistics .company-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.header-statistics .company-logo-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.header-statistics .company-logo-fallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--theme-company-color, white);
+}
+
+.header-statistics .company-name {
+  font-size: 1.1em;
+  font-weight: var(--theme-company-weight, 600);
+  color: var(--theme-company-color, white);
+}
+
+/* Statistics Cards Container - Optimiert für 85px Header */
+.header-statistics .statistics-cards {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex: 1;
+  justify-content: flex-end;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+/* Individual Statistic Card - Database-Theme Integration */
+.header-statistics .statistic-card {
+  background: var(--theme-stat-bg, rgba(255,255,255,0.1));
+  border: 1px solid var(--theme-stat-border, rgba(255,255,255,0.2));
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 100px;
+  width: 100px;
+  min-height: 65px;
+  text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.header-statistics .stat-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.header-statistics .stat-value {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--theme-stat-value, white);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.header-statistics .stat-label {
+  font-size: 0.75em;
+  color: var(--theme-stat-text, white);
+  opacity: 0.9;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Status-specific Card Variants */
+.header-statistics .statistic-card.success {
+  border-color: var(--theme-stat-success, #22c55e);
+}
+
+.header-statistics .statistic-card.success .stat-value {
+  color: var(--theme-stat-success, #22c55e);
+}
+
+.header-statistics .statistic-card.warning {
+  border-color: var(--theme-stat-warning, #f59e0b);
+}
+
+.header-statistics .statistic-card.warning .stat-value {
+  color: var(--theme-stat-warning, #f59e0b);
+}
+
+.header-statistics .statistic-card.danger {
+  border-color: var(--theme-stat-danger, #ef4444);
+}
+
+.header-statistics .statistic-card.danger .stat-value {
+  color: var(--theme-stat-danger, #ef4444);
+}
+
+/* Left Section - Company & Page Title */
+.header-navigation .left-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+}
+
+.header-navigation .company-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-navigation .company-name {
+  font-size: 1.1em;
+  font-weight: var(--theme-company-weight, 600);
+  color: var(--theme-company-color, white);
+}
+
+.header-navigation .company-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.header-navigation .page-title {
+  font-size: 1.2em;
+  font-weight: 500;
+  color: var(--theme-header-text, var(--foreground));
+}
+
+/* Navigation Section */
+.header-navigation .navigation-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 2;
+  justify-content: center;
 }
 
 .header-navigation .nav-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   padding: 8px 12px;
   border-radius: 6px;
   text-decoration: none;
-  color: var(--muted);
+  color: var(--theme-nav-text, rgba(255,255,255,0.8));
+  background: var(--theme-nav-bg, transparent);
+  border: 1px solid var(--theme-nav-border, transparent);
   transition: all 0.2s ease;
-  font-weight: 500;
+  font-size: 0.85em;
+  min-width: 60px;
 }
 
 .header-navigation .nav-item:hover {
-  background: rgba(255,255,255,0.1);
-  color: white;
+  background: var(--theme-nav-active-bg, rgba(255,255,255,0.1));
+  color: var(--theme-nav-active-text, white);
+  transform: translateY(-1px);
 }
 
 .header-navigation .nav-item.active {
-  background: var(--accent);
-  color: white;
+  background: var(--theme-nav-active-bg, rgba(255,255,255,0.2));
+  color: var(--theme-nav-active-text, white);
+  border-color: var(--theme-nav-active-text, white);
 }
 
-/* Header Statistics Component */
-.header-statistics {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 12px 24px;
-  gap: 16px;
-  height: 80px;
-  background-color: var(--background-primary, var(--sidebar-bg));
-  border-bottom: 1px solid var(--border-color, rgba(255,255,255,.08));
+.header-navigation .nav-icon {
+  font-size: 14px;
+  line-height: 1;
 }
 
-.header-statistics .company-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-width: 200px;
+.header-navigation .nav-label {
+  font-size: 0.75em;
+  text-align: center;
 }
 
-.header-statistics .stats-cards {
+/* Right Section */
+.header-navigation .right-section {
   display: flex;
   align-items: center;
   gap: 12px;
   flex: 1;
+  justify-content: flex-end;
 }
 
-.header-statistics .stat-card {
+.header-navigation .settings-link {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 8px 12px;
-  background: rgba(255,255,255,0.1);
+  justify-content: center;
+  padding: 8px;
   border-radius: 6px;
-  min-width: 80px;
+  text-decoration: none;
+  color: var(--theme-nav-text, rgba(255,255,255,0.8));
+  background: var(--theme-nav-bg, transparent);
+  border: 1px solid var(--theme-nav-border, transparent);
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
 }
 
-.header-statistics .stat-value {
-  font-size: 1.2em;
-  font-weight: 600;
-  color: white;
-}
-
-.header-statistics .stat-label {
-  font-size: 0.8em;
-  color: var(--muted);
-  margin-top: 2px;
+.header-navigation .settings-link:hover,
+.header-navigation .settings-link.active {
+  background: var(--theme-nav-active-bg, rgba(255,255,255,0.2));
+  color: var(--theme-nav-active-text, white);
 }
 
 /* Responsive Header Styles */

@@ -1,31 +1,29 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
+import { useTheme } from '../hooks/useTheme';
 
 interface HeaderNavigationProps {
   title?: string;
+  className?: string;
 }
 
-export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title }) => {
+export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title, className = 'header-navigation' }) => {
   const location = useLocation();
   const { settings } = useUnifiedSettings();
+  const { 
+    getThemedPageTitle, 
+    isLoading, 
+    error, 
+    headerConfig,
+    companyConfig,
+    navigationConfig 
+  } = useTheme();
   
-  // Dynamic title based on current route
+  // Dynamic title with theme integration
   const getPageTitle = () => {
     if (title) return title;
-    
-    switch (location.pathname) {
-      case '/': return 'Dashboard';
-      case '/kunden': return 'Kunden';
-      case '/angebote': return 'Angebote';
-      case '/pakete': return 'Pakete';
-      case '/rechnungen': return 'Rechnungen';
-      case '/leistungsnachweise': return 'Leistungsnachweise';
-      case '/einstellungen': return 'Einstellungen';
-      default: 
-        if (location.pathname.startsWith('/angebote/')) return 'Angebot Details';
-        return 'RawaLite';
-    }
+    return getThemedPageTitle(location.pathname);
   };
 
   const navigationItems = [
@@ -38,84 +36,54 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title }) => 
     { to: '/einstellungen', label: 'Einstellungen', icon: '⚙️' }
   ];
 
-  return (
-    <div className="header-navigation" style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      width: '100%',
-      padding: '0 16px'
-    }}>
-      {/* Firmenname + Logo + Page Title */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px'
-      }}>
-        {/* Firmenname */}
-        <div style={{
-          fontSize: '1rem',
-          fontWeight: '600',
-          color: 'white',
-          textShadow: '0 1px 2px rgba(0,0,0,0.2)'
-        }}>
-          {settings.companyData?.name || 'Firma'}
+  // Loading and error handling for theme
+  if (isLoading) {
+    return (
+      <div className="header-navigation">
+        <div className="left-section">
+          Loading theme...
         </div>
-        
-        {/* Company Logo */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          flexDirection: 'column',
-          gap: '4px',
-          padding: '8px 0'
-        }}>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.warn('Theme loading error:', error);
+    // Continue with fallback theme
+  }
+
+  return (
+    <div className="header-navigation">
+      {/* Firmenname + Logo + Page Title */}
+      <div className="left-section">
+        {/* Company Section */}
+        <div className="company-section">
+          <div className="company-name">
+            {settings.companyData?.name || 'Firma'}
+          </div>
+          
+          {/* Company Logo */}
           {settings.companyData?.logo ? (
             <img 
               src={settings.companyData.logo} 
               alt="HeaderNavigation-Company" 
-              style={{ 
-                height: '40px',
-                width: 'auto',
-                objectFit: 'contain',
-                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
-              }} 
+              className="company-logo"
             />
           ) : (
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              background: 'rgba(255,255,255,0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              color: 'white'
-            }}>
+            <div className="company-logo">
               G
             </div>
           )}
         </div>
         
         {/* Page Title */}
-        <div style={{
-          fontSize: '1.2rem',
-          fontWeight: '600',
-          color: 'white',
-          textShadow: '0 1px 2px rgba(0,0,0,0.2)'
-        }}>
+        <div className="page-title">
           {getPageTitle()}
         </div>
       </div>
 
-      {/* Navigation Menu - NUR das Menü! */}
-      <nav style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px'
-      }}>
+      {/* Navigation Menu */}
+      <nav className="navigation-section">
         {navigationItems.map((item) => {
           const isActive = location.pathname === item.to || 
                           (item.to === '/angebote' && location.pathname.startsWith('/angebote/'));
@@ -124,53 +92,29 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title }) => 
             <NavLink
               key={item.to}
               to={item.to}
-              className={`header-nav-item ${isActive ? 'active' : ''}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                fontSize: '0.85rem',
-                fontWeight: '500',
-                transition: 'all 0.2s ease',
-                background: isActive 
-                  ? 'rgba(255,255,255,0.2)' 
-                  : 'transparent',
-                color: isActive 
-                  ? 'white' 
-                  : 'rgba(255,255,255,0.8)',
-                border: isActive 
-                  ? '1px solid rgba(255,255,255,0.3)' 
-                  : '1px solid transparent'
-              }}
+              className={isActive ? 'nav-item active' : 'nav-item'}
             >
-              <span style={{ fontSize: '14px' }}>{item.icon}</span>
+              <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">{item.label}</span>
             </NavLink>
           );
         })}
       </nav>
 
-      <style>{`
-        .header-nav-item:hover {
-          background: rgba(255,255,255,0.15) !important;
-          color: white !important;
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        
-        .header-nav-item.active {
-          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        
-        @media (max-width: 1200px) {
-          .header-nav-item .nav-label {
-            display: none;
-          }
-        }
-      `}</style>
+      {/* Settings Link */}
+      <div className="right-section">
+        <NavLink
+          to="/einstellungen"
+          className={location.pathname === '/einstellungen' ? 'settings-link active' : 'settings-link'}
+          style={{
+            backgroundColor: location.pathname === '/einstellungen' ? navigationConfig.activeBg : navigationConfig.itemBg,
+            color: location.pathname === '/einstellungen' ? navigationConfig.activeText : navigationConfig.itemText,
+            border: `1px solid ${navigationConfig.itemBorder}`
+          }}
+        >
+          ⚙️
+        </NavLink>
+      </div>
     </div>
   );
 };

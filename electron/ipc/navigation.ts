@@ -1,0 +1,178 @@
+/**
+ * IPC handlers for database navigation management
+ * 
+ * Provides secure bridge between renderer and main process for navigation operations.
+ * Implements complete CRUD operations with proper error handling.
+ * 
+ * @since v1.0.45+ (Database-Navigation-System)
+ * @see {@link docs/ROOT_VALIDATED_REGISTRY-CSS-THEME-NAVIGATION-ARCHITECTURE_2025-10-17.md} Navigation Integration Architecture
+ * @see {@link docs/ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md} Critical Fixes Registry
+ * @pattern themes.ts (FIX-018: Service Layer Pattern Preservation)
+ */
+
+import { ipcMain } from 'electron';
+import { DatabaseNavigationService } from '../../src/services/DatabaseNavigationService';
+
+let navigationService: DatabaseNavigationService | null = null;
+
+/**
+ * Initialize navigation service with database connection
+ */
+export function initializeNavigationIpc(db: any) {
+  navigationService = new DatabaseNavigationService(db);
+  registerNavigationHandlers();
+}
+
+/**
+ * Register all navigation-related IPC handlers
+ */
+function registerNavigationHandlers() {
+  // Get user navigation preferences
+  ipcMain.handle('navigation:get-user-preferences', async (_, userId: string = 'default') => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.getUserNavigationPreferences(userId);
+    } catch (error) {
+      console.error('[IPC:navigation:get-user-preferences] Error:', error);
+      throw error;
+    }
+  });
+
+  // Set user navigation preferences
+  ipcMain.handle('navigation:set-user-preferences', async (_, userId: string, preferences: any) => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.setUserNavigationPreferences(userId, preferences);
+    } catch (error) {
+      console.error('[IPC:navigation:set-user-preferences] Error:', error);
+      throw error;
+    }
+  });
+
+  // Set navigation mode
+  ipcMain.handle('navigation:set-navigation-mode', async (_, userId: string, navigationMode: string, sessionId?: string) => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      
+      // Validate navigation mode
+      if (!['header', 'sidebar', 'full-sidebar'].includes(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      }
+      
+      return await navigationService.setNavigationMode(userId, navigationMode as any, sessionId);
+    } catch (error) {
+      console.error('[IPC:navigation:set-navigation-mode] Error:', error);
+      throw error;
+    }
+  });
+
+  // Update layout dimensions
+  ipcMain.handle('navigation:update-layout-dimensions', async (_, userId: string, headerHeight?: number, sidebarWidth?: number) => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.updateLayoutDimensions(userId, headerHeight, sidebarWidth);
+    } catch (error) {
+      console.error('[IPC:navigation:update-layout-dimensions] Error:', error);
+      throw error;
+    }
+  });
+
+  // Get navigation layout configuration
+  ipcMain.handle('navigation:get-layout-config', async (_, userId: string = 'default') => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.getNavigationLayoutConfig(userId);
+    } catch (error) {
+      console.error('[IPC:navigation:get-layout-config] Error:', error);
+      throw error;
+    }
+  });
+
+  // Get navigation mode history
+  ipcMain.handle('navigation:get-mode-history', async (_, userId: string = 'default', limit: number = 10) => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.getNavigationModeHistory(userId, limit);
+    } catch (error) {
+      console.error('[IPC:navigation:get-mode-history] Error:', error);
+      throw error;
+    }
+  });
+
+  // Get navigation mode statistics
+  ipcMain.handle('navigation:get-statistics', async (_, userId: string = 'default') => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.getNavigationModeStatistics(userId);
+    } catch (error) {
+      console.error('[IPC:navigation:get-statistics] Error:', error);
+      throw error;
+    }
+  });
+
+  // Reset navigation preferences
+  ipcMain.handle('navigation:reset-preferences', async (_, userId: string = 'default') => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.resetNavigationPreferences(userId);
+    } catch (error) {
+      console.error('[IPC:navigation:reset-preferences] Error:', error);
+      throw error;
+    }
+  });
+
+  // Validate navigation schema
+  ipcMain.handle('navigation:validate-schema', async () => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.validateNavigationSchema();
+    } catch (error) {
+      console.error('[IPC:navigation:validate-schema] Error:', error);
+      throw error;
+    }
+  });
+
+  console.log('[NavigationIPC] Navigation IPC handlers registered successfully');
+}
+
+/**
+ * Cleanup navigation IPC handlers
+ */
+export function cleanupNavigationIpc() {
+  const channels = [
+    'navigation:get-user-preferences',
+    'navigation:set-user-preferences',
+    'navigation:set-navigation-mode',
+    'navigation:update-layout-dimensions',
+    'navigation:get-layout-config',
+    'navigation:get-mode-history',
+    'navigation:get-statistics',
+    'navigation:reset-preferences',
+    'navigation:validate-schema'
+  ];
+
+  channels.forEach(channel => {
+    ipcMain.removeAllListeners(channel);
+  });
+
+  navigationService = null;
+  console.log('[NavigationIPC] Navigation IPC handlers cleaned up');
+}

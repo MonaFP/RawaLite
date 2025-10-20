@@ -1,0 +1,185 @@
+/* 🎯 BUTTON SYSTEM - Ausgelagert aus index.css */
+/* 📅 Erstellt: 2025-10-19 */
+/* 🎨 Button Variants, States & Responsive Patterns */
+
+/* Base Button Styles */
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #6b7280;
+  color: white;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Button Variants with Database-Theme Integration */
+.btn-primary {
+  background: #6b7280;                     /* Einheitliches Grau für alle Buttons */
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover, var(--accent));   /* Fallback für ältere Browser */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* Theme-basierte Hover mit Transparenz */
+}
+
+.btn-success {
+  background: #6b7280;                     /* Einheitliches Grau */
+  color: white;
+}
+
+.btn-success:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt festes Grün */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+.btn-secondary {
+  background: #6b7280;                     /* Bleibt gleich */
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover hinzufügen */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+.btn-info {
+  background: #6b7280;                     /* Einheitliches Grau wie alle anderen */
+  color: white;
+}
+
+.btn-info:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-basierte Hover-Farbe */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+.btn-danger {
+  background: #6b7280;                     /* Grau statt Rot */
+  color: white;
+}
+
+.btn-danger:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt hartem Rot */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+.btn-warning {
+  background: #6b7280;                     /* Grau statt Orange */
+  color: white;
+}
+
+.btn-warning:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt hartem Orange */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+/* Button Sizes */
+.button-small {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+}
+
+.button-large {
+  font-size: 1.1rem;
+  padding: 12px 24px;
+}
+
+/* Responsive Button System - Text verschwindet bei kleinen Bildschirmen */
+.responsive-btn {
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.btn-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.btn-text {
+  flex-shrink: 1;
+  overflow: hidden;
+}
+
+/* Responsive Breakpoints - Text verschwindet bei kleinen Fenstern */
+@media (max-width: 1400px) {
+  .responsive-btn {
+    padding: 3px 6px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  .btn-text {
+    display: none !important; /* Text komplett ausblenden */
+  }
+  
+  .responsive-btn {
+    padding: 6px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    justify-content: center;
+    gap: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .responsive-btn {
+    padding: 5px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* Mobile Responsive Button Styles */
+@media (max-width: 768px) {
+  .btn {
+    white-space: nowrap; /* Verhindert Textumbruch in Buttons */
+  }
+  
+  /* Mobile Timesheet Button Patterns */
+  .timesheet-create-mobile .btn {
+    white-space: nowrap;
+    min-width: 0;
+  }
+  
+  .timesheet-add-position-mobile .add-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin-top: 8px;
+  }
+  
+  .responsive-btn {
+    font-size: 16px;
+    padding: 12px 20px;
+    width: 100%;
+  }
+}

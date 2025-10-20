@@ -1,0 +1,263 @@
+/* =====================================================
+   TABLE SYSTEM - Phase 3A Step 3
+   RawaLite v1.0.44+ Database-Theme Integration
+   ===================================================== */
+
+/* =====================================================
+   TABLE BASICS & OVERFLOW PREVENTION
+   ===================================================== */
+
+/* Standard Table Layout - Database-Theme Integration */
+.table:not(.status-table) {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  /* REMOVED: overflow: hidden - blockiert Dropdown-Menus */
+}
+
+.table:not(.status-table) th,
+.table:not(.status-table) td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.table:not(.status-table) th {
+  opacity: .9;
+  font-weight: 600;
+  background: rgba(0,0,0,.03);
+  color: var(--text-secondary, #374151);
+}
+
+.table:not(.status-table) td {
+  color: var(--text-primary, #1f2937);
+}
+
+.table:not(.status-table) tr:hover {
+  background: rgba(0,0,0,.02);
+}
+
+/* TABLE OVERFLOW PREVENTION - KEIN SCROLLBALKEN */
+.table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 8px 4px;
+}
+
+/* Overflow hidden nur für Text-Zellen, NICHT für Status-Dropdown-Zellen */
+.table th:not(:last-child),
+.table td:not(:last-child) {
+  overflow: hidden;
+}
+
+/* =====================================================
+   TABLE COLUMN LAYOUTS
+   ===================================================== */
+
+/* ANGEBOTE & RECHNUNGEN (8 Spalten) - Standard Desktop Layout */
+.table th:nth-child(1), .table td:nth-child(1) { width: 8%; }  /* Nummer */
+.table th:nth-child(2), .table td:nth-child(2) { width: 12%; } /* Kunde */
+.table th:nth-child(3), .table td:nth-child(3) { width: 20%; } /* Titel - mehr Platz */
+.table th:nth-child(4), .table td:nth-child(4) { width: 6%; }  /* Status - nur Kreis */
+.table th:nth-child(5), .table td:nth-child(5) { width: 10%; } /* Betrag */
+.table th:nth-child(6), .table td:nth-child(6) { width: 12%; } /* Gültig bis / Fällig am */
+.table th:nth-child(7), .table td:nth-child(7) { width: 16%; } /* Aktionen */
+.table th:nth-child(8), .table td:nth-child(8) { width: 16%; } /* Status ändern */
+
+/* LEISTUNGSNACHWEISE (9 Spalten) - Spezielle Regeln für mehr Spalten */
+.page-timesheets .table th:nth-child(1), .page-timesheets .table td:nth-child(1) { width: 8%; }  /* Nummer */
+.page-timesheets .table th:nth-child(2), .page-timesheets .table td:nth-child(2) { width: 12%; } /* Kunde */
+.page-timesheets .table th:nth-child(3), .page-timesheets .table td:nth-child(3) { width: 16%; } /* Titel */
+.page-timesheets .table th:nth-child(4), .page-timesheets .table td:nth-child(4) { width: 6%; }  /* Status - nur Kreis */
+.page-timesheets .table th:nth-child(5), .page-timesheets .table td:nth-child(5) { width: 10%; } /* Betrag */
+.page-timesheets .table th:nth-child(6), .page-timesheets .table td:nth-child(6) { width: 14%; } /* Zeitraum */
+.page-timesheets .table th:nth-child(7), .page-timesheets .table td:nth-child(7) { width: 8%; }  /* Stunden */
+.page-timesheets .table th:nth-child(8), .page-timesheets .table td:nth-child(8) { width: 14%; } /* Aktionen */
+.page-timesheets .table th:nth-child(9), .page-timesheets .table td:nth-child(9) { width: 12%; } /* Status ändern */
+
+/* =====================================================
+   TABLE TEXT & OVERFLOW BEHAVIOR
+   ===================================================== */
+
+/* Text-Umbruch und Overflow-Verhalten für bessere Darstellung */
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0; /* Trick für ellipsis bei table-layout: fixed */
+}
+
+/* Spezielle Behandlung für wichtige Spalten */
+.table th:nth-child(6), .table td:nth-child(6) { /* Zeitraum */
+  white-space: normal;
+  word-wrap: break-word;
+  min-width: 120px;
+}
+
+.table th:nth-child(8), .table td:nth-child(8) { /* Aktionen */
+  white-space: normal;
+  overflow: visible;
+}
+
+.table th:nth-child(9), .table td:nth-child(9) { /* Status ändern */
+  white-space: normal;
+  overflow: visible;
+}
+
+/* =====================================================
+   RESPONSIVE TABLE BREAKPOINTS
+   ===================================================== */
+
+/* Large Desktop (1400px+) - Mehr Platz für wichtige Spalten */
+@media (min-width: 1400px) {
+  /* Angebote & Rechnungen (8 Spalten) */
+  .table th:nth-child(3), .table td:nth-child(3) { width: 22%; } /* Titel noch mehr Platz */
+  .table th:nth-child(6), .table td:nth-child(6) { width: 14%; } /* Gültig bis / Fällig am */
+  .table th:nth-child(7), .table td:nth-child(7) { width: 18%; } /* Aktionen */
+  
+  /* Leistungsnachweise (9 Spalten) */
+  .page-timesheets .table th:nth-child(3), .page-timesheets .table td:nth-child(3) { width: 18%; } /* Titel */
+  .page-timesheets .table th:nth-child(6), .page-timesheets .table td:nth-child(6) { width: 16%; } /* Zeitraum */
+  .page-timesheets .table th:nth-child(8), .page-timesheets .table td:nth-child(8) { width: 16%; } /* Aktionen */
+}
+
+/* Tablet Layout (768px - 1200px) */
+@media (max-width: 1200px) {
+  .table {
+    font-size: 12px;
+  }
+  
+  .table th, .table td {
+    padding: 6px 4px;
+  }
+  
+  /* ANGEBOTE & RECHNUNGEN (8 Spalten) - Kompakt */
+  .table th:nth-child(1), .table td:nth-child(1) { width: 6%; }  /* Nummer kompakter */
+  .table th:nth-child(2), .table td:nth-child(2) { width: 16%; } /* Kunde mehr Platz */
+  .table th:nth-child(3), .table td:nth-child(3) { width: 18%; } /* Titel */
+  .table th:nth-child(4), .table td:nth-child(4) { width: 8%; }  /* Status */
+  .table th:nth-child(5), .table td:nth-child(5) { width: 10%; } /* Betrag */
+  .table th:nth-child(6), .table td:nth-child(6) { 
+    display: none; /* Gültig bis / Fällig am ausblenden für mehr Platz */
+  }
+  .table th:nth-child(7), .table td:nth-child(7) { width: 20%; } /* Aktionen */
+  .table th:nth-child(8), .table td:nth-child(8) { width: 22%; } /* Status ändern - mehr Platz! */
+  
+  /* LEISTUNGSNACHWEISE (9 Spalten) - Spezielle Anpassungen */
+  .page-timesheets .table th:nth-child(1), .page-timesheets .table td:nth-child(1) { width: 6%; }  /* Nummer */
+  .page-timesheets .table th:nth-child(2), .page-timesheets .table td:nth-child(2) { width: 14%; } /* Kunde */
+  .page-timesheets .table th:nth-child(3), .page-timesheets .table td:nth-child(3) { width: 16%; } /* Titel */
+  .page-timesheets .table th:nth-child(4), .page-timesheets .table td:nth-child(4) { width: 8%; }  /* Status */
+  .page-timesheets .table th:nth-child(5), .page-timesheets .table td:nth-child(5) { width: 10%; } /* Betrag */
+  .page-timesheets .table th:nth-child(6), .page-timesheets .table td:nth-child(6) { 
+    display: none; /* Zeitraum ausblenden */
+  }
+  .page-timesheets .table th:nth-child(7), .page-timesheets .table td:nth-child(7) { width: 10%; } /* Stunden */
+  .page-timesheets .table th:nth-child(8), .page-timesheets .table td:nth-child(8) { width: 18%; } /* Aktionen */
+  .page-timesheets .table th:nth-child(9), .page-timesheets .table td:nth-child(9) { width: 18%; } /* Status ändern */
+}
+
+/* Medium Tablet (900px - 1200px) - Zusätzliche Anpassungen für Status ändern */
+@media (max-width: 1000px) {
+  /* Angebote & Rechnungen */
+  .table th:nth-child(8), .table td:nth-child(8) { 
+    width: 24%; /* Noch mehr Platz für Status ändern */
+  }
+  
+  /* Leistungsnachweise */
+  .page-timesheets .table th:nth-child(9), .page-timesheets .table td:nth-child(9) { 
+    width: 20%; /* Noch mehr Platz für Status ändern */
+  }
+}
+
+/* =====================================================
+   MOBILE TABLE OPTIMIZATION
+   ===================================================== */
+
+/* Mobile Table (max-width: 768px) - Horizontales Scrollen + reduzierte Spalten */
+@media (max-width: 768px) {
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table {
+    font-size: 11px;
+    min-width: 600px; /* Minimum Breite für horizontales Scrollen */
+  }
+  
+  .table th, .table td {
+    padding: 4px 6px;
+    white-space: nowrap;
+  }
+  
+  /* Verstecke weitere Spalten auf Mobile */
+  .table th:nth-child(3), 
+  .table td:nth-child(3),
+  .table th:nth-child(5), 
+  .table td:nth-child(5),
+  .table th:nth-child(6), 
+  .table td:nth-child(6) { 
+    display: none; /* Titel, Betrag, Gültig bis ausblenden */
+  }
+  
+  /* Anpassung der verbleibenden Spalten */
+  .table th:nth-child(1), .table td:nth-child(1) { width: 15%; }  /* Nummer */
+  .table th:nth-child(2), .table td:nth-child(2) { width: 25%; } /* Kunde */
+  .table th:nth-child(4), .table td:nth-child(4) { width: 20%; } /* Status */
+  .table th:nth-child(7), .table td:nth-child(7) { width: 25%; } /* Aktionen */
+  .table th:nth-child(8), .table td:nth-child(8) { width: 15%; } /* Status ändern */
+}
+
+/* =====================================================
+   CARD VIEW FOR VERY SMALL SCREENS
+   ===================================================== */
+
+/* Card Layout für sehr kleine Bildschirme (max-width: 480px) */
+@media (max-width: 480px) {
+  .table-card-view {
+    display: block;
+  }
+  
+  .table-card-view .table {
+    display: none; /* Verstecke normale Tabelle */
+  }
+  
+  .table-card {
+    display: block;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color, rgba(0,0,0,0.1));
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .table-card-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));
+  }
+  
+  .table-card-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+  
+  .table-card-value {
+    color: var(--text-primary);
+    font-size: 12px;
+    text-align: right;
+  }
+}

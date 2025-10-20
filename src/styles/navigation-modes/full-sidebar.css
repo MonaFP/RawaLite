@@ -1,0 +1,279 @@
+/* 🎯 FULL-SIDEBAR NAVIGATION MODE */
+/* 📅 Erstellt: 2025-10-19 - Separated Navigation Mode CSS */
+/* 🎨 Minimal Header + Full Sidebar */
+/* 🎨 FIX-016/017/018 Compliant: Database-Theme-System CSS Variables */
+
+/* =========================================
+   FULL-SIDEBAR MODE CSS VARIABLES
+   ========================================= */
+
+/* Mode-specific Theme Variables für Full-Sidebar */
+[data-navigation-mode="full-sidebar"] {
+  /* Header Theme Variables */
+  --theme-header-bg: var(--header-bg, var(--sidebar-bg));
+  --theme-header-text: var(--header-text, var(--foreground));
+  --theme-header-border: var(--header-border, rgba(255,255,255,.08));
+  
+  /* Company Branding Theme Variables */
+  --theme-company-color: var(--company-name-color, white);
+  --theme-company-weight: var(--company-name-weight, 600);
+  
+  /* Sidebar Theme Variables */
+  --theme-sidebar-bg: var(--sidebar-bg);
+  --theme-sidebar-text: var(--sidebar-text, var(--muted));
+  --theme-sidebar-border: var(--sidebar-border, rgba(255,255,255,.08));
+  
+  /* Navigation Items Theme Variables */
+  --theme-nav-bg: var(--nav-item-bg, transparent);
+  --theme-nav-text: var(--nav-item-text, var(--muted));
+  --theme-nav-border: var(--nav-item-border, transparent);
+  --theme-nav-active-bg: var(--nav-item-active-bg, rgba(96,165,250,.2));
+  --theme-nav-active-text: var(--nav-item-active-text, white);
+  
+  /* Statistics Cards Theme Variables */
+  --theme-stat-bg: var(--stat-card-bg, rgba(255,255,255,0.03));
+  --theme-stat-border: var(--stat-card-border, rgba(255,255,255,0.08));
+  --theme-stat-text: var(--stat-card-text, var(--muted));
+  --theme-stat-value: var(--stat-card-value, white);
+}
+
+/* =========================================
+   MINIMAL HEADER COMPONENT
+   ========================================= */
+
+[data-navigation-mode="full-sidebar"] .header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--theme-header-border);
+  background: var(--theme-header-bg);
+  color: var(--theme-header-text);
+  box-shadow: 0 1px 3px rgba(0,0,0,.15);
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+}
+
+[data-navigation-mode="full-sidebar"] .header .title {
+  font-weight: var(--theme-company-weight);
+  color: var(--theme-company-color);
+  font-size: 1.1em;
+}
+
+/* Header Controls Section - Full Sidebar Mode */
+[data-navigation-mode="full-sidebar"] .header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--theme-header-text);
+}
+
+/* Header Right Section - Full Sidebar Mode */
+[data-navigation-mode="full-sidebar"] .header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--theme-header-text);
+}
+
+/* Header Last Child (Version Info) - Full Sidebar Mode */
+[data-navigation-mode="full-sidebar"] .header > *:last-child {
+  color: var(--theme-company-color);
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  font-size: 0.9em;
+}
+
+/* =========================================
+   FULL SIDEBAR COMPONENT
+   ========================================= */
+
+[data-navigation-mode="full-sidebar"] .sidebar {
+  grid-area: sidebar;
+  background: var(--theme-sidebar-bg);
+  border-right: 1px solid var(--theme-sidebar-border);
+  padding: 16px 12px;
+  min-height: 100vh;
+  box-shadow: 2px 0 10px rgba(0,0,0,.2);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  color: var(--theme-sidebar-text);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Brand Section - Full Sidebar Mode */
+[data-navigation-mode="full-sidebar"] .sidebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 8px 16px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  color: white;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .brand .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2));
+  box-shadow: 0 0 20px var(--accent);
+}
+
+/* Navigation Menu - Full Sidebar Mode */
+[data-navigation-mode="full-sidebar"] .sidebar .nav {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--theme-nav-text);
+  text-decoration: none;
+  padding: 10px 12px;
+  margin: 4px 4px;
+  border-radius: 10px;
+  transition: background .2s, color .2s, transform .06s;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .nav a:hover {
+  background: rgba(96,165,250,.12);
+  color: white;
+  transform: translateX(2px);
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .nav a[aria-current="page"] {
+  background: var(--theme-nav-active-bg);
+  color: var(--theme-nav-active-text);
+}
+
+/* Statistics Cards Section - Full Sidebar Mode */
+[data-navigation-mode="full-sidebar"] .sidebar .sidebar-stats {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .sidebar-stats .section-title {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 8px;
+  padding: 0 8px;
+  opacity: 0.9;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .stat-card {
+  padding: 12px 10px;
+  background-color: var(--theme-stat-bg);
+  border-radius: 6px;
+  border: 1px solid var(--theme-stat-border);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .stat-card:hover {
+  background-color: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+  transform: translateX(2px);
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .stat-card .stat-label {
+  font-size: 0.8em;
+  color: var(--theme-stat-text);
+  opacity: 0.8;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .stat-card .stat-value {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--theme-stat-value);
+}
+
+/* Company Info Section - Full Sidebar Mode */
+[data-navigation-mode="full-sidebar"] .sidebar .company-info {
+  margin-top: auto;
+  padding: 16px 8px;
+  border-top: 1px solid var(--theme-sidebar-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .company-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .company-details {
+  flex: 1;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .company-name {
+  font-size: 0.9em;
+  font-weight: var(--theme-company-weight);
+  color: var(--theme-company-color);
+  margin: 0;
+}
+
+[data-navigation-mode="full-sidebar"] .sidebar .company-subtitle {
+  font-size: 0.75em;
+  color: var(--theme-sidebar-text);
+  opacity: 0.7;
+  margin: 2px 0 0;
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+   ========================================= */
+
+@media (max-width: 1024px) {
+  [data-navigation-mode="full-sidebar"] .header {
+    padding: 12px 16px;
+  }
+  
+  [data-navigation-mode="full-sidebar"] .sidebar {
+    padding: 12px 10px;
+  }
+  
+  [data-navigation-mode="full-sidebar"] .sidebar .stat-card {
+    padding: 10px 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  [data-navigation-mode="full-sidebar"] .header {
+    padding: 8px 12px;
+  }
+  
+  [data-navigation-mode="full-sidebar"] .header-controls {
+    gap: 8px;
+  }
+  
+  [data-navigation-mode="full-sidebar"] .sidebar {
+    padding: 12px 8px;
+    gap: 12px;
+  }
+  
+  [data-navigation-mode="full-sidebar"] .sidebar .nav a {
+    padding: 8px 10px;
+    font-size: 0.9em;
+  }
+  
+  [data-navigation-mode="full-sidebar"] .sidebar .company-info {
+    padding: 12px 6px;
+  }
+}

@@ -61,6 +61,7 @@
     "validate:pre-release": "node scripts/VALIDATE_RELEASE_PRERELEASE_CHECK.mjs",
     "validate:documentation-structure": "node scripts/VALIDATE_DOCS_STRUCTURE_CHECK.mjs",
     "validate:documentation-consistency": "node scripts/VALIDATE_DOCUMENTATION_CONSISTENCY.mjs",
+    "validate:master-docs-repo-sync": "node scripts/VALIDATE_MASTER_DOCS_REPO_SYNC.mjs",
     "fix:documentation-schema": "node scripts/FIX_DOCUMENTATION_SCHEMA_COMPLIANCE.mjs",
     "fix:documentation-schema:incremental": "node scripts/FIX_DOCUMENTATION_SCHEMA_COMPLIANCE_INCREMENTAL.mjs",
     "fix:documentation-schema:folder": "node scripts/FIX_DOCUMENTATION_SCHEMA_COMPLIANCE_INCREMENTAL.mjs --folder=",

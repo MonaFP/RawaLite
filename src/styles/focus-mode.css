@@ -3,8 +3,8 @@
 /* Focus Mode Bar - separater Bereich zwischen Header und Content */
 .focus-mode-bar {
   grid-area: focus-bar; /* CSS Grid Area für korrekte Positionierung */
-  background: color-mix(in srgb, var(--accent) 15%, transparent 85%); /* 🎨 Theme-basiert statt hardcoded */
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%); /* 🎨 Theme-basiert statt hardcoded */
+  background: var(--accent-bg, color-mix(in srgb, var(--accent) 15%, transparent 85%)); /* 🎨 Database-Theme-Integration */
+  border-bottom: 1px solid var(--accent-border, color-mix(in srgb, var(--accent) 20%, transparent 80%)); /* 🎨 Database-Theme-Integration */
   padding: 8px 16px;
   min-height: 40px;
   display: flex;
@@ -42,9 +42,11 @@
 /* Focus Bar Area - unter dem Header als optische zweite Zeile */
 .focus-bar-area {
   grid-area: focus-bar;
-  background: color-mix(in srgb, var(--accent) 15%, transparent 85%); /* 🎨 Theme-basiert statt hardcoded */
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%); /* 🎨 Theme-basiert statt hardcoded */
+  background: var(--focus-bar-bg, var(--accent-bg, color-mix(in srgb, var(--accent) 15%, transparent 85%))); /* 🎨 Database-Theme-Integration */
+  border-bottom: 1px solid var(--focus-bar-border, var(--accent-border, color-mix(in srgb, var(--accent) 20%, transparent 80%))); /* 🎨 Database-Theme-Integration */
+  color: var(--focus-bar-text, var(--foreground)); /* 🎨 Database-Theme-Integration */
   padding: 8px 16px;
+  height: 40px; /* ✅ FESTE HÖHE für Grid-Layout Konsistenz */
   min-height: 40px;
   display: flex;
   align-items: center;
@@ -142,7 +144,7 @@ body[data-focus-mode="zen"] .navigation-only-sidebar {
 
 body[data-focus-mode="zen"] .app {
   grid-template-columns: 0 1fr;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: 72px 40px 1fr; /* ✅ ERHÖHT: Header 72px auch im Zen Mode für Dashboard-Content */
   grid-template-areas: 
     "header header"
     "focus-bar focus-bar"
@@ -158,25 +160,14 @@ body[data-focus-mode="mini"] .navigation-only-sidebar {
 
 body[data-focus-mode="mini"] .app {
   grid-template-columns: 0 1fr;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: 32px 32px 1fr; /* ✅ Mini Mode: Header 32px, Focus-Bar kompakter 32px */
   grid-template-areas: 
     "header header"
     "focus-bar focus-bar"
     "main main";
 }
 
-body[data-focus-mode="mini"] .header {
-  height: 32px !important;
-  padding: 4px 12px !important;
-  font-size: 0.85em !important;
-  min-height: 32px !important;
-}
-
-body[data-focus-mode="mini"] .header .title {
-  font-size: 0.9em !important;
-  margin: 0 !important;
-  line-height: 24px !important;
-}
+/* ✅ KONSOLIDIERT: Header Mini Styles in header-styles.css über .header-mini Klasse */
 
 /* Zusätzliche Mini-Mode Styles für kompakteren Look */
 body[data-focus-mode="mini"] .header-controls {
@@ -185,6 +176,7 @@ body[data-focus-mode="mini"] .header-controls {
 }
 
 body[data-focus-mode="mini"] .focus-bar-area {
+  height: 32px !important; /* ✅ FESTE HÖHE im Mini Mode */
   min-height: 32px !important;
   padding: 4px 16px !important;
 }
@@ -195,18 +187,8 @@ body[data-focus-mode="mini"] .focus-mode-btn {
   min-height: 20px !important;
 }
 
-.header-mini {
-  height: 32px !important;
-  padding: 4px 12px !important;
-  font-size: 0.85em !important;
-  min-height: 32px !important;
-}
-
-.header-mini .title {
-  font-size: 0.9em !important;
-  margin: 0 !important;
-  line-height: 24px !important;
-}
+/* ❌ DUPLIKAT ENTFERNT: .header-mini bereits in header-styles.css definiert */
+/* ✅ Nur body[data-focus-mode="mini"] spezifische Styles hier */
 
 /* Free Mode: Sidebar UND Header komplett ausblenden */
 body[data-focus-mode="free"] .sidebar,
@@ -220,7 +202,7 @@ body[data-focus-mode="free"] .header {
 
 body[data-focus-mode="free"] .app {
   grid-template-columns: 0 1fr;
-  grid-template-rows: 0 auto 1fr;
+  grid-template-rows: 0 40px 1fr; /* ✅ Free Mode: Header versteckt (0), Focus-Bar 40px */
   grid-template-areas: 
     "header header"
     "focus-bar focus-bar"

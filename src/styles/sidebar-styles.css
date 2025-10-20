@@ -8,26 +8,39 @@
   background: var(--sidebar-bg);
   border-right: 1px solid rgba(255,255,255,.08);
   padding: 16px 12px;
-  position: sticky;
-  top: 0;
   min-height: 100vh;
   box-shadow: 2px 0 10px rgba(0,0,0,.2);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
-/* Compact Sidebar Styles for Header Mode */
+/* Compact Sidebar Styles for Header Mode - 240px optimiert */
 .compact-sidebar {
-  width: 200px !important;
-  padding: 16px 12px;
+  grid-area: sidebar;
+  background: var(--sidebar-bg);
+  border-right: 1px solid rgba(255,255,255,.08);
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  gap: 20px;
 }
 
-/* Navigation Only Sidebar */
+/* Navigation Only Sidebar - 240px optimiert für bessere Lesbarkeit */
 .navigation-only-sidebar {
-  width: 200px !important;
-  padding: 16px 12px;
+  grid-area: sidebar;
+  background: var(--sidebar-bg);
+  border-right: 1px solid rgba(255,255,255,.08);
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  gap: 24px;
 }
 
 /* Brand/Logo Section */

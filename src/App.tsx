@@ -36,64 +36,57 @@ export default function App(){
   const renderSidebar = () => {
     if (active) return null; // Hide sidebar in all focus modes
     
-    if (mode === 'header') {
-      return <CompactSidebar />;
+    if (mode === 'header-statistics') {
+      return <NavigationOnlySidebar className="compact-sidebar" />; // Only navigation in sidebar when statistics are in header
     } else if (mode === 'full-sidebar') {
-      return <Sidebar />;
+      return <Sidebar className="sidebar" />;
     } else {
-      return <NavigationOnlySidebar />;
+      return <CompactSidebar className="compact-sidebar" />; // Compact sidebar with statistics when navigation is in header
     }
   };
 
   // Render header based on navigation mode and focus mode
   const renderHeader = () => {
-    if (active && variant === 'free') return null; // Hide header in free mode
+    // Free mode: No header at all
+    if (active && variant === 'free') return null;
     
     if (!active) {
-      // Normal navigation modes
-      if (mode === 'header') {
-        return (
-          <div className="header">
-            <HeaderNavigation title={getPageTitle()} />
-          </div>
-        );
+      // Normal navigation modes - ALWAYS return a valid component
+      if (mode === 'header-statistics') {
+        return <HeaderStatistics title={getPageTitle()} className="header-statistics" />; // "header-statistics" mode = statistics in header
       } else if (mode === 'full-sidebar') {
-        return <Header />;
+        return <Header title={getPageTitle()} className="header" />;
+      } else if (mode === 'header-navigation') {
+        return <HeaderNavigation title={getPageTitle()} className="header-navigation" />; // "header-navigation" mode = navigation in header
       } else {
-        return (
-          <div className="header">
-            <HeaderStatistics title={getPageTitle()} />
-          </div>
-        );
+        // Default fallback for any unknown mode
+        return <Header title={getPageTitle()} className="header" />;
       }
     } else {
-      // Focus modes
+      // Focus modes - ALWAYS return a valid component (except free mode handled above)
       if (variant === 'zen') {
-        // Zen mode: Normal header
-        return mode === 'header' ? (
-          <div className="header">
-            <HeaderNavigation title={getPageTitle()} />
-          </div>
-        ) : (
-          <Header title={getPageTitle()} />
-        );
+        // Zen mode: Normal header based on navigation mode
+        if (mode === 'header-statistics') {
+          return <HeaderStatistics title={getPageTitle()} className="header-statistics" />;
+        } else {
+          return <Header title={getPageTitle()} className="header" />;
+        }
       } else if (variant === 'mini') {
         // Mini mode: Compact header
-        return <Header title={getPageTitle()} miniVersion={true} />;
+        return <Header title={getPageTitle()} className="header" miniVersion={true} />;
+      } else {
+        // Unknown focus variant - show normal header as fallback
+        return <Header title={getPageTitle()} className="header" />;
       }
     }
-    
-    return null;
   };
 
   return (
-    <div className="app">
+    <div className="app" data-navigation-mode={mode}>
       {renderSidebar()}
       
-      {/* Header - erste Zeile */}
-      <div className="header">
-        {renderHeader()}
-      </div>
+      {/* Header - erste Zeile - DIREKT ohne zusätzlichen Wrapper */}
+      {renderHeader()}
       
       {/* Focus Bar - zweite Zeile direkt unter Header */}
       <div className="focus-bar-area">
@@ -104,8 +97,6 @@ export default function App(){
       <main className="main">
         <Outlet />
       </main>
-      
-
     </div>
   );
 }

@@ -6,14 +6,14 @@ export const NavigationModeSelector: React.FC = () => {
 
   const modes = [
     {
-      id: 'sidebar' as NavigationMode,
+      id: 'header-statistics' as NavigationMode,
       name: 'Header Statistics',
       description: 'Firmen-Statistiken im Header + nur Navigation in Sidebar',
-      icon: '�',
+      icon: '📊',
       features: ['Statistiken im Header', 'Nur Navigation in Sidebar', 'Maximaler Content-Platz']
     },
     {
-      id: 'header' as NavigationMode,
+      id: 'header-navigation' as NavigationMode,
       name: 'Header Navigation',
       description: 'Navigation im Header + Statistiken in kompakter Sidebar',
       icon: '🧭',
@@ -23,7 +23,7 @@ export const NavigationModeSelector: React.FC = () => {
       id: 'full-sidebar' as NavigationMode,
       name: 'Full Sidebar',
       description: 'Alles in einer großen Sidebar - Navigation + alle Statistiken',
-      icon: '�',
+      icon: '📱',
       features: ['Alles in einer Sidebar', 'Traditionelles Layout', 'Vollständige Integration']
     }
   ];

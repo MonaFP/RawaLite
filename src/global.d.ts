@@ -186,10 +186,37 @@ declare interface Window {
       updateTheme: (id: number, updates: any) => Promise<boolean>;
       updateThemeColors: (themeId: number, colors: Record<string, string>) => Promise<boolean>;
       deleteTheme: (id: number) => Promise<boolean>;
+      // Header-specific theme methods (FIX-018 compliant)
+      getHeaderConfig: (userId?: string) => Promise<any | null>;
+      setHeaderConfig: (userId: string, headerConfig: any) => Promise<boolean>;
+      resetHeader: (userId?: string) => Promise<boolean>;
+    };
+    // 🧭 Navigation Management API
+    navigation: {
+      getUserPreferences: (userId?: string) => Promise<any>;
+      setUserPreferences: (userId: string, preferences: any) => Promise<boolean>;
+      setNavigationMode: (userId: string, navigationMode: string, sessionId?: string) => Promise<boolean>;
+      updateLayoutDimensions: (userId: string, headerHeight?: number, sidebarWidth?: number) => Promise<boolean>;
+      getLayoutConfig: (userId?: string) => Promise<any>;
+      getModeHistory: (userId?: string, limit?: number) => Promise<any[]>;
+      getStatistics: (userId?: string) => Promise<Record<string, number>>;
+      resetPreferences: (userId?: string) => Promise<boolean>;
+      validateSchema: () => Promise<boolean>;
     };
   };
   // 📄 PDF API (v1.7.5 Rollback for native Electron PDF generation)
   electronAPI?: {
+    // 🎯 Focus Mode API
+    focusMode?: {
+      getPreferences: (userId?: string) => Promise<any | null>;
+      setFocusMode: (userId: string | undefined, active: boolean, variant?: string | null) => Promise<boolean>;
+      setAutoRestore: (userId: string | undefined, autoRestore: boolean) => Promise<boolean>;
+      resetPreferences: (userId?: string) => Promise<boolean>;
+      startSession: (userId: string | undefined, variant: string, sessionId: string, navigationMode?: string, themeName?: string) => Promise<boolean>;
+      endSession: (sessionId: string) => Promise<boolean>;
+      getAnalytics: (userId?: string) => Promise<any>;
+      validateSchema: () => Promise<boolean>;
+    };
     pdf?: {
       generate: (options: {
         templateType: 'offer' | 'invoice' | 'timesheet';
