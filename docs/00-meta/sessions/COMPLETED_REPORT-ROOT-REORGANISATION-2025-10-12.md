@@ -101,7 +101,7 @@ RawaLite/
 
 ### **Empfohlene Updates:**
 - **README.md** - Installation Instructions aktualisieren
-- **docs/03-development/DEV_GUIDE.md** - Setup-Pfade anpassen
+- **docs/02-dev/DEV_GUIDE.md** - Setup-Pfade anpassen
 - **GitHub Actions** - Script-Pfade prüfen
 
 ---
@@ -109,7 +109,7 @@ RawaLite/
 ## 🎉 **Resultat: Enterprise-Level Workspace**
 
 ### **RawaLite Standards erfüllt:**
-- ✅ **Thematische Organisation** wie in docs/ (00-meta, 01-standards, etc.)
+- ✅ **Thematische Organisation** wie in docs/ (00-meta, 01-core, 02-dev, 03-data, 04-ui, 05-deploy, 06-lessons, 08-batch, archive)
 - ✅ **Saubere Hierarchie** - Jedes Ding hat seinen Platz
 - ✅ **KI-freundlich** - Bessere Navigation und Verständlichkeit
 - ✅ **Entwickler-UX** - Klare Struktur, schnelles Auffinden
@@ -127,7 +127,7 @@ RawaLite's **außergewöhnliche Dokumentations-Qualität** wird nun durch einen 
 ## 🔗 **Cross-References**
 
 - **Scripts Dokumentation:** `scripts/README.md` (falls vorhanden)
-- **Development Guide:** `docs/03-development/DEV_GUIDE.md`
+- **Development Guide:** `docs/02-dev/DEV_GUIDE.md`
 - **Workspace Standards:** `docs/00-meta/DOCUMENTATION-STRUCTURE-GUIDE.md`
 - **Installation Instructions:** `README.md`
 

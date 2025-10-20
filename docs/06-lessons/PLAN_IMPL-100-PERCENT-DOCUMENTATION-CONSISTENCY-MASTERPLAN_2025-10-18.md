@@ -219,7 +219,7 @@ Database-Theme-System ↔ IPC Layer ↔ React Context ↔ PDF Generation
 
 | **Deliverable** | **Location** | **Content Scope** | **Time** | **Impact** |
 |-----------------|--------------|-------------------|----------|------------|
-| **Theme Development Guide** | `docs/03-development/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md` | Complete development workflow | 2 Stunden | 🟡 **MEDIUM** |
+| **Theme Development Guide** | `docs/02-dev/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md` | Complete development workflow | 2 Stunden | 🟡 **MEDIUM** |
 | **Code Examples Library** | Same file | Real working examples from codebase | 1 Stunde | 🟡 **MEDIUM** |
 | **Testing Patterns** | Same file | Theme system testing guidelines | 1 Stunde | 🟡 **MEDIUM** |
 
@@ -503,7 +503,7 @@ export const validationSuite = {
 
 ### **Phase 2 Deliverables**
 - [ ] `docs/01-core/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md`
-- [ ] `docs/03-development/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md`
+- [ ] `docs/02-dev/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md`
 - [ ] Cross-reference integration in architecture documents
 
 ### **Phase 3 Deliverables**

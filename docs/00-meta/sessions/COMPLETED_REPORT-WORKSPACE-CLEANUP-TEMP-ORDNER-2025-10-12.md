@@ -94,7 +94,7 @@ Diese Bereinigung folgt den **RawaLite Dokumentationsstandards**:
 ## 🔗 **Cross-References**
 
 - **Aktueller UpdateManagerService:** `src/main/services/UpdateManagerService.ts`
-- **Update-System Dokumentation:** `docs/11-deployment/UPDATE-SYSTEM-ARCHITECTURE.md`
+- **Update-System Dokumentation:** `docs/05-deploy/UPDATE-SYSTEM-ARCHITECTURE.md`
 - **Lessons Learned:** `docs/12-lessons/LESSONS-LEARNED-custom-updater-implementation.md`
 - **Archivierungsrichtlinien:** `docs/00-meta/DOCUMENTATION-STRUCTURE-GUIDE.md`
 

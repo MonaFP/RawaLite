@@ -66,7 +66,7 @@ Zusätzlich enthalten Dateinamen **Semantik-Tags** (KI-erkennbar):
 
 ## 🔄 Mapping (Alt → Neu)
 
-| Alter Pfad | Neuer Pfad | Status |
+| **Alt (16 Ordner)** | **Neu (9 Ordner)** | **Status** |
 |:--|:--|:--|
 | `00-meta/` | `00-meta/` | bleibt, nur INDEX & Registry-Review |
 | `01-standards/` | `01-core/` | integriert in Standards + Architektur |
@@ -77,7 +77,7 @@ Zusätzlich enthalten Dateinamen **Semantik-Tags** (KI-erkennbar):
 | `06-paths/`, `07-ipc/`, `10-security/` | `01-core/` | vereinheitlicht unter Core Architecture |
 | `08-ui/`, `09-pdf/` | `04-ui/` | UI & PDF konsolidiert |
 | `11-deployment/`, `12-update-manager/` | `05-deploy/` | Deployment & Updates vereint |
-| `13-deprecated/` | `06-lessons/deprecated/` | dokumentiert & archiviert |
+| `13-deprecated/` | `archive/` | archiviert |
 | `14-implementations/` | `02-dev/final/` | in Implementierungsberichte integriert |
 | `15-session-summary/` | `06-lessons/sessions/` | integriert in Lessons |
 

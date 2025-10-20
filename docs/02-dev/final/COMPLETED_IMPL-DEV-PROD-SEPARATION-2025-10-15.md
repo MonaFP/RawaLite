@@ -284,8 +284,8 @@ if (attachment.base64Data) {
 
 - **[Build Pipeline](../BUILD-INSTALLATION-MATRIX.md)** - Build-Unterschiede Details
 - **[ABI-Safe Tools](../ABI-SAFE-DATABASE-TOOLS.md)** - Development Database Tools
-- **[Path System](../../06-paths/final/PATHS-SYSTEM-DOCUMENTATION.md)** - PATHS Implementation
-- **[Update System](../../11-deployment/final/UPDATE_DEVELOPMENT.md)** - Update Development Guide
+- **[Path System](../../01-core/final/VALIDATED_GUIDE-PATHS-SYSTEM-DOCUMENTATION.md)** - PATHS Implementation
+- **[Update System](../../05-deploy/final/VALIDATED_GUIDE-UPDATER-UPDATE-SYSTEM-ARCHITECTURE.md)** - Update Development Guide
 - **[Critical Fixes Registry](../../00-meta/CRITICAL-FIXES-REGISTRY.md)** - Fix Preservation
 
 ---

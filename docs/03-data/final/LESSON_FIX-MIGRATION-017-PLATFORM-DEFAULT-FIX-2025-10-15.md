@@ -325,10 +325,10 @@ try {
 
 ## 📍 Platzierung & Dateiname
 
-**Diese Datei:** `docs/05-database/LESSONS-LEARNED-migration-017-platform-default-fix.md`  
+**Diese Datei:** `docs/03-data/LESSONS-LEARNED-migration-017-platform-default-fix.md`  
 **Verlinkt von:**  
-- `docs/05-database/INDEX.md`  
-- `docs/03-development/debugging.md`  
+- `docs/03-data/INDEX.md`  
+- `docs/02-dev/debugging.md`  
 
 ---
 

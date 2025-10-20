@@ -117,7 +117,7 @@ offerNumber: offer?.offerNumber || '', // Let useOffers handle number generation
 
 > **📋 Vollständige Dokumentation:** Siehe [../../DOCS_SITEMAP.md](../../DOCS_SITEMAP.md) für alle verfügbaren Ressourcen.
 
-**Diese Datei:** `docs/03-development/LESSONS-LEARNED-nummernkreis-debugging.md`  
+**Diese Datei:** `docs/02-dev/LESSONS-LEARNED-nummernkreis-debugging.md`  
 **Verlinkt von:**  
-- `docs/03-development/INDEX.md`  
+- `docs/02-dev/INDEX.md`  
 - `docs/00-meta/DOCUMENTATION-STRUCTURE-GUIDE.md`

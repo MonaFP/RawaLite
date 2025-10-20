@@ -86,7 +86,7 @@ offer_attachments: 0 rows (letzter Check)
 **Hinweis**: User muss erst Bilder zu Angeboten hinzufügen für Tests.
 
 ## 🔗 Related Documentation
-- `docs/09-pdf/solved/pdf-anhang-seite-*.md` - Implementation docs (erstellt)
+- `docs/04-ui/solved/pdf-anhang-seite-*.md` - Implementation docs (erstellt)
 - Migration 016 - offer_attachments Tabelle (vorhanden)
 
 ---

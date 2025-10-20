@@ -311,9 +311,9 @@ await getCurrentVersion()  // EinstellungenPage.tsx (dynamisch)
 4. **Component Routing:** Wie wird bestimmt welche Update-Komponente geladen wird?
 
 ### Zu erstellende Docs:
-- `docs/03-development/DEV-VS-PROD-BUILD-DIFFERENCES.md`
-- `docs/07-ipc/IPC-HANDLER-TESTING-GUIDE.md`  
-- `docs/11-deployment/VERSION-DISPLAY-STRATEGY.md`
+- `docs/02-dev/final/DEV-VS-PROD-BUILD-DIFFERENCES.md`
+- `docs/01-core/final/IPC-HANDLER-TESTING-GUIDE.md`  
+- `docs/05-deploy/final/VERSION-DISPLAY-STRATEGY.md`
 
 ---
 

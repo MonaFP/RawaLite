@@ -131,7 +131,7 @@ import logoUrl from '../assets/rawalite-logo.png' // ✅ Vite Asset Import
 
 | Datei | Kontext | Problem | Besser |
 |-------|---------|---------|---------|
-| `docs/05-database/LESSONS-LEARNED-migration-017-platform-default-fix.md` | "Einfacher konstanter DEFAULT-Wert" | Technische Lösung als "einfach" beschrieben | "Robuster konstanter DEFAULT-Wert" |
+| `docs/03-data/final/LESSON_FIX-MIGRATION-017-PLATFORM-DEFAULT-FIX-2025-10-15.md` | "Einfacher konstanter DEFAULT-Wert" | Technische Lösung als "einfach" beschrieben | "Robuster konstanter DEFAULT-Wert" |
 
 #### **✅ LEGITIME "EINFACH" VERWENDUNG:**
 - User Experience Kontext (Installation, Bedienung)

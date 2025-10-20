@@ -228,7 +228,7 @@ tr.sub-item {
 ```
 
 ### QA-Erweiterung
-Bei allen Änderungen an Line-Items oder PDF-Templates ist der manuelle Test **„PDF-Sub-Items visuell prüfen“** auszuführen (siehe `docs/01-standards/WORKFLOWS.md` und `docs/01-standards/QUICK-REFERENCE.md`).
+Bei allen Änderungen an Line-Items oder PDF-Templates ist der manuelle Test **„PDF-Sub-Items visuell prüfen"** auszuführen (siehe `docs/01-core/WORKFLOWS.md` und `docs/01-core/QUICK-REFERENCE.md`).
 
 ### Auswirkungen
 - Schriftarten-sichere Darstellung der Hierarchie.

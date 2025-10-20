@@ -303,10 +303,10 @@ DB Package → Convert DB-IDs to Array-Indices → PackageForm → Convert Array
 
 ## 🔗 **Related Documentation**
 
-- **Router Configuration:** `docs/02-architecture/ROUTING.md`
-- **State Management:** `docs/08-ui/STATE-MANAGEMENT.md`
-- **Field Mapping:** `docs/05-database/FIELD-MAPPING.md`
-- **Focus-Mode Design:** `docs/08-ui/FOCUS-MODE-DESIGN.md`
+- **Router Configuration:** `docs/01-core/ROUTING.md`
+- **State Management:** `docs/04-ui/STATE-MANAGEMENT.md`
+- **Field Mapping:** `docs/03-data/FIELD-MAPPING.md`
+- **Focus-Mode Design:** `docs/04-ui/FOCUS-MODE-DESIGN.md`
 
 ---
 

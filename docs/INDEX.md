@@ -68,11 +68,11 @@
 - **Session Archive:** [PATHS.md](PATHS.md#SESSION_CURRENCY_FORMATTING) - Recent session summaries
 - **Historical Context:** [PATHS.md](PATHS.md#BUILD_INSTALLATION_MATRIX) - Archived content
 
-### 02-architecture/ - System Architecture
-- **[final/ELECTRON-BUILDER-FILE-LOCKING-VSCODE.md](02-architecture/final/ELECTRON-BUILDER-FILE-LOCKING-VSCODE.md)** - ✅ **[SOLVED]** VS Code File-Locking Problem
+### 01-core/ - System Architecture
+- **[final/SOLVED_FIX-ELECTRON-BUILDER-FILE-LOCKING-2025-10-15.md](01-core/final/SOLVED_FIX-ELECTRON-BUILDER-FILE-LOCKING-2025-10-15.md)** - ✅ **[SOLVED]** VS Code File-Locking Problem
 
-### 03-development/ - Development Workflows
-- **[wip/VALIDATED-2025-10-15_DEV-ALL-PARALLEL-EXECUTION-ISSUE.md](02-dev/wip/WIP_FIX-DEV-ALL-PARALLEL-EXECUTION-ISSUE-2025-10-15.md)** - ✅ **[VALIDATED]** Dev Execution Analysis
+### 02-dev/ - Development Workflows
+- **[wip/WIP_FIX-DEV-ALL-PARALLEL-EXECUTION-ISSUE-2025-10-15.md](02-dev/wip/WIP_FIX-DEV-ALL-PARALLEL-EXECUTION-ISSUE-2025-10-15.md)** - ✅ **[VALIDATED]** Dev Execution Analysis
 
 ## 🆕 Neue Features (Oktober 2025)
 
@@ -204,7 +204,7 @@
 - **[templates/](00-meta/templates/)** - Standard Templates & Onboarding
 - **[ki-instructions/](00-meta/ki-instructions/)** - KI Development Guidelines (vorbereitet)
 
-### 02-architecture/ - System Architecture
+### 01-core/ - System Architecture
 - `TIMESHEETS-ARCHITECTURE.md` - **[NEU]** Vollständige Architektur-Dokumentation der TimesheetsPage
 
 ### 03-data/ - Datenbank-Design
@@ -226,7 +226,7 @@
 - **Database Lessons** → `03-data/final/` (Discount System, Migrations, Schema)
 - **UI Lessons** → `08-ui/final/` (Sub-Items, Timesheets, Status Dropdowns)  
 - **PDF Lessons** → `04-ui/final/` (Attachments, Themes, Field Mapping)
-- **Deployment Lessons** → `11-deployment/final/` (Updates, Releases, NSIS)
+- **Deployment Lessons** → `05-deploy/final/` (Updates, Releases, NSIS)
 
 ## 🆕 Neue Inhalte (Oktober 2025)
 

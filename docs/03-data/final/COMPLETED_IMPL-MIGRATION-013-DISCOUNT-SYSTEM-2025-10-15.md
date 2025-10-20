@@ -221,7 +221,7 @@ SELECT COUNT(*) FROM offers WHERE discount_type IS NULL; -- Sollte 100% sein
 > **📋 Vollständige Dokumentation:** Siehe [../../DOCS_SITEMAP.md](../../DOCS_SITEMAP.md) für alle verfügbaren Ressourcen.
 
 - **`docs/00-meta/CRITICAL-FIXES-REGISTRY.md`** - FIX-006 Schutz
-- **`docs/03-development/DATABASE-MIGRATION-GUIDE.md`** - Allgemeine Migration-Prozesse
+- **`docs/02-dev/DATABASE-MIGRATION-GUIDE.md`** - Allgemeine Migration-Prozesse
 - **`src/main/db/migrations/index.ts`** - Migration-Registry
 
 ## ✅ Freigabe-Checkliste

@@ -210,10 +210,10 @@ pnpm validate:docs-structure
 
 ## 📚 Verwandte Dokumentation
 
-- `docs/05-database/MIGRATION-013-DISCOUNT-SYSTEM.md` - Migration Details
-- `docs/08-ui/DISCOUNT-UI-COMPONENTS.md` - UI Implementierung
-- `docs/09-pdf/THEME-SYSTEM-FIXES.md` - PDF Theme Korrekturen
-- `docs/12-lessons/LESSONS-LEARNED-DISCOUNT-PROJECT.md` - Projekt Erkenntnisse
+- `docs/03-data/MIGRATION-013-DISCOUNT-SYSTEM.md` - Migration Details
+- `docs/04-ui/DISCOUNT-UI-COMPONENTS.md` - UI Implementierung
+- `docs/04-ui/THEME-SYSTEM-FIXES.md` - PDF Theme Korrekturen
+- `docs/06-lessons/LESSONS-LEARNED-DISCOUNT-PROJECT.md` - Projekt Erkenntnisse
 
 ## ✅ Bestätigung
 

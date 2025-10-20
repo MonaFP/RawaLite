@@ -35,10 +35,10 @@ pattern: INCOMPLETE_FIELD_MAPPING
 ### Versuch 2 - Existing Lessons Learned Analyse
 - **Datum:** 2025-10-04
 - **Durchgeführt von:** KI
-- **Beschreibung:** Suche nach ähnlichen Problemen in docs/05-database/solved/LESSONS-LEARNED-settings-schema-migration.md
+- **Beschreibung:** Suche nach ähnlichen Problemen in docs/03-data/solved/LESSONS-LEARNED-settings-schema-migration.md
 - **Hypothese:** Settings Schema Migration Problem oder Incomplete Field Mapping
 - **Ergebnis:** ✅ PATTERN GEFUNDEN - Settings Schema hat tax_id, phone, email, etc. aber UPDATE-Query war unvollständig
-- **Quelle:** docs/05-database/solved/LESSONS-LEARNED-settings-schema-migration.md
+- **Quelle:** docs/03-data/solved/LESSONS-LEARNED-settings-schema-migration.md
 - **Tags:** [PATTERN-MATCH] [INCOMPLETE-SQL] [SCHEMA-MISMATCH]
 
 ### Versuch 3 - SQL Query Fix (FAILED)
@@ -266,6 +266,6 @@ taxNumber: companyData.taxNumber,  // Let mapToSQL handle taxNumber -> tax_id
 ---
 
 ## 📍 Platzierung & Dateiname
-**Diese Datei:** `docs/05-database/LESSONS-LEARNED-settings-offers-mapping-debug.md`
+**Diese Datei:** `docs/03-data/LESSONS-LEARNED-settings-offers-mapping-debug.md`
 
 **Status:** 🔄 **IN PROGRESS** - SQL-Fixes fehlgeschlagen, Mapping-Layer-Analyse erforderlich

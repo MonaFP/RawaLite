@@ -255,11 +255,11 @@ import logoUrl from '/rawalite-logo.png'
 
 | Datei | Zeile | Begriff | Kontext | Problem |
 |-------|-------|---------|---------|---------|
-| `docs/11-deployment/INDEX.md` | 35 | "Quick Start" | Schneller Einstieg | ✅ OK (User Guide) |
+| `docs/05-deploy/final/VALIDATED_GUIDE-DEPLOYMENT-UPDATES.md` | 35 | "Quick Start" | Schneller Einstieg | ✅ OK (User Guide) |
 | `docs/00-meta/ONBOARDING-GUIDE.md` | 12 | "Schneller Einstieg (5 Minuten)" | Entwickler Onboarding | ✅ OK (Development) |
-| `docs/03-development/debugging.md` | 48-49 | "Simple-First" / "einfachste funktionierende Lösung" | Debugging Strategy | ✅ **RICHTIG** |
-| `docs/05-database/LESSONS-LEARNED-migration-017-platform-default-fix.md` | 56 | "Einfacher konstanter DEFAULT-Wert" | Migration Fix | ❌ **PROBLEMATISCH** |
-| `docs/11-deployment/DEPLOYMENT_UPDATES.md` | 14,380,394,406,411 | "Vereinfachte Installation", "einfach" | User Experience | ✅ OK (UX) |
+| `docs/02-dev/final/VALIDATED_GUIDE-DEBUGGING.md` | 48-49 | "Simple-First" / "einfachste funktionierende Lösung" | Debugging Strategy | ✅ **RICHTIG** |
+| `docs/03-data/final/LESSON_FIX-MIGRATION-017-PLATFORM-DEFAULT-FIX-2025-10-15.md` | 56 | "Einfacher konstanter DEFAULT-Wert" | Migration Fix | ❌ **PROBLEMATISCH** |
+| `docs/05-deploy/final/VALIDATED_GUIDE-DEPLOYMENT-UPDATES.md` | 14,380,394,406,411 | "Vereinfachte Installation", "einfach" | User Experience | ✅ OK (UX) |
 | `docs/08-ui/active/LESSONS-LEARNED-modal-vs-inline-ui-components.md` | 13,42,53,105,110 | "einfache Status-Meldungen" | UI Components | ✅ OK (User Interface) |
 
 ### **AUDIT ERGEBNIS:**
