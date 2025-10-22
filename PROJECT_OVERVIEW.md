@@ -1,6 +1,7 @@
 # 🏢 RaWaLite - Project Overview
 
-> **Vollständige Anwendungsübersicht** - Letzte Aktualisierung: 30. September 2025  
+> **Vollständige Anwendungsübersicht** - Letzte Aktualisierung: 20. Oktober 2025  
+> **Version:** v1.0.47 - Migration 029 (Focus Mode System)  
 > **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
 
 ## 📋 **SCHEMA-ÜBERSICHT**
@@ -55,8 +56,10 @@ Beispiel: VALIDATED_GUIDE-PROJECT-OVERVIEW-2025-10-16.md
 ### Datenbank & Persistence
 - **Primary:** better-sqlite3 12.4.1 (Native SQLite mit WAL Mode)
 - **Backup:** Integrated Hot-Backup System
-- **Migration:** user_version-based Schema Migrations
+- **Migration:** Schema Migration 029 applied (Focus Mode System)
 - **Field Mapping:** Dual-layer camelCase↔snake_case Architecture (Production Ready)
+- **Theme System:** DatabaseThemeService + Migration 027 (Database-driven theming)
+- **Navigation:** DatabaseNavigationService + Migration 028 (Persistent navigation state)
 - **Legacy:** SQL.js 1.13.0 (Deprecated, Migration Support only)
 
 ### Testing & Development
@@ -88,7 +91,10 @@ src/main/db/                   # Native SQLite Database (better-sqlite3)
 ├── Database.ts                # Singleton Connection + PRAGMAs
 ├── MigrationService.ts        # Schema Versioning + Rollback  
 ├── BackupService.ts           # Hot Backup + Integrity Checks
-└── migrations/                # Idempotent Schema Migrations
+└── migrations/                # Migration 029 applied (Focus Mode System)
+    ├── 027_add_theme_system.ts        # Theme System (IMPLEMENTED)
+    ├── 028_add_navigation_system.ts   # Navigation System (IMPLEMENTED)
+    └── 029_add_focus_mode_system.ts   # Focus Mode System (IMPLEMENTED)
 
 src/persistence/
 ├── adapter.ts                 # Core Interfaces & Types
@@ -98,6 +104,12 @@ src/persistence/
 src/adapters/
 ├── SQLiteAdapter.ts           # Main Database Adapter (better-sqlite3)
 └── SettingsAdapter.ts         # Settings-specific Adapter
+
+src/services/                  # Business Services (18 modules)
+├── DatabaseThemeService.ts    # Theme Database Integration
+├── DatabaseNavigationService.ts # Navigation Database Integration
+├── ThemeFallbackManager.ts    # Theme Fallback Logic
+└── [15+ weitere Services]     # Complete service architecture
 ```
 
 ### Business Logic (React Hooks)
@@ -475,20 +487,25 @@ RawaLite/
 
 ## 📊 **Status & Roadmap**
 
-### ✅ **Implementiert**
+### ✅ **Implementiert (v1.0.47)**
 - ✅ Vollständige CRUD-Operationen für alle Entitäten
 - ✅ Automatische Nummerierung mit konfigurierbaren Kreisen
 - ✅ Hierarchische Pakete und Line Items
 - ✅ Angebot-zu-Rechnung Workflow
-- ✅ SQLite-basierte Persistierung
+- ✅ SQLite-basierte Persistierung (Migration 029)
 - ✅ TypeScript-First Architektur
-- ✅ Dark Theme Design
+- ✅ Dark Theme Design + Database Theme System (Migration 027)
 - ✅ Electron Desktop App
+- ✅ PDF-Export für Angebote/Rechnungen (Production Ready)
+- ✅ Backup/Restore Funktionalität (Hot Backup System)
+- ✅ Database Navigation System (Migration 028)
+- ✅ Focus Mode System (Migration 029)
+- ✅ 18 Business Services (Complete Service Architecture)
+- ✅ Universal Search/Filter System (All main pages)
 
 ### 🚧 **In Entwicklung**
-- 🚧 PDF-Export für Angebote/Rechnungen
 - 🚧 Erweiterte Reportings
-- 🚧 Backup/Restore Funktionalität
+- 🚧 Performance Optimizations
 
 ### 🎯 **Geplant**
 - 🎯 Multi-Language Support

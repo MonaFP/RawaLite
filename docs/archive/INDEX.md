@@ -51,7 +51,7 @@ This directory contains all deprecated documentation that has been superseded by
 | **Document** | **Original Date** | **Replacement** | **Archive Reason** |
 |-------------|------------------|-----------------|-------------------|
 | `DEPRECATED_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-16.md` | 2025-10-16 | Current active registries | Navigation structure updated |
-| `DEPRECATED_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md` | 2025-10-16 | Current active registries | Central paths registry superseded |
+| `DEPRECATED_ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md` | 2025-10-16 | Current active registries | Central paths registry superseded |
 | `DEPRECATED_VALIDATED_REGISTRY-MAIN-DOCUMENTS-OVERVIEW_2025-10-16.md` | 2025-10-16 | Current active registries | Main overview restructured |
 
 ### **📝 System Analysis Documents (1 file)**

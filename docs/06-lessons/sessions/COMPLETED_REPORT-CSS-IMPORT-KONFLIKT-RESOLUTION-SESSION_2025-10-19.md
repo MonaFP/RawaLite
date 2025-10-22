@@ -11,7 +11,7 @@
 > **🔗 Verwandte Dokumente:**
 > **Critical Fixes:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - 16/16 Critical Fixes erhalten  
 > **KI Instructions:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) - Entwicklungsregeln befolgt  
-> **CSS Success Story:** [CSS_MODULARIZATION_SUCCESS_STORY.md](../../../CSS_MODULARIZATION_SUCCESS_STORY.md) - Projekt-Status Übersicht
+> **CSS Success Story:** [CSS_MODULARIZATION_SUCCESS_STORY.md](../../04-ui/INDEX.md) - Projekt-Status Übersicht
 
 ## 📊 **SESSION OVERVIEW**
 

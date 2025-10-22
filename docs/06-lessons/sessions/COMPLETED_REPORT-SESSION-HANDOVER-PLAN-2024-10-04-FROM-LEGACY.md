@@ -54,7 +54,7 @@
 
 ## 📁 Geplante Dokumentations-Struktur
 
-> **📋 Aktuelle Struktur:** Siehe [../../DOCS_SITEMAP.md](../../DOCS_SITEMAP.md) für vollständige 16-Ordner-Organisation.
+> **📋 Aktuelle Struktur:** Siehe [../../INDEX.md](../../INDEX.md) für vollständige 16-Ordner-Organisation.
 
 ```
 docs/

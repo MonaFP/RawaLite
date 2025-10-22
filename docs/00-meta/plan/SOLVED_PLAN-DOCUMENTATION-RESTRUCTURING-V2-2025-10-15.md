@@ -103,7 +103,7 @@ Jede Datei schließt mit:
 
 ---
 
-## 🗺️ Neue DOCS_SITEMAP.md (automatisch generiert)
+## 🗺️ Neue INDEX.md (automatisch generiert)
 
 ```md
 # Documentation Sitemap (v2)
@@ -126,7 +126,7 @@ Jede Datei schließt mit:
 1. **Mapping-Tabelle ausführen:**
    → Dateien mit `mv` oder `Move-Item` gemäß Tabelle verschieben
 2. **Neue INDEX.md** pro Hauptordner erstellen (automatisch generierbar)
-3. **DOCS_SITEMAP.md** aus Templates regenerieren
+3. **INDEX.md** aus Templates regenerieren
 4. **Pfad-Referenzen aktualisieren** (Crosslinks, KI-Briefings, Quick Reference)
 5. **Validierung:**
 
@@ -172,7 +172,7 @@ Ziele:
 - Erhalte Präfixe (VALIDATED-, SOLVED-, DEPRECATED-, WIP_)
 - Erstelle neue Unterordner final/, plan/, sessions/, wip/ in jedem Bereich
 - Generiere neue INDEX.md pro Hauptordner (Kurzbeschreibung + Tabelle)
-- Aktualisiere DOCS_SITEMAP.md am Ende
+- Aktualisiere INDEX.md am Ende
 - Erhalte bestehende Links, aktualisiere aber ihre Pfade
 
 WICHTIG:
@@ -189,7 +189,7 @@ Verwende MAPPING aus DOCUMENTATION-RESTRUCTURING-PLAN-v2.md.
 OUTPUT:
 1. Neue Ordnerstruktur (Markdown-tree)
 2. Liste aller verschobenen Dateien mit altem und neuem Pfad
-3. Vorschau für neue DOCS_SITEMAP.md
+3. Vorschau für neue INDEX.md
 4. Validierungsergebnis (fehlende oder doppelte Dateien)
 
 ZUSÄTZLICH:

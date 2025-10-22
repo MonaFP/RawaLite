@@ -1,22 +1,23 @@
 # Scripts Registry & Overview
 
-> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (KI-SESSION-BRIEFING Workflow Integration)  
+> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 20.10.2025 (Repository Sync Update - 54 Scripts tracked)  
 > **Status:** Production Ready | **Typ:** Scripts Registry  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Kritisch für Script-Management, NIEMALS verschieben!
 
 > **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
-> **MANDATORY:** Follow [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before modifying scripts
+> **MANDATORY:** Follow [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before modifying scripts
 > **CRITICAL:** All scripts follow KATEGORIE_SCOPE_SUBJECT_ACTION.ext schema pattern
 
 This document provides a comprehensive registry of all RawaLite automation scripts with detailed validation status and compliance tracking.
 
 ## 📋 **REGISTRY-ÜBERSICHT**
 
-**Total Scripts:** 42  
-**Schema Compliance:** 100% (KATEGORIE_SCOPE_SUBJECT_ACTION.ext)  
-**Last Full Validation:** 2025-10-17  
-**Registry Version:** 1.0 (Initial)
+**Total Scripts:** 56  
+**Schema Compliance:** 76.8% (43/56 - 13 legitimate non-compliance)  
+**Last Full Validation:** 2025-01-28 (DatabaseConfigurationService Update)  
+**Registry Version:** 1.3 (Central Configuration Integration)  
+**Sync Status:** ✅ Registry(56) | Package.json(56) | Filesystem(56)
 
 **Schema Reference:** [ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md](ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md)
 
@@ -63,12 +64,26 @@ This document provides a comprehensive registry of all RawaLite automation scrip
 | 35 | VALIDATE_ELECTRON_ABI_CHECK.cjs | VALIDATE | ELECTRON | ABI | CHECK | cjs | ✅ Active | 🟡 Important | preinstall | 2025-10-17 | Electron ABI |
 | 36 | VALIDATE_ELECTRON_ABI_VERIFY.mjs | VALIDATE | ELECTRON | ABI | VERIFY | mjs | ✅ Active | 🟡 Important | validate:electron-abi | 2025-10-17 | ABI verification |
 | 37 | VALIDATE_GLOBAL_CRITICAL_FIXES.mjs | VALIDATE | GLOBAL | CRITICAL_FIXES | CHECK | mjs | ✅ Active | 🔴 CRITICAL | validate:critical-fixes | 2025-10-17 | Session validation |
-| 38 | VALIDATE_NATIVE_BINDINGS_CHECK.mjs | VALIDATE | NATIVE | BINDINGS | CHECK | mjs | ✅ Active | 🟡 Important | guard:native | 2025-10-17 | Native bindings |
+| 38 | VALIDATE_CONFIGURATION_CONSISTENCY.cjs | VALIDATE | CONFIGURATION | CONSISTENCY | CHECK | cjs | ✅ Active | 🔴 CRITICAL | validate:configuration | 2025-01-28 | Central Configuration |
+| 39 | VALIDATE_NATIVE_BINDINGS_CHECK.mjs | VALIDATE | NATIVE | BINDINGS | CHECK | mjs | ✅ Active | 🟡 Important | guard:native | 2025-10-17 | Native bindings |
 | 39 | VALIDATE_NATIVE_MODULES_CHECK.mjs | VALIDATE | NATIVE | MODULES | CHECK | mjs | ✅ Active | 🟡 Important | guard:native | 2025-10-17 | Native modules |
 | 40 | VALIDATE_PATHS_COMPLIANCE_CHECK.mjs | VALIDATE | PATHS | COMPLIANCE | CHECK | mjs | ✅ Active | 🟡 Important | validate:path-compliance | 2025-10-17 | Path compliance |
 | 41 | VALIDATE_RELEASE_ASSETS_CHECK.mjs | VALIDATE | RELEASE | ASSETS | CHECK | mjs | ✅ Active | 🟡 Important | validate:release-assets | 2025-10-17 | Release assets |
 | 42 | VALIDATE_RELEASE_PRERELEASE_CHECK.mjs | VALIDATE | RELEASE | PRERELEASE | CHECK | mjs | ✅ Active | 🟡 Important | validate:pre-release | 2025-10-17 | Pre-release check |
 | 43 | VALIDATE_SCRIPTS_REGISTRY_SYNC.mjs | VALIDATE | SCRIPTS | REGISTRY | SYNC | mjs | ✅ Active | 🟡 Important | validate:scripts-registry | 2025-10-17 | Registry validation |
+| 44 | DOCS_CROSS_REFERENCE_REPAIR.mjs | DOCS | CROSS_REFERENCE | REPAIR | FIX | mjs | ✅ Active | 🟡 Important | docs:cross-reference-repair | 2025-10-20 | Cross-ref repair (renamed) |
+| 45 | DOCS_METADATA_CONSISTENCY_FIX.mjs | DOCS | METADATA | CONSISTENCY | FIX | mjs | ✅ Active | 🟡 Important | docs:metadata-consistency-fix | 2025-10-20 | Metadata fix (renamed) |
+| 46 | DOCS_SCHEMA_COMPLIANCE_FIX.mjs | DOCS | SCHEMA | COMPLIANCE | FIX | mjs | ✅ Active | 🟡 Important | docs:schema-compliance-fix | 2025-10-20 | Schema fix (renamed) |
+| 47 | DOCS_SCHEMA_COMPLIANCE_INCREMENTAL.mjs | DOCS | SCHEMA | COMPLIANCE | INCREMENTAL | mjs | ✅ Active | 🟡 Important | docs:schema-compliance-incremental | 2025-10-20 | Incremental fix (renamed) |
+| 48 | VALIDATE_CSS_MODULAR_CHECK.mjs | VALIDATE | CSS | MODULAR | CHECK | mjs | ✅ Active | 🟡 Important | validate:css-modular | 2025-10-20 | CSS modular check (renamed) |
+| 49 | VALIDATE_DOCS_CONSISTENCY_CHECK.mjs | VALIDATE | DOCS | CONSISTENCY | CHECK | mjs | ✅ Active | 🟡 Important | validate:docs-consistency | 2025-10-20 | Docs consistency (renamed) |
+| 50 | VALIDATE_DOCS_LINKS_CHECK.mjs | VALIDATE | DOCS | LINKS | CHECK | mjs | ✅ Active | 🟡 Important | validate:docs-links | 2025-10-20 | Docs links check (renamed) |
+| 51 | VALIDATE_DOCS_MASTER_DEBUG.mjs | VALIDATE | DOCS | MASTER | DEBUG | mjs | ✅ Active | 🟡 Important | validate:docs-master-debug | 2025-10-20 | Master debug (renamed) |
+| 52 | VALIDATE_DOCS_MASTER_ENHANCED.mjs | VALIDATE | DOCS | MASTER | ENHANCED | mjs | ✅ Active | 🟡 Important | validate:docs-master-enhanced | 2025-10-20 | Master enhanced (renamed) |
+| 53 | VALIDATE_DOCS_MASTER_WORKING.mjs | VALIDATE | DOCS | MASTER | WORKING | mjs | ✅ Active | 🟡 Important | validate:docs-master-working | 2025-10-20 | Master working (renamed) |
+| 54 | VALIDATE_MASTER_DOCS_REPO_SYNC.mjs | VALIDATE | MASTER | DOCS_REPO | SYNC | mjs | ✅ Active | 🔴 CRITICAL | validate:master-docs-repo-sync | 2025-10-20 | Master validation script |
+| 55 | ipc-test-script.js | - | - | - | - | js | ✅ Active | 🔸 Standard | - | 2025-10-20 | Legacy test script |
+| 56 | VALIDATE_CONFIGURATION_CONSISTENCY.cjs | VALIDATE | CONFIGURATION | CONSISTENCY | CHECK | cjs | ✅ Active | 🔴 CRITICAL | validate:configuration | 2025-01-28 | Central Configuration |
 
 ---
 
@@ -77,23 +92,23 @@ This document provides a comprehensive registry of all RawaLite automation scrip
 ### **Scripts by Category**
 | Kategorie | Count | Percentage | Critical | Important | Standard |
 |-----------|-------|------------|----------|-----------|----------|
-| VALIDATE | 15 | 34.9% | 1 | 14 | 0 |
-| BUILD | 8 | 19.0% | 1 | 3 | 4 |
-| DEV | 8 | 19.0% | 0 | 0 | 8 |
-| MAINTAIN | 9 | 21.4% | 0 | 0 | 9 |
-| ANALYZE | 3 | 7.1% | 0 | 0 | 3 |
-| DOCS | 1 | 2.4% | 0 | 0 | 1 |
-| **TOTAL** | **43** | **100%** | **2** | **15** | **26** |
+| VALIDATE | 22 | 40.0% | 2 | 20 | 0 |
+| BUILD | 8 | 14.5% | 1 | 3 | 4 |
+| DEV | 8 | 14.5% | 0 | 0 | 8 |
+| MAINTAIN | 9 | 16.4% | 0 | 0 | 9 |
+| ANALYZE | 3 | 5.5% | 0 | 0 | 3 |
+| DOCS | 5 | 9.1% | 0 | 4 | 1 |
+| **TOTAL** | **55** | **100%** | **3** | **27** | **25** |
 
 ### **Scripts by File Extension**
 | Extension | Count | Percentage | Notes |
 |-----------|-------|------------|-------|
-| .mjs | 15 | 34.9% | Modern ES Modules |
-| .cjs | 14 | 32.6% | Legacy CommonJS |
-| .ps1 | 9 | 20.9% | PowerShell Scripts |
-| .cmd | 3 | 7.0% | Windows Batch |
-| .js | 1 | 2.3% | Context-dependent |
-| .ts | 1 | 2.3% | TypeScript |
+| .mjs | 27 | 49.1% | Modern ES Modules |
+| .cjs | 14 | 25.5% | Legacy CommonJS |
+| .ps1 | 9 | 16.4% | PowerShell Scripts |
+| .cmd | 3 | 5.5% | Windows Batch |
+| .js | 2 | 3.6% | Context-dependent |
+| .ts | 1 | 1.8% | TypeScript |
 
 ### **Critical Scripts Breakdown**
 | Priority | Count | Scripts |
@@ -226,7 +241,7 @@ pnpm validate:documentation-structure           # Documentation compliance
 
 - **Schema Guide:** [ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md](ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md)
 - **Critical Fixes:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md)
-- **Documentation Paths:** [VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md](VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md)
+- **Documentation Paths:** [ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md](ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md)
 - **KI Instructions:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md)
 
 ---

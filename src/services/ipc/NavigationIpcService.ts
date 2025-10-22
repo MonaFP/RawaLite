@@ -219,14 +219,14 @@ export class NavigationIpcService {
     return {
       navigationMode: 'header-navigation',
       headerHeight: 72,
-      sidebarWidth: 240,
+      sidebarWidth: 280,
       autoCollapse: false,
       rememberFocusMode: true,
-      gridTemplateColumns: '240px 1fr',
+      gridTemplateColumns: '280px 1fr',
       gridTemplateRows: '72px 40px 1fr',
       gridTemplateAreas: `
-        "sidebar header"
-        "sidebar focus-bar"
+        "header header"
+        "focus-bar focus-bar"
         "sidebar main"`
     };
   }

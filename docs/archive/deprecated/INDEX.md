@@ -23,7 +23,7 @@
 
 ### **📋 Documentation Registry (3 files)**
 - `DEPRECATED_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-16.md` - Legacy sitemap navigation
-- `DEPRECATED_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md` - Legacy central paths
+- `DEPRECATED_ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md` - Legacy central paths
 - `DEPRECATED_VALIDATED_REGISTRY-MAIN-DOCUMENTS-OVERVIEW_2025-10-16.md` - Legacy main overview
 
 ### **📝 System Analysis (1 file)**

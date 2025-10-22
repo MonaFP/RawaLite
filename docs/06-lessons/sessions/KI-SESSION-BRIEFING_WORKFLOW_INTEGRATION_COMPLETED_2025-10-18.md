@@ -29,7 +29,7 @@ Alle ROOT-Dokumente in `/docs` wurden erfolgreich mit der **KI-SESSION-BRIEFING 
 
 ### **🔑 Workflow-Integration Kernelemente:**
 
-- **MANDATORY Reference:** [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md)
+- **MANDATORY Reference:** [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md)
 - **Required Reading:** KI-SESSION-BRIEFING process für jede Session
 - **Critical Validation:** `pnpm validate:critical-fixes` vor allen Änderungen
 - **Safe Commands:** `pnpm safe:version` statt `pnpm version`

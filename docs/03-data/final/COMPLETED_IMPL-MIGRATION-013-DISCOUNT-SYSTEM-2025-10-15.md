@@ -218,7 +218,7 @@ SELECT COUNT(*) FROM offers WHERE discount_type IS NULL; -- Sollte 100% sein
 - **`docs/12-lessons/DISCOUNT-SYSTEM-IMPLEMENTATION.md`** - Vollständige Implementierung
 - ## 🔗 Verwandte Dokumentation
 
-> **📋 Vollständige Dokumentation:** Siehe [../../DOCS_SITEMAP.md](../../DOCS_SITEMAP.md) für alle verfügbaren Ressourcen.
+> **📋 Vollständige Dokumentation:** Siehe [../../INDEX.md](../../INDEX.md) für alle verfügbaren Ressourcen.
 
 - **`docs/00-meta/CRITICAL-FIXES-REGISTRY.md`** - FIX-006 Schutz
 - **`docs/02-dev/DATABASE-MIGRATION-GUIDE.md`** - Allgemeine Migration-Prozesse

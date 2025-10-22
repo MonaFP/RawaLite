@@ -56,8 +56,6 @@
 #### **✅ Header Cross-Reference Format (100% Applied)**
 ```markdown
 > **🔗 Verwandte Dokumentation:**
-> **[CATEGORY]:** [Document Title](../folder/file.md) - Brief description  
-> **[CATEGORY]:** [Document Title](../folder/file.md) - Brief description
 ```
 **Applied to:** 5/5 major theme documents with consistent formatting
 

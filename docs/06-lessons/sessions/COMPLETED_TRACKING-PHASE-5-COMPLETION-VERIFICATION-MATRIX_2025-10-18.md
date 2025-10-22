@@ -129,8 +129,6 @@
 > **Schema:** `[STATUS]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
 
 > **🔗 Verwandte Dokumente:**
-> **See also:** [Related Document](../path/file.md)  
-> **Dependencies:** [Required Reading](../path/dependency.md)
 ```
 
 ---

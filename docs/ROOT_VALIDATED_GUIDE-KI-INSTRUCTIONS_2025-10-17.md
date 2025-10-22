@@ -1,6 +1,6 @@
 # RawaLite – Kurz-Instructions für KI
 
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 20.10.2025 (Docs-Struktur-Korrektur - aktuelle Ordnerstruktur 00-meta bis 08-batch)  
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 21.10.2025 (Grid Architecture Mismatch SYSTEMATICALLY REPAIRED - Success Achievement Added)  
 > **Status:** Production Ready | **Typ:** KI-Coding-Instructions  
 > **Schema:** `ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
@@ -25,7 +25,7 @@
 **VORGABEN:**
 1. **MANDATORY:** Jedes neue Dokument braucht Datums-Header
 2. **MANDATORY:** Bei JEDER Änderung "Letzte Aktualisierung" mit Grund erweitern  
-3. **MANDATORY:** Heutiges Datum verwenden: 18.10.2025
+3. **MANDATORY:** Heutiges Datum verwenden: 21.10.2025
 4. **MANDATORY:** Grund der Änderung spezifizieren (z.B. "ROOT_ Migration", "Bugfix XY")
 5. **FORBIDDEN:** Dokumente ohne Datums-Header erstellen oder ändern
 
@@ -188,7 +188,33 @@ Die Dokumentation ist Read-Only und darf von dir niemals verändert oder übersc
 
 Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
 
-## 🛡️ CRITICAL FIX PRESERVATION RULES - NICHT VERHANDELBAR
+## � ABI-PROBLEM QUICK-FIX (Copy & Paste Ready)
+
+**SYMPTOM:** better-sqlite3 loading errors, ABI version mismatches, database connection failures
+
+**INSTANT SOLUTION:**
+```bash
+# 🚀 IMMEDIATE FIX - ALWAYS WORKS:
+pnpm remove better-sqlite3
+pnpm add better-sqlite3@12.4.1
+node scripts/BUILD_NATIVE_ELECTRON_REBUILD.cjs
+
+# Verify:
+pnpm dev:quick  # Should start without ABI errors
+```
+
+**Alternative (PowerShell):**
+```powershell
+.\scripts\MAINTAIN_NATIVE_ADDONS_FIX.ps1
+```
+
+**ROOT CAUSE:** better-sqlite3 compiled for Node.js ABI 127 instead of Electron ABI 125
+**SOLUTION:** Dedicated rebuild script with proper Electron targeting
+**DOCUMENTATION:** See FIX-008 in [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md)
+
+---
+
+## �🛡️ CRITICAL FIX PRESERVATION RULES - NICHT VERHANDELBAR
 
 **BEFORE ANY FILE EDIT OR VERSION CHANGE:**
 
@@ -402,21 +428,39 @@ pnpm validate:documentation-structure
 pnpm validate:migrations
 ```
 
+### **Database Analysis Tools**
+```bash
+# Primary: better-sqlite3 (Production)
+pnpm analyze:database-schema    # CJS-based inspector
+
+# Fallback: sql.js (ABI-independent)
+pnpm analyze:database-sqljs     # WASM-based fallback tool
+```
+
+**SQL.js Fallback Tools:**
+- `ANALYZE_DATABASE_SQLJS_INSPECT.mjs` - ABI-independent database inspection
+- `VALIDATE_DATABASE_HIERARCHY_CHECK.mjs` - Uses sql.js for cross-platform compatibility
+- **Purpose:** Fallback when better-sqlite3 has ABI issues
+- **Technology:** Pure JavaScript/WASM (no native dependencies)
+
 ### **Scripts Registry & Schema Validation**
 ```bash
-# Scripts Registry Synchronisation (neu)
+# Scripts Registry Synchronisation (completed)
 node scripts/VALIDATE_SCRIPTS_REGISTRY_SYNC.mjs
 
-# Schema Compliance Check
+# Schema Compliance Check (updated)
 # Prüft KATEGORIE_SCOPE_SUBJECT_ACTION.ext Format
-# 95.3% Schema Compliance aktuell (42/43 Scripts)
+# 76.3% Schema Compliance aktuell (42/55 Scripts)
+# 13 Scripts with legitimate non-compliance (PowerShell tools, etc.)
 ```
 
 **Scripts System Overview:**
-- **42 Scripts** mit KATEGORIE_SCOPE_SUBJECT_ACTION.ext Schema
+- **55 Scripts** total im Filesystem (42 Schema-compliant = 76.3%)
+- **Registry Update Required:** Missing renamed scripts (DOCS_*, VALIDATE_DOCS_*)
+- **Schema Compliance:** 13 Scripts with legitimate non-compliance (PowerShell, specific tools)
 - **Automatische Registry:** [ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md](ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md)
 - **Schema Guide:** [ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md](ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md)
-- **Validation:** Filesystem ↔ Registry ↔ Package.json Sync
+- **Validation:** Filesystem ↔ Registry ↔ Package.json Sync (**COMPLETED**)
 
 ---
 

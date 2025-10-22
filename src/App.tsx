@@ -9,11 +9,14 @@ import { useNavigation } from "./contexts/NavigationContext";
 import { useFocusMode } from "./contexts/FocusModeContext";
 import { FocusModeToggle } from "./components/FocusModeToggle";
 import { FocusNavigation } from "./components/FocusNavigation";
+import { useEffect } from "react";
 
 export default function App(){
   const { mode } = useNavigation();
   const { active, variant } = useFocusMode();
   const location = useLocation();
+
+
   
   // Get page title based on current route
   const getPageTitle = () => {

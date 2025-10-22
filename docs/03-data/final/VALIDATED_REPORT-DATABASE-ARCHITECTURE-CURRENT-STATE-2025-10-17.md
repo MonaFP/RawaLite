@@ -1,8 +1,8 @@
-# 📊 RawaLite Database Architecture - Current State (Schema v26)
+# 📊 RawaLite Database Architecture - Current State (Migration 029)
 
 **Status**: ✅ Production Ready  
-**Schema Version**: 26 (October 2025)  
-**Database Engine**: SQLite (better-sqlite3)  
+**Schema Version**: Migration 029 (Focus Mode System) - October 2025  
+**Database Engine**: SQLite (better-sqlite3 12.4.1)  
 **Journal Mode**: WAL (Write-Ahead Logging)  
 **Location**: `%APPDATA%\Roaming\Electron\database\rawalite.db`
 
@@ -33,7 +33,7 @@ const query = `SELECT id, company_name, created_at FROM customers WHERE id = ?`;
 
 ---
 
-## 🗄️ Database Schema (19 Tables)
+## 🗄️ Database Schema (19 Business + 3 System Tables)
 
 ### **📊 Core Business Tables**
 
@@ -469,7 +469,43 @@ const customers = db.prepare(`
 ✅ Hierarchy Consistency: No orphaned items  
 ✅ Numbering Sequences: All circles operational
 ✅ Status History: Complete audit trail
-✅ Schema Version: v26 (latest)
+✅ Schema Version: Migration 029 (Focus Mode System)
+✅ Theme System: Migration 027 applied (DatabaseThemeService)
+✅ Navigation System: Migration 028 applied (DatabaseNavigationService)
+✅ Focus Mode: Migration 029 applied (Enhanced UX modes)
+```
+
+### **System Tables (NEW - Migrations 027-029)**
+```sql
+-- Theme System (Migration 027)
+CREATE TABLE themes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  display_name TEXT NOT NULL,
+  colors TEXT NOT NULL, -- JSON
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+-- Navigation State (Migration 028)  
+CREATE TABLE navigation_state (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL DEFAULT 'default',
+  layout_mode TEXT NOT NULL DEFAULT 'header',
+  sidebar_collapsed BOOLEAN DEFAULT FALSE,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+-- Focus Mode Settings (Migration 029)
+CREATE TABLE focus_mode (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL DEFAULT 'default',
+  enabled BOOLEAN DEFAULT FALSE,
+  mode_type TEXT DEFAULT 'standard',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 ```
 
 ### **Validation Patterns**

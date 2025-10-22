@@ -23,7 +23,7 @@
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 240px !important;  /* ✅ FIX: Aus alter Doku - explizite Breite */
   height: 100%;
   box-sizing: border-box;
   gap: 20px;

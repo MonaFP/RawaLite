@@ -21,15 +21,15 @@
   
   /* HEADER-STATISTICS Mode - Statistics Header + Compact Navigation Sidebar */
   --header-statistics-sidebar-width: 240px;
-  --header-statistics-header-height: 85px; /* Höher für Statistics Cards */
+  --header-statistics-header-height: 160px; /* Angepasst: Logo-Bereich Höhe */
   
   /* HEADER-NAVIGATION Mode - Navigation Header + Compact Statistics Sidebar */
   --header-navigation-sidebar-width: 280px; /* Breiter für bessere Navigation */
-  --header-navigation-header-height: 72px;
+  --header-navigation-header-height: 160px; /* Angleichung: gleiche Höhe wie header-statistics */
   
   /* FULL-SIDEBAR Mode - Minimal Header + Full Sidebar */
   --full-sidebar-sidebar-width: 240px;
-  --full-sidebar-header-height: 72px;
+  --full-sidebar-header-height: 36px;
 }
 
 /* Base App Grid Layout - Database-Theme Integration */
@@ -38,6 +38,20 @@
   min-height: 100vh;
   background: var(--theme-grid-bg, var(--bg));
   color: var(--theme-grid-text, var(--foreground));
+  width: 100%;
+  height: 100vh;
+  overflow: hidden; /* Verhindert Content außerhalb Container */
+  position: relative;
+}
+
+/* Main Content Area - Ensures content stays within bounds */
+.app .main-content,
+.app [data-area="main"],
+.app main {
+  grid-area: main;
+  overflow: auto;
+  min-height: 0; /* Wichtig für CSS Grid overflow */
+  position: relative;
 }
 
 /* Focus Bar Area - Database-Theme Integration */
@@ -90,35 +104,35 @@
 }
 
 /* =========================================
-   NAVIGATION MODES GRID LAYOUTS - SEPARATED & UNIQUE
+   NAVIGATION MODES GRID LAYOUTS - DATABASE-FIRST
    ========================================= */
 
 /* 🎯 HEADER-STATISTICS Mode - Statistics Header + Compact Navigation Sidebar */
 [data-navigation-mode="header-statistics"] .app {
-  grid-template-columns: var(--header-statistics-sidebar-width, 240px) 1fr;
-  grid-template-rows: var(--header-statistics-header-height, 85px) var(--theme-focus-bar-height, 40px) 1fr;
-  grid-template-areas:
+  grid-template-columns: var(--db-header-statistics-grid-template-columns, var(--header-statistics-sidebar-width, 240px) 1fr);
+  grid-template-rows: var(--db-header-statistics-grid-template-rows, var(--header-statistics-header-height, 160px) var(--theme-focus-bar-height, 40px) 1fr);
+  grid-template-areas: var(--db-header-statistics-grid-template-areas, 
     "sidebar header"
     "sidebar focus-bar"
-    "sidebar main";
+    "sidebar main");
 }
 
 /* 🎯 HEADER-NAVIGATION Mode - Navigation Header + Compact Statistics Sidebar */
 [data-navigation-mode="header-navigation"] .app {
-  grid-template-columns: var(--header-navigation-sidebar-width, 280px) 1fr;
-  grid-template-rows: var(--header-navigation-header-height, 72px) var(--theme-focus-bar-height, 40px) 1fr;
-  grid-template-areas:
-    "header header"
-    "focus-bar focus-bar"
-    "sidebar main";
+  grid-template-columns: var(--db-header-navigation-grid-template-columns, var(--header-navigation-sidebar-width, 280px) 1fr);
+  grid-template-rows: var(--db-header-navigation-grid-template-rows, var(--header-navigation-header-height, 160px) var(--theme-focus-bar-height, 40px) 1fr);
+  grid-template-areas: var(--db-header-navigation-grid-template-areas,
+    "sidebar header"
+    "sidebar focus-bar"
+    "sidebar main");
 }
 
 /* 🎯 FULL-SIDEBAR Mode - Minimal Header + Full Sidebar */
 [data-navigation-mode="full-sidebar"] .app {
-  grid-template-columns: var(--full-sidebar-sidebar-width, 240px) 1fr;
-  grid-template-rows: var(--full-sidebar-header-height, 72px) var(--theme-focus-bar-height, 40px) 1fr;
-  grid-template-areas:
-    "header header"
-    "focus-bar focus-bar"
-    "sidebar main";
+  grid-template-columns: var(--db-full-sidebar-grid-template-columns, var(--full-sidebar-sidebar-width, 240px) 1fr);
+  grid-template-rows: var(--db-full-sidebar-grid-template-rows, var(--full-sidebar-header-height, 36px) var(--theme-focus-bar-height, 40px) 1fr);
+  grid-template-areas: var(--db-full-sidebar-grid-template-areas,
+    "sidebar header"
+    "sidebar focus-bar"
+    "sidebar main");
 }

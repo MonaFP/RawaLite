@@ -6,7 +6,7 @@
 > **🛡️ ROOT-PROTECTED:** Kritisch für Script-Management, NIEMALS verschieben!
 
 > **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
-> **Required:** Follow [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before script development
+> **Required:** Follow [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before script development
 > **Standard:** All scripts must use KATEGORIE_SCOPE_SUBJECT_ACTION.ext naming pattern
 
 This document defines the authoritative naming schema and standards for all RawaLite automation scripts.
@@ -290,7 +290,7 @@ pnpm validate:critical-fixes
 
 - **Scripts Registry:** `ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md`
 - **Critical Fixes:** `ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md`
-- **Documentation Paths:** `VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md`
+- **Documentation Paths:** `ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md`
 - **KI Instructions:** `ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md`
 
 ---

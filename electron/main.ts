@@ -22,6 +22,7 @@ import { registerUpdateManagerHandlers } from './ipc/update-manager'
 import { registerUpdateIpc } from './ipc/updates'
 import { initializeThemeIpc } from './ipc/themes'
 import { initializeNavigationIpc } from './ipc/navigation'
+import { initializeConfigurationIpc } from './ipc/configuration'
 
 
 console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_ENV);
@@ -70,6 +71,9 @@ app.whenReady().then(async () => {
     
     // Initialize navigation service with database
     initializeNavigationIpc(getDb());
+    
+    // Initialize configuration service with database
+    initializeConfigurationIpc(getDb());
     
     // Setup Update Event Forwarding to UI
     updateManager.onUpdateEvent((event) => {

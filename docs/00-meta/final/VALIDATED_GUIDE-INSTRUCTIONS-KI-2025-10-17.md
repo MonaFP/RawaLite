@@ -143,7 +143,7 @@ Bestätige bitte jedes Mal, dass du die Dokumentation nicht angepasst hast.
 
 ## ✅ docs-Struktur
 
-> **📋 Aktuelle Struktur:** Siehe [DOCS_SITEMAP.md](../../DOCS_SITEMAP.md) für vollständige Ordner-Inhalte und Details.
+> **📋 Aktuelle Struktur:** Siehe [INDEX.md](../../INDEX.md) für vollständige Ordner-Inhalte und Details.
 
 - ** Änderung nur nach Abnahme und Aufforderung durch Entwickler **-
 - **hier ergänzen/aktualisieren bei neuen Inhalten** - 
@@ -305,7 +305,7 @@ KI erkennt Themen anhand des folgenden Musters im Dateinamen:
 * **KI soll** bei widersprüchlichen Inhalten die *neueste Validated-Datei* bevorzugen.
 * **KI darf** „WIP" oder „Plan" nur zur Orientierung, nicht als Fakt verwenden.
 * **KI darf nicht** aus `DEPRECATED-` ableiten, außer bei Historienfragen.
-* **KI soll** die `DOCS_SITEMAP.md` als Inhaltsverzeichnis verwenden.
+* **KI soll** die `INDEX.md` als Inhaltsverzeichnis verwenden.
 
 **Beispiele:**
 ```

@@ -2,7 +2,7 @@
 
 **🚨 KRITISCHE RAWALITE-COMPLIANCE (ERGÄNZT)**
 
-* **PFLICHT vor Start:** Befolge [KI-SESSION-BRIEFING.prompt.md](../../.github/prompts/KI-SESSION-BRIEFING.prompt.md)
+* **PFLICHT vor Start:** Befolge [KI-SESSION-BRIEFING.prompt.md](../../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md)
   - Lese **ZWINGEND:** `docs/00-meta/final/CRITICAL-FIXES-REGISTRY.md` (ABSOLUT KRITISCH!)
   - Lese **ZWINGEND:** `docs/00-meta/final/VALIDATED-2025-10-15_INSTRUCTIONS-KI.md` 
   - Lese **ZWINGEND:** `.github/copilot-instructions.md`

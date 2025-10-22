@@ -1,3 +1,19 @@
+// 🚀 PRIMARY ABI-SAFE DATABASE INSPECTOR (sql.js-based)
+// 
+// ✅ SICHERE ALTERNATIVE zu better-sqlite3-basierten Scripts
+// ✅ ABI-KOMPATIBEL: Node.js ABI 127 + Electron ABI 125
+// ✅ READ-ONLY: Datenbankinspektion ohne Schreibzugriff
+// ✅ INSTALLIERT: sql.js bereits verfügbar
+//
+// ERSETZT DIESE DEPRECATED SCRIPTS (verschoben nach archive/deprecated-abi-scripts/):
+// - DEPRECATED_check-migration-status.mjs
+// - DEPRECATED_inspect-db-simple.mjs  
+// - DEPRECATED_inspect-real-db.mjs
+// - DEPRECATED_test-header-height-fix.mjs
+// - DEPRECATED_debug-db.mjs
+// - DEPRECATED_debug-db-alt.mjs
+// - DEPRECATED_debug-db-backup.mjs
+//
 // Node-context database debugger using sql.js
 // Alternative to debug-db.cjs that doesn't require better-sqlite3 ABI compatibility
 // Uses sql.js for read-only database inspection in Node.js context

@@ -86,25 +86,33 @@
 [data-navigation-mode="header-navigation"] .header-navigation .navigation-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 20px;
   flex: 2;
   justify-content: center;
+  height: 100%;
+  padding: 0 16px;
 }
 
 [data-navigation-mode="header-navigation"] .header-navigation .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  border-radius: 6px;
+  justify-content: center;
+  gap: 8px;
+  padding: 21px 25px;
+  border-radius: 8px;
   text-decoration: none;
   color: var(--theme-nav-text);
   background: var(--theme-nav-bg);
   border: 1px solid var(--theme-nav-border);
   transition: all 0.2s ease;
   font-size: 0.85em;
-  min-width: 60px;
+  min-width: 110px;
+  width: 110px;
+  height: 85px;
+  text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 [data-navigation-mode="header-navigation"] .header-navigation .nav-item:hover {
@@ -121,13 +129,16 @@
 }
 
 [data-navigation-mode="header-navigation"] .header-navigation .nav-icon {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
+  opacity: 0.8;
 }
 
 [data-navigation-mode="header-navigation"] .header-navigation .nav-label {
   font-size: 0.75em;
   text-align: center;
+  line-height: 1.2;
+  margin: 0;
 }
 
 /* Right Section - Header Navigation Mode */

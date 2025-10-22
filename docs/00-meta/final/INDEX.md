@@ -5,7 +5,7 @@
 ## 🚨 **CRITICAL SYSTEMS (MUST READ)**
 
 ### **🗂️ CENTRAL PATH MANAGEMENT**
-- **[VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md](../../VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md)** - 🚀 **PATHS.md SYSTEM**
+- **[ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md](../../ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md)** - 🚀 **PATHS.md SYSTEM**
   - **104+ Path Constants** für alle Dokumentations-Cross-References
   - **Import-like Syntax:** `[PATHS.md](PATHS.md#CONSTANT)`
   - **Single Source of Truth** - Zentrale Pfadverwaltung

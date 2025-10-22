@@ -22,8 +22,11 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { ThemeIpcService } from '../services/ipc/ThemeIpcService';
+import { ConfigurationIpcService } from '../services/ipc/ConfigurationIpcService';
 import { ThemeFallbackManager, type FallbackThemeInfo } from '../services/ThemeFallbackManager';
 import type { ThemeWithColors } from '../services/DatabaseThemeService';
+import type { ActiveConfiguration } from '../services/DatabaseConfigurationService';
+import type { NavigationMode } from '../services/DatabaseNavigationService';
 
 // Legacy Theme interface for backward compatibility
 export type Theme = 'default' | 'sage' | 'sky' | 'lavender' | 'peach' | 'rose';
@@ -54,7 +57,7 @@ export interface DatabaseThemeInfo extends ThemeWithColors {
 export interface DatabaseThemeContextType {
   // Legacy compatibility methods
   currentTheme: Theme;
-  setTheme: (theme: Theme) => void;
+  setTheme: (theme: Theme) => Promise<void>;  // NOW ASYNC for central config
   themes: Record<Theme, ThemeInfo>;
   
   // Database-first methods
@@ -65,6 +68,11 @@ export interface DatabaseThemeContextType {
   updateCustomTheme: (themeId: number, updates: Partial<ThemeWithColors>) => Promise<boolean>;
   deleteCustomTheme: (themeId: number) => Promise<boolean>;
   
+  // NEW: Central Configuration Integration
+  activeConfig: ActiveConfiguration | null;
+  navigationMode: NavigationMode;
+  focusMode: boolean;
+  
   // System state
   isLoading: boolean;
   fallbackInfo: FallbackThemeInfo | null;
@@ -74,6 +82,16 @@ export interface DatabaseThemeContextType {
   refreshThemes: () => Promise<void>;
   isCustomTheme: (themeKey: string) => boolean;
   getThemeByKey: (themeKey: string) => DatabaseThemeInfo | null;
+  
+  // NEW: Central Configuration Methods
+  refreshConfiguration: () => Promise<void>;
+  updateConfiguration: (updates: Partial<{
+    theme: string;
+    navigationMode: NavigationMode;
+    focusMode: boolean;
+    headerHeight: number;
+    sidebarWidth: number;
+  }>) => Promise<boolean>;
 }
 
 // Legacy theme definitions for fallback compatibility
@@ -169,11 +187,17 @@ export const useTheme = () => {
 interface DatabaseThemeProviderProps {
   children: React.ReactNode;
   themeIpcService?: ThemeIpcService; // Injected for testing
+  userId?: string;  // NEW: User ID for configuration
+  initialNavigationMode?: NavigationMode;  // NEW: Navigation mode integration
+  initialFocusMode?: boolean;  // NEW: Focus mode integration
 }
 
 export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({ 
   children, 
-  themeIpcService 
+  themeIpcService,
+  userId = 'default',
+  initialNavigationMode = 'header-statistics',
+  initialFocusMode = false
 }) => {
   // Core state
   const [currentDatabaseTheme, setCurrentDatabaseTheme] = useState<DatabaseThemeInfo | null>(null);
@@ -181,12 +205,18 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [fallbackInfo, setFallbackInfo] = useState<FallbackThemeInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // NEW: Central Configuration State
+  const [activeConfig, setActiveConfig] = useState<ActiveConfiguration | null>(null);
+  const [navigationMode, setNavigationMode] = useState<NavigationMode>(initialNavigationMode);
+  const [focusMode, setFocusMode] = useState<boolean>(initialFocusMode);
 
   // Services
   const themeServiceRef = useRef<ThemeIpcService | null>(null);
   const fallbackManagerRef = useRef<ThemeFallbackManager | null>(null);
+  const configurationServiceRef = useRef<ConfigurationIpcService | null>(null);
 
-  // Initialize services
+  // FIXED: Ensure ThemeIpcService is properly initialized
   useEffect(() => {
     if (themeIpcService) {
       themeServiceRef.current = themeIpcService;
@@ -194,6 +224,10 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
       themeServiceRef.current = ThemeIpcService.getInstance();
     }
     fallbackManagerRef.current = ThemeFallbackManager.getInstance();
+    configurationServiceRef.current = ConfigurationIpcService.getInstance();
+    
+    // CRITICAL FIX: Ensure database service is actually available
+    console.log('[DatabaseThemeProvider] ThemeIpcService initialized:', !!themeServiceRef.current);
   }, [themeIpcService]);
 
   // Initialize database service (when not injected for testing)
@@ -246,6 +280,7 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
     (isLegacyTheme(currentDatabaseTheme?.themeKey) ? currentDatabaseTheme!.themeKey as Theme : 'default');
 
   // Load initial theme
+  // NOW ENHANCED: Uses central configuration system for unified state management
   useEffect(() => {
     loadInitialTheme();
   }, []);
@@ -255,40 +290,140 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
     setError(null);
 
     try {
-      // Get saved theme from localStorage as fallback
+      // SIMPLIFIED: Start with fallback themes immediately for instant UI
+      console.log('[DatabaseThemeManager] Starting with fallback themes for instant UI...');
+      
+      // Get saved theme from localStorage or use default
       const savedTheme = localStorage.getItem('rawalite-theme') as Theme | null;
-      const preferredThemeKey = savedTheme || 'default';
+      const preferredThemeKey = savedTheme || 'sage';
 
-      // Try to load from database first
-      const fallbackInfo = await fallbackManagerRef.current!.applyThemeWithFallback(
-        preferredThemeKey,
-        async () => {
-          if (!themeServiceRef.current) return null;
-          
-          // Get user's active theme from database
-          const userTheme = await themeServiceRef.current.getUserActiveTheme();
-          return userTheme;
+      // Apply theme with database loader immediately
+      const databaseThemeLoader = async () => {
+        if (!configurationServiceRef.current) return null;
+        try {
+          const config = await configurationServiceRef.current.getActiveConfig(userId, preferredThemeKey, navigationMode, focusMode);
+          if (config && themeServiceRef.current) {
+            // Get the theme object by key from the configuration
+            const themeKey = config.theme || preferredThemeKey;
+            const theme = await themeServiceRef.current.getThemeByKey(themeKey);
+            return theme;
+          }
+          return null;
+        } catch (error) {
+          console.warn('[DatabaseThemeManager] Database theme loader failed:', error);
+          return null;
         }
-      );
+      };
 
+      const fallbackInfo = await fallbackManagerRef.current!.applyThemeWithFallback(preferredThemeKey, databaseThemeLoader);
       setFallbackInfo(fallbackInfo);
       
-      // Convert to DatabaseThemeInfo format
+      // Convert to DatabaseThemeInfo format and set immediately
       const databaseThemeInfo = convertToDatabase(fallbackInfo.theme);
       setCurrentDatabaseTheme(databaseThemeInfo);
+      
+      // Load all available legacy themes immediately
+      const legacyThemeInfos = Object.values(LEGACY_THEMES).map(convertLegacyToDatabase);
+      setAllDatabaseThemes(legacyThemeInfos);
+      
+      // Set loading to false so UI becomes interactive
+      setIsLoading(false);
 
-      // Load all available themes
-      await refreshThemes();
+      // BACKGROUND: Try to enhance with central configuration (non-blocking)
+      if (configurationServiceRef.current) {
+        try {
+          console.log('[DatabaseThemeManager] Attempting central configuration enhancement...');
+          const config = await configurationServiceRef.current.getActiveConfig(userId, preferredThemeKey, navigationMode, focusMode);
+          
+          if (config) {
+            console.log('[DatabaseThemeManager] Central configuration loaded successfully');
+            
+            setActiveConfig(config);
+            setNavigationMode(config.navigationMode);
+            setFocusMode(config.focusMode);
+            
+            // Update with central config theme if different
+            if (config.theme !== preferredThemeKey) {
+              const configThemeInfo = convertToDatabase({
+                id: config.themeId,
+                themeKey: config.theme,
+                name: config.theme,
+                description: `Theme from central configuration`,
+                icon: '🎨',
+                isSystemTheme: true,
+                isActive: true,
+                colors: {
+                  primary: config.primaryColor,
+                  secondary: config.secondaryColor || config.primaryColor,
+                  accent: config.accentColor,
+                  background: config.backgroundColor,
+                  text: config.textColor
+                }
+              });
+              
+              setCurrentDatabaseTheme(configThemeInfo);
+            }
+          }
+        } catch (configError) {
+          console.warn('[DatabaseThemeManager] Central configuration failed, using fallback theme:', configError);
+        }
+      }
+
+      // BACKGROUND: Try to load database themes (non-blocking but with better detection)
+      if (themeServiceRef.current) {
+        try {
+          console.log('[DatabaseThemeManager] Attempting to load database themes...');
+          const availableThemes = await themeServiceRef.current.getAllThemes();
+          if (availableThemes && availableThemes.length > 0) {
+            console.log('[DatabaseThemeManager] Successfully loaded', availableThemes.length, 'database themes');
+            setAllDatabaseThemes(availableThemes.map(convertToDatabase));
+            
+            // Try to find and apply the user's actual theme from database
+            const userTheme = await themeServiceRef.current.getUserActiveTheme();
+            if (userTheme) {
+              console.log('[DatabaseThemeManager] Found user theme in database:', userTheme.name);
+              const userDatabaseTheme = convertToDatabase(userTheme);
+              setCurrentDatabaseTheme(userDatabaseTheme);
+              
+              // Apply the database theme with proper database loader
+              const databaseThemeLoader = async () => {
+                if (!themeServiceRef.current) return null;
+                try {
+                  return await themeServiceRef.current.getThemeByKey(userTheme.themeKey);
+                } catch (error) {
+                  console.warn('[DatabaseThemeManager] Database theme loader failed:', error);
+                  return null;
+                }
+              };
+              
+              const fallbackInfo = await fallbackManagerRef.current!.applyThemeWithFallback(userTheme.themeKey, databaseThemeLoader);
+              setFallbackInfo(fallbackInfo);
+              
+              console.log('[DatabaseThemeManager] Updated fallback info to database level:', fallbackInfo.level);
+            }
+          } else {
+            console.warn('[DatabaseThemeManager] Database returned empty themes list');
+          }
+        } catch (dbError) {
+          console.warn('[DatabaseThemeManager] Database themes failed, using legacy themes:', dbError);
+        }
+      } else {
+        console.warn('[DatabaseThemeManager] ThemeIpcService not available, using legacy themes only');
+      }
 
     } catch (err) {
-      console.error('[DatabaseThemeProvider] Failed to load initial theme:', err);
+      console.error('[DatabaseThemeManager] Failed to load initial theme:', err);
       setError(`Failed to load theme: ${err}`);
       
-      // Emergency fallback
-      const emergencyFallback = await fallbackManagerRef.current!.applyThemeWithFallback('default');
+      // Emergency fallback - just use the simplest possible theme
+      const emergencyFallback = await fallbackManagerRef.current!.applyThemeWithFallback('sage');
       setFallbackInfo(emergencyFallback);
       setCurrentDatabaseTheme(convertToDatabase(emergencyFallback.theme));
-    } finally {
+      
+      // Still provide legacy themes for selection
+      const legacyThemeInfos = Object.values(LEGACY_THEMES).map(convertLegacyToDatabase);
+      setAllDatabaseThemes(legacyThemeInfos);
+      
       setIsLoading(false);
     }
   };
@@ -313,8 +448,30 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
   };
 
   // Legacy setTheme method for backward compatibility
-  const setTheme = useCallback((theme: Theme) => {
-    setDatabaseTheme(theme);
+  // NOW ENHANCED: Uses central configuration system
+  const setTheme = useCallback(async (theme: Theme): Promise<void> => {
+    try {
+      console.log('[DatabaseThemeManager] Setting theme via legacy method:', theme);
+      
+      // OPTION 1: Use central configuration system (preferred)
+      if (configurationServiceRef.current) {
+        const success = await updateConfiguration({ theme });
+        if (success) {
+          console.log('[DatabaseThemeManager] Theme updated via central configuration');
+          return;
+        }
+      }
+      
+      // OPTION 2: Fallback to legacy theme setting
+      console.log('[DatabaseThemeManager] Using legacy theme setting as fallback');
+      const success = await setDatabaseTheme(theme);
+      if (!success) {
+        console.error('[DatabaseThemeManager] Failed to set theme via legacy method');
+      }
+      
+    } catch (error) {
+      console.error('[DatabaseThemeManager] Error in setTheme:', error);
+    }
   }, []);
 
   const setDatabaseTheme = useCallback(async (themeKey: string): Promise<boolean> => {
@@ -461,6 +618,78 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
     return allDatabaseThemes.find(t => t.themeKey === themeKey) || null;
   }, [allDatabaseThemes]);
 
+  // NEW: Central Configuration Methods
+  const refreshConfiguration = useCallback(async (): Promise<void> => {
+    try {
+      console.log('[DatabaseThemeManager] Refreshing central configuration...');
+      
+      if (!configurationServiceRef.current) {
+        console.warn('[DatabaseThemeManager] Configuration service not available');
+        return;
+      }
+      
+      const currentThemeKey = currentDatabaseTheme?.themeKey || 'sage';
+      const config = await configurationServiceRef.current.getActiveConfig(userId, currentThemeKey, navigationMode, focusMode);
+      
+      if (config) {
+        setActiveConfig(config);
+        
+        // Update local state from central configuration
+        if (config.theme !== currentThemeKey) {
+          // Load the new theme
+          await setDatabaseTheme(config.theme);
+        }
+        if (config.navigationMode !== navigationMode) {
+          setNavigationMode(config.navigationMode);
+        }
+        if (config.focusMode !== focusMode) {
+          setFocusMode(config.focusMode);
+        }
+        
+        console.log('[DatabaseThemeManager] Configuration refreshed successfully:', {
+          theme: config.theme,
+          navigationMode: config.navigationMode,
+          focusMode: config.focusMode,
+          configSource: config.configurationSource
+        });
+      }
+    } catch (error) {
+      console.error('[DatabaseThemeManager] Error refreshing configuration:', error);
+    }
+  }, [userId, currentDatabaseTheme, navigationMode, focusMode]);
+
+  const updateConfiguration = useCallback(async (updates: Partial<{
+    theme: string;
+    navigationMode: NavigationMode;
+    focusMode: boolean;
+    headerHeight: number;
+    sidebarWidth: number;
+  }>): Promise<boolean> => {
+    try {
+      console.log('[DatabaseThemeManager] Updating central configuration:', updates);
+      
+      if (!configurationServiceRef.current) {
+        console.error('[DatabaseThemeManager] Configuration service not available');
+        return false;
+      }
+      
+      const success = await configurationServiceRef.current.updateActiveConfig(userId, updates);
+      
+      if (success) {
+        // Refresh configuration to get the updated values
+        await refreshConfiguration();
+        console.log('[DatabaseThemeManager] Configuration updated and refreshed successfully');
+      } else {
+        console.error('[DatabaseThemeManager] Failed to update configuration');
+      }
+      
+      return success;
+    } catch (error) {
+      console.error('[DatabaseThemeManager] Error updating configuration:', error);
+      return false;
+    }
+  }, [userId, refreshConfiguration]);
+
   const contextValue: DatabaseThemeContextType = {
     // Legacy compatibility
     currentTheme,
@@ -475,6 +704,11 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
     updateCustomTheme,
     deleteCustomTheme,
     
+    // NEW: Central Configuration
+    activeConfig,
+    navigationMode,
+    focusMode,
+    
     // System state
     isLoading,
     fallbackInfo,
@@ -483,7 +717,11 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
     // Utility methods
     refreshThemes,
     isCustomTheme,
-    getThemeByKey
+    getThemeByKey,
+    
+    // NEW: Central Configuration Methods
+    refreshConfiguration,
+    updateConfiguration
   };
 
   return (

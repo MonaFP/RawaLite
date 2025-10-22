@@ -23,7 +23,7 @@ Dieser Guide hilft bei der Lösung von Problemen mit dem **Fix-Preservation Syst
   3. Run: pnpm validate:critical-fixes
   4. Try commit again
 
-> **📋 Vollständige Dokumentation:** Siehe [../../DOCS_SITEMAP.md](../../DOCS_SITEMAP.md) für alle verfügbaren Ressourcen.
+> **📋 Vollständige Dokumentation:** Siehe [../../INDEX.md](../../INDEX.md) für alle verfügbaren Ressourcen.
 ```
 
 **Diagnose:**

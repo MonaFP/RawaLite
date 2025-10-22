@@ -61,7 +61,7 @@ function registerNavigationHandlers() {
       }
       
       // Validate navigation mode
-      if (!['header', 'sidebar', 'full-sidebar'].includes(navigationMode)) {
+      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
         throw new Error(`Invalid navigation mode: ${navigationMode}`);
       }
       
@@ -150,7 +150,120 @@ function registerNavigationHandlers() {
     }
   });
 
-  console.log('[NavigationIPC] Navigation IPC handlers registered successfully');
+  // === NEW: PER-MODE SETTINGS IPC HANDLERS (Migration 034) ===
+
+  // Get mode-specific settings
+  ipcMain.handle('navigation:get-mode-settings', async (_, userId: string = 'default', navigationMode: string) => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      
+      // Validate navigation mode
+      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      }
+      
+      return await navigationService.getModeSpecificSettings(userId, navigationMode as any);
+    } catch (error) {
+      console.error('[IPC:navigation:get-mode-settings] Error:', error);
+      throw error;
+    }
+  });
+
+  // Set mode-specific settings
+  ipcMain.handle('navigation:set-mode-settings', async (_, userId: string = 'default', settings: any) => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.setModeSpecificSettings(userId, settings);
+    } catch (error) {
+      console.error('[IPC:navigation:set-mode-settings] Error:', error);
+      throw error;
+    }
+  });
+
+  // Get all mode settings for user
+  ipcMain.handle('navigation:get-all-mode-settings', async (_, userId: string = 'default') => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.getAllModeSettings(userId);
+    } catch (error) {
+      console.error('[IPC:navigation:get-all-mode-settings] Error:', error);
+      throw error;
+    }
+  });
+
+  // === NEW: FOCUS MODE PREFERENCES IPC HANDLERS (Migration 035) ===
+
+  // Get focus preferences for navigation mode
+  ipcMain.handle('navigation:get-focus-preferences', async (_, userId: string = 'default', navigationMode: string) => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      
+      // Validate navigation mode
+      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      }
+      
+      return await navigationService.getFocusModePreferences(userId, navigationMode as any);
+    } catch (error) {
+      console.error('[IPC:navigation:get-focus-preferences] Error:', error);
+      throw error;
+    }
+  });
+
+  // Set focus preferences for navigation mode
+  ipcMain.handle('navigation:set-focus-preferences', async (_, userId: string = 'default', preferences: any) => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.setFocusModePreferences(userId, preferences);
+    } catch (error) {
+      console.error('[IPC:navigation:set-focus-preferences] Error:', error);
+      throw error;
+    }
+  });
+
+  // Get all focus preferences for user
+  ipcMain.handle('navigation:get-all-focus-preferences', async (_, userId: string = 'default') => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      return await navigationService.getAllFocusPreferences(userId);
+    } catch (error) {
+      console.error('[IPC:navigation:get-all-focus-preferences] Error:', error);
+      throw error;
+    }
+  });
+
+  // Get enhanced layout configuration with per-mode and focus settings
+  ipcMain.handle('navigation:get-enhanced-layout-config', async (_, userId: string = 'default', navigationMode?: string, inFocusMode: boolean = false) => {
+    try {
+      if (!navigationService) {
+        throw new Error('Navigation service not initialized');
+      }
+      
+      // Validate navigation mode if provided
+      if (navigationMode && !['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      }
+      
+      return await navigationService.getEnhancedLayoutConfig(userId, navigationMode as any, inFocusMode);
+    } catch (error) {
+      console.error('[IPC:navigation:get-enhanced-layout-config] Error:', error);
+      throw error;
+    }
+  });
+
+  console.log('[NavigationIPC] Navigation IPC handlers registered successfully (15 handlers)');
 }
 
 /**
@@ -166,7 +279,16 @@ export function cleanupNavigationIpc() {
     'navigation:get-mode-history',
     'navigation:get-statistics',
     'navigation:reset-preferences',
-    'navigation:validate-schema'
+    'navigation:validate-schema',
+    // NEW: Per-Mode Settings Channels
+    'navigation:get-mode-settings',
+    'navigation:set-mode-settings',
+    'navigation:get-all-mode-settings',
+    // NEW: Focus Mode Preferences Channels
+    'navigation:get-focus-preferences',
+    'navigation:set-focus-preferences',
+    'navigation:get-all-focus-preferences',
+    'navigation:get-enhanced-layout-config'
   ];
 
   channels.forEach(channel => {

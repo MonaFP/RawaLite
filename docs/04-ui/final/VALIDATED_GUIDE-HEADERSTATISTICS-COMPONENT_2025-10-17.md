@@ -392,8 +392,8 @@ const formatCurrency = (amount: number): string => {
 
 ## 📚 **Related Documentation**
 
-- [Enhanced Navigation System](V1-5-2-ENHANCED-NAVIGATION.md) - Navigation mode integration
-- [Beautiful Pastel Themes](V1-5-2-BEAUTIFUL-PASTEL-THEMES.md) - Theme system details
+- [Enhanced Navigation System](../../ROOT_VALIDATED_REGISTRY-CSS-THEME-NAVIGATION-ARCHITECTURE_2025-10-17.md) - Navigation mode integration
+- [Beautiful Pastel Themes](../../ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md) - Theme system details
 - [Data Hooks Architecture](../02-architecture/DATA-HOOKS-SYSTEM.md) - Data integration patterns
 - [Component Design System](../01-standards/COMPONENT-DESIGN-SYSTEM.md) - Design standards
 - [Performance Guidelines](../03-development/PERFORMANCE-GUIDELINES.md) - Optimization practices

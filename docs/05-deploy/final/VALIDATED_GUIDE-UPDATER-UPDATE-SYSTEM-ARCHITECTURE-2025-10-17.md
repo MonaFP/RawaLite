@@ -1,8 +1,8 @@
 # UPDATE SYSTEM ARCHITECTURE DOCUMENTATION
 
-**Version:** v1.0.42.2  
+**Version:** v1.0.47  
 **Status:** ✅ PRODUCTION READY  
-**Last Updated:** 12. Oktober 2025  
+**Last Updated:** 20. Oktober 2025 (Migration 029 - Focus Mode System)  
 
 ## 🎯 Architektur-Übersicht
 

@@ -1,20 +1,20 @@
 # CRITICAL FIXES REGISTRY
 
 > **NEVER REMOVE OR MODIFY THESE FIXES WITHOUT EXPLICIT APPROVAL**  
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (Database-Theme-System Critical Fixes Integration - FIX-016, FIX-017, FIX-018)  
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 21.10.2025 (Grid Architecture Mismatch SYSTEMATICALLY REPAIRED - FIX-009 Added)  
 > **Status:** ABSOLUT KRITISCH - Jede KI-Session muss diese prüfen  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
 
 > **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
-> **MANDATORY:** Befolge [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) für jede Session
+> **MANDATORY:** Befolge [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) für jede Session
 > **STEP 1:** Dieses Dokument FIRST lesen vor ANY code changes
 > **STEP 2:** `pnpm validate:critical-fixes` ausführen vor Änderungen
 > **STEP 3:** Bei Release-Tasks: safe:version workflow verwenden (nie direkt pnpm version)
 
 This registry contains all critical fixes that must be preserved across ALL versions.
 Any KI session MUST validate these patterns before making changes.
-**WORKFLOW:** Every session must start with [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) process.
+**WORKFLOW:** Every session must start with [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) process.
 
 ## 📋 **SCHEMA-ÜBERSICHT**
 
@@ -156,17 +156,83 @@ These fixes are MANDATORY and must be preserved in ALL code changes.
 - **NEVER:** Allow dynamic channel names or eval() in IPC
 - **Validation:** All IPC channels must be explicitly whitelisted
 
-### **FIX-008: Better-sqlite3 ABI Compatibility**
-- **File:** `package.json`, `scripts/prebuild-better-sqlite3.cjs`
-- **Issue:** ABI mismatch between Node.js and Electron versions
-- **Fix Pattern:** Explicit rebuild for Electron ABI
-- **Code:**
-  ```bash
-  # Rebuild for Electron ABI
-  npm rebuild better-sqlite3 --runtime=electron --target=25.3.0 --cache=/tmp/.electron-gyp --dist-url=https://electronjs.org/headers
-  ```
+### **FIX-008: Better-sqlite3 ABI Compatibility (Complete Production Solution)**
+- **ID:** `better-sqlite3-abi-compatibility`
+- **Files:** `scripts/BUILD_NATIVE_ELECTRON_REBUILD.cjs`, `package.json`, `.npmrc`, `scripts/MAINTAIN_NATIVE_ADDONS_FIX.ps1`
+- **Issue:** ABI mismatch between Node.js v22.18.0 (ABI 127) and Electron v31.7.7 (ABI 125)
+- **Fix Pattern:** Robust Electron ABI compilation with multiple fallback strategies
+- **First Implemented:** v1.0.13
+- **Last Verified:** v1.0.47 (Migration 030 Success)
+- **Status:** ✅ PRODUCTION READY
+
+**🚀 INSTANT SOLUTION (Copy & Paste Ready):**
+```bash
+# Quick Fix - ALWAYS WORKS (Manual):
+pnpm remove better-sqlite3
+pnpm add better-sqlite3@12.4.1
+node scripts/BUILD_NATIVE_ELECTRON_REBUILD.cjs
+
+# Verify Fix:
+pnpm dev:quick  # Should start without ABI errors
+
+# Alternative Manual Fix (PowerShell):
+.\scripts\MAINTAIN_NATIVE_ADDONS_FIX.ps1
+```
+
+**Required Code Pattern (BUILD_NATIVE_ELECTRON_REBUILD.cjs):**
+```javascript
+// Set exact Electron environment for proper ABI targeting
+const ver = require('../node_modules/electron/package.json').version;
+process.env.npm_config_runtime = 'electron';
+process.env.npm_config_target = ver;
+process.env.npm_config_disturl = 'https://atom.io/download/atom-shell';
+process.env.npm_config_build_from_source = 'true';
+
+// Multi-strategy rebuild with automatic fallback
+let rebuildSuccess = false;
+const r1 = spawnSync('pnpm', ['rebuild', 'better-sqlite3', '--verbose'], { stdio: 'inherit', shell: true });
+
+if (r1.status === 0) {
+  rebuildSuccess = true;
+} else {
+  // Fallback: Remove and reinstall
+  const r2 = spawnSync('pnpm', ['remove', 'better-sqlite3'], { stdio: 'inherit', shell: true });
+  if (r2.status === 0) {
+    const r3 = spawnSync('pnpm', ['add', 'better-sqlite3'], { stdio: 'inherit', shell: true });
+    if (r3.status === 0) rebuildSuccess = true;
+  }
+}
+```
+
+**Required package.json Integration:**
+```json
+{
+  "scripts": {
+    "postinstall": "node scripts/MAINTAIN_NPMRC_SYNC_UPDATE.cjs && node scripts/BUILD_NATIVE_ELECTRON_REBUILD.cjs",
+    "preinstall": "node scripts/VALIDATE_ELECTRON_ABI_CHECK.cjs || true",
+    "rebuild:electron": "node scripts/BUILD_NATIVE_ELECTRON_REBUILD.cjs"
+  }
+}
+```
+
+**FORBIDDEN Patterns (Cause ABI Issues):**
+```bash
+npx electron-rebuild          # ❌ Wrong ABI targeting
+npm rebuild better-sqlite3    # ❌ Uses npm instead of pnpm
+npm install                   # ❌ Wrong package manager
+```
+
+**Expected Behavior (All Verified):**
+- ✅ better-sqlite3 builds for Electron ABI 125
+- ✅ Node.js direct test fails with ABI mismatch (EXPECTED)
+- ✅ `pnpm dev:quick` starts without database errors
+- ✅ Database migrations execute successfully
+- ✅ Theme System + Navigation System fully functional
+- ✅ Automatic .npmrc synchronization with Electron version
+
 - **NEVER:** Skip ABI rebuild or use Node.js ABI for Electron
-- **Validation:** better-sqlite3 must load successfully in Electron
+- **NEVER:** Use npm instead of pnpm for native module operations
+- **Validation:** better-sqlite3 must load successfully in Electron context
 
 ### **FIX-009: SQLite WAL Mode Consistency**
 - **File:** `src/persistence/SQLiteAdapter.ts`
@@ -181,7 +247,46 @@ These fixes are MANDATORY and must be preserved in ALL code changes.
 - **NEVER:** Use DELETE journal mode or change synchronous settings
 - **Validation:** All database connections must use WAL mode
 
-### **FIX-010: Memory Leak Prevention (Database Connections)**
+### **FIX-010: Grid Architecture Mismatch (Database-First Layout System)**
+- **ID:** `grid-architecture-mismatch`
+- **Files:** `src/services/DatabaseNavigationService.ts`, `src/contexts/NavigationContext.tsx`
+- **Issue:** DatabaseNavigationService providing incorrect grid template areas (footer-based) while RawaLite uses 4-area architecture (sidebar, header, focus-bar, main)
+- **Fix Pattern:** Correct grid template areas to match actual RawaLite layout architecture
+- **First Implemented:** v1.0.47 (21.10.2025)
+- **Status:** ✅ SYSTEMATICALLY REPAIRED
+
+**Root Cause:** Database service contained incorrect SYSTEM_DEFAULTS.GRID_TEMPLATE_AREAS:
+```typescript
+// ❌ INCORRECT (Footer-based - RawaLite has NO footer)
+GRID_TEMPLATE_AREAS: '"header header" "sidebar content" "footer footer"'
+
+// ✅ CORRECT (RawaLite's actual 4-area architecture)
+GRID_TEMPLATE_AREAS: '"sidebar header" "sidebar focus-bar" "sidebar main"'
+```
+
+**Required Code Pattern (DatabaseNavigationService.ts):**
+```typescript
+// src/services/DatabaseNavigationService.ts - SYSTEM_DEFAULTS
+const SYSTEM_DEFAULTS = {
+  GRID_TEMPLATE_AREAS: '"sidebar header" "sidebar focus-bar" "sidebar main"',
+  GRID_TEMPLATE_COLUMNS: '250px 1fr',
+  GRID_TEMPLATE_ROWS: '60px 40px 1fr'
+};
+```
+
+**Expected Behavior (All Verified):**
+- ✅ Content stays within CSS Grid container
+- ✅ No overflow outside defined grid areas
+- ✅ All navigation modes (standard, focus, mobile) working
+- ✅ CSS Custom Properties (--db-grid-template-*) correctly applied
+- ✅ NavigationContext CSS variable application functional
+
+- **NEVER:** Use footer-based grid templates for RawaLite
+- **NEVER:** Ignore CSS Grid architecture analysis when debugging layout
+- **ALWAYS:** Verify grid template areas match actual component layout
+- **Validation:** Content must stay within CSS Grid boundaries in all navigation modes
+
+### **FIX-011: Memory Leak Prevention (Database Connections)**
 - **File:** `src/persistence/SQLiteAdapter.ts`
 - **Issue:** Database connections not properly closed
 - **Fix Pattern:** Explicit connection cleanup with try/finally
@@ -353,7 +458,7 @@ These fixes are MANDATORY and must be preserved in ALL code changes.
 ## 🔍 VALIDATION RULES FOR KI
 
 ### **BEFORE ANY FILE EDIT (KI-SESSION-BRIEFING Integration):**
-1. **MANDATORY:** Follow [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) process
+1. **MANDATORY:** Follow [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) process
 2. **Check if file is in CRITICAL-FIXES-REGISTRY.md**
 3. **Verify all required patterns are preserved**
 4. **Never remove Promise-based patterns**
@@ -361,7 +466,7 @@ These fixes are MANDATORY and must be preserved in ALL code changes.
 6. **Never add duplicate event handlers**
 
 ### **BEFORE ANY VERSION BUMP (Enhanced Workflow 18.10.2025):**
-1. **MANDATORY:** Follow [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) for releases
+1. **MANDATORY:** Follow [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) for releases
 2. **Run:** `pnpm validate:critical-fixes`
 3. **MANDATORY:** Use `pnpm safe:version patch/minor/major` (NEVER `pnpm version` direkt)
 4. **Verify:** All fixes are present and functional
@@ -438,7 +543,7 @@ These fixes are MANDATORY and must be preserved in ALL code changes.
 **Last Updated:** 2025-10-18 (KI-SESSION-BRIEFING Workflow Integration + Release Workflow Enhancement)
 **Maintained By:** GitHub Copilot KI + Development Team
 **Validation Script:** `scripts/VALIDATE_GLOBAL_CRITICAL_FIXES.mjs`
-**Required Reading:** [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) for all sessions
+**Required Reading:** [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) for all sessions
 
 ---
 

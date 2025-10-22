@@ -356,6 +356,30 @@ contextBridge.exposeInMainWorld('rawalite', {
     validateSchema: () => 
       ipcRenderer.invoke('navigation:validate-schema') as Promise<boolean>,
   },
+  
+  // 🔧 Central Configuration Management API
+  configuration: {
+    getActiveConfig: (userId: string, theme: string, navigationMode: string, focusMode?: boolean) =>
+      ipcRenderer.invoke('configuration:get-active-config', userId, theme, navigationMode, focusMode) as Promise<any>,
+    updateActiveConfig: (userId: string, updates: any) =>
+      ipcRenderer.invoke('configuration:update-active-config', userId, updates) as Promise<boolean>,
+    validateConsistency: (userId: string) =>
+      ipcRenderer.invoke('configuration:validate-consistency', userId) as Promise<{
+        isConsistent: boolean;
+        issues: string[];
+        recommendations: string[];
+      }>,
+    resetToDefaults: (userId: string) =>
+      ipcRenderer.invoke('configuration:reset-to-defaults', userId) as Promise<boolean>,
+  },
+  
+  // Development tools
+  dev: {
+    triggerCSSReload: () => 
+      ipcRenderer.send('dev:trigger-css-reload'),
+    isDevelopment: () => 
+      ipcRenderer.invoke('dev:is-development') as Promise<boolean>,
+  },
 });
 
 // 📄 PDF API (v1.7.5 Rollback) - Separate namespace for compatibility

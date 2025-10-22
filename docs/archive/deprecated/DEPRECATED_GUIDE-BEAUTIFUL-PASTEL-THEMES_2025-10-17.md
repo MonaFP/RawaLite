@@ -176,8 +176,8 @@ setTheme('salbeigruen'); // Apply sage green theme
 
 ## 📚 **Related Documentation**
 
-- [Enhanced Navigation System](V1-5-2-ENHANCED-NAVIGATION.md) - Navigation integration
-- [HeaderStatistics Component](V1-5-2-HEADERSTATISTICS-COMPONENT.md) - Theme-aware statistics
+- [Enhanced Navigation System](../../ROOT_VALIDATED_REGISTRY-CSS-THEME-NAVIGATION-ARCHITECTURE_2025-10-17.md) - Navigation integration
+- [HeaderStatistics Component](../../04-ui/INDEX.md) - Theme-aware statistics
 - [Implementation Guide](../03-development/IMPLEMENTATION-GUIDE-V1-5-2.md) - Step-by-step setup
 - [Lessons Learned](../12-lessons/LESSONS-LEARNED-v1-5-2-theme-system.md) - Development insights
 

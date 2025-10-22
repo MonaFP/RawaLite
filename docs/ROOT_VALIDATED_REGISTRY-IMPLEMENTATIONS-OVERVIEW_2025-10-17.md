@@ -6,7 +6,7 @@
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
 
 > **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
-> **Required Reading:** [KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before implementation changes
+> **Required Reading:** [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before implementation changes
 > **Validation:** All implementations must preserve critical patterns from CRITICAL-FIXES-REGISTRY
 
 > **🏗️ VOLLSTÄNDIGE ÜBERSICHT aller Haupt-Implementierungen in RawaLite**  
@@ -53,8 +53,9 @@
 - **Navigation:** React Router + Dynamic Breadcrumbs
 
 ### 🎨 **Theme & Styling System**
-- **Location:** `src/styles/`
-- **Architecture:** Modular CSS + CSS Variables + Status System
+- **Location:** `src/styles/` (CSS) + `src/services/` (Services)
+- **Architecture:** Database-First + Modular CSS + CSS Variables + Status System
+- **Services:** `DatabaseThemeService.ts`, `DatabaseNavigationService.ts` (in `src/services/`)
 - **Themes:** 6 Themes (sage, sky, lavender, peach, rose, default)
 - **Navigation:** 3 Modi (header, sidebar, full-sidebar)
 - **Status Colors:** CSS Variables Master-Source (pastel colors)
@@ -84,13 +85,14 @@
 ### 🔄 **System Services**
 | Service | Location | Zweck | Status |
 |---------|----------|-------|--------|
-| **DatabaseService** | `src/main/services/DatabaseService.ts` | Database-Abstraction | ✅ Produktiv |
-| **DatabaseThemeService** | `src/main/services/DatabaseThemeService.ts` | Theme CRUD + Validation | ✅ Produktiv |
+| **DatabaseService** | `src/main/services/` (legacy location) | Database-Abstraction | ⚠️ Legacy |
+| **DatabaseThemeService** | `src/services/DatabaseThemeService.ts` | Theme CRUD + Validation | ✅ Produktiv |
 | **DatabaseNavigationService** | `src/services/DatabaseNavigationService.ts` | Navigation Preferences | ✅ Produktiv |
+| **DatabaseConfigurationService** | `src/services/DatabaseConfigurationService.ts` | Central Configuration Management | ✅ **PHASE 7 COMPLETE** |
 | **UpdateManagerService** | `src/main/services/UpdateManagerService.ts` | Auto-Updates + GitHub | ✅ Produktiv |
 | **GitHubApiService** | `src/main/services/GitHubApiService.ts` | Release-Download + Verify | ✅ Produktiv |
-| **AuthService** | `src/main/services/AuthService.ts` | Session Management | ✅ Produktiv |
-| **FileSystemService** | `src/main/services/FileSystemService.ts` | Path Management | ✅ Produktiv |
+| **AuthService** | `src/main/services/` (if exists) | Session Management | ⚠️ Verify |
+| **FileSystemService** | `src/main/services/` (if exists) | Path Management | ⚠️ Verify |
 
 ---
 
@@ -106,12 +108,21 @@ interface DatabaseAdapter {
   delete(table: string, id: number): Promise<void>
 }
 
-// Business Service Layer
-class PersonService {
+// Business Service Layer (src/services/ for shared logic)
+class DatabaseThemeService {
   constructor(private db: DatabaseAdapter) {}
-  async createPerson(data: CreatePersonData): Promise<Person> {
+  async createTheme(data: CreateThemeData): Promise<Theme> {
     // Business logic + validation
-    return this.db.create('persons', validated)
+    return this.db.create('themes', validated)
+  }
+}
+
+// Main Process Services (src/main/services/ for system integration)
+class UpdateManagerService {
+  constructor(private db: DatabaseAdapter) {}
+  async trackUpdate(data: UpdateData): Promise<void> {
+    // System-level update tracking
+    return this.db.create('update_history', data)
   }
 }
 ```
@@ -331,8 +342,7 @@ pnpm validate:ipc            # IPC security
 ## 🔮 **ZUKUNFTS-ROADMAP**
 
 ### 🎯 **Geplante Features**
-- **Navigation Database Integration** - Migration 028 bereits implementiert ✅
-- **Database-Theme-System** - Migration 027 bereits implementiert ✅
+- **Central Configuration System** - ✅ **PHASE 7 COMPLETE** - DatabaseConfigurationService mit vollem IPC + Test-Coverage
 - **Advanced Reporting** - Extended PDF templates
 - **Multi-Language Support** - i18n infrastructure
 - **Plugin System** - Extensible architecture

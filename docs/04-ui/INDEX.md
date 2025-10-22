@@ -63,8 +63,8 @@ Beispiel: VALIDATED_GUIDE-UI-COMPONENTS-INDEX-2025-10-16.md
 - **TIMESHEETFORM-COMPONENT.md** - Timesheet form design
 
 #### **🎨 Theming & Navigation**
-- **V1-5-2-BEAUTIFUL-PASTEL-THEMES.md** - Pastel theme system
-- **V1-5-2-ENHANCED-NAVIGATION.md** - Enhanced navigation patterns
+- **../../ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md** - Pastel theme system
+- **../../ROOT_VALIDATED_REGISTRY-CSS-THEME-NAVIGATION-ARCHITECTURE_2025-10-17.md** - Enhanced navigation patterns
 - **V1-5-2-CONTEXT-ARCHITECTURE.md** - Context management architecture
 
 #### **📄 PDF Generation (Prefixed PDF-)**

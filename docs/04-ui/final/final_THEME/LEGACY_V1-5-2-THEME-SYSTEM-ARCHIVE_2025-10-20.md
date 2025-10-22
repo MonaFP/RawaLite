@@ -6,7 +6,7 @@
 
 > **⚠️ LEGACY SYSTEM WARNING:**
 > Diese Dokumentation beschreibt das **veraltete CSS-basierte Theme-System** aus RawaLite v1.5.2.  
-> **Aktuelles System:** Siehe [MASTER_DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md](MASTER_DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md)
+> **Aktuelles System:** Siehe [../../ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md](../../ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md)
 
 ## 📋 **LEGACY SYSTEM OVERVIEW**
 

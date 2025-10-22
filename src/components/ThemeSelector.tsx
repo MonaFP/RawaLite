@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDatabaseTheme } from '../contexts/DatabaseThemeManager';
+import { useNavigation } from '../contexts/NavigationContext';
 
 export const ThemeSelector: React.FC = () => {
   const { 
@@ -11,6 +12,21 @@ export const ThemeSelector: React.FC = () => {
     error,
     fallbackInfo 
   } = useDatabaseTheme();
+  const { mode } = useNavigation();
+
+  // Helper function to get user-friendly navigation mode names
+  const getNavigationModeName = (mode: string): string => {
+    switch (mode) {
+      case 'header-statistics':
+        return 'Header Statistics';
+      case 'header-navigation':
+        return 'Header Navigation';
+      case 'full-sidebar':
+        return 'Full Sidebar';
+      default:
+        return mode;
+    }
+  };
 
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [customThemeData, setCustomThemeData] = useState({
@@ -118,25 +134,58 @@ export const ThemeSelector: React.FC = () => {
         Wählen Sie Ihr bevorzugtes Farbthema für eine persönliche Atmosphäre
       </p>
 
-      {/* Status Information */}
-      {fallbackInfo && (
+      {/* Active Theme Status Information */}
+      {currentDatabaseTheme && (
         <div style={{
           marginBottom: '16px',
           padding: '8px 12px',
-          backgroundColor: fallbackInfo.source === 'database' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(251, 146, 60, 0.1)',
-          border: `1px solid ${fallbackInfo.source === 'database' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(251, 146, 60, 0.3)'}`,
+          backgroundColor: !fallbackInfo || fallbackInfo.level === 'database' 
+            ? 'rgba(34, 197, 94, 0.1)' 
+            : fallbackInfo.level === 'css' 
+              ? 'rgba(251, 146, 60, 0.1)' 
+              : 'rgba(239, 68, 68, 0.1)',
+          border: `1px solid ${
+            !fallbackInfo || fallbackInfo.level === 'database' 
+              ? 'rgba(34, 197, 94, 0.3)' 
+              : fallbackInfo.level === 'css' 
+                ? 'rgba(251, 146, 60, 0.3)' 
+                : 'rgba(239, 68, 68, 0.3)'
+          }`,
           borderRadius: '6px',
-          fontSize: '0.8rem'
+          fontSize: '0.85rem'
         }}>
-          <strong>Quelle:</strong> {
-            fallbackInfo.source === 'database' ? '🗄️ Datenbank' :
-            fallbackInfo.source === 'css' ? '🎨 CSS-Fallback' :
-            '⚡ Notfall-Theme'
-          }
-          {fallbackInfo.error && (
-            <span style={{ marginLeft: '8px', opacity: 0.8 }}>
-              ({fallbackInfo.error})
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <span>{currentDatabaseTheme.icon}</span>
+            <strong>Aktives Theme:</strong>
+            <span style={{ fontWeight: '500' }}>{currentDatabaseTheme.name}</span>
+            <span style={{ color: 'var(--text-secondary, #6b7280)', margin: '0 4px' }}>|</span>
+            <strong>Aktiver Navigationsmodus:</strong>
+            <span style={{ fontWeight: '500' }}>{getNavigationModeName(mode)}</span>
+          </div>
+          
+          {/* Show fallback warning only when not using database */}
+          {fallbackInfo && fallbackInfo.level !== 'database' && (
+            <div style={{ 
+              marginTop: '4px', 
+              fontSize: '0.75rem', 
+              opacity: 0.9,
+              fontStyle: 'italic'
+            }}>
+              {fallbackInfo.level === 'css' ? (
+                <span style={{ color: '#d97706' }}>
+                  ⚠️ Verwendet CSS-Fallback (Datenbank nicht verfügbar)
+                </span>
+              ) : (
+                <span style={{ color: '#dc2626' }}>
+                  🚨 Notfall-Modus aktiv (System-Fallback)
+                </span>
+              )}
+              {fallbackInfo.error && (
+                <span style={{ marginLeft: '8px', opacity: 0.8 }}>
+                  - {fallbackInfo.error}
+                </span>
+              )}
+            </div>
           )}
         </div>
       )}

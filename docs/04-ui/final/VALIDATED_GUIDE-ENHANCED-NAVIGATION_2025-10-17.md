@@ -326,8 +326,8 @@ All navigation components automatically adapt to the current theme:
 
 ## 📚 **Related Documentation**
 
-- [Beautiful Pastel Themes](V1-5-2-BEAUTIFUL-PASTEL-THEMES.md) - Theme integration
-- [HeaderStatistics Component](V1-5-2-HEADERSTATISTICS-COMPONENT.md) - Statistics header details
+- [Beautiful Pastel Themes](../../ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md) - Theme integration
+- [HeaderStatistics Component](../../04-ui/INDEX.md) - Statistics header details
 - [Architecture Overview](../02-architecture/V1-5-2-CONTEXT-ARCHITECTURE.md) - Context system design
 - [Implementation Guide](../03-development/IMPLEMENTATION-GUIDE-V1-5-2.md) - Setup instructions
 - [Lessons Learned](../12-lessons/LESSONS-LEARNED-v1-5-2-navigation-modes.md) - Development insights

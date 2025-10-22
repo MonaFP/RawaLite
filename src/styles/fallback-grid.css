@@ -1,0 +1,58 @@
+/* 🚨 EMERGENCY FALLBACK GRID - Minimal Layout Safety Net */
+/* 📅 Erstellt: 2025-10-21 - Separated from layout-grid.css for Database-First Architecture */
+/* 🎯 ZWECK: NUR für fehlende data-navigation-mode Attribute */
+/* ⚠️ WICHTIG: Diese Datei hat NIEDRIGSTE Priorität - Database-Werte überschreiben diese */
+
+/* =========================================
+   EMERGENCY FALLBACK - MINIMALER GRID
+   ========================================= */
+
+/* 
+ * CRITICAL SAFETY NET: Verhindert Content außerhalb Container
+ * Wird nur aktiv wenn data-navigation-mode Attribut komplett fehlt
+ * Database-Konfiguration hat immer Vorrang über diese Fallback-Werte
+ */
+.app:not([data-navigation-mode]) {
+  /* Minimal funktionsfähiges Grid Layout */
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 160px 40px 1fr;
+  grid-template-areas: 
+    "sidebar header"
+    "sidebar focus-bar"
+    "sidebar main";
+  
+  /* Container-Sicherheit */
+  overflow: hidden;
+  min-height: 100vh;
+  height: 100vh;
+}
+
+/* Emergency Content Area Binding - verhindert Content außerhalb */
+.app:not([data-navigation-mode]) .main-content,
+.app:not([data-navigation-mode]) [data-area="main"],
+.app:not([data-navigation-mode]) main {
+  grid-area: main;
+  overflow: auto;
+  min-height: 0;
+  position: relative;
+}
+
+/* Emergency Focus Bar - minimale Funktionalität */
+.app:not([data-navigation-mode]) .focus-bar-area {
+  grid-area: focus-bar;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* 
+ * HINWEIS: Diese Regeln werden durch Database-First Layout überschrieben
+ * sobald data-navigation-mode korrekt gesetzt wird.
+ * 
+ * Reihenfolge in index.css:
+ * 1. fallback-grid.css (diese Datei) - niedrigste Priorität
+ * 2. layout-grid.css - Database-First - höchste Priorität
+ */

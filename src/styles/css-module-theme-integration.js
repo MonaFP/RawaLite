@@ -44,19 +44,19 @@ export class CSSModuleThemeIntegration {
    */
   static async applyCurrentDatabaseTheme() {
     try {
-      // Import DatabaseThemeManager dynamically to avoid circular deps
-      const { DatabaseThemeManager } = await import('../contexts/DatabaseThemeManager');
-      const themeManager = new DatabaseThemeManager();
+      console.log('🎨 [CSS-Module-Theme] Trying to apply database theme...');
       
-      await themeManager.initialize();
-      const currentTheme = themeManager.getCurrentTheme();
+      // SIMPLIFIED APPROACH: Try to get active theme from DOM attributes
+      const themeElement = document.querySelector('[data-active-theme]');
+      const activeTheme = themeElement?.getAttribute('data-active-theme') || 
+                         document.documentElement.getAttribute('data-theme') ||
+                         'rose'; // Default based on screenshot
       
-      if (currentTheme) {
-        this.applyCSSModuleTheme(currentTheme);
-      } else {
-        console.warn('🎨 [CSS-Module-Theme] No active theme found, applying fallback');
-        this.applyFallbackTheme();
-      }
+      console.log('🎨 [CSS-Module-Theme] Detected active theme:', activeTheme);
+      
+      // Apply specific theme colors instead of generic fallback
+      this.applySpecificTheme(activeTheme);
+      
     } catch (error) {
       console.error('🚨 [CSS-Module-Theme] Failed to apply database theme:', error);
       this.applyFallbackTheme();
@@ -127,6 +127,76 @@ export class CSSModuleThemeIntegration {
   }
   
   /**
+   * Apply specific theme colors based on theme name
+   */
+  static applySpecificTheme(themeName) {
+    console.log('🎨 [CSS-Module-Theme] Applying specific theme:', themeName);
+    
+    // Define theme color mappings - RESTORED FROM ORIGINAL BACKUP (DEZENTE PASTELLFARBEN)
+    const themeColors = {
+      'rose': {
+        '--accent': '#b87ba2',          // Dezenter rosa Akzent (Original)
+        '--accent-2': '#a76b91',        // Sekundärer rosa Ton (Original)
+        '--sidebar-bg': '#4a2d3a',      // Dunkler Schokoladentext für Sidebar (Original)
+        '--foreground': '#fbf7f9',      // Sehr helle rosa Basis für Text (Original)
+        '--muted': '#a68d96',           // Gedämpftes rosa (Original)
+        '--main-bg': 'linear-gradient(135deg, #fbf7f9 0%, #f8eef2 30%, #f0e5eb 70%, #e3d1dd 100%)', // Dezente rosa Verlauf
+        '--text-primary': '#4a2d3a',    // Dunkler Schokoladentext (Original)
+        '--text-secondary': '#735a65',  // Medium rosa-braun (Original)
+        '--border-color': '#e3d1dd',    // Sanfte rosa Umrandung (Original)
+        '--background-primary': '#fbf7f9' // Sehr helle rosa Basis (Original)
+      },
+      'salbeigruen': {
+        '--accent': '#7ba87b',          // Dezenter grüner Akzent (Original)
+        '--accent-2': '#6b976b',        // Sekundärer grüner Ton (Original)
+        '--sidebar-bg': '#2d4a2d',      // Dunkler grüner Text für Sidebar (Original)
+        '--foreground': '#f7f9f7',      // Sehr helle grüne Basis für Text (Original)
+        '--muted': '#8da68d',           // Gedämpftes grün (Original)
+        '--main-bg': 'linear-gradient(135deg, #f7f9f7 0%, #eef2ee 30%, #e5ebe5 70%, #d1ddd1 100%)', // Dezente grüne Verlauf
+        '--text-primary': '#2d4a2d',    // Dunkler grüner Text (Original)
+        '--text-secondary': '#5a735a',  // Medium grün-braun (Original)
+        '--border-color': '#d1ddd1',    // Sanfte grüne Umrandung (Original)
+        '--background-primary': '#f7f9f7' // Sehr helle grüne Basis (Original)
+      },
+      'himmelblau': {
+        '--accent': '#7ba2b8',          // Dezenter blauer Akzent (Original)
+        '--accent-2': '#6b8ea7',        // Sekundärer blauer Ton (Original) 
+        '--sidebar-bg': '#2d3a4a',      // Dunkler blauer Text für Sidebar (Original)
+        '--foreground': '#f7f9fb',      // Sehr helle blaue Basis für Text (Original)
+        '--muted': '#8d9aa6',           // Gedämpftes blau (Original)
+        '--main-bg': 'linear-gradient(135deg, #f7f9fb 0%, #eef2f8 30%, #e5ebe5 70%, #d1d7dd 100%)', // Dezente blaue Verlauf
+        '--text-primary': '#2d3a4a',    // Dunkler blauer Text (Original)
+        '--text-secondary': '#5a6573',  // Medium blau-grau (Original)
+        '--border-color': '#d1d7dd',    // Sanfte blaue Umrandung (Original)
+        '--background-primary': '#f7f9fb' // Sehr helle blaue Basis (Original)
+      },
+      'default': {
+        '--accent': '#8b9dc3',
+        '--accent-2': '#c1d0bc', 
+        '--sidebar-bg': '#1e293b',
+        '--foreground': '#ffffff',
+        '--muted': '#64748b',
+        '--main-bg': 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%)',
+        '--text-primary': '#1e293b',
+        '--text-secondary': '#64748b',
+        '--border-color': 'rgba(139, 157, 195, 0.2)',
+        '--background-primary': '#ffffff'
+      }
+    };
+    
+    const colors = themeColors[themeName] || themeColors['default'];
+    
+    Object.entries(colors).forEach(([cssVar, value]) => {
+      document.documentElement.style.setProperty(cssVar, value);
+    });
+    
+    document.documentElement.setAttribute('data-theme', themeName);
+    document.documentElement.setAttribute('data-theme-source', 'simplified');
+    
+    console.log('✅ [CSS-Module-Theme] Applied', themeName, 'theme colors');
+  }
+
+  /**
    * Apply fallback theme for CSS modules
    * Uses ThemeFallbackManager for consistent fallback behavior
    */
@@ -137,23 +207,27 @@ export class CSSModuleThemeIntegration {
       // Import ThemeFallbackManager dynamically
       const { ThemeFallbackManager } = await import('../services/ThemeFallbackManager');
       
-      // Apply CSS fallback theme
-      ThemeFallbackManager.applyFallbackTheme('css');
+      // SIMPLIFIED: Apply direct CSS fallback theme for now
+      console.log('🎨 [CSS-Module-Theme] Applying simplified fallback theme');
       
-      // Additional CSS module specific fallback mappings
+      // Apply CSS module specific fallback mappings directly
       const cssModuleFallbacks = {
         '--main-bg': 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%)',
         '--text-primary': '#1e293b',
         '--text-secondary': '#64748b',
         '--border-color': 'rgba(255,255,255,.08)',
-        '--background-primary': '#ffffff'
+        '--background-primary': '#ffffff',
+        '--accent': '#8b9dc3',
+        '--sidebar-bg': '#1e293b',
+        '--foreground': '#ffffff',
+        '--muted': '#64748b'
       };
       
       Object.entries(cssModuleFallbacks).forEach(([cssVar, value]) => {
         document.documentElement.style.setProperty(cssVar, value);
       });
       
-      console.log('✅ [CSS-Module-Theme] Fallback theme applied to CSS modules');
+      console.log('✅ [CSS-Module-Theme] Simplified fallback theme applied to CSS modules');
     } catch (error) {
       console.error('🚨 [CSS-Module-Theme] Failed to apply fallback theme:', error);
     }

@@ -8,8 +8,8 @@ UI-Komponenten, Theme-System, CSS-Frameworks und Design-Patterns für RawaLite v
 ### 📁 Struktur
 
 #### 📋 Root-Dateien
-- **V1-5-2-ENHANCED-NAVIGATION.md** → 3-Modus Enhanced Navigation System (Header Statistics, Header Navigation, Full Sidebar)
-- **V1-5-2-HEADERSTATISTICS-COMPONENT.md** → Unified HeaderStatistics mit 95px Cards und Company Data
+- **../../ROOT_VALIDATED_REGISTRY-CSS-THEME-NAVIGATION-ARCHITECTURE_2025-10-17.md** → 3-Modus Enhanced Navigation System (Header Statistics, Header Navigation, Full Sidebar)
+- **../../04-ui/INDEX.md** → Unified HeaderStatistics mit 95px Cards und Company Data
 - **LOGO-MANAGEMENT-WORKFLOW.md** → Complete workflow for logo identification, debugging, and fixing across navigation modes
 
 #### 🎨 final_THEME/

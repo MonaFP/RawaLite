@@ -11,7 +11,7 @@
 
 > **🔗 Verwandte Dokumente:**
 > **Audit-Basis:** [COMPLETED_REPORT-DATABASE-THEME-SYSTEM-DOCUMENTATION-AUDIT_2025-10-18.md](COMPLETED_REPORT-DATABASE-THEME-SYSTEM-DOCUMENTATION-AUDIT_2025-10-18.md)  
-> **KI-SESSION-BRIEFING:** [KI-SESSION-BRIEFING.prompt.md](../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md)  
+> **KI-SESSION-BRIEFING:** [KI-SESSION-BRIEFING.prompt.md](../../../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md)  
 > **Critical Fixes:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md)
 
 ---
@@ -350,8 +350,6 @@ AFTER:  VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md
 > **Schema:** `[STATUS]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
 
 > **🔗 Verwandte Dokumente:**
-> **See also:** [Related Document](../path/file.md)  
-> **Dependencies:** [Required Reading](../path/dependency.md)
 ```
 
 ### **Phase 4 Success Criteria**

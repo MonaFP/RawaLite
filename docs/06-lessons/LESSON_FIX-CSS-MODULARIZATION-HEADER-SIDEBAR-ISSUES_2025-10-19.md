@@ -181,7 +181,32 @@ border-right-color: CSS custom property likely
 - Doppelte Layout-Systeme: Grid (Container) + Flex (Header)
 - Potentielle Box-Model-Konflikte
 
-### **Step 3: Sidebar Analysis**
+### **Step 3: KRITISCHE THEME-REGRESSION ENTDECKT (20.10.2025)**
+
+**🚨 CRITICAL THEME FAILURE:** Rose Theme völlig falsch implementiert!
+
+**Problem:** Grelle, unprofessionelle Farben statt dezente Pastelltöne
+```css
+/* ❌ FALSCH IMPLEMENTIERT (20.10.2025): */
+--accent: '#e11d48'        /* Grelles Rot - KATASTROPHE! */
+--sidebar-bg: '#881337'    /* Viel zu dunkel und grell */
+
+/* ✅ ORIGINAL DEZENTE PASTELLFARBEN (aus Backup): */
+--accent: '#b87ba2'        /* Dezenter rosa Akzent */
+--sidebar-bg: '#4a2d3a'    /* Dunkler Schokoladentext */
+--background-primary: '#fbf7f9'  /* Sehr helle rosa Basis */
+```
+
+**Root Cause:** Ignorierte originale Backup-Dokumentation
+- **Original:** "Dezente Pastelltöne" aus `C:\Users\ramon\Desktop\old\Rawaliteold\src\index.css`
+- **Fehler:** Implementierte grelle moderne Farben statt subtile Originalfarben
+- **Impact:** Theme unbrauchbar, unprofessionell aussehend
+
+**Lösung:** Vollständige Wiederherstellung der originalen dezenten Farben aus `DEPRECATED_GUIDE-BEAUTIFUL-PASTEL-THEMES_2025-10-17.md`
+
+**Lesson Learned:** ⚠️ **IMMER originale Backup-Files und Dokumentation checken vor Theme-Änderungen!**
+
+### **Step 4: Sidebar Analysis**
 
 **Problem:** "Sidebar wirkt wie zu schmal"
 

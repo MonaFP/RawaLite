@@ -29,7 +29,7 @@ Alle Dokumentation zur **datenbankbasierten Theme-Implementation** in RawaLite v
 
 ### 🏗️ **SYSTEM ARCHITECTURE (CURRENT)**
 
-> **📖 Vollständige Details:** Siehe [MASTER_DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md](MASTER_DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md)
+> **📖 Vollständige Details:** Siehe [../../ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md](../../ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md)
 
 #### **3-Level Fallback Architecture (VERIFIZIERT)**
 ```

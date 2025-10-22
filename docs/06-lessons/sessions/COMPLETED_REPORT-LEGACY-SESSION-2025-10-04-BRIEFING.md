@@ -280,7 +280,7 @@ yarn install
 
 ## 🔗 WICHTIGE DOKUMENTATIONS-REFERENZEN
 
-> **📋 Vollständige Struktur:** Siehe [../../DOCS_SITEMAP.md](../../DOCS_SITEMAP.md) für Navigation und alle verfügbaren Dokumente.
+> **📋 Vollständige Struktur:** Siehe [../../INDEX.md](../../INDEX.md) für Navigation und alle verfügbaren Dokumente.
 
 **PRIORITÄT 1 - SUB-ITEM IMPLEMENTATION:**
 - `docs/08-ui/active/SUB-ITEM-IMPLEMENTATION-PLAN.md` - **HAUPTPLAN für Phase 1 Umsetzung**

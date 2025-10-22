@@ -72,7 +72,7 @@ Beispiel: COMPLETED_REPORT-BATCH-001-SCHEMA-UPDATE_2025-10-16.md
 - **Status:** ✅ Bereits fertig - keine Änderung nötig  
 - **Validiert:** Vollständige Schema-Dokumentation vorhanden
 
-### 6. `docs/VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md`
+### 6. `docs/ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md`
 - **Aktion:** Schema-Header ergänzt (vorherige Session)
 - **Status:** ✅ Bereits fertig - keine Änderung nötig
 - **Validiert:** Path-Registry mit Schema-Übersicht

@@ -1,7 +1,8 @@
 # RawaLite Nachhaltige Architektur-Bereinigung
 
 ## 📋 Status: ✅ COMPLETED
-$12025-10-17**Version:** v1.0.40  
+**Last Updated:** 17.10.2025  
+**Version:** v1.0.47 (Migration 029 applied)  
 **Typ:** Strukturelle Bereinigung & Settings-Vervollständigung
 
 ---

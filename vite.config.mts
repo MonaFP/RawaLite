@@ -19,9 +19,19 @@ export default defineConfig({
     // Cache building fixes for v1.0.42
     rollupOptions: {
       cache: false, // Disable persistent cache to prevent stale builds
+      output: {
+        // Ensure CSS files get unique hashes to prevent caching issues
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.css')) {
+            return 'assets/[name]-[hash].css';
+          }
+          return 'assets/[name]-[hash][extname]';
+        }
+      }
     },
     minify: 'esbuild', // Consistent minification
-    target: 'es2022' // Align with tsconfig
+    target: 'es2022', // Align with tsconfig
+    cssCodeSplit: false, // Keep all CSS in one file for Electron
   },
   server: { port: 5174 },
   // Additional cache fixes

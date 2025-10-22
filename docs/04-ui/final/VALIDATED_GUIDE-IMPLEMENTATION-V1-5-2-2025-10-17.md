@@ -790,9 +790,9 @@ console.log(useNavigation());
 ## 📚 **Additional Resources**
 
 ### **Documentation References**
-- [Beautiful Pastel Themes](../08-ui/V1-5-2-BEAUTIFUL-PASTEL-THEMES.md)
-- [Enhanced Navigation System](../08-ui/V1-5-2-ENHANCED-NAVIGATION.md)
-- [HeaderStatistics Component](../08-ui/V1-5-2-HEADERSTATISTICS-COMPONENT.md)
+- [Beautiful Pastel Themes](../08-ui/../../ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md)
+- [Enhanced Navigation System](../08-ui/../../ROOT_VALIDATED_REGISTRY-CSS-THEME-NAVIGATION-ARCHITECTURE_2025-10-17.md)
+- [HeaderStatistics Component](../08-ui/../../04-ui/INDEX.md)
 - [Critical Fixes Registry](../00-meta/CRITICAL-FIXES-REGISTRY.md)
 
 ### **Development Commands**

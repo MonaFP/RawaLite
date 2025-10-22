@@ -7,7 +7,7 @@ Ziele:
 - Erhalte Dateinamen, verschiebe nur Pfade.
 - Bewahre Präfixe (VALIDATED-, SOLVED-, DEPRECATED-, WIP_).
 - Erzeuge/aktualisiere INDEX.md in jedem Top-Level-Bereich (final/plan/wip/sessions).
-- Aktualisiere DOCS_SITEMAP.md (Kurzüberblick: Bereich, Dateien, letzte Änderung, Status).
+- Aktualisiere INDEX.md (Kurzüberblick: Bereich, Dateien, letzte Änderung, Status).
 - Gib am Ende einen Markdown-Tree der neuen Struktur aus.
 
 REGELN:
@@ -109,5 +109,5 @@ if (APPLY) {
 OUTPUT:
 1) Bestätigungs-Log verschobener Dateien (Alt → Neu)
 2) Neue Ordnerstruktur als Markdown-Tree
-3) Aktualisierte DOCS_SITEMAP.md (Vorschau)
+3) Aktualisierte INDEX.md (Vorschau)
 4) Liste UNMAPPED (falls vorhanden)

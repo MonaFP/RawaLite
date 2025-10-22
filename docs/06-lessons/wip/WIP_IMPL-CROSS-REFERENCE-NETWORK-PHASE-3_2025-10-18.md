@@ -210,13 +210,9 @@ Das Database-Theme-System implementiert eine 3-level fallback Architektur für T
 ```markdown
 # Template for Cross-Reference Header
 > **🔗 Verwandte Dokumentation:**
-> **[CATEGORY]:** [Document Title](../folder/file.md) - Brief description  
-> **[CATEGORY]:** [Document Title](../folder/file.md) - Brief description  
-> **[CATEGORY]:** [Document Title](../folder/file.md) - Brief description
 
 # Template for Section Cross-Reference
 > **Related:** [Specific Topic](../folder/file.md#section) for detailed implementation  
-> **See also:** [Related Concept](../folder/file.md) for context
 
 # Template for Footer Discovery
 ## 🔗 **SEE ALSO**

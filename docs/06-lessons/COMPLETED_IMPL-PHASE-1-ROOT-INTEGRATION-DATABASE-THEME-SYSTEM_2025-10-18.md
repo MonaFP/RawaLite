@@ -12,7 +12,7 @@
 > **🔗 Implementierte Dateien:**
 > **Critical Fixes:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md)  
 > **KI Instructions:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md)  
-> **Session Briefing:** [KI-SESSION-BRIEFING.prompt.md](../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md)  
+> **Session Briefing:** [KI-SESSION-BRIEFING.prompt.md](../../../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md)  
 > **Validation Script:** [VALIDATE_GLOBAL_CRITICAL_FIXES.mjs](../../../scripts/VALIDATE_GLOBAL_CRITICAL_FIXES.mjs)
 
 ---

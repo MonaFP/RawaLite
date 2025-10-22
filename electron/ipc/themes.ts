@@ -182,7 +182,118 @@ function registerThemeHandlers() {
     }
   });
 
-  console.log('[ThemeIPC] Theme IPC handlers registered successfully');
+  // === NEW: THEME OVERRIDE IPC HANDLERS (Migration 036) ===
+
+  // Get theme override by ID
+  ipcMain.handle('themes:get-override', async (_, userId: string, overrideId: number) => {
+    try {
+      if (!themeService) {
+        throw new Error('Theme service not initialized');
+      }
+      return await themeService.getThemeOverride(userId, overrideId);
+    } catch (error) {
+      console.error('[IPC:themes:get-override] Error:', error);
+      throw error;
+    }
+  });
+
+  // Get scoped theme overrides
+  ipcMain.handle('themes:get-scoped-overrides', async (_, userId: string, scopeType: string, navigationMode?: string, isFocusMode: boolean = false) => {
+    try {
+      if (!themeService) {
+        throw new Error('Theme service not initialized');
+      }
+      
+      // Validate scope type
+      if (!['navigation-mode', 'focus-mode', 'combined'].includes(scopeType)) {
+        throw new Error(`Invalid scope type: ${scopeType}`);
+      }
+      
+      return await themeService.getScopedThemeOverrides(userId, scopeType as any, navigationMode as any, isFocusMode);
+    } catch (error) {
+      console.error('[IPC:themes:get-scoped-overrides] Error:', error);
+      throw error;
+    }
+  });
+
+  // Get all theme overrides for user
+  ipcMain.handle('themes:get-all-overrides', async (_, userId: string = 'default') => {
+    try {
+      if (!themeService) {
+        throw new Error('Theme service not initialized');
+      }
+      return await themeService.getAllThemeOverrides(userId);
+    } catch (error) {
+      console.error('[IPC:themes:get-all-overrides] Error:', error);
+      throw error;
+    }
+  });
+
+  // Set theme override
+  ipcMain.handle('themes:set-override', async (_, userId: string, override: any) => {
+    try {
+      if (!themeService) {
+        throw new Error('Theme service not initialized');
+      }
+      return await themeService.setThemeOverride(userId, override);
+    } catch (error) {
+      console.error('[IPC:themes:set-override] Error:', error);
+      throw error;
+    }
+  });
+
+  // Delete theme override
+  ipcMain.handle('themes:delete-override', async (_, userId: string, overrideId: number) => {
+    try {
+      if (!themeService) {
+        throw new Error('Theme service not initialized');
+      }
+      return await themeService.deleteThemeOverride(userId, overrideId);
+    } catch (error) {
+      console.error('[IPC:themes:delete-override] Error:', error);
+      throw error;
+    }
+  });
+
+  // Get applicable theme overrides for context
+  ipcMain.handle('themes:get-applicable-overrides', async (_, userId: string = 'default', navigationMode: string = 'header-navigation', isFocusMode: boolean = false, screenWidth: number = 1920) => {
+    try {
+      if (!themeService) {
+        throw new Error('Theme service not initialized');
+      }
+      
+      // Validate navigation mode
+      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      }
+      
+      return await themeService.getApplicableThemeOverrides(userId, navigationMode as any, isFocusMode, screenWidth);
+    } catch (error) {
+      console.error('[IPC:themes:get-applicable-overrides] Error:', error);
+      throw error;
+    }
+  });
+
+  // Get theme with applied overrides
+  ipcMain.handle('themes:get-with-overrides', async (_, userId: string = 'default', baseTheme: any, navigationMode: string = 'header-navigation', isFocusMode: boolean = false, screenWidth: number = 1920) => {
+    try {
+      if (!themeService) {
+        throw new Error('Theme service not initialized');
+      }
+      
+      // Validate navigation mode
+      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      }
+      
+      return await themeService.getThemeWithOverrides(userId, baseTheme, navigationMode as any, isFocusMode, screenWidth);
+    } catch (error) {
+      console.error('[IPC:themes:get-with-overrides] Error:', error);
+      throw error;
+    }
+  });
+
+  console.log('[ThemeIPC] Theme IPC handlers registered successfully (19 handlers)');
 }
 
 /**
@@ -201,7 +312,15 @@ export function cleanupThemeIpc() {
     'themes:delete',
     'themes:get-header-config',
     'themes:set-header-config',
-    'themes:reset-header'
+    'themes:reset-header',
+    // NEW: Theme Override Channels
+    'themes:get-override',
+    'themes:get-scoped-overrides',
+    'themes:get-all-overrides',
+    'themes:set-override',
+    'themes:delete-override',
+    'themes:get-applicable-overrides',
+    'themes:get-with-overrides'
   ];
 
   channels.forEach(channel => {

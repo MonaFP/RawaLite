@@ -22,14 +22,16 @@
 ## 🏗️ **SYSTEM OVERVIEW**
 
 ### **RawaLite Architecture Vision**
-RawaLite ist eine **moderne Desktop-Anwendung** basierend auf **Electron + React + SQLite**, optimiert für **Rechnung- und Angebotsverwaltung** mit **Database-First Theme Management** und **PDF-Generation Pipeline**.
+RawaLite ist eine **moderne Desktop-Anwendung** basierend auf **Electron + React + SQLite**, optimiert für **Rechnung- und Angebotsverwaltung** mit **Database-First Theme Management**, **Navigation System** und **Focus Mode Enhancement**.
 
 ### **Core Design Principles**
 1. **Database-First Architecture** - SQLite als Single Source of Truth
 2. **Service Layer Pattern** - Klare Trennung zwischen Data Access und Business Logic
 3. **Type-Safe Operations** - Field-Mapper für sichere Database-Queries
 4. **IPC Security** - Whitelisted Communication Channels
-5. **Theme-System Integration** - Dynamic Theming mit Database-Persistence
+5. **Theme-System Integration** - Dynamic Theming mit Database-Persistence (Migration 027)
+6. **Navigation Persistence** - Database-driven navigation state (Migration 028)
+7. **Focus Mode Enhancement** - Enhanced user experience modes (Migration 029)
 
 ---
 

@@ -41,7 +41,7 @@ Beispiel: VALIDATED_REGISTRY-MAIN-DOCUMENTS-OVERVIEW_2025-10-16.md
 | Datei | Kategorie | Schema-Status | Zuletzt aktualisiert | Grund der Aktualisierung | Aktualisierung bei |
 |-------|-----------|---------------|----------------------|-------------------------|-------------------|
 | `.github/instructions/copilot-instructions.md` | KI-Core | ✅ FERTIG | 2025-10-16 | Schema-Dokumentation hinzugefügt | Schema-Änderungen, KI-Regeln |
-| `docs/VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md` | Path-Registry | ✅ FERTIG | 2025-10-16 | Schema-Übersicht ergänzt | Neuen Dokumenten, Umbenennungen |
+| `docs/ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md` | Path-Registry | ✅ FERTIG | 2025-10-16 | Schema-Übersicht ergänzt | Neuen Dokumenten, Umbenennungen |
 | `docs/00-meta/final/VALIDATED_GUIDE-INSTRUCTIONS-KI-2025-10-15.md` | KI-Detail | ✅ FERTIG | 2025-10-16 | Vollständige Schema-Tabellen | KI-Verhalten, Standards |
 | `docs/00-meta/final/VALIDATED_REGISTRY-CRITICAL-FIXES-2025-10-15.md` | Fix-Registry | ✅ FERTIG | 2025-10-16 | Schema-Header und Tabellen | Critical Fixes, Code-Patterns |
 | `docs/00-meta/final/VALIDATED_GUIDE-KI-FAILURE-MODES-2025-10-15.md` | KI-Sicherheit | ✅ FERTIG | 2025-10-16 | Schema-Dokumentation | Fehlermodi, Anti-Patterns |
@@ -99,7 +99,7 @@ Beispiel: VALIDATED_REGISTRY-MAIN-DOCUMENTS-OVERVIEW_2025-10-16.md
 ## 📊 **AKTUALISIERUNGS-MATRIX**
 
 ### **✅ FERTIG (22 Dokumente):**
-- `docs/VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-16.md`
+- `docs/ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md`
 - `docs/00-meta/final/VALIDATED_GUIDE-INSTRUCTIONS-KI-2025-10-15.md`
 - `docs/INDEX.md`
 - `.github/instructions/copilot-instructions.md`

@@ -249,7 +249,7 @@ import logoUrl from '/rawalite-logo.png'
 
 ## 🚨 **"EINFACH/SCHNELL" REFERENZEN AUDIT**
 
-> **📋 Vollständige Dokumentation:** Siehe [../../DOCS_SITEMAP.md](../../DOCS_SITEMAP.md) für alle verfügbaren Ressourcen.
+> **📋 Vollständige Dokumentation:** Siehe [../../INDEX.md](../../INDEX.md) für alle verfügbaren Ressourcen.
 
 ### **Dokumentation mit "Einfach/Schnell" Begriffen:**
 
