@@ -1,37 +1,64 @@
 # 🎨 RawaLite Frontend Architecture - Complete Master Guide
 
-> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 21.10.2025 (Grid Architecture Mismatch SYSTEMATICALLY REPAIRED)  
-> **Status:** Production Ready | **Typ:** Master Frontend Architecture Guide  
+> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 25.10.2025 (Grid Layout Status Korrektur)  
+> **Status:** ⚠️ PARTIALLY COMPLETE - Grid Layout Issues aktiv  
 > **Schema:** `ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md`  
 > **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!  
-> **🎉 LATEST SUCCESS:** Grid Layout Content Overflow → Systematically Fixed 21.10.2025
+> **🚨 CURRENT ISSUE:** Footer disappears after app start - NOT FIXED
 
 > **🔗 Critical Protection:**
 > **Critical Fixes:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - FIX-016, FIX-017, FIX-018  
-> **Development Rules:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md#theme-system-development-rules)
+> **Development Rules:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md#theme-system-development-rules)  
+> **Active Debugging:** [LESSON_FIX-FOOTER-VISIBILITY-DISAPPEARS-AFTER-SECONDS_2025-10-25.md](06-lessons/sessions/LESSON_FIX-FOOTER-VISIBILITY-DISAPPEARS-AFTER-SECONDS_2025-10-25.md)
 
 > **🎯 SPECTACULAR SUCCESS ACHIEVEMENTS:**
 > **CSS Modularization:** Phase 3A complete - 57.7% reduction (1701→719 lines) + Database-Theme-System Integration  
 > **Database-Theme-System:** Production Ready - Migration 027 deployed with complete IPC integration  
 > **Navigation Integration:** Complete - Migration 028 + Service Layer + 9 IPC Integration channels active  
 > **Hierarchical Fallback Grid:** NEW - Emergency fallback isolation + Database-First individual configuration restored  
-> **🎉 Grid Architecture Repair:** SYSTEMATICALLY FIXED - Content overflow eliminated (21.10.2025)
+> **❌ Grid Architecture:** ISSUE ACTIVE - Footer disappears after app start (Database schema conflicts)
 
 ## 📋 **EXECUTIVE SUMMARY**
 
-RawaLite's Frontend Architecture ist eine **spektakuläre Erfolgsgeschichte** aus fünf vollständig integrierten Systemen: **Central Configuration Architecture**, **Database-Theme-System**, **CSS Modularization** (57.7% Reduktion), **Navigation-Database Integration**, **Per-Mode Configuration System**, und dem **neuen Hierarchical Fallback Grid System**. Gemeinsam bilden sie eine **production-ready Frontend-Architektur** mit robuster **3-Level-Fallback-Architektur** (Database → CSS → Emergency) und **individueller Navigation-Mode-Konfigurierbarkeit**.
+RawaLite's Frontend Architecture ist eine **teilweise erfolgreiche Entwicklung** aus fünf integrierten Systemen: **Central Configuration Architecture**, **Database-Theme-System**, **CSS Modularization** (57.7% Reduktion), **Navigation-Database Integration**, **Per-Mode Configuration System**, und dem **Hierarchical Fallback Grid System**. Jedoch besteht ein **aktives Grid Layout Problem**: Footer verschwindet nach App-Start aufgrund von Database schema conflicts.
 
-### **🎯 SPECTACULAR ACHIEVEMENTS (VERIFIZIERT + ENHANCED):**
+### **🎯 CURRENT STATUS (KORRIGIERT 25.10.2025):**
 
-#### **🏗️ HIERARCHICAL FALLBACK GRID ARCHITECTURE (Phase 7.2) - REPAIRED:**
-- ✅ **Emergency Fallback Isolation** - Separate `fallback-grid.css` für fehlende data-navigation-mode
-- ✅ **Database-First Layout** - Enhanced `layout-grid.css` ohne !important für CSS Custom Properties
-- ✅ **Individual Configuration Restored** - Navigation Modi können individuell in Database konfiguriert werden
-- ✅ **CSS Specificity Solved** - Hierarchical import order: Emergency → Database-First
-- ✅ **Theme Grid Integration** - Themes können Grid-Layout per CSS Custom Properties anpassen
-- ✅ **Per-Mode Settings Compatible** - Migration 034-036 functionality fully restored
-- ✅ **🎉 Grid Template Areas Fixed** - DatabaseNavigationService SYSTEM_DEFAULTS corrected (21.10.2025)
-- ✅ **Content Overflow Eliminated** - Systematic repair of grid architecture mismatch
+#### **✅ ERFOLGREICH IMPLEMENTIERT:**
+- ✅ **Database-Theme-System** - Production Ready (Migration 027)
+- ✅ **CSS Modularization** - 57.7% Reduktion erfolgreich
+- ✅ **Navigation-Database Integration** - Vollständig funktional
+- ✅ **Central Configuration Architecture** - Migration 037 deployed
+- ✅ **Per-Mode Configuration System** - Migration 034-036 aktiv
+
+#### **❌ AKTUELLE PROBLEME:**
+- ❌ **Footer Visibility** - Footer verschwindet nach App-Start
+- ❌ **Grid Layout** - Database schema conflicts in CHECK constraints
+- ❌ **Navigation Service Validation** - Legacy modes verursachen validation errors
+- ❌ **CSS Grid Template Application** - Fehlschlägt aufgrund von service validation errors
+
+#### **🚨 ROOT CAUSE ANALYSIS:**
+**Database CHECK constraints enthalten legacy UND neue navigation modes gleichzeitig:**
+```sql
+-- PROBLEM: Mixed legacy + new modes in CHECK constraints
+CHECK (navigation_mode IN (
+  'header-statistics',      -- ❌ LEGACY (causes validation errors)
+  'header-navigation',      -- ❌ LEGACY (causes validation errors)  
+  'full-sidebar',           -- ❌ LEGACY (causes validation errors)
+  'mode-dashboard-view',    -- ✅ NEW (valid)
+  'mode-data-panel',        -- ✅ NEW (valid)
+  'mode-compact-focus'      -- ✅ NEW (valid)
+))
+```
+
+**DatabaseNavigationService validation rejects legacy modes → CSS Grid updates fail → Footer disappears**
+
+#### **🔧 ERFORDERLICHE LÖSUNG:**
+**Migration 044** - Database schema cleanup:
+1. Remove legacy modes from CHECK constraints
+2. Update DEFAULT values to new mode system
+3. Migrate existing data to valid modes
+4. Fix Footer visibility issues
 
 #### **🏗️ CENTRAL CONFIGURATION ARCHITECTURE (Migration 037) - STABLE:**
 - ✅ **DatabaseConfigurationService** - Single source of truth für alle Konfiguration (302 Zeilen)
@@ -821,7 +848,7 @@ CREATE TABLE IF NOT EXISTS theme_overrides (
  * DatabaseConfigurationService - Single source of truth for all configuration
  * Replaces multiple service calls with unified getActiveConfig() function
  * 
- * @since v1.0.47+ (Central Configuration Architecture)
+ * @since v1.0.54+ (Central Configuration Architecture)
  */
 
 export interface ActiveConfiguration {
@@ -859,7 +886,7 @@ const config = await DatabaseConfigurationService.getActiveConfig(userId);
 /**
  * DatabaseThemeService - CRUD operations for database-first theme management
  * 
- * @since v1.0.42.7 (Database-Theme-System)
+ * @since v1.0.54 (Database-Theme-System)
  */
 
 export interface Theme {
@@ -892,7 +919,7 @@ export interface ThemeWithColors extends Theme {
 /**
  * ThemeIpcService - Frontend service for theme operations via IPC
  * 
- * @since v1.0.42.7 (Database-Theme-System)
+ * @since v1.0.54 (Database-Theme-System)
  */
 
 export class ThemeIpcService {
@@ -918,7 +945,7 @@ export class ThemeIpcService {
 /**
  * DatabaseThemeManager - Database-first theme management with fallback compatibility
  * 
- * @since v1.0.42.7 (Database-Theme-System)
+ * @since v1.0.54 (Database-Theme-System)
  */
 
 // Legacy Theme interface for backward compatibility
