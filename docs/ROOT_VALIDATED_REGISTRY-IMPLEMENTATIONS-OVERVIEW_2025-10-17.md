@@ -308,7 +308,9 @@ pnpm release:beta           # Beta release
 - **docs/03-data/** - Database, Migrations, SQLite
 - **docs/04-ui/** - UI/UX, Components, Themes
 - **docs/05-deploy/** - Deployment, Updates, CI/CD
-- **docs/06-lessons/** - Session-Reports, Lessons
+- **docs/06-handbook/** - Templates, References, Anti-Patterns (KI-HANDBOOK)
+- **docs/08-batch/** - Batch Operations
+- **docs/09-archive/** - Deprecated Content
 
 ### 🏷️ **Namenskonvention**
 ```

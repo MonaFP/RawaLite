@@ -1,0 +1,59 @@
+{
+  "analysis_date": "2025-10-26",
+  "folder": "docs/00-meta",
+  "total_files": 23,
+  "structure": {
+    "final/": 16,
+    "wip/": 0,
+    "plan/": 1,
+    "sessions/": 5,
+    "root": 1
+  },
+  "duplicates_detected": [
+    {
+      "type": "ROOT_document_duplicate",
+      "files": [
+        "docs/ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md",
+        "docs/00-meta/final/VALIDATED_GUIDE-KI-FAILURE-MODES-2025-10-17.md"
+      ],
+      "action": "archive_duplicate",
+      "canonical": "docs/ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md"
+    },
+    {
+      "type": "ROOT_document_duplicate", 
+      "files": [
+        "docs/ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md",
+        "docs/00-meta/final/VALIDATED_REGISTRY-CRITICAL-FIXES-2025-10-17.md"
+      ],
+      "action": "archive_duplicate",
+      "canonical": "docs/ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md"
+    },
+    {
+      "type": "INDEX_file_duplicate",
+      "files": [
+        "docs/00-meta/INDEX.md",
+        "docs/00-meta/final/INDEX.md",
+        "docs/00-meta/sessions/INDEX.md"
+      ],
+      "action": "consolidate_indexes",
+      "canonical": "docs/00-meta/INDEX.md"
+    }
+  ],
+  "prefix_validation": {
+    "correct_schema": 18,
+    "incorrect_schema": 0,
+    "missing_dates": 0,
+    "deprecated": 0
+  },
+  "code_coherence_check": {
+    "meta_documents": "no_direct_code_references",
+    "validation_status": "consistent_with_project_structure"
+  },
+  "recommendations": [
+    "Archive duplicate ROOT_ documents from final/ folder",
+    "Consolidate INDEX.md files", 
+    "All documents follow correct schema pattern",
+    "No backups or recovered files detected",
+    "Structure is clean and organized"
+  ]
+}

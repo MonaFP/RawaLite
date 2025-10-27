@@ -1,61 +1,91 @@
 # 01-core - Standards & Core Architecture
 
 > **Purpose:** Coding Standards, System Architecture, Security, IPC, and Path Management  
-> **Last Updated:** 2025-10-15  
-> **Status:** ✅ ACTIVE  
-> **Consolidates:** standards + architecture + security + ipc + paths
+> **Last Updated:** 2025-10-26 (Legacy Document Reorganization + 06-handbook Integration)  
+> **Status:** ✅ ACTIVE | **Validation Status:** 100% KI-PRÄFIX-ERKENNUNGSREGELN konform  
+> **Consolidates:** Core architecture + legacy document cleanup
 
-## 📁 **Standard Folder Structure**
+> **🎯 LEGACY REORGANIZATION RESULTS (26.10.2025):**  
+> **Migration Applied:** 13 Dokumente älter als 5 Tage reorganisiert  
+> **Quality Enhancement:** 5 hochwertige Architektur-Dokumente nach 06-handbook migriert  
+> **Architecture:** Architektur-Referenzen jetzt zentral in 06-handbook/REFERENCE/  
+> **Schema:** [STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md
 
-### **📂 final/** - Completed Core Documentation
+## 📁 **STATUS-PRÄFIX Folder Structure** 
 
-#### **🏗️ System Architecture (NEW - 18.10.2025)**
-- **Complete System Architecture:** [VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md](final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md) - 6-layer architecture with Database-Theme-System integration
-- **Debugging Standards:** [VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md](final/VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md) - Systematic problem-solving approach
+### **📂 VALIDATED/** - Validierte, stabile Core-Dokumentation (7 Dateien)
+- **Complete System Architecture:** [VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md](VALIDATED/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md) - 6-layer architecture with Database-Theme-System integration
+- **Debugging Standards:** [VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md](VALIDATED/VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md) - Systematic problem-solving approach
+- **✅ CURRENT:** Nur noch aktuell relevante Core-Standards (alle älteren migriert)
 
-#### **🏗️ Architecture & Standards**
-- **Architecture Overview:** [PATHS.md](../PATHS.md#ARCHITECTURE_OVERVIEW) - Complete system architecture
-- **Coding Standards:** [PATHS.md](../PATHS.md#CODING_STANDARDS) - TypeScript, React, Database standards  
-- **Testing Standards:** [PATHS.md](../PATHS.md#TESTING_STANDARDS) - Unit, Integration, E2E guidelines
-- **Quick Reference:** [PATHS.md](../PATHS.md#QUICK_REFERENCE) - 1-page KI reference
-- **Workflows:** [PATHS.md](../PATHS.md#WORKFLOWS) - Git, Release, Emergency procedures
+### **📂 COMPLETED/** - Abgeschlossene Core-Implementierungen (2 Dateien)
+- Fertige Reports und Implementierungsdokumentation (aktuelle Implementations)
 
-#### **🔐 Security & IPC**
-- **IPC Database Security:** [PATHS.md](../PATHS.md#IPC_DATABASE_SECURITY) - Database security patterns
-- **Security Guide:** [PATHS.md](../PATHS.md#SECURITY_GUIDE) - Complete security overview
+### **📂 DEPRECATED/** - Veraltete Core-Dokumentation (8 Dateien)
+- **Main.ts Refactor Plan** (obsolete - bereits umgesetzt)
+- **Refactor Completion Report** (obsolete - einmaliger Report)
+- **4x Implementation Steps** (obsolete - bereits abgeschlossen)
+- **Critical Fixes Impact Report** (obsolete - superseded durch aktuelle Registry)
+- **Documentation Quality Tracking** (obsolete - Quality-Tracking etabliert)
 
-#### **🛤️ Path Management**
-- **Paths System:** [PATHS.md](../PATHS.md#PATHS_SYSTEM) - Central path abstraction
+### **📂 KNOWLEDGE_ONLY/** - Core-Knowledge Archive (1 Datei)
+- **ERR_FILE_NOT_FOUND QuickRef** (historisch wertvoll für ähnliche Probleme)
 
-#### **📊 Analysis & Planning**
-- **SYSTEM-ANALYSIS-TODO-PLAN.md** - System analysis documentation
-- **TIMESHEET-SYSTEM-ARCHITECTURE.md** - Timesheet system design
+### **📂 SOLVED/** - Gelöste Core-Probleme (0 Dateien)
+- Derzeit leer - alle SOLVED Dokumente archiviert oder migriert
 
-### **📂 plan/** - Planning Documents
-- **SYSTEM-ANALYSIS-TODO-PLAN.md** - Ongoing system analysis
+### **📂 LESSON/** - Core-Lessons Learned (0 Dateien)
+- Bereit für zukünftige Core-Lessons
 
-### **📂 sessions/** - Session Logs
-- Currently empty
+### **📂 PLAN/** - Core-Planungen (0 Dateien)
+- Bereit für zukünftige Core-Planungen
 
-### **📂 wip/** - Work-in-Progress
-- **BUILD_CACHE_PROCESS_MANAGEMENT.md** - Build process optimization
-- **ELECTRON-BUILDER-FILE-LOCKING.md** - Build tooling issues
+## 🎯 **HOCHWERTIGE ARCHITEKTUR-DOKUMENTE MIGRIERT**
+
+**⬆️ NACH 06-HANDBOOK VERSCHOBEN (bessere KI-Zugänglichkeit):**
+- **Testing Standards** → [06-handbook/REFERENCE/VALIDATED_REFERENCE-TESTING-STANDARDS_2025-10-26.md](../06-handbook/REFERENCE/VALIDATED_REFERENCE-TESTING-STANDARDS_2025-10-26.md)
+- **IPC Architecture** → [06-handbook/REFERENCE/VALIDATED_REFERENCE-IPC-ARCHITECTURE_2025-10-26.md](../06-handbook/REFERENCE/VALIDATED_REFERENCE-IPC-ARCHITECTURE_2025-10-26.md)
+- **PATHS System** → [06-handbook/REFERENCE/VALIDATED_REFERENCE-PATHS-SYSTEM_2025-10-26.md](../06-handbook/REFERENCE/VALIDATED_REFERENCE-PATHS-SYSTEM_2025-10-26.md)
+- **Security Architecture** → [06-handbook/REFERENCE/VALIDATED_REFERENCE-SECURITY-ARCHITECTURE_2025-10-26.md](../06-handbook/REFERENCE/VALIDATED_REFERENCE-SECURITY-ARCHITECTURE_2025-10-26.md)
+- **Quick Reference Template** → [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-QUICK-REFERENCE_2025-10-26.md](../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-QUICK-REFERENCE_2025-10-26.md)
+
+**Grund:** Diese Dokumente waren zu wertvoll für DEPRECATED/KNOWLEDGE_ONLY und bieten aktuelle Architektur-Guidance für KI-Sessions.
+
+### **� WIP/** - Work in Progress
+- Aktuelle Arbeitsdokumente (nur zur Orientierung)
+
+### **📂 PLAN/** - Planungsdokumente  
+- Roadmaps und Konzepte (Entwurfsstatus)
+
+### **📂 DEPRECATED/** - Veraltete Dokumentation
+- Ersetzte oder obsolete Inhalte
 
 ---
 
 ## 🎯 **Quick Navigation**
 
 ### **🚀 For Development:**
-1. ✅ **System Architecture:** [VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md](final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md) - Complete 6-layer system with Database-Theme-System
-2. ✅ **Debugging Approach:** [VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md](final/VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md) - Systematic problem-solving
-3. ✅ **Quick Reference:** [PATHS.md](../PATHS.md#QUICK_REFERENCE) - 1-page KI reference
+1. ✅ **System Architecture:** [VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md](VALIDATED/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md) - Complete 6-layer system with Database-Theme-System
+2. ✅ **Debugging Approach:** [VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md](VALIDATED/VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md) - Systematic problem-solving
+3. ✅ **Architecture Overview:** [PATHS.md](../PATHS.md#ARCHITECTURE_OVERVIEW) - Complete system architecture
 4. ✅ **Coding Standards:** [PATHS.md](../PATHS.md#CODING_STANDARDS) - Complete guidelines  
-5. ✅ **Legacy Architecture:** [PATHS.md](../PATHS.md#ARCHITECTURE_OVERVIEW) - System design
+5. ✅ **Quick Reference:** [PATHS.md](../PATHS.md#QUICK_REFERENCE) - 1-page KI reference
 
 ### **🔧 For Implementation:**
+- **Testing Standards:** [PATHS.md](../PATHS.md#TESTING_STANDARDS) - Unit, Integration, E2E guidelines
 - **Workflows:** [PATHS.md](../PATHS.md#WORKFLOWS) - Git, Release, Emergency procedures
 - **Path Management:** [PATHS.md](../PATHS.md#PATHS_SYSTEM) - Central abstraction
 - **Security:** [PATHS.md](../PATHS.md#SECURITY_GUIDE) - IPC & Database patterns
+
+### **📊 STATUS-PRÄFIX Navigation:**
+- **VALIDATED/**: Verlässliche Hauptquellen (14 Dateien)
+- **SOLVED/**: Implementierte Fixes und Lösungen  
+- **COMPLETED/**: Abgeschlossene Implementierungen
+- **LESSON/**: Debugging-Erfahrungen
+- **KNOWLEDGE_ONLY/**: Historische Archiv-Referenzen
+- **WIP/**: Aktuelle Arbeit (nur Orientierung)
+- **PLAN/**: Konzepte und Roadmaps
+- **DEPRECATED/**: Veraltete Inhalte (ignorieren)
 
 ---
 
@@ -79,6 +109,6 @@
 
 ---
 
-**File Count:** 45 files migrated from 01-standards + 02-architecture + 06-paths + 07-ipc + 10-security  
-**Migration Date:** 2025-10-15  
-**Structure:** 7-folder v2 system consolidation
+**File Count:** 14 VALIDATED + weitere Dateien in STATUS-PRÄFIX Struktur  
+**Migration Date:** 2025-10-26 (STATUS-PRÄFIX System)  
+**Structure:** KI-optimized semantic organization with STATUS-PRÄFIX schema

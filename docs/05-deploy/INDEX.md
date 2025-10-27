@@ -1,69 +1,146 @@
-# 05-deploy - Deployment & Update System
+# 05-deploy – Deployment & Updates# 05-deploy - Deployment & Update System
 
-> **Purpose:** Deployment Processes, Auto-Update System, Distribution, and Release Management  
-> **Last Updated:** 2025-10-15  
-> **Status:** ✅ ACTIVE  
-> **Consolidates:** deployment + update-manager + distribution  
+
+
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (06-lessons Verweise entfernt - dezentrale LESSON Struktur)    > **Purpose:** Deployment Processes, Auto-Update System, Distribution, and Release Management  
+
+> **Status:** Production Ready | **Typ:** Index> **Last Updated:** 2025-10-23 (Post CODE-FIRST Validation)  
+
+> **Status:** ✅ ACTIVE | **Validation Status:** 91% Consistency (EXCELLENT)  
+
+Diese Sektion behandelt alle Aspekte von Deployment, Updates und Release-Management für RawaLite.> **Consolidates:** deployment + update-manager + distribution  
+
 > **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
+
+## STATUS-PRÄFIX Struktur (25.10.2025)
+
+> **🎯 CODE-FIRST VALIDATION RESULTS (23.10.2025):**  
+
+### VALIDATED/ (5 files)> **Quality Level:** EXCELLENT - Build system fully operational and documented  
+
+Validierte, produktionstaugliche Deployment-Dokumentation> **Strengths:** Build Configuration (95%), Release Automation (90%), CI/CD (92%)  
+
+> **Status:** Production-ready deployment documentation  
+
+### COMPLETED/ (11 files)  > **Validation Report:** [Archived as COMPLETED_REPORT-05-DEPLOY-VALIDATION_2025-10-23.md](../archive/)
+
+Abgeschlossene Deployment-Implementierungen und Reports
 
 ## 📋 **SCHEMA-ÜBERSICHT**
 
-### **Naming Convention:**
+### WIP/ (1 files)
+
+Work-in-Progress Deployment-Features### **Naming Convention:**
+
 ```
-[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md
+
+### SOLVED/ (0 files)[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md
+
+Gelöste Deployment-Probleme und Fixes
 
 Beispiel: VALIDATED_GUIDE-DEPLOYMENT-UPDATES-INDEX-2025-10-16.md
-```
+
+### LESSON/ (0 files)```
+
+Lessons Learned aus Deployment-Sessions
 
 ### **STATUS-PRÄFIXE:**
-- `VALIDATED_` - Validierte, stabile Dokumentation (verlässliche Quelle)
-- `SOLVED_` - Gelöste Probleme und Fixes (fertige Lösung)
+
+### KNOWLEDGE_ONLY/ (0 files)- `VALIDATED_` - Validierte, stabile Dokumentation (verlässliche Quelle)
+
+Archiviertes Deployment-Wissen für KI-Referenz- `SOLVED_` - Gelöste Probleme und Fixes (fertige Lösung)
+
 - `LESSON_` - Lessons Learned und Debugging (vergleichende Analyse)
-- `WIP_` - Work in Progress (nur Orientierung)
-- `COMPLETED_` - Abgeschlossene Implementierungen (fertige Reports)
+
+### PLAN/ (0 files)- `WIP_` - Work in Progress (nur Orientierung)
+
+Planungsdokumente für Deployment-Verbesserungen- `COMPLETED_` - Abgeschlossene Implementierungen (fertige Reports)
+
 - `PLAN_` - Planungsdokumente und Roadmaps (Entwurfsstatus)
-- `DEPRECATED_` - Veraltete, ersetzte Dokumentation (ignorieren)
+
+### DEPRECATED/ (0 files)- `DEPRECATED_` - Veraltete, ersetzte Dokumentation (ignorieren)
+
+Veraltete Deployment-Dokumentation
 
 ### **TYP-KATEGORIEN:**
-- `GUIDE-` - Leitfäden, Anleitungen
+
+---- `GUIDE-` - Leitfäden, Anleitungen
+
 - `FIX-` - Lessons Learned, Debugging, Fixes, Problems
-- `IMPL-` - Implementierungen, Features
+
+## 🎯 **Zentrale Deployment-Themen**- `IMPL-` - Implementierungen, Features
+
 - `REPORT-` - Berichte, Analysen, Completion-Reports
-- `REGISTRY-` - Listen, Registries, Collections
-- `TEMPLATE-` - Vorlagen, Templates
-- `TRACKING-` - Status-Tracking, Quality-Tracking
-- `PLAN-` - Planungsdokumente, Roadmaps
 
----
+### **🚀 Build & Distribution**- `REGISTRY-` - Listen, Registries, Collections
 
-## 📁 **Standard Folder Structure**
+- **Electron Builder:** Distribution-Konfiguration und Packaging- `TEMPLATE-` - Vorlagen, Templates
+
+- **NSIS Installer:** Windows-Installation und Setup- `TRACKING-` - Status-Tracking, Quality-Tracking
+
+- **Release Assets:** GitHub Release-Management- `PLAN-` - Planungsdokumente, Roadmaps
+
+
+
+### **🔄 Auto-Update System**---
+
+- **Update Manager:** Download-Verification und Installation
+
+- **GitHub API:** API-Integration für Updates## 📁 **Standard Folder Structure**
+
+- **Compatibility:** Rückwärtskompatibilität und Versionsverwaltung
 
 ### **📂 final/** - Completed Deployment Documentation
 
-#### **🚀 Deployment & Distribution**
-- **DEPLOYMENT_UPDATES.md** - Deployment process documentation
-- **UPDATE_DEVELOPMENT.md** - Update system development guide
+### **🔧 CI/CD Pipeline**
+
+- **Build Automation:** Automatisierte Build-Prozesse#### **🚀 Deployment & Distribution**
+
+- **Release Pipeline:** Automated Release-Management- **DEPLOYMENT_UPDATES.md** - Deployment process documentation
+
+- **Testing:** Update-Testing und Verification- **UPDATE_DEVELOPMENT.md** - Update system development guide
+
 - **IMPLEMENTATION-COMPLETE.md** - Implementation completion status
 
+---
+
 #### **🔄 Update Manager System (Prefixed UPDATER-)**
-- **UPDATER-UPDATE-SYSTEM-ARCHITECTURE.md** - Update system architecture
+
+## 📋 **Quick Navigation zu STATUS-PRÄFIX Ordnern**- **UPDATER-UPDATE-SYSTEM-ARCHITECTURE.md** - Update system architecture
+
 - **UPDATER-HYBRID-COMPONENT-ARCHITECTURE.md** - Hybrid component design
-- **UPDATER-UPDATE_TESTING.md** - Update testing procedures
-- **UPDATER-DOWNLOAD-VERIFICATION-BUG.md** - Download verification fixes
+
+- **VALIDATED/**: Stabile Deployment-Guides und Architekturdokumentation- **UPDATER-UPDATE_TESTING.md** - Update testing procedures
+
+- **COMPLETED/**: Fertige Implementierungen und Reports zu Deployment-Features- **UPDATER-DOWNLOAD-VERIFICATION-BUG.md** - Download verification fixes
+
+- **WIP/**: Aktuelle Deployment-Entwicklungen
 
 #### **🔧 Auto-Update Implementation**
-- **IMPLEMENTATION-PLAN-auto-update-notifications.md** - Notification system
+
+---- **IMPLEMENTATION-PLAN-auto-update-notifications.md** - Notification system
+
 - **IMPLEMENTATION-PLAN-custom-updater.md** - Custom updater implementation
-- **GITHUB-API-MIGRATION-PLAN.md** - GitHub API integration
 
-#### **📚 Deployment Lessons Learned**
+## 🏷️ **Tags & Topics**- **GITHUB-API-MIGRATION-PLAN.md** - GitHub API integration
+
+
+
+<!-- tags: DEPLOY, UPDATE, DISTRIBUTION, INSTALLER, RELEASE, CI-CD, ELECTRON-BUILDER -->#### **📚 Deployment Lessons Learned**
+
 - **LESSONS-LEARNED-custom-updater-implementation.md** - Custom updater lessons
-- **LESSONS-LEARNED-download-verification-regression.md** - Download verification issues
-- **LESSONS-LEARNED-NSIS-INSTALLER-PROBLEMS.md** - NSIS installer solutions
-- **LESSONS-LEARNED-UPDATE-INSTALLATION-ERROR.md** - Installation error fixes
-- **LESSONS-LEARNED-v1042-rückwärtskompatibilität-fixes.md** - Compatibility fixes
 
-### **📂 plan/** - Deployment Planning
+**Deployment Topics:**- **LESSONS-LEARNED-download-verification-regression.md** - Download verification issues
+
+- **Distribution:** Electron Builder, NSIS, release packaging- **LESSONS-LEARNED-NSIS-INSTALLER-PROBLEMS.md** - NSIS installer solutions
+
+- **Auto-Update:** Download verification, installation, error handling- **LESSONS-LEARNED-UPDATE-INSTALLATION-ERROR.md** - Installation error fixes
+
+- **GitHub Integration:** API migration, release assets, validation- **LESSONS-LEARNED-v1042-rückwärtskompatibilität-fixes.md** - Compatibility fixes
+
+- **Compatibility:** Backward compatibility, version management
+
+- **Testing:** Update testing, verification, error scenarios### **📂 plan/** - Deployment Planning
 - **UPDATER-DOCUMENTATION-CLEANUP-PLAN.md** - Update manager documentation plan
 
 ### **📂 sessions/** - Deployment Sessions
@@ -79,7 +156,7 @@ Beispiel: VALIDATED_GUIDE-DEPLOYMENT-UPDATES-INDEX-2025-10-16.md
 ### **�️ For Database-Theme-System (NEW - v1.0.44):**
 1. ✅ **Theme Architecture:** [Database-Theme-System v1.0.44](../04-ui/final/VALIDATED_GUIDE-DATABASE-THEME-SYSTEM-V1044_2025-10-18.md) - Production-ready theme management
 2. ✅ **Theme Development:** [Theme Development Standards](../02-dev/final/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md) - Complete workflow for theme updates
-3. ✅ **Release Integration:** [Theme System Integration](../06-lessons/sessions/COMPLETED_IMPL-PHASE-1-ROOT-INTEGRATION-DATABASE-THEME-SYSTEM_2025-10-18.md) - Theme system in deployment pipeline
+3. ✅ **Release Integration:** Theme system in deployment pipeline (siehe 04-ui/LESSON/ für Theme-Deployment-Lessons)
 
 ### **�🚀 For Deployment:**
 1. ✅ **Process:** [PATHS.md](../PATHS.md#DEPLOYMENT_UPDATES) - Deployment documentation

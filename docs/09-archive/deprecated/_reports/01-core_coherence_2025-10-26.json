@@ -1,0 +1,93 @@
+{
+  "analysis_date": "2025-10-26",
+  "folder": "docs/01-core",
+  "phase": "Phase 1b - Coherence Check",
+  "clustering_strategy": "thematic_grouping_by_subject",
+  "clusters": {
+    "ARCHITECTURE": {
+      "canonical": "VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-23.md",
+      "files": [
+        "DEPRECATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md",
+        "VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-23.md"
+      ],
+      "coherence_status": "CONFLICT",
+      "conflicts": ["DEPRECATED version should be archived"]
+    },
+    "IMPLEMENTATION_STEPS": {
+      "canonical": "STEP_SERIES_ALL_COHERENT",
+      "files": [
+        "COMPLETED_IMPL-STEP-00-PREPARATION-2025-10-17.md",
+        "COMPLETED_IMPL-STEP-01-02-WINDOWS-2025-10-17.md",
+        "COMPLETED_IMPL-STEP-03-09-IPC-2025-10-17.md",
+        "COMPLETED_IMPL-STEP-10-13-INTEGRATION-2025-10-17.md"
+      ],
+      "coherence_status": "COHERENT",
+      "conflicts": []
+    },
+    "TESTING": {
+      "canonical": "BOTH_COMPLEMENTARY",
+      "files": [
+        "VALIDATED_GUIDE-TESTING-STANDARDS-2025-10-17.md",
+        "VALIDATED_GUIDE-TESTING-STRATEGY_2025-10-23.md"
+      ],
+      "coherence_status": "COHERENT",
+      "conflicts": []
+    },
+    "IPC": {
+      "canonical": "VALIDATED_GUIDE-IPC-DATABASE-SECURITY_2025-10-23.md",
+      "files": [
+        "LESSON_FIX-IPC-FILESYSTEM-API-2025-10-15.md",
+        "VALIDATED_GUIDE-IPC-DATABASE-SECURITY_2025-10-23.md",
+        "VALIDATED_REGISTRY-IPC-INDEX-2025-10-17.md"
+      ],
+      "coherence_status": "COHERENT",
+      "conflicts": []
+    },
+    "PATHS": {
+      "canonical": "VALIDATED_REGISTRY-PATHS-INDEX-2025-10-17.md",
+      "files": [
+        "LESSON_FIX-PATHS-ZENTRALE-PFADABSTRAKTION-2025-10-15.md",
+        "VALIDATED_REGISTRY-PATHS-INDEX-2025-10-17.md"
+      ],
+      "coherence_status": "COHERENT",
+      "conflicts": []
+    },
+    "NAVIGATION": {
+      "canonical": "INDEX.md",
+      "files": [
+        "INDEX.md",
+        "final/INDEX.md"
+      ],
+      "coherence_status": "CONFLICT",
+      "conflicts": ["Duplicate INDEX.md in final/ subdirectory"]
+    },
+    "SECURITY": {
+      "canonical": "VALIDATED_REGISTRY-SECURITY-INDEX-2025-10-17.md",
+      "files": [
+        "VALIDATED_REGISTRY-SECURITY-INDEX-2025-10-17.md"
+      ],
+      "coherence_status": "COHERENT",
+      "conflicts": []
+    },
+    "REFACTORING": {
+      "canonical": "SOLVED_REPORT-REFACTOR-COMPLETION-2025-10-15.md",
+      "files": [
+        "COMPLETED_PLAN-MAIN-TS-REFACTOR-2025-10-23.md",
+        "SOLVED_REPORT-REFACTOR-COMPLETION-2025-10-15.md"
+      ],
+      "coherence_status": "COHERENT",
+      "conflicts": []
+    },
+    "ERROR_HANDLING": {
+      "canonical": "SOLVED_FIX-ERR-FILE-NOT-FOUND-COMPLETE-2025-10-15.md",
+      "files": [
+        "SOLVED_FIX-ERR-FILE-NOT-FOUND-COMPLETE-2025-10-15.md",
+        "SOLVED_TEMPLATE-ERR-FILE-NOT-FOUND-QUICKREF-2025-10-15.md"
+      ],
+      "coherence_status": "COHERENT",
+      "conflicts": []
+    }
+  },
+  "prefix_priority": ["ROOT_", "VALIDATED_", "SOLVED_", "COMPLETED_", "LESSON_", "PLAN_", "WIP_", "DEPRECATED_"],
+  "date_preference": "newer_preferred"
+}

@@ -1,6 +1,6 @@
 # 📚 RawaLite Documentation Index
 
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Integration + Template-Vorgaben Update)  
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (06-lessons obsolet entfernt - dezentrale LESSON/ Struktur aktiv)  
 > **Status:** Production Ready - Central Navigation Hub | **Typ:** Documentation Index  
 > **Schema:** `INDEX.md` (Special Root Document)  
 > **🛡️ ROOT-PROTECTED:** Documentation Structure Central Hub
@@ -81,7 +81,7 @@ Beispiel: VALIDATED_TEMPLATE-KI-PREFIX-RECOGNITION-RULES-2025-10-16.md
 | **01-core/** | ✅ COMPLETED | 2+ files | System reports not implementation |
 | **02-dev/** | ✅ COMPLETED | 5+ files | Development docs not feature completion |
 | **03-data/** | ✅ VALIDATED | 0 files | Database reality matched documentation |
-| **06-lessons/** | ✅ VALIDATED | 0 files | Lessons Learned status preserved |
+| **06-handbook/** | ✅ KI-TEMPLATE | 4 sections | Template System für KI-Sessions |
 
 **🎯 DOCUMENTATION REALITY RESTORATION:**
 - **Schema-Integrität wiederhergestellt:** Dokumentation spiegelt tatsächliche System-Realität wider
@@ -150,11 +150,7 @@ Alle Dokumentationsordner enthalten: `final/`, `wip/`, `plan/`, `sessions/`
 - **ANTIPATTERN/** - ✅ **MANDATORY:** KI-Mistakes Prevention, Session-Killer Errors
 - **ISSUES/** - ✅ **MANDATORY:** Known Problems, Current Issues, Bug Tracking
 
-### **📁 06-lessons/ - Lessons Learned & Sessions** ✅ **100% CONSISTENCY MASTERPLAN (18.10.2025)**
-- **Masterplan Implementation:** Strategic documentation improvement plans
-- **Cross-Reference Network:** Bidirectional linking system
-- **Session Archive:** Historical development sessions and learnings
-- **Knowledge Base:** Preserved lessons learned across all development phases
+### **📁 08-batch/ - Batch Operations** ✅ **SPECIALIZED PROCESSING**
 
 ---
 

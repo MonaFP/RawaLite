@@ -1,12 +1,12 @@
 # RawaLite Documentation - Vollständige Sitemap & Navigation
 
-> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Integration + Template-Vorgaben Update)  
+> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Ordnerstruktur korrigiert: /final/ → STATUS-PRÄFIX, Schema Version 46 Update)  
 > **Status:** Production Ready | **Typ:** Registry - Documentation Sitemap & Navigation  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md` ✅ **SCHEMA-COMPLIANT**  
 > **🛡️ ROOT-PROTECTED:** Master Navigation für gesamte Documentation, NIEMALS verschieben!
 
-> **⚠️ DOCUMENTATION NAVIGATION STATUS:** 180+ Dokumente strukturiert (26.10.2025)  
-> **Folder Structure:** 00-meta bis 08-batch + archive (semantische Ordnung)  
+> **⚠️ DOCUMENTATION NAVIGATION STATUS:** 180+ Dokumente strukturiert (27.10.2025)  
+> **Folder Structure:** STATUS-PRÄFIX Ordner (VALIDATED/, COMPLETED/, SOLVED/, etc.) - /final/ veraltet!  
 > **Template Integration:** KI-SESSION-BRIEFING mandatory vor Dokumentations-Operationen  
 > **Critical Function:** Master-Sitemap für vollständige Documentation-Navigation
 
@@ -86,48 +86,50 @@ docs/
 
 ---
 
-## 🗂️ **AKTUELLE DOKUMENTATIONSSTRUKTUR (v1.0.54 - Migration 029)**
+## 🗂️ **AKTUELLE DOKUMENTATIONSSTRUKTUR (v1.0.63 - Schema Version 46)**
 
 ### **📂 00-meta (Projekt-Metadaten)**
 ```
 docs/00-meta/
 ├── INDEX.md
 ├── VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-17.md
-└── final/
-    ├── SOLVED_FIX-AUTOFILL-DEVTOOLS-ERRORS-2025-10-15.md
-    ├── LESSON_FIX-CROSS-REF-SETTINGS-SCHEMA-MIGRATION-2025-10-15.md
-    ├── VALIDATED_GUIDE-00-META-README-2025-10-15.md
-    ├── VALIDATED_GUIDE-TROUBLESHOOTING-2025-10-15.md
-    └── [15+ weitere Meta-Dokumente]
+├── VALIDATED/                    # Validierte Meta-Dokumentation
+├── COMPLETED/                    # Abgeschlossene Meta-Implementierungen  
+├── SOLVED/                       # Gelöste Meta-Probleme
+├── LESSON/                       # Meta-Lessons Learned
+├── KNOWLEDGE_ONLY/               # Historische Meta-Archive
+├── WIP/                          # Work in Progress Meta
+├── PLAN/                         # Meta-Planungsdokumente
+└── DEPRECATED/                   # Veraltete Meta-Inhalte
 ```
 
 ### **📂 01-core (Kern-Architektur)**
 ```
 docs/01-core/
 ├── INDEX.md
-├── ARCHITECTURE-OVERVIEW-AI-2025-10-16.md                      # KI-Navigation Master
-└── final/
-    ├── VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md  # System Architecture
-    ├── VALIDATED_GUIDE-ARCHITECTURE_2025-10-17.md              # General Architecture
-    ├── VALIDATED_GUIDE-CODING-STANDARDS_2025-10-17.md          # Coding Standards
-    ├── VALIDATED_GUIDE-SQLITE-MIGRATION-ARCHITECTURE_2025-10-17.md # Migration System
-    ├── VALIDATED_GUIDE-IPC-DATABASE-SECURITY_2025-10-17.md     # IPC Security
-    ├── VALIDATED_GUIDE-PATHS-SYSTEM-DOCUMENTATION_2025-10-17.md # Path System
-    ├── VALIDATED_REGISTRY-PATHS-INDEX_2025-10-17.md            # Path Registry
-    ├── VALIDATED_REPORT-STATUS-OVERVIEW_2025-10-17.md          # Status Overview
-    └── [35+ weitere Core-Dokumente]
+├── VALIDATED/                    # Validierte Core-Dokumentation
+├── COMPLETED/                    # Abgeschlossene Core-Implementierungen
+├── SOLVED/                       # Gelöste Core-Probleme  
+├── LESSON/                       # Core-Lessons Learned
+├── KNOWLEDGE_ONLY/               # Historische Core-Archive
+├── WIP/                          # Work in Progress Core
+├── PLAN/                         # Core-Planungsdokumente
+└── DEPRECATED/                   # Veraltete Core-Inhalte
 ```
 
 ### **📂 02-dev (Development)**
 ```
 docs/02-dev/
 ├── INDEX.md
-└── final/
-    ├── VALIDATED_FIX-SUSTAINABLE-ARCHITECTURE-2025-10-17.md    # Sustainable Architecture
-    ├── VALIDATED_GUIDE-DEBUGGING-2025-10-17.md                 # Debugging Guide
-    ├── VALIDATED_GUIDE-DEVELOPMENT-2025-10-17.md               # Development Guide
-    ├── VALIDATED_GUIDE-ABI-SAFE-DATABASE-TOOLS-2025-10-17.md  # ABI Safe Tools
-    ├── SOLVED_FIX-ABI-PROBLEM-SOLUTION-2025-10-15.md          # ABI Solutions
+├── VALIDATED/                    # Validierte Development-Dokumentation
+├── COMPLETED/                    # Abgeschlossene Development-Implementierungen
+├── SOLVED/                       # Gelöste Development-Probleme
+├── LESSON/                       # Development-Lessons Learned  
+├── KNOWLEDGE_ONLY/               # Historische Development-Archive
+├── WIP/                          # Work in Progress Development
+├── PLAN/                         # Development-Planungsdokumente
+└── DEPRECATED/                   # Veraltete Development-Inhalte
+```
     ├── COMPLETED_IMPL-DEV-PROD-SEPARATION-2025-10-15.md       # Dev/Prod Separation
     └── [25+ weitere Development-Dokumente]
 ```
@@ -136,55 +138,66 @@ docs/02-dev/
 ```
 docs/03-data/
 ├── INDEX.md
-└── final/
-    ├── VALIDATED_REPORT-DATABASE-ARCHITECTURE-CURRENT-STATE-2025-10-17.md # DB Architecture
-    ├── VALIDATED_GUIDE-SQLITE-DATABASE-SYSTEM_2025-10-17.md    # SQLite System
-    ├── VALIDATED_GUIDE-SQLITE-MIGRATION-ARCHITECTURE_2025-10-17.md # Migration Architecture
-    ├── VALIDATED_GUIDE-LINE-ITEM-HIERARCHY_2025-10-17.md       # Line Item Hierarchy
-    ├── COMPLETED_IMPL-MIGRATION-013-DISCOUNT-SYSTEM-2025-10-15.md # Discount System
-    ├── COMPLETED_IMPL-TIMESHEET-SYSTEM-2025-10-15.md           # Timesheet System
-    └── [35+ weitere Data-Dokumente]
+├── VALIDATED/                    # Validierte Database-Dokumentation
+├── COMPLETED/                    # Abgeschlossene Database-Implementierungen
+├── SOLVED/                       # Gelöste Database-Probleme
+├── LESSON/                       # Database-Lessons Learned
+├── KNOWLEDGE_ONLY/               # Historische Database-Archive
+├── WIP/                          # Work in Progress Database  
+├── PLAN/                         # Database-Planungsdokumente
+└── DEPRECATED/                   # Veraltete Database-Inhalte
 ```
 
 ### **📂 04-ui (User Interface)**
 ```
 docs/04-ui/
 ├── INDEX.md
-├── plan/
-│   └── VISUALIZATION_DATABASE-THEME-ARCHITECTURE_2025-10-17.md # Theme Visualization
-└── final/
-    ├── final_THEME/
-    │   ├── VALIDATED_GUIDE-CONTEXT-ARCHITECTURE-2025-10-17.md  # Theme Context Architecture
-    │   ├── COMPLETED_IMPL-DATABASE-THEME-SYSTEM_2025-10-17.md  # Database Theme System
-    │   ├── COMPLETED_IMPL-THEME-SERVICE-LAYER_2025-10-17.md    # Theme Service Layer
-    │   ├── COMPLETED_IMPL-MIGRATION-027-THEME-SYSTEM_2025-10-17.md # Migration 027
-    │   └── [15+ weitere Theme-Dokumente]
-    ├── VALIDATED_GUIDE-PDF-ANHANG-SEITE-ARCHITEKTUR_2025-10-17.md # PDF Architecture
-    ├── VALIDATED_GUIDE-UI-PATTERNS-TABLE-FORMS_2025-10-17.md   # UI Patterns
-    ├── SOLVED_IMPL-SEARCH-AND-FILTER-SYSTEM-2025-10-15.md     # Search/Filter System
-    └── [50+ weitere UI-Dokumente]
+├── VALIDATED/                    # Validierte UI-Dokumentation
+├── COMPLETED/                    # Abgeschlossene UI-Implementierungen
+├── SOLVED/                       # Gelöste UI-Probleme
+├── LESSON/                       # UI-Lessons Learned
+├── KNOWLEDGE_ONLY/               # Historische UI-Archive
+├── WIP/                          # Work in Progress UI
+├── PLAN/                         # UI-Planungsdokumente
+└── DEPRECATED/                   # Veraltete UI-Inhalte
 ```
 
 ### **📂 05-deploy (Deployment & Updates)**
 ```
 docs/05-deploy/
 ├── INDEX.md
-└── final/
-    ├── VALIDATED_GUIDE-UPDATER-UPDATE-SYSTEM-ARCHITECTURE-2025-10-17.md # Update Architecture
-    ├── VALIDATED_GUIDE-UPDATER-HYBRID-COMPONENT-ARCHITECTURE-2025-10-17.md # Hybrid Architecture
-    ├── COMPLETED_REPORT-UPDATER-ARCHIVED-UPDATE_SYSTEM_ARCHITECTURE-V1.0.7-2025-10-15.md # Update System
-    ├── VALIDATED_GUIDE-DEPLOYMENT-UPDATES_2025-10-17.md        # Deployment Guide
-    ├── LESSON_FIX-VERSIONSSYNC-MECHANISMUS-2025-10-15.md      # Version Sync
-    └── [30+ weitere Deploy-Dokumente]
+├── VALIDATED/                    # Validierte Deployment-Dokumentation
+├── COMPLETED/                    # Abgeschlossene Deployment-Implementierungen
+├── SOLVED/                       # Gelöste Deployment-Probleme
+├── LESSON/                       # Deployment-Lessons Learned
+├── KNOWLEDGE_ONLY/               # Historische Deployment-Archive
+├── WIP/                          # Work in Progress Deployment
+├── PLAN/                         # Deployment-Planungsdokumente
+└── DEPRECATED/                   # Veraltete Deployment-Inhalte
 ```
 
-### **📂 06-lessons (Lessons Learned & Sessions)**
+### **📂 06-handbook (Templates & Referenzen)**
+- **Purpose:** Template-System für KI-Sessions, Referenz-Dokumentation, Anti-Pattern Registry
+- **Key Features:** SESSION-START Templates, Database Schema Reference, KI-Mistakes Anti-Pattern
+- **Critical Files:**
+  - `TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md` (Session-Start Template)
+  - `TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md` (Lessons Template)
+  - `REFERENCE/VALIDATED_REFERENCE-DATABASE-SCHEMA-CURRENT_2025-10-26.md` (DB Schema)
+  - `ANTIPATTERN/VALIDATED_ANTIPATTERN-KI-MISTAKES_2025-10-26.md` (Anti-Patterns)
+
+### **📂 08-batch (Batch Operations)**
 ```
-docs/06-lessons/
+docs/08-batch/
 ├── INDEX.md
-├── final/
-│   └── VALIDATED_GUIDE-SYSTEMATIC-FIX-PRESERVATION-STRATEGY-2025-10-15.md # Fix Preservation
-└── sessions/
+├── VALIDATED/                    # Validierte Batch-Dokumentation
+├── COMPLETED/                    # Abgeschlossene Batch-Implementierungen
+├── SOLVED/                       # Gelöste Batch-Probleme
+├── LESSON/                       # Batch-Lessons Learned
+├── KNOWLEDGE_ONLY/               # Historische Batch-Archive
+├── WIP/                          # Work in Progress Batch
+├── PLAN/                         # Batch-Planungsdokumente
+└── DEPRECATED/                   # Veraltete Batch-Inhalte
+```
     ├── COMPLETED_REPORT-SESSION-2025-10-10-V1.0.10-DEVELOPMENT-REPORT.md # Session Reports
     ├── VALIDATED_REPORT-CURRENT-PROJECT-STATUS-HANDOVER_2025-10-19.md     # Status Handover
     └── [25+ weitere Session-Reports]
@@ -197,9 +210,9 @@ docs/08-batch/
 └── COMPLETED_REPORT-BATCH-001-SCHEMA-UPDATE_2025-10-16.md      # Batch Schema Update
 ```
 
-### **📂 archive (Deprecated & Historical)**
+### **📂 09-archive (Deprecated & Historical)**
 ```
-docs/archive/
+docs/09-archive/
 ├── INDEX.md                                                     # Archive Overview
 ├── deprecated/                                                  # 15 DEPRECATED documents
 │   ├── DEPRECATED_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-16.md # Old Sitemap
@@ -218,19 +231,19 @@ docs/archive/
 3. **ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md** - Kritische Fixes (16 Patterns)
 
 ### **🏗️ Für System-Architektur:**
-1. **01-core/final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md** - System Architecture
-2. **03-data/final/VALIDATED_REPORT-DATABASE-ARCHITECTURE-CURRENT-STATE-2025-10-17.md** - Database Schema
+1. **01-core/VALIDATED/** - System Architecture Dokumentation
+2. **03-data/KNOWLEDGE_ONLY/** - Database Schema Historie  
 3. **ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md** - Theme System Master
 
 ### **🎨 Für Frontend/UI:**
-1. **04-ui/final/final_THEME/** - Complete Theme System Documentation
-2. **04-ui/final/VALIDATED_GUIDE-UI-PATTERNS-TABLE-FORMS_2025-10-17.md** - UI Patterns
-3. **04-ui/final/SOLVED_IMPL-SEARCH-AND-FILTER-SYSTEM-2025-10-15.md** - Search/Filter
+1. **04-ui/COMPLETED/** - Complete Theme System Documentation
+2. **04-ui/VALIDATED/** - UI Patterns Dokumentation
+3. **04-ui/SOLVED/** - Search/Filter Implementierungen
 
 ### **📊 For Database/Migration:**
-1. **03-data/final/VALIDATED_GUIDE-SQLITE-MIGRATION-ARCHITECTURE_2025-10-17.md** - Migration System
-2. **Migration Files:** `src/main/db/migrations/` (029 migrations applied)
-3. **Field Mapping:** `src/lib/field-mapper.ts` (130+ mappings)
+1. **03-data/VALIDATED/** - Migration System Dokumentation
+2. **Migration Files:** `src/main/db/migrations/` (Schema Version 46 - 47 migration files)
+3. **Field Mapping:** `src/lib/field-mapper.ts` (Production-ready camelCase ↔ snake_case)
 
 ---
 
@@ -249,11 +262,11 @@ docs/archive/
 - **archive:** 15+ DEPRECATED Dokumente
 
 ### **Dokumentations-Status:**
-- **Aktuelle Version:** v1.0.54 (Migration 029 - Focus Mode System)
+- **Aktuelle Version:** v1.0.63 (Schema Version 46 - Current Production)
 - **Schema Compliance:** 95%+ aller Dokumente
-- **Migration Stand:** 029 applied (Theme + Navigation + Focus Mode)
-- **Critical Fixes:** 16 protected patterns
-- **Service Architecture:** 18 business services documented
+- **Migration Stand:** Schema Version 46 (47 TypeScript migration files)
+- **Critical Fixes:** 16+ protected patterns
+- **Service Architecture:** 18+ business services documented
 
 ---
 
@@ -309,11 +322,11 @@ find docs/ -maxdepth 1 -name "ROOT_*" -type f
 4. **Document:** Neue Lessons in passender Kategorie
 
 ### **Architektur erweitern:**
-1. **Database:** `03-data/final/` für Schema-Änderungen
-2. **Frontend:** `04-ui/final/` für UI-Patterns  
-3. **Services:** `01-core/final/` für Service-Architecture
+1. **Database:** `03-data/VALIDATED/` für Schema-Änderungen
+2. **Frontend:** `04-ui/VALIDATED/` für UI-Patterns  
+3. **Services:** `01-core/VALIDATED/` für Service-Architecture
 4. **Update:** Diese Sitemap bei strukturellen Änderungen
 
 ---
 
-*Letzte Aktualisierung: 20. Oktober 2025 | Repository v1.0.54 | Migration 029 applied | Nächste Review: November 2025*
+*Letzte Aktualisierung: 27. Oktober 2025 | Repository v1.0.63 | Schema Version 46 (Production) | Nächste Review: November 2025*

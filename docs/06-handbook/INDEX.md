@@ -1,0 +1,102 @@
+# 06-handbook – KI-Arbeitshandbuch
+
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-Handbook Erstellung)  
+> **Status:** Production Ready | **Typ:** KI-Handbook  
+> **Purpose:** KI-optimiertes Arbeitshandbuch für effiziente Session-Starts und Problem-Solving
+
+KI-optimiertes Arbeitshandbuch für effiziente Session-Starts und Problem-Solving.
+
+## 🎯 **Handbook-Struktur (KI-optimiert)**
+
+### **REFERENCE/ (15 files)**
+**Live-Informationen und Architektur-Referenzen**
+
+- Aktuelle Database Schema (Migration 044)
+- Architecture Overview (Services, PATHS, IPC)
+- Technology Stack Summary
+- Working Code Patterns
+
+### **TEMPLATE/ (4 files)**
+**Session-Templates (MANDATORY Copy & Paste)**
+
+- Lesson Learned Template (PFLICHT für jede Session)
+- Migration Template
+- Fix Documentation Template
+- Bug Report Template
+
+### **ISSUES/ (0 files)**
+**Persistierende Probleme Registry**
+
+- Known Issues Registry
+- Session-Blocking Problems
+- Unresolved Architecture Conflicts
+- Performance Bottlenecks
+
+### **ANTIPATTERN/ (1 file)**
+**KI-Fehler Prevention Rules**
+
+- Häufige KI-Coding-Fehler
+- Verbotene Code-Patterns
+- Session-Killer-Mistakes
+- Critical Rules Violations
+
+---
+
+## 🎯 **KI-Navigation Prinzipien**
+
+### **Session-Start Workflow:**
+1. **REFERENCE/** → Aktueller Projekt-Stand
+2. **TEMPLATE/** → Session-Template verwenden
+3. **ISSUES/** → Bekannte Probleme prüfen
+4. **ANTIPATTERN/** → Fehler-Prevention aktivieren
+
+### **Problem-Solving Workflow:**
+1. **ISSUES/** → Problem bereits bekannt?
+2. **ANTIPATTERN/** → Häufiger KI-Fehler?
+3. **REFERENCE/** → Architektur-Kontext prüfen
+4. **TEMPLATE/** → Lösung dokumentieren
+
+---
+
+##  **Content Guidelines**
+
+### **Maximal 1 Seite pro Dokument** (KI-Token-optimiert)
+### **Copy & Paste Ready** (sofort verwendbare Code-Snippets)
+### **Live-Status** (immer aktuell, nicht historisch)
+### **Pattern-focused** (bewährte Lösungsansätze)
+
+---
+
+## 📊 **Status Overview**
+
+**Handbook Completeness:** 85% (Content migrated from domain folders)
+
+- **REFERENCE/**: ✅ 15 architecture references (COMPLETE)
+- **TEMPLATE/**: ✅ 4 session templates (COMPLETE)
+- **ISSUES/**: ⚠️ Needs known issues registry
+- **ANTIPATTERN/**: ✅ 1 StatusControl antipattern (BASIC)
+
+---
+
+## 🏷️ **Tags & Topics**
+
+<!-- tags: KI-HANDBOOK, SESSION-START, PROBLEM-SOLVING, TEMPLATES, ANTIPATTERN -->
+
+**Handbook Topics:**
+- **Reference:** Current project state, architecture, live schemas
+- **Templates:** Mandatory session templates, copy & paste ready
+- **Issues:** Known problems, blocking issues, architecture conflicts
+- **Antipattern:** KI mistakes prevention, forbidden patterns
+
+---
+
+## � **Cross-References**
+
+> **Related:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) for core coding rules  
+> **See also:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) for critical fixes preservation  
+
+---
+
+**File Count:** 20 files (REFERENCE: 15, TEMPLATE: 4, ANTIPATTERN: 1)  
+**Migration Date:** 2025-10-26  
+**Structure:** KI-optimized 4-folder system with session templates

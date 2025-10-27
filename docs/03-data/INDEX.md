@@ -1,50 +1,56 @@
 # 03-data - Database & Data Management
 
 > **Purpose:** Database Schema, Field Mapping, Migrations, and Data Persistence  
-> **Last Updated:** 2025-10-18 (Database-Theme-System Integration - Migration 027 Reference Added)  
-> **Status:** ✅ ACTIVE  
+> **Last Updated:** 2025-10-26 (VALIDATED Content Quality Control - Obsolete PLANs entfernt, Duplikate bereinigt)  
+> **Status:** ✅ ACTIVE | **Validation Status:** 100% Schema Compliance  
 > **Covers:** SQLite, Field Mapping, Migrations, Numbering Systems, Theme Database Integration
 
-## 📁 **Standard Folder Structure**
+> **🎯 VALIDATED CONTENT QUALITY CONTROL (26.10.2025):**  
+> **Issues Resolved:** Obsolete PLANs zu KNOWLEDGE_ONLY, veraltete REPORTs klassifiziert, Duplikate entfernt  
+> **Quality Control:** VALIDATED (12→6), COMPLETED (+1), KNOWLEDGE_ONLY (+3)  
+> **Schema Status:** Schema Version 46 current, 47 TypeScript migration files verified, production database validated  
+> **Result:** Präzise Database-Navigation, nur aktuelle Guides in VALIDATED
 
-### **📂 final/** - Completed Database Documentation
+## 📁 **STATUS-PRÄFIX Folder Structure**
 
-#### **🗄️ Database Architecture**
-- **DATABASE-ARCHITECTURE-CURRENT-STATE.md** - Complete database overview
-- **SQLITE-DATABASE-SYSTEM.md** - SQLite implementation details
-- **SQLITE-MIGRATION-ARCHITECTURE.md** - Migration system architecture
-- **BETTER-SQLITE3-PRODUCTION-ISSUES.md** - Production database issues
+### **📂 VALIDATED/** - Validierte Datenbank-Dokumentation (6 Dateien)
 
-#### **📋 Schema & Migrations**
-- **MIGRATION-011-offer-line-items-extension.md** - Line items extension
-- **MIGRATION-013-DISCOUNT-SYSTEM.md** - Discount system implementation
-- **TIMESHEET-MIGRATION-009-010.md** - Timesheet schema evolution
+- **DATABASE-OVERVIEW-AI:** [VALIDATED_GUIDE-DATABASE-OVERVIEW-AI_2025-10-23.md](VALIDATED/VALIDATED_GUIDE-DATABASE-OVERVIEW-AI_2025-10-23.md) - **PRIMARY DB REFERENCE** - Current schema v46, Migration files 47
+- **SQLite System:** [VALIDATED_GUIDE-SQLITE-DATABASE-SYSTEM-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-SQLITE-DATABASE-SYSTEM-2025-10-17.md) - SQLite implementation details
+- **Migration Architecture:** [VALIDATED_GUIDE-SQLITE-MIGRATION-ARCHITECTURE_2025-10-17.md](VALIDATED/VALIDATED_GUIDE-SQLITE-MIGRATION-ARCHITECTURE_2025-10-17.md) - Migration system architecture
+- **Installation Guide:** [VALIDATED_GUIDE-INSTALLATION-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-INSTALLATION-2025-10-17.md) - SQLite database installation & setup
+- **Line Item Hierarchy:** [VALIDATED_GUIDE-LINE-ITEM-HIERARCHY-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-LINE-ITEM-HIERARCHY-2025-10-17.md) - Hierarchical data patterns
+- **Settings Schema Migration:** [VALIDATED_GUIDE-CROSS-REF-SETTINGS-SCHEMA-MIGRATION-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-CROSS-REF-SETTINGS-SCHEMA-MIGRATION-2025-10-17.md) - Settings cross-references
 
-#### **🔄 Field Mapping System**
-- **FIELD_MAPPER_MISMATCHES_PLAN.md** - Field mapping consistency plan
-- **MAPPING_IMPLEMENTATION_PLAN.md** - Implementation strategy
-- **MAPPING_PROGRESS_REPORT.md** - Current mapping status
+### **📂 COMPLETED/** - Abgeschlossene Implementierungen (9 Dateien)
+- **Migration 011:** Offer line items extension
+- **Migration 013:** Discount system implementation  
+- **Activity Templates:** Template system implementation
+- **Numbering Circles:** Integration documentation
+- **Mapping Progress:** [COMPLETED_REPORT-MAPPING-PROGRESS-2025-10-17.md](COMPLETED/COMPLETED_REPORT-MAPPING-PROGRESS-2025-10-17.md) - Field-mapping implementation completion
 
-#### **🔢 Numbering Systems**
-- **NUMMERNKREISE.md** - Numbering circles system
-- **NUMBERING-CIRCLES-INTEGRATION.md** - Integration documentation
-- **NUMMERNKREISE-PRODUCTION-BUG.md** - Production bug fixes
+### **📂 KNOWLEDGE_ONLY/** - Knowledge Archive (3 Dateien)
+- **Field-Mapper Plans:** [KNOWLEDGE_ONLY_PLAN-FIELD-MAPPER-MISMATCHES-2025-10-17.md](KNOWLEDGE_ONLY/KNOWLEDGE_ONLY_PLAN-FIELD-MAPPER-MISMATCHES-2025-10-17.md) - Historical analysis (bereits implementiert)
+- **Mapping Implementation:** [KNOWLEDGE_ONLY_PLAN-MAPPING-IMPLEMENTATION-2025-10-17.md](KNOWLEDGE_ONLY/KNOWLEDGE_ONLY_PLAN-MAPPING-IMPLEMENTATION-2025-10-17.md) - Historical plan (bereits implementiert)
+- **Database Architecture:** [KNOWLEDGE_ONLY_REPORT-DATABASE-ARCHITECTURE-CURRENT-STATE-2025-10-17.md](KNOWLEDGE_ONLY/KNOWLEDGE_ONLY_REPORT-DATABASE-ARCHITECTURE-CURRENT-STATE-2025-10-17.md) - Historical state (Schema v46, 47 migration files)
 
-#### **📚 Database Lessons Learned**
-- **LESSONS-LEARNED-DISCOUNT-PROJECT.md** - Discount system lessons
-- **LESSONS-LEARNED-database-schema-migration-fix.md** - Migration lessons
-- **LESSONS-LEARNED-SCHEMA-CONSISTENCY.md** - Schema consistency patterns
-- **LESSONS-LEARNED-SQLITE-BOOLEAN-BINDING.md** - SQLite binding issues
-- **LESSONS-LEARNED-offer-foreign-key-constraint-fix.md** - Foreign key fixes
+### **📂 SOLVED/** - Gelöste Probleme und Fixes
+- Implementierte Database-Fixes und Lösungen
 
-### **📂 plan/** - Database Planning
-- Currently empty
+### **📂 LESSON/** - Lessons Learned
+- Database-Debugging-Erfahrungen und Schema-Lessons
 
-### **📂 sessions/** - Database Sessions
-- Currently empty
+### **📂 KNOWLEDGE_ONLY/** - Knowledge Archive
+- Historische Database-Referenz-Dokumente (sichere KI-Nutzung)
 
-### **📂 wip/** - Work-in-Progress
-- Currently empty
+### **📂 WIP/** - Work in Progress
+- Aktuelle Database-Arbeitsdokumente (nur zur Orientierung)
+
+### **📂 PLAN/** - Database-Planungsdokumente
+- Database-Roadmaps und Schema-Konzepte (Entwurfsstatus)
+
+### **📂 DEPRECATED/** - Veraltete Database-Dokumentation
+- Ersetzte oder obsolete Database-Inhalte
 
 ---
 
@@ -57,23 +63,31 @@
 4. ✅ **Field Mapping:** [Theme Field Mapper](../04-ui/final/COMPLETED_IMPL-THEME-FIELD-MAPPER_2025-10-17.md) - Theme data field mapping patterns
 
 ### **🗄️ For Database Development:**
-1. ✅ **Overview:** [PATHS.md](../PATHS.md#DATABASE_ARCHITECTURE_STATE) - Complete database overview
-2. ✅ **SQLite setup:** [PATHS.md](../PATHS.md#SQLITE_DATABASE_SYSTEM) - SQLite implementation
-3. ✅ **Migrations:** [PATHS.md](../PATHS.md#SQLITE_MIGRATION_ARCHITECTURE) - Migration system
+1. ✅ **PRIMARY REFERENCE:** [VALIDATED_GUIDE-DATABASE-OVERVIEW-AI_2025-10-23.md](VALIDATED/VALIDATED_GUIDE-DATABASE-OVERVIEW-AI_2025-10-23.md) - **CURRENT SCHEMA v46** - Migration files 47
+2. ✅ **SQLite System:** [VALIDATED_GUIDE-SQLITE-DATABASE-SYSTEM-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-SQLITE-DATABASE-SYSTEM-2025-10-17.md) - SQLite implementation details
+3. ✅ **Migration Architecture:** [VALIDATED_GUIDE-SQLITE-MIGRATION-ARCHITECTURE_2025-10-17.md](VALIDATED/VALIDATED_GUIDE-SQLITE-MIGRATION-ARCHITECTURE_2025-10-17.md) - Migration system architecture
+4. ✅ **Installation Setup:** [VALIDATED_GUIDE-INSTALLATION-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-INSTALLATION-2025-10-17.md) - Database installation guide
 
-### **🔄 For Field Mapping:**
-- **Mapping Issues:** [PATHS.md](../PATHS.md#FIELD_MAPPER_MISMATCHES) - Mapping consistency
-- **Implementation:** [PATHS.md](../PATHS.md#MAPPING_IMPLEMENTATION) - Implementation guide
-- **Progress:** [PATHS.md](../PATHS.md#MAPPING_PROGRESS) - Current status
+### **🔧 For Implementation Examples:**
+- **Field-Mapping Completion:** [COMPLETED_REPORT-MAPPING-PROGRESS-2025-10-17.md](COMPLETED/COMPLETED_REPORT-MAPPING-PROGRESS-2025-10-17.md)
+- **Line Item Hierarchy:** [VALIDATED_GUIDE-LINE-ITEM-HIERARCHY-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-LINE-ITEM-HIERARCHY-2025-10-17.md)
+- **Settings Migration:** [VALIDATED_GUIDE-CROSS-REF-SETTINGS-SCHEMA-MIGRATION-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-CROSS-REF-SETTINGS-SCHEMA-MIGRATION-2025-10-17.md)
 
-### **🔢 For Numbering Systems:**
-- **Core System:** [PATHS.md](../PATHS.md#NUMBERING_CIRCLES) - Integration guide
-- **Implementation:** [PATHS.md](../PATHS.md#SQLITE_ADAPTER) - SQLite adapter details
+### **🔄 For Implementation Reference:**
+- **Completed Projects:** [COMPLETED/](COMPLETED/) - 8 abgeschlossene Database-Implementierungen
+- **Solved Issues:** [SOLVED/](SOLVED/) - Gelöste Database-Probleme
+- **Current Work:** [WIP/](WIP/) - Aktuelle Database-Projekte
+- **Planning:** [PLAN/](PLAN/) - Database-Roadmaps und Konzepte
 
-### **📋 For Schema & Migrations:**
-- **Line Items:** [PATHS.md](../PATHS.md#MIGRATION_011_OFFER_ITEMS) - Offer line items extension
-- **Discount System:** [PATHS.md](../PATHS.md#MIGRATION_013_DISCOUNT) - Discount implementation
-- **Timesheet Data:** [PATHS.md](../PATHS.md#TIMESHEET_MIGRATION) - Timesheet schema evolution
+### **� STATUS-PRÄFIX Navigation:**
+- **VALIDATED/**: Verlässliche Database-Quellen (12 Dateien)
+- **COMPLETED/**: Abgeschlossene Database-Implementierungen (8 Dateien)
+- **SOLVED/**: Implementierte Database-Fixes
+- **LESSON/**: Database-Debugging-Erfahrungen
+- **KNOWLEDGE_ONLY/**: Historische Database-Archiv-Referenzen
+- **WIP/**: Aktuelle Database-Arbeit (nur Orientierung)
+- **PLAN/**: Database-Konzepte und Roadmaps
+- **DEPRECATED/**: Veraltete Database-Inhalte (ignorieren)
 
 ---
 
@@ -97,6 +111,6 @@
 
 ---
 
-**File Count:** 32 files migrated from 05-database/  
-**Migration Date:** 2025-10-15  
-**Structure:** 7-folder v2 system
+**File Count:** 21 total files (6 VALIDATED + 9 COMPLETED + 3 KNOWLEDGE_ONLY + 2 SOLVED + 1 INDEX)  
+**Quality Control:** 2025-10-26 (Obsolete PLANs zu KNOWLEDGE_ONLY, Duplikate entfernt, PRIMARY DB REFERENCE etabliert)  
+**Structure:** KI-optimized präfix system mit aktueller Database-Referenz (Schema v46, Migration files 47)
