@@ -1,302 +1,255 @@
-# RawaLite Documentation Index
+# 📚 RawaLite Documentation Index
 
-**Version:** 1.0.42.5+  
-**Letzte Aktualisierung:** 15. Oktober 2025
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Integration + Template-Vorgaben Update)  
+> **Status:** Production Ready - Central Navigation Hub | **Typ:** Documentation Index  
+> **Schema:** `INDEX.md` (Special Root Document)  
+> **🛡️ ROOT-PROTECTED:** Documentation Structure Central Hub
 
-## 📚 Dokumentationsstruktur (16-Ordner System)
+> **⚠️ DOCUMENTATION STATUS:** Post KNOWLEDGE_ONLY Cleanup (26.10.2025)  
+> **Quality Level:** 92.3% Schema Compliance (EXCELLENT - improved from 53%)  
+> **Validation Method:** Repository as Ground Truth + KI-PRÄFIX-ERKENNUNGSREGELN  
+> **Migration Reality:** 045 files (000-044), Latest: 044-cleanup-navigation-modes, 045-enforce-ki-safe-navigation  
+> **Critical Documentation Cleanup:** 90+ false COMPLETED/VALIDATED docs reclassified to KNOWLEDGE_ONLY
 
-**Standard 4-Folder Organization:** Alle Dokumentationsordner enthalten `final/`, `wip/`, `plan/`, `sessions/`
-**VALIDATED System:** Dokumente mit `VALIDATED_` Präfix haben bestätigten Status
-**Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
+## � **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
 
-### **🏷️ Naming Convention Vollständig:**
-- **STATUS-PRÄFIXE:** `VALIDATED_`, `SOLVED_`, `LESSON_`, `WIP_`, `COMPLETED_`, `PLAN_`, `DEPRECATED_`
-- **TYP-KATEGORIEN:** `GUIDE-`, `FIX-`, `IMPL-`, `REPORT-`, `REGISTRY-`, `TEMPLATE-`, `TRACKING-`, `PLAN-`
-- **Beispiel:** `ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md`
+### **Naming Convention:**
+```
+[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md
 
-### 00-meta/ - Meta-Dokumentation ✅ **ROOT_ MIGRATION COMPLETED (17.10.2025)**
-- **Critical Registry:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - ✅ **[16 AKTIVE FIXES + Database-Theme-System]** Registry aller kritischen Fixes
-- **KI Instructions:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) - ✅ **[THEME DEVELOPMENT RULES]** KI-Instructions mit Theme System Integration  
-- **KI Failure Modes:** [ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md](ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md) - **[MANDATORY READ]** Session-Killer-Fehler verhindern
-- **PATHS.md System:** [ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md](ROOT_VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-20.md) - ✅ **[104+ PATH CONSTANTS]** Zentrale Pfad-Verwaltung für alle Dokumentationen
-- **Database-Theme-System MASTER:** [ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md](ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md) - ⭐ **VOLLSTÄNDIGE IMPLEMENTIERUNG** Repository-verifiziert, Production-Ready
+Beispiel: VALIDATED_TEMPLATE-KI-PREFIX-RECOGNITION-RULES-2025-10-16.md
+```
 
-### 🎨 **Database-Theme-System (NEW - 18.10.2025)**
-**Production-Ready Theme Management mit Database-First Architecture:**
-- **Core Architecture:** [01-core/final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md](01-core/final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md) - Complete 6-layer system mit theme integration
-- **Development Standards:** [02-dev/final/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md](02-dev/final/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md) - Complete development workflow and patterns
-- **Implementation:** [04-ui/final/COMPLETED_IMPL-DATABASE-THEME-SYSTEM_2025-10-17.md](04-ui/final/COMPLETED_IMPL-DATABASE-THEME-SYSTEM_2025-10-17.md) - Full implementation with React Context
-- **Service Layer:** [04-ui/final/COMPLETED_IMPL-THEME-SERVICE-LAYER_2025-10-17.md](04-ui/final/COMPLETED_IMPL-THEME-SERVICE-LAYER_2025-10-17.md) - DatabaseThemeService patterns
-- **Database Schema:** [04-ui/final/COMPLETED_IMPL-MIGRATION-027-THEME-SYSTEM_2025-10-17.md](04-ui/final/COMPLETED_IMPL-MIGRATION-027-THEME-SYSTEM_2025-10-17.md) - Migration 027 with theme tables
+### **STATUS-PRÄFIXE:**
+- `ROOT_` - **KI-kritische Dokumente die IMMER im /docs Root bleiben (NIEMALS verschieben!)**
+- `VALIDATED_` - Validierte, stabile Dokumentation (verlässliche Quelle)
+- `SOLVED_` - Gelöste Probleme und Fixes (fertige Lösung)
+- `LESSON_` - Lessons Learned und Debugging (vergleichende Analyse)
+- `KNOWLEDGE_ONLY_` - Historische Archiv-Dokumente (KI-safe reference ohne aktuelle Implementierung)
+- `WIP_` - Work in Progress (nur Orientierung)
+- `COMPLETED_` - Abgeschlossene Implementierungen (fertige Reports)
+- `PLAN_` - Planungsdokumente und Roadmaps (Entwurfsstatus)
+- `DEPRECATED_` - Veraltete, ersetzte Dokumentation (ignorieren)
 
-### 01-core/ - Standards & Core Architecture ✅ **THEME INTEGRATION COMPLETED (18.10.2025)**
+### **TYP-KATEGORIEN:**
+- `GUIDE-` - Leitfäden, Anleitungen
+- `FIX-` - Lessons Learned, Debugging, Fixes, Problems
+- `IMPL-` - Implementierungen, Features
+- `REPORT-` - Berichte, Analysen, Completion-Reports
+- `REGISTRY-` - Listen, Registries, Collections
+- `TEMPLATE-` - Vorlagen, Templates
+- `TRACKING-` - Status-Tracking, Quality-Tracking
+- `PLAN-` - Planungsdokumente, Roadmaps
+
+---
+
+## 🎯 **MANDATORY SESSION-START PROTOCOL (KI-Template-Vorgaben)**
+
+**ZWINGEND VOR JEDER CODE-ÄNDERUNG:**
+- [ ] 📋 [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](06-handbook/TEMPLATE/) öffnen und ausfüllen
+- [ ] 📝 [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md](06-handbook/TEMPLATE/) bereithalten
+- [ ] 🔍 [06-handbook/REFERENCE/VALIDATED_REFERENCE-DATABASE-SCHEMA-CURRENT_2025-10-26.md](06-handbook/REFERENCE/) prüfen  
+- [ ] 📋 [06-handbook/REFERENCE/VALIDATED_REFERENCE-PROJECT-CORE-RULES_2025-10-26.md](06-handbook/REFERENCE/) durchlesen
+- [ ] ❌ [06-handbook/ANTIPATTERN/VALIDATED_ANTIPATTERN-KI-MISTAKES_2025-10-26.md](06-handbook/ANTIPATTERN/) durchlesen
+- [ ] ⚡ [06-handbook/ISSUES/KNOWN_PROBLEMS](06-handbook/ISSUES/) checken (falls vorhanden)
+- [ ] 🔍 **CRITICAL:** Existierende Lessons Learned zum Thema suchen (ALLE docs/ Ordner!)
+- [ ] 📝 **NUR wenn KEINE Lesson Learned vorhanden** → Template verwenden und dokumentieren
+
+**LESSON-LEARNED DUPLICATE-PREVENTION:**
+1. Semantic Search: docs/ nach ähnlichen Problemen durchsuchen
+2. Grep Search: Nach verwandten Keywords suchen  
+3. LESSON_ + SOLVED_ Präfixe in ALLEN Ordnern prüfen
+4. NUR wenn wirklich NEU → Template verwenden und dokumentieren
+
+**⚠️ OHNE TEMPLATE-NUTZUNG = SESSION INVALID**
+
+---
+
+## � **VALIDATION STATUS OVERVIEW (26.10.2025)**
+
+**✅ COMPLETED KNOWLEDGE_ONLY CLEANUP (26.10.2025):**
+- **90+ FALSE COMPLETED/VALIDATED DOCUMENTS** reclassified to KNOWLEDGE_ONLY
+- **Master Validation Script Confirmation:** 445% Over-Documentation detected (89 documented vs. 20 implemented services)
+- **Schema Compliance:** Improved from 53% to 92.3% through systematic cleanup
+- **Layout Crisis Evidence:** Emergency fallback CSS, 45+ migration attempts documented
+- **User Domain Knowledge Validated:** "Massive layout problems" confirmed by code evidence
+
+| **Folder** | **Cleanup Status** | **KNOWLEDGE_ONLY Moved** | **Key Findings** |
+|:--|:--|:--|:--|
+| **04-ui/** | ✅ COMPLETED | 46+ files | Layout crisis invalidated all UI claims |
+| **05-deploy/** | ✅ COMPLETED | 3+ files | GitHubApiService replaced GitHubCliService |
+| **01-core/** | ✅ COMPLETED | 2+ files | System reports not implementation |
+| **02-dev/** | ✅ COMPLETED | 5+ files | Development docs not feature completion |
+| **03-data/** | ✅ VALIDATED | 0 files | Database reality matched documentation |
+| **06-lessons/** | ✅ VALIDATED | 0 files | Lessons Learned status preserved |
+
+**🎯 DOCUMENTATION REALITY RESTORATION:**
+- **Schema-Integrität wiederhergestellt:** Dokumentation spiegelt tatsächliche System-Realität wider
+- **False Claims eliminiert:** COMPLETED/VALIDATED nur für tatsächlich funktionierende Features
+- **KNOWLEDGE_ONLY System etabliert:** Sichere historische Referenz ohne falsche Status-Claims
+- **User Domain Knowledge bestätigt:** Code-Evidenz validierte Benutzer-Assessment zu 100%
+
+## 📚 **DOKUMENTATIONSSTRUKTUR (Updated 26.10.2025)**
+
+### **🏗️ Root-Dokumente (KI-KRITISCH - NIEMALS VERSCHIEBEN!):**
+- [ROOT_VALIDATED_GUIDE-MASTER-VALIDATION-SCRIPT_2025-10-20.md](ROOT_VALIDATED_GUIDE-MASTER-VALIDATION-SCRIPT_2025-10-20.md) - ✅ **VALIDATED** Master validation script (funktioniert, 445% Over-Doc-Rate bestätigt)
+- [ROOT_VALIDATED_GUIDE-PER-MODE-CONFIGURATION-SYSTEM_2025-10-21.md](ROOT_VALIDATED_GUIDE-PER-MODE-CONFIGURATION-SYSTEM_2025-10-21.md) - ✅ **VALIDATED** Complete implementation (Migrations 034-037 verified)  
+- [ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md](ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md) - ✅ **VALIDATED** Scripts organization guide
+- [ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md](ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md) - ✅ **VALIDATED** Documentation navigation hub
+- [ROOT_VALIDATED_REGISTRY-IMPLEMENTATIONS-OVERVIEW_2025-10-17.md](ROOT_VALIDATED_REGISTRY-IMPLEMENTATIONS-OVERVIEW_2025-10-17.md) - ✅ **VALIDATED** Implementation status registry
+- [ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md](ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md) - ✅ **VALIDATED** Scripts registry and overview
+
+### **🎯 Standard 4-Folder Organization:** 
+Alle Dokumentationsordner enthalten: `final/`, `wip/`, `plan/`, `sessions/`
+
+### **📋 06-handbook/ System (NEW - Template-Vorgaben):**
+- **TEMPLATE/** - Copy&Paste Templates für Session-Start und Lessons Learned
+- **REFERENCE/** - Database Schema, Project Core Rules, Quick References
+- **ANTIPATTERN/** - KI-Mistakes Prevention, Session-Killer-Fehler Vermeidung
+- **ISSUES/** - Known Problems, Current Issues, Bug Tracking
+
+### **📁 00-meta/ - Meta-Dokumentation** ✅ **KI-TEMPLATE SYSTEM INTEGRATED (26.10.2025)**
+- **[../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md)** - ✅ **[AUTHORITATIVE]** Session-Start Template mit Template-Vorgaben
+- **[../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md](../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md)** - ✅ **[AUTHORITATIVE]** Schema-Recognition Rules für KI
+- **[06-handbook/REFERENCE/](06-handbook/REFERENCE/)** - **[MANDATORY READ]** Database Schema, Project Core Rules, Quick References
+- **[06-handbook/ANTIPATTERN/](06-handbook/ANTIPATTERN/)** - **[FAILURE PREVENTION]** Session-Killer Prevention, KI-Mistakes Documentation  
+- **[06-handbook/TEMPLATE/](06-handbook/TEMPLATE/)** - **[MANDATORY USE]** Session-Start Templates, Lessons-Learned Templates
+- **[06-handbook/ISSUES/](06-handbook/ISSUES/)** - Known Problems, Current Issues, Bug Tracking
+
+### **📁 01-core/ - Standards & Core Architecture** ✅ **THEME INTEGRATION COMPLETED (18.10.2025)**
 - **System Architecture:** [01-core/final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md](01-core/final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md) - Complete 6-layer architecture with Database-Theme-System
 - **Debugging Standards:** [01-core/final/VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md](01-core/final/VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md) - Systematic problem-solving approach
-- **Coding Standards:** [PATHS.md](PATHS.md#CODING_STANDARDS) - TypeScript, React, Database Standards
-- **Quick Reference:** [PATHS.md](PATHS.md#QUICK_REFERENCE) - 1-Page KI-Referenz  
-- **Workflows:** [PATHS.md](PATHS.md#WORKFLOWS) - Git, Release, Emergency Procedures
+- **Critical Fixes:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - 16 ACTIVE FIXES (moved to archive backups)
 
-### 02-dev/ - Development & Implementation ✅ **THEME STANDARDS COMPLETED (18.10.2025)**
+### **📁 02-dev/ - Development & Implementation** ✅ **THEME STANDARDS COMPLETED (18.10.2025)**  
 - **Theme Development Standards:** [02-dev/final/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md](02-dev/final/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md) - Complete development workflow, testing, debugging standards
-- **Development Guide:** [PATHS.md](PATHS.md#DEVELOPMENT_GUIDE) - Complete development setup
-- **Debugging Standards:** [PATHS.md](PATHS.md#DEBUGGING_GUIDE) - Systematic troubleshooting
-- **ABI Safe Tools:** [PATHS.md](PATHS.md#ABI_SAFE_TOOLS) - Safe database testing
+- **Development Processes:** Comprehensive development setup and guidelines
+- **ABI Safe Tools:** Scripts for safe database testing and development
 
-### 03-data/ - Database & Data Management ✅ **UPDATED (16.10.2025)**
-- **SQLite Database System:** [PATHS.md](PATHS.md#SQLITE_DATABASE_SYSTEM) - SQLite implementation
-- **Migration Architecture:** [PATHS.md](PATHS.md#SQLITE_MIGRATION_ARCHITECTURE) - Migration system
-- **Field Mapping:** [PATHS.md](PATHS.md#FIELD_MAPPER_MISMATCHES) - Mapping consistency
+### **📁 03-data/ - Database & Data Management** ✅ **UPDATED (26.10.2025)**
+- **SQLite Database System:** Complete SQLite implementation with Migration 045 (latest)
+- **Migration Architecture:** Schema evolution with 045 migration files (000-044)
+- **Field Mapping:** Consistent camelCase ↔ snake_case conversion
+- **Database Configuration Service:** Central configuration management (Migration 037)
 
-### 04-ui/ - User Interface & Components ✅ **DATABASE-THEME-SYSTEM COMPLETED (17.10.2025)**
-- **Database-Theme-System:** [04-ui/final/COMPLETED_IMPL-DATABASE-THEME-SYSTEM_2025-10-17.md](04-ui/final/COMPLETED_IMPL-DATABASE-THEME-SYSTEM_2025-10-17.md) - Production-ready theme management with React Context
-- **Theme Service Layer:** [04-ui/final/COMPLETED_IMPL-THEME-SERVICE-LAYER_2025-10-17.md](04-ui/final/COMPLETED_IMPL-THEME-SERVICE-LAYER_2025-10-17.md) - DatabaseThemeService, IPC communication, fallback patterns
-- **Migration 027 Schema:** [04-ui/final/COMPLETED_IMPL-MIGRATION-027-THEME-SYSTEM_2025-10-17.md](04-ui/final/COMPLETED_IMPL-MIGRATION-027-THEME-SYSTEM_2025-10-17.md) - Theme database tables with 6 system themes
-- **PDF Theme Integration:** [04-ui/final/LESSON_FIX-PDF-THEME-COLOR-OUTPUT-ISSUE_2025-10-17.md](04-ui/final/LESSON_FIX-PDF-THEME-COLOR-OUTPUT-ISSUE_2025-10-17.md) - Dynamic theme color extraction for PDF generation
-- **UI Patterns:** [PATHS.md](PATHS.md#UI_PATTERNS_TABLE_FORMS) - Table-like forms design
-- **PDF Registry:** [PATHS.md](PATHS.md#PDF_REGISTRY) - Complete PDF index
+### **📁 04-ui/ - User Interface & Components** ⚠️ **KNOWLEDGE_ONLY CLEANUP COMPLETED (26.10.2025)**
+- **Current Status:** 46+ COMPLETED documents moved to KNOWLEDGE_ONLY due to layout crisis
+- **Emergency Evidence:** [src/renderer/src/styles/fallback-grid.css](../src/renderer/src/styles/fallback-grid.css) - "EMERGENCY FALLBACK GRID - Minimal Layout Safety Net"
+- **Migration Chaos:** 45+ header height repair attempts (Migrations 032-045)
+- **Reality:** "Database storing wrong values", "Force Reload doesn't fix layouts"
 
-### 05-deploy/ - Deployment & Updates ✅ **UPDATED (16.10.2025)**
-- **Deployment Updates:** [PATHS.md](PATHS.md#DEPLOYMENT_UPDATES) - Deployment processes
-- **Update System Architecture:** [PATHS.md](PATHS.md#UPDATE_SYSTEM_ARCHITECTURE) - Update architecture
-- **GitHub API Migration:** [PATHS.md](PATHS.md#GITHUB_API_MIGRATION) - API integration
+### **📁 05-deploy/ - Deployment & Updates** ⚠️ **KNOWLEDGE_ONLY CLEANUP COMPLETED (26.10.2025)** 
+- **Current Status:** 3+ COMPLETED documents moved to KNOWLEDGE_ONLY (GitHubCliService obsolete)
+- **System Migration:** GitHubApiService replaced GitHubCliService (55 versions discrepancy)
+- **Update Architecture:** Auto-update system with GitHub API integration
+- **Deployment Reality:** Documentation 55 versions behind actual implementation
 
-### 06-lessons/ - Lessons Learned & Sessions ✅ **100% CONSISTENCY MASTERPLAN (18.10.2025)**
-- **Masterplan Implementation:** [06-lessons/plan/PLAN_IMPL-100-PERCENT-DOCUMENTATION-CONSISTENCY-MASTERPLAN_2025-10-18.md](06-lessons/plan/PLAN_IMPL-100-PERCENT-DOCUMENTATION-CONSISTENCY-MASTERPLAN_2025-10-18.md) - 5-phase strategic plan for 95% documentation consistency
-- **Phase 1 Completion:** [06-lessons/sessions/COMPLETED_IMPL-PHASE-1-ROOT-INTEGRATION-DATABASE-THEME-SYSTEM_2025-10-18.md](06-lessons/sessions/COMPLETED_IMPL-PHASE-1-ROOT-INTEGRATION-DATABASE-THEME-SYSTEM_2025-10-18.md) - ROOT integration achievements
-- **Phase 3 Completion:** [06-lessons/sessions/COMPLETED_IMPL-PHASE-3-CROSS-REFERENCE-NETWORK_2025-10-18.md](06-lessons/sessions/COMPLETED_IMPL-PHASE-3-CROSS-REFERENCE-NETWORK_2025-10-18.md) - Cross-reference network success (85% consistency achieved)
-- **Fix Preservation:** [PATHS.md](PATHS.md#SYSTEMATIC_FIX_PRESERVATION) - Critical fix preservation
-- **Session Archive:** [PATHS.md](PATHS.md#SESSION_CURRENCY_FORMATTING) - Recent session summaries
-- **Historical Context:** [PATHS.md](PATHS.md#BUILD_INSTALLATION_MATRIX) - Archived content
+### **📁 06-handbook/ - KI Template System** ✅ **NEW MANDATORY SYSTEM (26.10.2025)**
+- **TEMPLATE/** - ✅ **MANDATORY:** Session-Start Templates, Lessons-Learned Templates
+- **REFERENCE/** - ✅ **MANDATORY:** Database Schema Current, Project Core Rules
+- **ANTIPATTERN/** - ✅ **MANDATORY:** KI-Mistakes Prevention, Session-Killer Errors
+- **ISSUES/** - ✅ **MANDATORY:** Known Problems, Current Issues, Bug Tracking
 
-### 01-core/ - System Architecture
-- **[final/SOLVED_FIX-ELECTRON-BUILDER-FILE-LOCKING-2025-10-15.md](01-core/final/SOLVED_FIX-ELECTRON-BUILDER-FILE-LOCKING-2025-10-15.md)** - ✅ **[SOLVED]** VS Code File-Locking Problem
+### **📁 06-lessons/ - Lessons Learned & Sessions** ✅ **100% CONSISTENCY MASTERPLAN (18.10.2025)**
+- **Masterplan Implementation:** Strategic documentation improvement plans
+- **Cross-Reference Network:** Bidirectional linking system
+- **Session Archive:** Historical development sessions and learnings
+- **Knowledge Base:** Preserved lessons learned across all development phases
 
-### 02-dev/ - Development Workflows
-- **[wip/WIP_FIX-DEV-ALL-PARALLEL-EXECUTION-ISSUE-2025-10-15.md](02-dev/wip/WIP_FIX-DEV-ALL-PARALLEL-EXECUTION-ISSUE-2025-10-15.md)** - ✅ **[VALIDATED]** Dev Execution Analysis
+---
 
-## 🆕 Neue Features (Oktober 2025)
+## 🆕 **AKTUELLE SYSTEM-UPDATES (26.10.2025)**
 
-### ✅ **DATABASE-THEME-SYSTEM (17-18.10.2025):**
-- **Production-Ready Theme Management** mit Database-First Architecture
-- **Migration 027** - Complete theme database schema (themes, theme_colors, user_theme_preferences)
-- **DatabaseThemeService** - CRUD operations mit field-mapper integration
-- **React Context Integration** - DatabaseThemeManager mit 3-level fallback
-- **PDF Theme Integration** - Dynamic color extraction für alle 6 system themes
-- **Development Standards** - Complete workflow mit testing, debugging, performance standards
-- **Critical Protection** - FIX-016, FIX-017, FIX-018 für theme system preservation
+### ✅ **KNOWLEDGE_ONLY CLEANUP COMPLETED (26.10.2025):**
+- **90+ FALSE COMPLETED/VALIDATED** documents systematically reclassified 
+- **User Domain Knowledge Validated:** Layout crisis confirmed by emergency fallback CSS evidence
+- **Master Validation Script:** 445% Over-Documentation rate detected and corrected
+- **Schema Compliance:** Improved from 53% to 92.3% through systematic reality check
+- **Documentation Integrity:** Now honestly reflects broken system state instead of false confidence
 
-### ✅ **100% DOCUMENTATION CONSISTENCY MASTERPLAN (18.10.2025):**
-- **5-Phase Strategic Plan** für 95% documentation consistency
-- **Phase 1-3 COMPLETED** - ROOT integration, Architecture integration, Cross-reference network
-- **85% Consistency ACHIEVED** - Target für Phase 3 erreicht mit bidirektionaler Verlinkung
-- **Cross-Reference Excellence** - ≤2 clicks navigation zwischen allen theme-related documents
-- **Quality Assurance** - 16/16 critical fixes preserved throughout entire implementation
+### ✅ **DATABASE CONFIGURATION SYSTEM (Migrations 034-037):**
+- **Migration 037:** Centralized Configuration Architecture - Header height consistency fixes
+- **DatabaseConfigurationService:** Single source of truth für all configuration (Phase 7 Complete)
+- **Per-Mode Configuration:** Navigation mode + focus mode + theme overrides (Migrations 034-036)
+- **Central Configuration Architecture:** Replaces multiple hardcoded constants
 
-### ✅ **PATHS.md SYSTEM (16.10.2025):**
-- **Revolutionäres zentrale Pfad-Management** für alle Dokumentations-Cross-References
-- **104+ Pfad-Konstanten** für alle Dokumentationsdateien und Unterordner
-- **Import-like Syntax** wie TypeScript: `[PATHS.md](PATHS.md#CONSTANT)`
-- **Single Source of Truth** - Pfad-Änderungen nur in PATHS.md erforderlich
-- **Vollständige Migration** aller 7 Dokumentations-Ordner abgeschlossen
+### ✅ **MIGRATION SYSTEM REALITY (000-044):**
+- **Current Migration Count:** 045 migration files (000-044, plus index)
+- **Latest Migration:** 044_cleanup_navigation_modes, 045_enforce_ki_safe_navigation
+- **Critical Migration 037:** Central Configuration Architecture implementation
+- **Layout Crisis Evidence:** Migrations 032-045 all attempting header height repairs
 
-### ✅ **VALIDATED- PRÄFIX SYSTEM (15.10.2025):**
-- **KI-freundliches Status-Validierungssystem** etabliert
-- Format: `VALIDATED_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
-- **5 Dokumente bereits validiert** und korrekt kategorisiert
-- **Zuverlässige Status-Erkennung** für zukünftige KI-Sessions
+### ✅ **KI-TEMPLATE SYSTEM ESTABLISHED (26.10.2025):**
+- **06-handbook/** folder created with mandatory KI development templates
+- **TEMPLATE/** - Session-Start Templates, Lessons-Learned Templates (MANDATORY USE)
+- **REFERENCE/** - Database Schema, Project Core Rules (MANDATORY READ)
+- **ANTIPATTERN/** - KI-Mistakes Prevention (SESSION KILLER PREVENTION)
+- **ISSUES/** - Known Problems tracking
 
-### ✅ **DOKUMENTATIONS-STRUKTUR STANDARDISIERT (15.10.2025):**
-- **Semantische Ordnerstruktur durchgesetzt** (00-meta bis 08-batch + archive)
-- **Standard 4-Folder Pattern** in allen Ordnern: final/, wip/, plan/, sessions/
-- **Cross-Reference Cleanup** auf neue Struktur angepasst
-- **INDEX.md Aktualisierung** auf korrekte Link-Struktur
+---
 
-### ✅ **CRITICAL FIXES ERWEITERT (18.10.2025):**
-- **FIX-016:** Database-Theme-System Schema Protection - Schema validation vor theme modifications
-- **FIX-017:** Migration 027 Theme System Integrity - Migration 027 corruption protection  
-- **FIX-018:** DatabaseThemeService Pattern Preservation - Service layer enforcement für theme operations
-- **FIX-013:** Vite Asset Import Pattern for Production Logo Loading (v1.0.23)
-- **FIX-012:** SQLite Parameter Binding Null Conversion (v1.0.14)
-- **16 aktive kritische Fixes** vollständig dokumentiert und geschützt
+## 🎯 **KI-NAVIGATION QUICK START**
 
-## 🎯 **KI-Navigation Quick Start**
-
-### **🚨 Für JEDE KI-Session:**
-1. ✅ **PFLICHT:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - 16 Critical Fixes Registry (inklusive Database-Theme-System)
-2. ✅ **PFLICHT:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) - KI Instructions mit Theme Development Rules  
-3. ✅ **PFLICHT:** [ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md](ROOT_VALIDATED_GUIDE-KI-FAILURE-MODES_2025-10-17.md) - Session-Killer Prevention
-4. ✅ **PFLICHT:** [.github/instructions/copilot-instructions.md](../.github/instructions/copilot-instructions.md) - Release workflow enhancement
-5. ✅ **NEW:** [PATHS.md](PATHS.md) - Central path management für alle Cross-References
+### **🚨 Für JEDE KI-Session (MANDATORY):**
+1. ✅ **TEMPLATE:** [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](06-handbook/TEMPLATE/) - Session-Start Template ausfüllen
+2. ✅ **REFERENCE:** [06-handbook/REFERENCE/VALIDATED_REFERENCE-PROJECT-CORE-RULES_2025-10-26.md](06-handbook/REFERENCE/) - Project Core Rules durchlesen
+3. ✅ **ANTIPATTERN:** [06-handbook/ANTIPATTERN/VALIDATED_ANTIPATTERN-KI-MISTAKES_2025-10-26.md](06-handbook/ANTIPATTERN/) - Session-Killer Prevention
+4. ✅ **BRIEFING:** [../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) - Authoritative session template
+5. ✅ **SCHEMA:** [../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md](../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md) - Document recognition rules
 
 ### **🔧 Für Development:**
-- **Core Architecture:** [01-core/final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md](01-core/final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md) - Complete 6-layer system overview
-- **Theme Development:** [02-dev/final/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md](02-dev/final/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md) - Complete workflow, testing, performance standards
-- **Quick Reference:** [PATHS.md](PATHS.md#QUICK_REFERENCE)
-- **Coding Standards:** [PATHS.md](PATHS.md#CODING_STANDARDS)
-- **Development Guide:** [PATHS.md](PATHS.md#DEVELOPMENT_GUIDE)
-- **Critical Patterns:** Immer `pnpm validate:critical-fixes` vor Änderungen
+- **System Reality:** [ROOT_VALIDATED_GUIDE-MASTER-VALIDATION-SCRIPT_2025-10-20.md](ROOT_VALIDATED_GUIDE-MASTER-VALIDATION-SCRIPT_2025-10-20.md) - Current system status (445% over-documentation)
+- **Configuration:** [ROOT_VALIDATED_GUIDE-PER-MODE-CONFIGURATION-SYSTEM_2025-10-21.md](ROOT_VALIDATED_GUIDE-PER-MODE-CONFIGURATION-SYSTEM_2025-10-21.md) - Central configuration system
+- **Database Schema:** [06-handbook/REFERENCE/VALIDATED_REFERENCE-DATABASE-SCHEMA-CURRENT_2025-10-26.md](06-handbook/REFERENCE/) - Current database schema
+- **Critical Validation:** `pnpm validate:critical-fixes` vor allen Änderungen
 
-### **🔄 VALIDATED System verwenden:**
-- ✅ **VALIDATED- Prefix = Bestätigter Status**
-- ❌ **Kein VALIDATED- Prefix = Manuelle Review erforderlich**
-- 🔄 **Nutze VALIDATED- System für alle Dokumenten-Reorganisationen**
-
-## 📊 **Dokumentations-Status**
-
-| Bereich | Status | VALIDATED Docs | Letzte Aktualisierung |
-|---------|--------|----------------|---------------------|
-| **Database-Theme-System** | ✅ PRODUCTION READY | 5/5 Major Docs | **18.10.2025** |
-| **100% Consistency Plan** | ✅ PHASE 3 COMPLETED | 85% Consistency | **18.10.2025** |
-| **Cross-Reference Network** | ✅ VOLLSTÄNDIG | Bidirektional | **18.10.2025** |
-| **PATHS.md System** | ✅ VOLLSTÄNDIG | 104+ Constants | **16.10.2025** |
-| **Meta-Documentation** | ✅ VOLLSTÄNDIG | 3/16 ROOT Docs | **17.10.2025** |
-| **Core Architecture** | ✅ VOLLSTÄNDIG | 6-Layer System | **18.10.2025** |  
-| **Critical Fixes** | ✅ VOLLSTÄNDIG | 16 Fixes | **18.10.2025** |
-| **Development Standards** | ✅ VOLLSTÄNDIG | Theme Workflow | **18.10.2025** |
-
-## ⚠️ **Wichtige Hinweise**
-
-- **VALIDATED- System:** Neue Dokumente nach Developer-Review mit VALIDATED-2025-10-15_ Präfix kennzeichnen
-- **4-Folder Struktur:** ALLE Inhalte in final/, wip/, plan/, sessions/ organisiert
-- **Critical Fixes:** 13 aktive Fixes müssen vor jeder Code-Änderung geprüft werden
-- **Cross-References:** Links auf neue Struktur angepasst, aber kontinuierliche Wartung erforderlich
+### **📚 Für Documentation:**
+- **Schema Rules:** [../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md](../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md) - Document naming conventions
+- **Navigation Hub:** [ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md](ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md) - Documentation sitemap
+- **Implementation Status:** [ROOT_VALIDATED_REGISTRY-IMPLEMENTATIONS-OVERVIEW_2025-10-17.md](ROOT_VALIDATED_REGISTRY-IMPLEMENTATIONS-OVERVIEW_2025-10-17.md) - Current implementation reality
 
 ---
 
-## 🔗 **THEME SYSTEM NAVIGATION SHORTCUTS**
+## 📊 **DOKUMENTATIONS-STATUS**
 
-**Quick Access für Database-Theme-System Development:**
-
-### **🏗️ Architecture & Design:**
-- **System Overview:** [Core Architecture](01-core/final/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md#database-theme-system) - 6-layer architecture with theme integration
-- **Development Workflow:** [Development Standards](02-dev/final/VALIDATED_GUIDE-THEME-DEVELOPMENT-STANDARDS_2025-10-18.md) - Complete development, testing, debugging standards
-
-### **⚙️ Implementation & Code:**
-- **Complete Implementation:** [Database-Theme-System](04-ui/final/COMPLETED_IMPL-DATABASE-THEME-SYSTEM_2025-10-17.md) - Full system with React Context
-- **Service Layer:** [Theme Service Layer](04-ui/final/COMPLETED_IMPL-THEME-SERVICE-LAYER_2025-10-17.md) - DatabaseThemeService patterns
-- **Database Schema:** [Migration 027](04-ui/final/COMPLETED_IMPL-MIGRATION-027-THEME-SYSTEM_2025-10-17.md) - Theme tables and relationships
-
-### **🛡️ Quality & Protection:**
-- **Critical Fixes:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md#fix-016-database-theme-system-schema-protection) - FIX-016, FIX-017, FIX-018 protection
-- **KI Guidelines:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md#theme-system-development-rules-database-first-architecture) - Theme development rules
-
-### **📈 Planning & Progress:**
-- **Masterplan:** [100% Consistency Plan](06-lessons/plan/PLAN_IMPL-100-PERCENT-DOCUMENTATION-CONSISTENCY-MASTERPLAN_2025-10-18.md) - Strategic documentation improvement
-- **Progress Reports:** [Phase 3 Completion](06-lessons/sessions/COMPLETED_IMPL-PHASE-3-CROSS-REFERENCE-NETWORK_2025-10-18.md) - Cross-reference network success
+| **Bereich** | **Status** | **Validierte Docs** | **Letzte Aktualisierung** |
+|-------------|------------|-------------------|-------------------------|
+| **KI Template System** | ✅ **NEW MANDATORY** | 4+ Templates | **26.10.2025** |
+| **KNOWLEDGE_ONLY Cleanup** | ✅ **COMPLETED** | 90+ Reclassified | **26.10.2025** |
+| **Schema Compliance** | ✅ **IMPROVED** | 92.3% (from 53%) | **26.10.2025** |
+| **Root Documentation** | ✅ **VALIDATED** | 6/6 Root Docs | **26.10.2025** |
+| **Database Configuration** | ✅ **PRODUCTION** | Phase 7 Complete | **21.10.2025** |
+| **Migration System** | ✅ **CURRENT** | 045 Files (000-044) | **25.10.2025** |
+| **Layout Crisis** | ⚠️ **DOCUMENTED** | Emergency Systems | **26.10.2025** |
 
 ---
 
-**🚀 Latest Update:** RawaLite Documentation jetzt mit **production-ready Database-Theme-System** (Migration 027, Service Layer, React Integration) und **85% Documentation Consistency** durch Cross-Reference Network (Phase 3 completed).
+## ⚠️ **WICHTIGE HINWEISE**
 
-## 📚 Dokumentationsstruktur
+### **🎯 KI-TEMPLATE SYSTEM (MANDATORY):**
+- **SESSION INVALID ohne Template-Nutzung** - 06-handbook/ Templates sind PFLICHT
+- **DUPLICATE-CHECK MANDATORY** - Existierende Lessons Learned MÜSSEN gesucht werden
+- **ANTIPATTERN Prevention** - Session-Killer-Fehler durch Antipattern-Dokumentation vermeiden
 
-### 00-meta/ - Meta-Dokumentation ✅ **REORGANISIERT (12.10.2025)**
-**Neue thematische Struktur für enterprise-level KI-Navigation:**
-- **[critical-fixes/](00-meta/critical-fixes/)** - Fix Preservation System
-  - `CRITICAL-FIXES-REGISTRY.md` - **[AKTUALISIERT]** Registry aller kritischen Fixes (FIX-006, FIX-007)
-  - `TROUBLESHOOTING.md` - Problem-Solving Guide
-- **[workflows/](00-meta/workflows/)** - Release & Hotfix Processes
-- **[project-management/](00-meta/project-management/)** - Status & Planning
-- **[documentation/](00-meta/documentation/)** - Standards & Quality Guidelines
-  - `VALIDATED-2025-10-15_DOCUMENTATION-STRUCTURE-GUIDE.md` - Anleitung zur Dokumentationsorganisation
-  - `SCHEMA-CONSISTENCY-STANDARDS.md` - Database Standards
-- **[reorganization/](00-meta/reorganization/)** - Change History & Structure Documentation
-- **[templates/](00-meta/templates/)** - Standard Templates & Onboarding
-- **[ki-instructions/](00-meta/ki-instructions/)** - KI Development Guidelines (vorbereitet)
+### **📋 SCHEMA-COMPLIANCE:**
+- **KI-PRÄFIX-ERKENNUNGSREGELN** für alle neuen Dokumente anwenden
+- **KNOWLEDGE_ONLY_** für historische Referenzen ohne aktuelle Implementierung
+- **ROOT_** Dokumente NIEMALS aus /docs Root verschieben
 
-### 01-core/ - System Architecture
-- `TIMESHEETS-ARCHITECTURE.md` - **[NEU]** Vollständige Architektur-Dokumentation der TimesheetsPage
+### **🔧 SYSTEM-REALITÄT:**
+- **Layout Crisis:** Emergency fallback systems active, 45+ repair migrations
+- **Over-Documentation:** 445% rate confirmed by Master Validation Script  
+- **Database Current:** 045 migrations (000-044), Central Configuration Phase 7 Complete
+- **Critical Validation:** `pnpm validate:critical-fixes` vor allen Code-Änderungen
 
-### 03-data/ - Datenbank-Design
-- `MIGRATION-013-DISCOUNT-SYSTEM.md` - **[NEU]** Vollständige Dokumentation Migration 013 mit Rollback-Strategien
-
-### 08-ui/ - User Interface & Components
-- `SUB-ITEM-VISUAL-HIERARCHY-FIX-2025-10-04.md` - **[GELÖST]** Vollständige Sub-Item Visual Hierarchy Lösung
-- `SUB-ITEM-IMPLEMENTATION-PLAN.md` - **[ABGESCHLOSSEN]** Implementierungsplan erfolgreich umgesetzt
-- `UI-PATTERNS-table-forms.md` - **[NEU]** Table-like Forms Pattern für konsistente UI
-
-### 04-ui/ - UI & PDF-Generation
-- `THEME-SYSTEM-FIXES.md` - **[NEU]** Lösung der Theme-Color-Probleme für alle 6 Themes
-
-
-- Dokumentation von Chat-Sessions und wichtigen Erkenntnissen
-- Thematische Lessons Learned sind in entsprechende Fachbereiche verschoben
-
-**Thematisch reorganisierte Inhalte:**
-- **Database Lessons** → `03-data/final/` (Discount System, Migrations, Schema)
-- **UI Lessons** → `08-ui/final/` (Sub-Items, Timesheets, Status Dropdowns)  
-- **PDF Lessons** → `04-ui/final/` (Attachments, Themes, Field Mapping)
-- **Deployment Lessons** → `05-deploy/final/` (Updates, Releases, NSIS)
-
-## 🆕 Neue Inhalte (Oktober 2025)
-
-### ✅ **WORKSPACE REORGANISATION (12.10.2025):**
-1. **Meta-Ordner Reorganisation** - Thematische enterprise-level Struktur in `/docs/00-meta/`
-2. **Tests-Ordner Reorganisation** - KI-friendly thematische Kategorisierung in `/tests/`
-3. **Root-Verzeichnis Cleanup** - Scripts und Configs nach RawaLite-Strukturlogik organisiert
-4. **Temp-Ordner Cleanup** - Obsolete Dateien entfernt, wertvollen Code archiviert
-
-### ✅ TimesheetsPage VOLLSTÄNDIG ÜBERARBEITET (05.10.2025):
-1. **Database Layer Fixes** - Korrekte SQL-Tabellennamen und Field-Mappings
-2. **Activities Tab Restoration** - Wiederherstellung der originalen UX-Struktur in Einstellungen
-3. **Zwei-Ebenen UI-System** - Leistungsnachweis erstellen vs. Positionen verwalten
-4. **Table-like Forms Pattern** - Konsistente, grid-basierte Formular-Layouts
-5. **Vollständige CRUD-Funktionalität** - Create, Read, Update, Delete mit proper state management
-
-### ✅ Sub-Item System VOLLSTÄNDIG GELÖST:
-1. **React.Fragment-Gruppierung** - Parent-Items mit gruppierten Sub-Items (24px Einrückung)
-2. **SQLiteAdapter ID-Mapping Fix** - Vollständige Persistierung von Parent-Child-Beziehungen
-3. **Visuelle Hierarchie** - Blaue Border-Left, bläulicher Hintergrund für Sub-Items
-4. **User-Bestätigt** - "JAAAAAAAAAAAAAAAAAAAA perfekt!!!!!!!!!!!!!!!"
-
-### Rabattsystem-Implementierung:
-1. **Vollständige Systemdokumentation** - Technische Details von Datenbank bis UI
-2. **Migration 013 Dokumentation** - Schema-Änderungen und Rollback-Strategien  
-3. **Theme-System Korrekturen** - PDF-Farbdarstellung für alle 6 Themes
-4. **Lessons Learned** - Erkenntnisse für zukünftige Entwicklung
-
-### Kritische Fixes erweitert:
-- **FIX-006:** Discount System Database Schema
-- **FIX-007:** PDF Theme System Parameter-Based
-
-## 🔗 Quick Navigation
-
-### Für Entwickler:
-- **✅ Sub-Item System GELÖST** → `08-ui/final/SUB-ITEM-VISUAL-HIERARCHY-FIX-2025-10-04.md`
-- **Neue Features implementieren** → `03-data/final/LESSONS-LEARNED-DISCOUNT-PROJECT.md`
-- **Datenbank-Änderungen** → `03-data/final/MIGRATION-013-DISCOUNT-SYSTEM.md`
-- **PDF-Probleme** → `04-ui/final/final_THEME/VALIDATED_GUIDE-CONTEXT-ARCHITECTURE.md`
-- **Kritische Fixes** → [PATHS.md](PATHS.md#CRITICAL_FIXES)
-- **🆕 Meta-Structure** → `00-meta/INDEX.md` - Thematische Navigation
-
-### Für Projektmanagement:
-- **Sub-Item Implementation** → `08-ui/final/SUB-ITEM-IMPLEMENTATION-PLAN.md`
-- **Feature-Übersicht** → `03-data/final/DISCOUNT-SYSTEM-IMPLEMENTATION.md`
-- **Projekt-Erkenntnisse** → `03-data/final/LESSONS-LEARNED-DISCOUNT-PROJECT.md`
-- **System-Status** → [PATHS.md](PATHS.md#CRITICAL_FIXES)
-- **🆕 Reorganisation History** → `00-meta/reorganization/` - Workspace Changes
-
-### Für Support:
-- **UI-Probleme** → `04-ui/final/COMPLETED_IMPL-SUB-ITEM-IMPLEMENTATION-PLAN.md`
-- **Rabattsystem-Troubleshooting** → `03-data/final/DISCOUNT-SYSTEM-IMPLEMENTATION.md`
-- **Theme-Probleme** → `04-ui/final/final_THEME/VALIDATED_GUIDE-CONTEXT-ARCHITECTURE.md`
-- **Datenbank-Recovery** → `03-data/final/MIGRATION-013-DISCOUNT-SYSTEM.md`
-
-## ✅ Dokumentations-Status
-
-| Bereich | Status | Letzte Aktualisierung |
-|---------|--------|---------------------|
-| **Workspace Organization** | ✅ **VOLLSTÄNDIG REORGANISIERT** | **12.10.2025** |
-| Meta-Dokumentation | ✅ Thematisch strukturiert | 12.10.2025 |
-| Sub-Item System | ✅ VOLLSTÄNDIG GELÖST | 04.10.2025 |
-| Rabattsystem | ✅ Vollständig | 03.10.2025 |
-| Theme-System | ✅ Vollständig | 03.10.2025 |
-| Migration 013 | ✅ Vollständig | 03.10.2025 |
-| Critical Fixes | ✅ Aktualisiert | 03.10.2025 |
-| Lessons Learned | ✅ Vollständig | 04.10.2025 |
+### **🛡️ CRITICAL PATTERN PRESERVATION:**
+- 16 aktive kritische Fixes müssen vor jeder Änderung geprüft werden
+- DatabaseConfigurationService ist Single Source of Truth für alle Konfiguration
+- Emergency fallback systems dürfen nicht entfernt werden
+- Master Validation Script bestätigt System-Realität vs. Dokumentation
 
 ---
 
-**Hinweis:** Diese Dokumentation wurde um die **vollständige Workspace-Reorganisation** (12.10.2025) erweitert, die enterprise-level thematische Struktur in Meta-Dokumentation, Tests und Root-Verzeichnis implementiert. Das Sub-Item Visual Hierarchy Problem ist **VOLLSTÄNDIG GELÖST** mit React.Fragment-Gruppierung + SQLiteAdapter ID-Mapping-Fix. Alle Inhalte sind produktionsbereit und vollständig getestet.
+**🚀 Latest Update:** RawaLite Documentation mit **KI-Template System**, **KNOWLEDGE_ONLY Cleanup** (90+ false claims corrected), und **Schema Compliance** von 53% auf 92.3% verbessert durch Reality-Check der tatsächlichen System-Implementierung.
 
-**🚀 Latest:** RawaLite hat jetzt **vollständig enterprise-level workspace organisation** für optimale KI-Navigation und Developer Experience.
+**📍 Repository Status:** Production system mit aktiver Layout-Krise, emergency fallback systems, und zentraler Konfigurationsarchitektur. Dokumentation spiegelt jetzt ehrlich die tatsächliche System-Realität wider.

@@ -1,17 +1,46 @@
 # Scripts Naming Schema & Standards Guide
 
-> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 18.10.2025 (KI-SESSION-BRIEFING Workflow Integration)  
-> **Status:** Production Ready | **Typ:** Schema Guide  
-> **Schema:** `ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md`  
+> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Integration + Template-Vorgaben Update)  
+> **Status:** Production Ready | **Typ:** Guide - Scripts Schema & Standards  
+> **Schema:** `ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
 > **🛡️ ROOT-PROTECTED:** Kritisch für Script-Management, NIEMALS verschieben!
 
-> **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
-> **Required:** Follow [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before script development
-> **Standard:** All scripts must use KATEGORIE_SCOPE_SUBJECT_ACTION.ext naming pattern
+> **⚠️ SCRIPT REALITY CHECK:** 76.3% Schema Compliance (42/55 Scripts) (26.10.2025)  
+> **Registry Status:** Scripts Registry sync validated  
+> **Template Integration:** KI-SESSION-BRIEFING Workflow mandatory  
+> **Critical Function:** Authoritative naming schema for all automation scripts
+
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `ROOT_VALIDATED_` ✅ **KI-kritisch, höchste Priorität, niemals verschieben**
+- **TYP-KATEGORIE:** `GUIDE-` ✅ **Leitfaden/Anleitung** 
+- **SUBJECT:** `SCRIPTS-SCHEMA` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-17` ✅ **Gültig und aktuell**
+
+### **KI-Interpretation:** 
+- **Thema:** Scripts Naming Schema & Standards (Automation Scripts Management)
+- **Status:** ROOT_VALIDATED (höchste KI-Priorität, niemals verschieben)
+- **Quelle:** /docs Root (KI-kritisch)
+- **Priorität:** Höchste (Root-geschützt, verlässliche Quelle)
+
+---
+
+## 🎯 **MANDATORY SESSION-START PROTOCOL (KI-Template-Vorgaben)**
+
+**ZWINGEND VOR SCRIPT-ENTWICKLUNG:**
+- [ ] 📋 [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](06-handbook/TEMPLATE/) öffnen und ausfüllen
+- [ ] 📝 [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md](06-handbook/TEMPLATE/) bereithalten
+- [ ] 🔍 [../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) befolgen
+- [ ] 📋 [ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md](ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md) prüfen
+
+**⚠️ OHNE TEMPLATE-NUTZUNG = SESSION INVALID**
+
+---
 
 This document defines the authoritative naming schema and standards for all RawaLite automation scripts.
 
-## 📋 **SCHEMA-ÜBERSICHT**
+## 📋 **SCRIPTS NAMING SCHEMA**
 
 ### **Naming Convention:**
 ```

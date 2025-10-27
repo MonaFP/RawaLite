@@ -1,14 +1,44 @@
-# 🗂️ Documentation Sitemap & Navigation
+# RawaLite Documentation - Vollständige Sitemap & Navigation
 
-> **🗺️ NAVIGATION:** Vollständige Übersicht über die Dokumentationsstruktur v1.0.47  
-> **Erstellt:** 20. Oktober 2025 | **Letzte Aktualisierung:** 20. Oktober 2025 (Repository-Sync v1.0.47)  
-> **Status:** ROOT Document - Navigation & Discovery Guide  
-> **Schema:** `ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md`  
-> **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
+> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Integration + Template-Vorgaben Update)  
+> **Status:** Production Ready | **Typ:** Registry - Documentation Sitemap & Navigation  
+> **Schema:** `ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md` ✅ **SCHEMA-COMPLIANT**  
+> **🛡️ ROOT-PROTECTED:** Master Navigation für gesamte Documentation, NIEMALS verschieben!
 
-## 📋 **SCHEMA-ÜBERSICHT**
+> **⚠️ DOCUMENTATION NAVIGATION STATUS:** 180+ Dokumente strukturiert (26.10.2025)  
+> **Folder Structure:** 00-meta bis 08-batch + archive (semantische Ordnung)  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor Dokumentations-Operationen  
+> **Critical Function:** Master-Sitemap für vollständige Documentation-Navigation
 
-### **Naming Convention:**
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `ROOT_VALIDATED_` ✅ **KI-kritisch, höchste Priorität, niemals verschieben**
+- **TYP-KATEGORIE:** `REGISTRY-` ✅ **Listen/Registries/Collections** 
+- **SUBJECT:** `DOCS-SITEMAP-NAVIGATION` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-20` ✅ **Gültig und aktuell**
+
+### **KI-Interpretation:** 
+- **Thema:** Documentation Sitemap & Navigation (Master-Navigation für gesamte docs/)
+- **Status:** ROOT_VALIDATED (höchste KI-Priorität, niemals verschieben)
+- **Quelle:** /docs Root (KI-kritisch)
+- **Priorität:** Höchste (Root-geschützt, verlässliche Quelle)
+
+---
+
+## 🎯 **MANDATORY SESSION-START PROTOCOL (KI-Template-Vorgaben)**
+
+**ZWINGEND VOR DOCUMENTATION-OPERATIONEN:**
+- [ ] 📋 [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](06-handbook/TEMPLATE/) öffnen und ausfüllen
+- [ ] 📝 [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md](06-handbook/TEMPLATE/) bereithalten
+- [ ] 🔍 [../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) befolgen
+- [ ] 📋 [INDEX.md](INDEX.md) für Navigation-Updates konsultieren
+
+**⚠️ OHNE TEMPLATE-NUTZUNG = SESSION INVALID**
+
+---
+
+## 📋 **NAMING CONVENTION (Original Content Preserved):**
 ```
 ROOT_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md
 
@@ -56,7 +86,7 @@ docs/
 
 ---
 
-## 🗂️ **AKTUELLE DOKUMENTATIONSSTRUKTUR (v1.0.47 - Migration 029)**
+## 🗂️ **AKTUELLE DOKUMENTATIONSSTRUKTUR (v1.0.54 - Migration 029)**
 
 ### **📂 00-meta (Projekt-Metadaten)**
 ```
@@ -64,7 +94,7 @@ docs/00-meta/
 ├── INDEX.md
 ├── VALIDATED_REGISTRY-DOCUMENTATION-CENTRAL-PATHS_2025-10-17.md
 └── final/
-    ├── LESSON_FIX-AUTOFILL-DEVTOOLS-ERRORS-2025-10-15.md
+    ├── SOLVED_FIX-AUTOFILL-DEVTOOLS-ERRORS-2025-10-15.md
     ├── LESSON_FIX-CROSS-REF-SETTINGS-SCHEMA-MIGRATION-2025-10-15.md
     ├── VALIDATED_GUIDE-00-META-README-2025-10-15.md
     ├── VALIDATED_GUIDE-TROUBLESHOOTING-2025-10-15.md
@@ -204,7 +234,7 @@ docs/archive/
 
 ---
 
-## 📊 **DOKUMENTATIONS-STATISTIKEN (v1.0.47)**
+## 📊 **DOKUMENTATIONS-STATISTIKEN (v1.0.54)**
 
 ### **Dokument-Verteilung:**
 - **ROOT Documents:** 9 kritische KI-Dokumente
@@ -219,7 +249,7 @@ docs/archive/
 - **archive:** 15+ DEPRECATED Dokumente
 
 ### **Dokumentations-Status:**
-- **Aktuelle Version:** v1.0.47 (Migration 029 - Focus Mode System)
+- **Aktuelle Version:** v1.0.54 (Migration 029 - Focus Mode System)
 - **Schema Compliance:** 95%+ aller Dokumente
 - **Migration Stand:** 029 applied (Theme + Navigation + Focus Mode)
 - **Critical Fixes:** 16 protected patterns
@@ -286,4 +316,4 @@ find docs/ -maxdepth 1 -name "ROOT_*" -type f
 
 ---
 
-*Letzte Aktualisierung: 20. Oktober 2025 | Repository v1.0.47 | Migration 029 applied | Nächste Review: November 2025*
+*Letzte Aktualisierung: 20. Oktober 2025 | Repository v1.0.54 | Migration 029 applied | Nächste Review: November 2025*

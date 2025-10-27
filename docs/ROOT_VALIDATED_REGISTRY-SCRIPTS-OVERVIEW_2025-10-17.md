@@ -1,13 +1,42 @@
-# Scripts Registry & Overview
+# Scripts Overview & Automation Registry
 
-> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 25.10.2025 (ABI Warnings Integration - Scripts können ABI-Fehler auslösen)  
-> **Status:** Production Ready | **Typ:** Scripts Registry  
-> **Schema:** `ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md`  
-> **🛡️ ROOT-PROTECTED:** Kritisch für Script-Management, NIEMALS verschieben!
+> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Integration + Template-Vorgaben Update)  
+> **Status:** Production Ready | **Typ:** Registry - Scripts Overview & Automation  
+> **Schema:** `ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
+> **🛡️ ROOT-PROTECTED:** Master Registry für alle Automation Scripts, NIEMALS verschieben!
 
-> **🤖 KI-SESSION-BRIEFING WORKFLOW INTEGRATION:**
-> **MANDATORY:** Follow [KI-SESSION-BRIEFING.prompt.md](../../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) before modifying scripts
-> **CRITICAL:** All scripts follow KATEGORIE_SCOPE_SUBJECT_ACTION.ext schema pattern
+> **⚠️ SCRIPTS STATUS:** 55+ Scripts im Repository (26.10.2025)  
+> **Schema Compliance:** 76.3% (42/55 Scripts) follow KATEGORIE_SCOPE_SUBJECT_ACTION pattern  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor Script-Entwicklung  
+> **Critical Function:** Authoritative Registry für alle Automation & Build Scripts
+
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `ROOT_VALIDATED_` ✅ **KI-kritisch, höchste Priorität, niemals verschieben**
+- **TYP-KATEGORIE:** `REGISTRY-` ✅ **Listen/Registries/Collections** 
+- **SUBJECT:** `SCRIPTS-OVERVIEW` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-17` ✅ **Gültig und aktuell**
+
+### **KI-Interpretation:** 
+- **Thema:** Scripts Overview & Automation Registry (Master-Registry für alle Scripts)
+- **Status:** ROOT_VALIDATED (höchste KI-Priorität, niemals verschieben)
+- **Quelle:** /docs Root (KI-kritisch)
+- **Priorität:** Höchste (Root-geschützt, verlässliche Quelle)
+
+---
+
+## 🎯 **MANDATORY SESSION-START PROTOCOL (KI-Template-Vorgaben)**
+
+**ZWINGEND VOR SCRIPT-ENTWICKLUNG:**
+- [ ] 📋 [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](06-handbook/TEMPLATE/) öffnen und ausfüllen
+- [ ] 📝 [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md](06-handbook/TEMPLATE/) bereithalten
+- [ ] 🔍 [../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) befolgen
+- [ ] 📋 [ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md](ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md) für Naming-Convention prüfen
+
+**⚠️ OHNE TEMPLATE-NUTZUNG = SESSION INVALID**
+
+---
 
 This document provides a comprehensive registry of all RawaLite automation scripts with detailed validation status and compliance tracking.
 

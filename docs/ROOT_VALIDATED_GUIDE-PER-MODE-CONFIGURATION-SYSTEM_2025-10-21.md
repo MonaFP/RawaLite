@@ -1,9 +1,30 @@
 # 🎯 Per-Mode Configuration System - Complete Implementation Guide
 
-> **Erstellt:** 21.10.2025 | **Status:** Production Ready  
-> **Migration:** 034-036 | **Schema Version:** 36  
-> **Integration:** DatabaseNavigationService + DatabaseThemeService + **DatabaseConfigurationService (Central Configuration)**
-> **🔗 Central Configuration:** Integriert mit [Central Configuration Architecture](ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md#central-configuration-architecture-migration-037---new)
+> **Erstellt:** 21.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Integration + Template-Vorgaben Update)  
+> **Status:** Production Ready | **Typ:** Guide - Per-Mode Configuration System  
+> **Schema:** `ROOT_VALIDATED_GUIDE-PER-MODE-CONFIGURATION-SYSTEM_2025-10-21.md` ✅ **SCHEMA-COMPLIANT**  
+> **🛡️ ROOT-PROTECTED:** Dieses Dokument NIEMALS aus /docs Root verschieben!
+
+> **⚠️ IMPLEMENTATION VERIFIED:** Code-Realität bestätigt (26.10.2025)  
+> **Migration Status:** Migrations 034-037 existieren und implementiert  
+> **DatabaseConfigurationService:** Phase 7 Complete - Production Ready  
+> **Live Evidence:** Umfassende Code-Evidenz für komplette Implementierung
+
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `ROOT_VALIDATED_` ✅ **KI-kritisch, höchste Priorität, niemals verschieben**
+- **TYP-KATEGORIE:** `GUIDE-` ✅ **Leitfaden/Anleitung** (Schema-Korrektur 26.10.2025)
+- **SUBJECT:** `PER-MODE-CONFIGURATION-SYSTEM` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-21` ✅ **Gültig und aktuell**
+
+### **KI-Interpretation:** 
+- **Thema:** Per-Mode Configuration System (Navigation + Focus + Theme Overrides)
+- **Status:** ROOT_VALIDATED (höchste KI-Priorität, niemals verschieben)
+- **Quelle:** /docs Root (KI-kritisch)
+- **Priorität:** Höchste (Root-geschützt, verlässliche Quelle)
+
+---
 
 ## 📋 **EXECUTIVE SUMMARY**
 
@@ -11,14 +32,15 @@ Das **Per-Mode Configuration System** erweitert RawaLite's Frontend Architecture
 
 **🎯 WICHTIG:** Dieses System ist vollständig **kompatibel mit der Central Configuration Architecture (Migration 037)** und dem **DatabaseConfigurationService**. Die Per-Mode-Einstellungen werden automatisch in die zentrale Konfiguration integriert.
 
-### 🎯 **SPECTACULAR ACHIEVEMENTS:**
+### 🎯 **SPECTACULAR ACHIEVEMENTS (VERIFIED 26.10.2025):**
 
-- ✅ **Migration 034** - Per-Mode Navigation Settings (user_navigation_mode_settings)
-- ✅ **Migration 035** - Per-Mode Focus Preferences (user_focus_mode_preferences) 
-- ✅ **Migration 036** - Scoped Theme Overrides (theme_overrides)
-- ✅ **Schema Version 36** - Production Ready & Database Tested
-- ✅ **16 neue Service-Methoden** - Vollständig additive Implementierung
-- ✅ **13 neue IPC-Channels** - Type-safe Frontend-Backend Communication
+- ✅ **Migration 034** - Per-Mode Navigation Settings (user_navigation_mode_settings) **[CODE VERIFIED]**
+- ✅ **Migration 035** - Per-Mode Focus Preferences (user_focus_mode_preferences) **[CODE VERIFIED]**
+- ✅ **Migration 036** - Scoped Theme Overrides (theme_overrides) **[CODE VERIFIED]**
+- ✅ **Migration 037** - Centralized Configuration Architecture **[CODE VERIFIED - 300+ lines]**
+- ✅ **DatabaseConfigurationService** - Phase 7 Complete **[PRODUCTION READY]**
+- ✅ **16 neue Service-Methoden** - Vollständig additive Implementierung **[CODE VERIFIED]**
+- ✅ **13 neue IPC-Channels** - Type-safe Frontend-Backend Communication **[CODE VERIFIED]**
 - ✅ **Zero Breaking Changes** - Bestehende Strukturen vollständig erhalten
 - ✅ **Central Configuration Integration** - Kompatibel mit DatabaseConfigurationService (Migration 037)
 
