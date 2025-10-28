@@ -1,8 +1,24 @@
 # 06-handbook – KI-Arbeitshandbuch
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-Handbook Erstellung)  
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** Production Ready | **Typ:** KI-Handbook  
 > **Purpose:** KI-optimiertes Arbeitshandbuch für effiziente Session-Starts und Problem-Solving
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `06-handbook` → **KI-HANDBOOK** - Zentrales KI-Arbeitshandbuch
+- `Production Ready` → **STABILE DOKUMENTATION** - Verlässliche KI-Referenz
+- `Session-Starts` → **SESSION-CRITICAL** - Essentiell für KI-Orientierung
+- `Problem-Solving` → **TROUBLESHOOTING** - Aktive Problem-Lösung
+
+**📖 TEMPLATE SOURCE:** [templates/INDEX-FOLDER-TEMPLATE.md](templates/INDEX-FOLDER-TEMPLATE.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Template-Änderungen, neue KI-Patterns, Session-Optimierungen  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **HANDBOOK-PRIORITY:** Nutze als primäre KI-Orientierung bei Session-Start
+- ✅ **TEMPLATE-SYSTEM:** Befolge intelligente Template-Erkennung
+- ✅ **REFERENCE-SOURCE:** Konsultiere für Architecture und Technology Stack
+- ❌ **FORBIDDEN:** Template-System ohne Handbook-Review ändern
 
 KI-optimiertes Arbeitshandbuch für effiziente Session-Starts und Problem-Solving.
 

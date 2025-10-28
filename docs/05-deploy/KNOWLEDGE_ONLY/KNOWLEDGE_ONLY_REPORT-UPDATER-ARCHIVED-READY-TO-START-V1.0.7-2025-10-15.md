@@ -1,3 +1,4 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 # 📋 Update System Implementation - Ready to Start
 
 > **Vollständiger Plan für Custom In-App Updater ohne Windows Code Signing Certificate**  

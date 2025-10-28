@@ -1,5 +1,5 @@
 # 🚀 Custom In-App Updater - Implementierungsplan
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **GitHub CLI-Enhanced Update System ohne Windows Code Signing Certificate**  
 > **Erstellt:** 1. Oktober 2025 | **Estimated Timeline:** 1 Woche
 

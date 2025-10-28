@@ -1,5 +1,5 @@
 # 🗂️ PATHS System Dokumentation - RawaLite
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 02.10.2025 | $12025-10-17 (Content modernization + ROOT_ integration)| 'documents' | 'downloads') => {
   try {
     switch (pathType) {

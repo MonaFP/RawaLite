@@ -43,6 +43,8 @@ export function createWindow(): BrowserWindow {
       preload: preloadPath,
       contextIsolation: true,
       sandbox: true,
+      nodeIntegration: false,
+      webSecurity: true,
     },
   })
 

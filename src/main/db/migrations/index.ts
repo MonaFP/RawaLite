@@ -50,6 +50,12 @@ import * as migration037 from './037_centralized_configuration_architecture';
 import * as migration038 from './038_correct_header_heights_final';
 import * as migration039 from './039_fix_full_sidebar_header_height';
 import * as migration040 from './040_fix_navigation_preferences_constraint';
+import * as migration041 from './041_add_footer_content_preferences';
+import * as migration042 from './042_user_navigation_mode_settings';
+import * as migration043 from './043_convert_legacy_navigation_modes';
+import * as migration044 from './044_cleanup_navigation_modes';
+import * as migration045 from './045_enforce_ki_safe_navigation';
+import * as migration046 from './046_add_navigation_mode_history';
 
 export const migrations: Migration[] = [
   {
@@ -123,12 +129,6 @@ export const migrations: Migration[] = [
     name: '011_extend_offer_line_items',
     up: migration011.up,
     down: migration011.down
-  },
-  {
-    version: 13,
-    name: '012_add_tax_office_field',
-    up: migration012.up,
-    down: migration012.down
   },
   {
     version: 13,
@@ -303,6 +303,42 @@ export const migrations: Migration[] = [
     name: '040_fix_navigation_preferences_constraint',
     up: migration040.up,
     down: migration040.down
+  },
+  {
+    version: 42,
+    name: '041_add_footer_content_preferences',
+    up: migration041.up,
+    down: migration041.down
+  },
+  {
+    version: 43,
+    name: '042_user_navigation_mode_settings',
+    up: migration042.up,
+    down: migration042.down
+  },
+  {
+    version: 44,
+    name: '043_convert_legacy_navigation_modes',
+    up: migration043.up,
+    down: migration043.down
+  },
+  {
+    version: 45,
+    name: '044_cleanup_navigation_modes',
+    up: migration044.up,
+    down: migration044.down
+  },
+  {
+    version: 46,
+    name: '045_enforce_ki_safe_navigation',
+    up: migration045.up,
+    down: migration045.down
+  },
+  {
+    version: 47,
+    name: '046_add_navigation_mode_history',
+    up: migration046.up,
+    down: migration046.down
   }
 ];
 

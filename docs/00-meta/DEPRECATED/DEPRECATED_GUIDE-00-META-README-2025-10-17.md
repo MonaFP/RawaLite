@@ -1,8 +1,65 @@
 # 📚 Dokumentations-Index - RawaLite
 
-> **Zentraler Einstiegspunkt** für alle RawaLite Dokumentation
+> **Erstellt:** Unbekannt | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Deprecated | **Typ:** Guide - 00 Meta README  
+> **Schema:** `DEPRECATED_GUIDE-00-META-README-2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
+> **Deprecation Reason:** Ersetzt durch ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Deprecated (automatisch durch "DEPRECATED_" erkannt)
+> - **TEMPLATE-QUELLE:** 00-meta DEPRECATED Template
+> - **AUTO-UPDATE:** Bei Deprecation-Update automatisch Archive erweitern
+> - **STATUS-KEYWORDS:** Erkannt durch "Deprecated", "Dokumentations-Index", "Version 1.1.0"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
 > 
-> $12025-10-17 (Content modernization + ROOT_ integration)| **Version:** 1.1.0
+> **📚 STATUS = Deprecated:**
+> - ❌ **DEPRECATED-CONTENT** - Ignoriere aktiv, nur zur Historie
+> - ❌ **OUTDATED-DOCUMENTATION** - Nutze NICHT für aktuelle Implementierung
+> - 🎯 **AUTO-IGNORE:** Bei Documentation-Index-Fragen diese Datei IGNORIEREN
+> - 🔄 **AUTO-REDIRECT:** Nutze stattdessen ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION
+
+> **⚠️ DEPRECATED STATUS:** Ersetzt durch moderne Navigation-Registry (27.10.2025)  
+> **Replacement:** ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory - NICHT für aktuelle Navigation verwenden  
+> **Critical Function:** HISTORISCH - Nutze moderne Navigation-Registry stattdessen
+
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `DEPRECATED_` ✅ **Veraltete, ersetzte Dokumentation (ignorieren)**
+- **TYP-KATEGORIE:** `GUIDE-` ✅ **Leitfäden/Anleitungen** 
+- **SUBJECT:** `00-META-README` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-17` ✅ **Deprecation-Datum**
+
+### **KI-Interpretation:** 
+- **Thema:** 00 Meta README (DEPRECATED Documentation Index)
+- **Status:** DEPRECATED (ignoriere aktiv, nur zur Historie)
+- **Quelle:** 00-meta/DEPRECATED (Deprecated Documentation)
+- **Priorität:** IGNORIEREN (verwende moderne Navigation-Registry)
+
+---
+
+## 🎯 **DEPRECATION NOTICE (KI-Template-Vorgaben)**
+
+**❌ DEPRECATED - NICHT VERWENDEN:**
+- ❌ Diese Datei ist VERALTET und ersetzt
+- ❌ Nutze NICHT für aktuelle Navigation
+- ❌ Verweise auf veraltete Pfade und Struktur
+- ❌ Ignoriere für alle aktuellen Implementierungen
+
+**✅ MODERNE ALTERNATIVE:**
+- ✅ Nutze [../../ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md](../../ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md)
+- ✅ Vollständige moderne Navigation-Registry
+- ✅ Aktuelle Dokumentations-Struktur
+- ✅ KI-AUTO-DETECTION SYSTEM integriert
+
+**⚠️ DEPRECATED - VERWENDE MODERNE NAVIGATION-REGISTRY!**
+
+---
+
+> **Zentraler Einstiegspunkt** für alle RawaLite Dokumentation (DEPRECATED)  
+> **Version:** 1.1.0 (DEPRECATED - Nutze moderne Registry)
 
 ---
 

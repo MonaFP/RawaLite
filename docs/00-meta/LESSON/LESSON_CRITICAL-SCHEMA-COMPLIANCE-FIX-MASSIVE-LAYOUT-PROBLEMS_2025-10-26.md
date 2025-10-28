@@ -1,8 +1,56 @@
 # 🚨 LESSON LEARNED: Critical Schema-Compliance Fix - Massive Layout Problems
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (Initial Documentation)  
-> **Status:** CRITICAL LESSON | **Typ:** Schema-Compliance Emergency  
-> **Schema:** `LESSON_CRITICAL-SCHEMA-COMPLIANCE-FIX-MASSIVE-LAYOUT-PROBLEMS_2025-10-26.md`
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Critical Lesson | **Typ:** Lesson - Critical Schema Compliance Fix  
+> **Schema:** `LESSON_CRITICAL-SCHEMA-COMPLIANCE-FIX-MASSIVE-LAYOUT-PROBLEMS_2025-10-26.md` ✅ **SCHEMA-COMPLIANT**  
+> **Lesson Type:** Schema-Compliance Emergency mit Layout-Problems
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Critical Lesson (automatisch durch "massive layout problems" erkannt)
+> - **TEMPLATE-QUELLE:** 00-meta LESSON Template
+> - **AUTO-UPDATE:** Bei Schema-Compliance-Issue automatisch Lesson erweitern
+> - **STATUS-KEYWORDS:** Erkannt durch "Critical Lesson", "massive layout problems", "theme database migration"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Critical Lesson:**
+> - ✅ **Schema-Compliance-Lesson** - Verlässliche Quelle für Schema-Validation-Probleme
+> - ✅ **Layout-Problem-Analysis** - Authoritative Analyse für Layout-Crisis-Resolution
+> - 🎯 **AUTO-REFERENCE:** Bei Schema-Validation-Fehlern IMMER dieses Lesson konsultieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "SCHEMA COMPLIANCE ERROR" → Lesson-Review erforderlich
+
+> **⚠️ CRITICAL LESSON STATUS:** Massive Layout Problems nach Theme Migration identifiziert (27.10.2025)  
+> **Lesson Status:** Schema-Compliance Emergency - UI Docs können nicht VALIDATED sein bei Layout-Crisis  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor Schema-Compliance-Checks  
+> **Critical Function:** Authoritative Lesson für Schema-Validation vs. Reality-Check
+
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `LESSON_` ✅ **Lessons Learned und Debugging (vergleichende Analyse)**
+- **TYP-KATEGORIE:** `CRITICAL-` ✅ **Schema-Compliance Emergency** 
+- **SUBJECT:** `SCHEMA-COMPLIANCE-FIX-MASSIVE-LAYOUT-PROBLEMS` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-26` ✅ **Gültig und aktuell**
+
+### **KI-Interpretation:** 
+- **Thema:** Critical Schema Compliance Fix (Layout-Problems vs. VALIDATED Status)
+- **Status:** LESSON (vergleichende Analyse für Schema-Validation-Probleme)
+- **Quelle:** 00-meta/LESSON (Meta Lesson Documentation)
+- **Priorität:** Sehr hoch (Schema-kritisch, verlässliche Compliance-Lesson)
+
+---
+
+## 🎯 **MANDATORY SESSION-START PROTOCOL (KI-Template-Vorgaben)**
+
+**ZWINGEND VOR SCHEMA-COMPLIANCE-DEVELOPMENT:**
+- [ ] 📋 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](../../06-handbook/TEMPLATE/) öffnen und ausfüllen
+- [ ] 📝 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md](../../06-handbook/TEMPLATE/) bereithalten
+- [ ] 🔍 [../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) befolgen
+- [ ] 📋 [../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) für Critical Schema Fixes prüfen
+
+**⚠️ OHNE TEMPLATE-NUTZUNG = SESSION INVALID**
+
+---
 
 ## 📋 **PROBLEM STATEMENT**
 
@@ -194,7 +242,7 @@
 
 ---
 
-**📍 Location:** `/docs/06-lessons/sessions/LESSON_CRITICAL-SCHEMA-COMPLIANCE-FIX-MASSIVE-LAYOUT-PROBLEMS_2025-10-26.md`  
+**📍 Location:** `/docs/06-handbook/sessions/LESSON_CRITICAL-SCHEMA-COMPLIANCE-FIX-MASSIVE-LAYOUT-PROBLEMS_2025-10-26.md`  
 **Purpose:** Document critical KI failure mode and correction process  
 **Impact:** Prevents future false validation during system crises  
 **Evidence:** 46+ documents reclassified, user domain knowledge validated by codebase findings

@@ -1,0 +1,74 @@
+/* ✅ GRID MODE: Data Panel (dreizeilig, keine Focus-Bar) */
+
+:root {
+  --mode-data-panel-sidebar-width: 280px;
+  --mode-data-panel-header-height: 160px;
+  --mode-data-panel-footer-height: 60px;
+
+  --db-mode-data-panel-grid-template-columns: var(--mode-data-panel-sidebar-width) 1fr;
+  --db-mode-data-panel-grid-template-rows:
+    var(--mode-data-panel-header-height)
+    1fr
+    var(--mode-data-panel-footer-height);
+  --db-mode-data-panel-grid-template-areas:
+    "sidebar header"
+    "sidebar main"
+    "sidebar footer";
+}
+
+[data-navigation-mode="mode-data-panel"] {
+  display: grid;
+  min-height: 100vh;
+  width: 100%;
+  grid-template-columns: var(--db-mode-data-panel-grid-template-columns);
+  grid-template-rows: var(--db-mode-data-panel-grid-template-rows);
+  grid-template-areas: var(--db-mode-data-panel-grid-template-areas);
+}
+
+[data-navigation-mode="mode-data-panel"] .header,
+[data-navigation-mode="mode-data-panel"] .header-navigation {
+  grid-area: header;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+[data-navigation-mode="mode-data-panel"] .sidebar,
+[data-navigation-mode="mode-data-panel"] .compact-sidebar,
+[data-navigation-mode="mode-data-panel"] .navigation-only-sidebar {
+  grid-area: sidebar;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  overflow: auto;
+}
+
+[data-navigation-mode="mode-data-panel"] .main,
+[data-navigation-mode="mode-data-panel"] main,
+[data-navigation-mode="mode-data-panel"] [data-area="main"] {
+  grid-area: main;
+  background: var(--bg);
+  overflow: auto;
+  min-height: 0;
+}
+
+[data-navigation-mode="mode-data-panel"] .footer-area {
+  grid-area: footer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+}
+
+[data-navigation-mode="mode-data-panel"][data-focus-mode="active"] .sidebar,
+[data-navigation-mode="mode-data-panel"][data-focus-mode="active"] .compact-sidebar {
+  display: none;
+}
+
+[data-navigation-mode="mode-data-panel"][data-focus-mode="active"] {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+}

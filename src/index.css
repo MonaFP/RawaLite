@@ -7,6 +7,9 @@
 @import url('./styles/sidebar-styles.css');
 @import url('./styles/main-content.css');
 
+/* 🐛 DEBUG: Debug-layout-fallback.css ENTFERNT - überschrieb HeaderNavigation mit !important */
+/* @import url('./styles/debug-layout-fallback.css'); */
+
 /* 🎯 NAVIGATION MODES - Separated CSS 2025-10-19 */
 @import url('./styles/navigation-modes/index.css');
 

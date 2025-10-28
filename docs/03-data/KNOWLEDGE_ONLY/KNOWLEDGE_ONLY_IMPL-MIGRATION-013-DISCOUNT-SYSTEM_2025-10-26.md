@@ -1,5 +1,5 @@
 # Migration 013 - Discount System Implementierung
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Schema Version:** 013  
 **Datum:** 03. Oktober 2025  
 **Status:** ✅ Erfolgreich ausgeführt  

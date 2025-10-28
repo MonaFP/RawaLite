@@ -1,5 +1,23 @@
 # RawaLite Mini-Fix Delivery System - DEPRECATED
 
+> **Erstellt:** 10.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** DEPRECATED - Partial Implementation Rolled Back | **Typ:** Plan - Mini Fix Delivery System  
+> **Schema:** `DEPRECATED_PLAN-MINI-FIX-DELIVERY-SYSTEM-2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** DEPRECATED - Obsolete (automatisch durch "DEPRECATED_PLAN", "Mini-Fix" erkannt)
+> - **TEMPLATE-QUELLE:** DEPRECATED Template
+> - **AUTO-UPDATE:** Bei Fix-Delivery-System-Fragen automatisch auf aktuelle Lösung verweisen
+> - **STATUS-KEYWORDS:** Erkannt durch "DEPRECATED", "Mini-Fix Delivery", "Update-System Crashes"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **❌ STATUS = DEPRECATED:**
+> - ❌ **ACTIVE IGNORE** - System obsolete, nach v1.0.42 Update-System Crashes abandoned
+> - 📖 **HISTORICAL ONLY** - Nur für Verständnis alter Fix-Delivery-Versuche
+> - 🔄 **AUTO-REDIRECT:** Bei Fix-Delivery-System-Fragen auf aktuelle Update-Manager-Lösung verweisen
+> - ⚠️ **REPLACEMENT:** Aktuelle Fix-Delivery via standard Update-Manager und Release-System
+
 **Version:** 1.0.0 → DEPRECATED  
 **Status:** ❌ DEPRECATED - PARTIAL IMPLEMENTATION ROLLED BACK  
 **Date:** 2025-10-10 → Updated: 2025-10-16  

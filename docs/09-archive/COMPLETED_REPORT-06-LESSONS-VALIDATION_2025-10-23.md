@@ -1,5 +1,5 @@
 # 06-lessons/ CODE-FIRST VALIDATION RESULTS
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Validierung:** 23.10.2025 | **Methodik:** Repository as Ground Truth | **Status:** 🎯 **CRITICAL KNOWLEDGE BASE**  
 > **Schema:** `CODE-FIRST-VALIDATION-RESULTS_2025-10-23.md`
 

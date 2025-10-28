@@ -1,8 +1,22 @@
 # Documentation Structure Corrections Report
 
-> **Erstellt:** 20.10.2025 | **Status:** COMPLETED  
-> **Typ:** Structure Correction Report  
-> **Schema:** `COMPLETED_REPORT-DOCS-STRUCTURE-CORRECTIONS_2025-10-20.md`
+> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** DEPRECATED - Ersetzt durch ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION | **Typ:** Report - Documentation Structure Corrections  
+> **Schema:** `DEPRECATED_REPORT-DOCS-STRUCTURE-CORRECTIONS_2025-10-20.md` ✅ **SCHEMA-COMPLIANT**  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** DEPRECATED - Obsolete (automatisch durch "DEPRECATED_REPORT", "Structure Corrections" erkannt)
+> - **TEMPLATE-QUELLE:** DEPRECATED Template
+> - **AUTO-UPDATE:** Bei Documentation-Structure-Korrekturen automatisch auf aktuelle Sitemap verweisen
+> - **STATUS-KEYWORDS:** Erkannt durch "DEPRECATED", "Structure Corrections", "Documentation"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **❌ STATUS = DEPRECATED:**
+> - ❌ **ACTIVE IGNORE** - Report obsolete, aktuelle Struktur in ROOT_VALIDATED_REGISTRY
+> - 📖 **HISTORICAL ONLY** - Nur für Verständnis alter Korrektur-Workflows
+> - 🔄 **AUTO-REDIRECT:** Bei Structure-Questions auf [../../ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md](../../ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md) verweisen
+> - ⚠️ **REPLACEMENT:** Aktuelle Structure-Dokumentation in ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION
 
 ## 🎯 **Problem Identified**
 

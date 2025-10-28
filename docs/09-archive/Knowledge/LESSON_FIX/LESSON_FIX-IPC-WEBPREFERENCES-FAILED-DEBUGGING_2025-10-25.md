@@ -250,6 +250,6 @@ Das Problem liegt wahrscheinlich bei **preload script timing**, **CSP policies**
 
 ---
 
-**📍 Location:** `/docs/06-lessons/sessions/LESSON_FIX-IPC-WEBPREFERENCES-FAILED-DEBUGGING_2025-10-25.md`  
+**📍 Location:** `/docs/06-handbook/sessions/LESSON_FIX-IPC-WEBPREFERENCES-FAILED-DEBUGGING_2025-10-25.md`  
 **Purpose:** Document failed webPreferences fix attempt and establish systematic debugging approach  
 **Next Steps:** Systematic preload script execution verification and minimal test case isolation

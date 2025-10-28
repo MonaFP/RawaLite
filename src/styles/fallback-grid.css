@@ -15,11 +15,11 @@
 .app:not([data-navigation-mode]) {
   /* Minimal funktionsfähiges Grid Layout */
   grid-template-columns: 240px 1fr;
-  grid-template-rows: 160px 40px 1fr;
+  grid-template-rows: 160px 1fr 60px;
   grid-template-areas: 
     "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main";
+    "sidebar main"
+    "sidebar footer";
   
   /* Container-Sicherheit */
   overflow: hidden;
@@ -36,18 +36,6 @@
   min-height: 0;
   position: relative;
 }
-
-/* Emergency Focus Bar - minimale Funktionalität */
-.app:not([data-navigation-mode]) .focus-bar-area {
-  grid-area: focus-bar;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
 /* 
  * HINWEIS: Diese Regeln werden durch Database-First Layout überschrieben
  * sobald data-navigation-mode korrekt gesetzt wird.

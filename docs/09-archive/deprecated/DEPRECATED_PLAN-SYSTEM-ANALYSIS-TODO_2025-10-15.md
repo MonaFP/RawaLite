@@ -1,5 +1,5 @@
 # 📋 RawaLite System Analysis TODO Plan
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Basierend auf der umfassenden System-Analyse vom 2025-10-03**  
 **Gesamtbewertung: 87/100 EXCELLENT → Ziel: 90+/100**
 

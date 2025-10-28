@@ -1,11 +1,27 @@
 # Scripts Overview & Automation Registry
 
-> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Integration + Template-Vorgaben Update)  
+> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** Production Ready | **Typ:** Registry - Scripts Overview & Automation  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-SCRIPTS-OVERVIEW_2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
 > **🛡️ ROOT-PROTECTED:** Master Registry für alle Automation Scripts, NIEMALS verschieben!
 
-> **⚠️ SCRIPTS STATUS:** 55+ Scripts im Repository (26.10.2025)  
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `ROOT_VALIDATED_` → **HÖCHSTE PRIORITÄT** - Niemals verschieben, sofort verfügbar
+- `REGISTRY-SCRIPTS-` → **MASTER REGISTRY** - Authoritative Quelle für alle Scripts
+- `Production Ready` → **STABILE DOKUMENTATION** - Verlässliche Referenz
+- `55+ Scripts` → **CURRENT INVENTORY** - Aktuelle Script-Anzahl im Repository
+
+**📖 TEMPLATE SOURCE:** [06-handbook/templates/ROOT-REGISTRY-TEMPLATE.md](06-handbook/templates/ROOT-REGISTRY-TEMPLATE.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Neue Scripts, Schema-Änderungen, Script-Umbenennungen  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **REGISTRY-STATUS:** Nutze als authoritative Quelle für Script-Existenz und Zweck
+- ✅ **ROOT-PROTECTED:** NIEMALS verschieben oder umorganisieren
+- ✅ **SCRIPT-DEVELOPMENT:** Konsultiere vor neuer Script-Erstellung
+- ❌ **FORBIDDEN:** Direkte Bearbeitung ohne Script-Änderung im Filesystem
+
+> **⚠️ SCRIPTS STATUS:** 55+ Scripts im Repository (27.10.2025)  
 > **Schema Compliance:** 76.3% (42/55 Scripts) follow KATEGORIE_SCOPE_SUBJECT_ACTION pattern  
 > **Template Integration:** KI-SESSION-BRIEFING mandatory vor Script-Entwicklung  
 > **Critical Function:** Authoritative Registry für alle Automation & Build Scripts

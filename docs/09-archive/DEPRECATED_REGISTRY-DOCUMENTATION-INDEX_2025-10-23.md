@@ -1,5 +1,5 @@
 # RawaLite Documentation Index
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Version:** 1.0.54  
 **Letzte Aktualisierung:** 23. Oktober 2025
 

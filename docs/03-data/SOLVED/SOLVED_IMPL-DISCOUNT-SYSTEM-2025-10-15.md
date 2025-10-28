@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # Rabattsystem Implementierung - Vollständige Dokumentation
 
 **Datum:** 03. Oktober 2025  

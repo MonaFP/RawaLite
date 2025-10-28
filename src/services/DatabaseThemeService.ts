@@ -17,6 +17,14 @@
 import type Database from 'better-sqlite3';
 import { FieldMapper, mapToSQL, mapFromSQL, mapFromSQLArray } from '../lib/field-mapper';
 
+// ✅ CLEAN IMPORTS: Legacy isolation complete - using navigation-safe.ts
+import { 
+  type NavigationMode,
+  type NavigationModeInput,
+  normalizeToKiSafe,
+  isValidNavigationMode
+} from '../types/navigation-safe';
+
 // TypeScript interfaces for theme system
 export interface Theme {
   id?: number;
@@ -57,7 +65,7 @@ export interface ThemeOverride {
   id?: number;
   userId: string;
   scopeType: 'navigation-mode' | 'focus-mode' | 'combined';
-  navigationMode?: 'header-statistics' | 'header-navigation' | 'full-sidebar';
+  navigationMode?: NavigationMode; // ✅ CLEAN: Using KI-safe NavigationMode
   isFocusMode: boolean;
   baseThemeId?: string;
   cssVariables: Record<string, string>;
@@ -973,7 +981,7 @@ export class DatabaseThemeService {
   async getScopedThemeOverrides(
     userId: string = 'default', 
     scopeType: 'navigation-mode' | 'focus-mode' | 'combined',
-    navigationMode?: 'header-statistics' | 'header-navigation' | 'full-sidebar',
+    navigationMode?: NavigationMode, // ✅ CLEAN: Using KI-safe NavigationMode
     isFocusMode: boolean = false
   ): Promise<ThemeOverride[]> {
     try {
@@ -1103,7 +1111,7 @@ export class DatabaseThemeService {
    */
   async getApplicableThemeOverrides(
     userId: string = 'default',
-    navigationMode: 'header-statistics' | 'header-navigation' | 'full-sidebar' = 'header-navigation',
+    navigationMode: NavigationMode = 'mode-data-panel', // ✅ CLEAN: Using KI-safe NavigationMode
     isFocusMode: boolean = false,
     screenWidth: number = 1920
   ): Promise<ThemeOverride[]> {
@@ -1131,12 +1139,13 @@ export class DatabaseThemeService {
   }
 
   /**
+  /**
    * Merge theme with applicable overrides to create final theme
    */
   async getThemeWithOverrides(
     userId: string = 'default',
     baseTheme: ThemeWithColors,
-    navigationMode: 'header-statistics' | 'header-navigation' | 'full-sidebar' = 'header-navigation',
+    navigationMode: NavigationMode = 'mode-data-panel', // ✅ CLEAN: Using KI-safe NavigationMode
     isFocusMode: boolean = false,
     screenWidth: number = 1920
   ): Promise<ThemeWithColors & { appliedOverrides: ThemeOverride[] }> {

@@ -1,5 +1,5 @@
 # 🧪 Testing Standards - RawaLite Reference
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 12.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-PRÄFIX Schema compliance)  
 > **Status:** Reference | **Typ:** Testing Standards Documentation  
 > **Schema:** `VALIDATED_REFERENCE-TESTING-STANDARDS_2025-10-26.md`

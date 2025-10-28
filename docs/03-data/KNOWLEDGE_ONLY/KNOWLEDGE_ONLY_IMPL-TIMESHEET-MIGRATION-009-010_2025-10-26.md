@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # 🔄 Timesheet Migration 009 + 010 - Vollständige Schema Implementation
 
 **Status:** ✅ ERFOLGREICH AUSGEFÜHRT  

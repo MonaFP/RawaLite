@@ -1,9 +1,25 @@
 # 02-dev - Development & Testing
 
 > **Purpose:** Development Processes, Build Tools, Debugging, Testing, and Implementation Planning  
-> **Last Updated:** 2025-10-26 (VALIDATED Content Quality Control - Duplikate entfernt, Klassifikation korrigiert)  
+> **Last Updated:** 2025-10-27 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** ✅ ACTIVE | **Validation Status:** 100% Schema Compliance  
 > **Consolidates:** development + testing + implementations
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `02-dev` → **DEVELOPMENT FOCUS** - Build-Tools, Testing und Implementation
+- `ACTIVE` → **AKTIVE ENTWICKLUNG** - Kontinuierlich verwendete Dev-Prozesse
+- `Testing` → **QUALITY ASSURANCE** - Debugging und Validation Patterns
+- `100% Schema Compliance` → **VOLLSTÄNDIGE STANDARDS** - Alle Dokumente validiert
+
+**📖 TEMPLATE SOURCE:** [06-handbook/templates/INDEX-FOLDER-TEMPLATE.md](../06-handbook/templates/INDEX-FOLDER-TEMPLATE.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Neue Build-Tools, Testing-Patterns, Development-Workflows  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **DEVELOPMENT-GUIDANCE:** Nutze für Build und Testing Workflows
+- ✅ **DEBUGGING-REFERENCE:** Konsultiere für Problem-Solving Patterns
+- ✅ **IMPLEMENTATION-PLANNING:** Referenziere vor neuen Features
+- ❌ **FORBIDDEN:** Development-Standards ohne Testing ändern
 
 > **🎯 VALIDATED CONTENT QUALITY CONTROL (26.10.2025):**  
 > **Issues Resolved:** Duplikate entfernt, Backup-Dateien gelöscht, falsche Klassifikation korrigiert  

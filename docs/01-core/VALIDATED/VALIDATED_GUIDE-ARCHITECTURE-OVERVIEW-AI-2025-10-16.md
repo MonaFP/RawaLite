@@ -1,7 +1,56 @@
 # 🏗️ Architektur-Übersicht für KI - RawaLite v1.0.49
 
-> **Letzte Aktualisierung:** 22. Oktober 2025 | **Zweck:** KI-Navigation & Code-Orientierung  
-> **Aktualisiert:** Theme System + Navigation System + Focus Mode + Service Architecture
+> **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Production Ready | **Typ:** Guide - Architecture Overview for KI  
+> **Schema:** `VALIDATED_GUIDE-ARCHITECTURE-OVERVIEW-AI_2025-10-16.md` ✅ **SCHEMA-COMPLIANT**  
+> **Zweck:** KI-Navigation & Code-Orientierung mit intelligenter Template-Erkennung
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch "18 Business Services" erkannt)
+> - **TEMPLATE-QUELLE:** 01-core VALIDATED Template
+> - **AUTO-UPDATE:** Bei Architektur-Änderung automatisch Overview aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Production Ready", "v1.0.49", "Service Architecture", "Migration 029"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Production Ready:**
+> - ✅ **Architektur-Navigation** - Verlässliche Quelle für gesamte System-Architektur
+> - ✅ **Code-Orientierung** - Authoritative Landkarte für Development-Sessions
+> - 🎯 **AUTO-REFERENCE:** Bei Architecture-Fragen IMMER dieses Dokument nutzen
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "ARCHITECTURE BROKEN" → Overview-Update erforderlich
+
+> **⚠️ SYSTEM ARCHITECTURE STATUS:** 18 Business Services, 029 Migrations applied (27.10.2025)  
+> **Migration Status:** Theme System (027), Navigation (028), Focus Mode (029) produktionsbereit  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor Architektur-Änderungen  
+> **Critical Function:** Master-Navigation für komplette System-Architektur
+
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `VALIDATED_` ✅ **Validierte, stabile Dokumentation (verlässliche Quelle)**
+- **TYP-KATEGORIE:** `GUIDE-` ✅ **Leitfäden/Anleitungen** 
+- **SUBJECT:** `ARCHITECTURE-OVERVIEW-AI` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-16` ✅ **Gültig und aktuell**
+
+### **KI-Interpretation:** 
+- **Thema:** Architecture Overview for KI (Master-Navigation für System-Architektur)
+- **Status:** VALIDATED (verlässliche Quelle für Development-Sessions)
+- **Quelle:** 01-core/VALIDATED (Core Architecture Documentation)
+- **Priorität:** Sehr hoch (Architektur-kritisch, verlässliche Navigation)
+
+---
+
+## 🎯 **MANDATORY SESSION-START PROTOCOL (KI-Template-Vorgaben)**
+
+**ZWINGEND VOR ARCHITECTURE-DEVELOPMENT:**
+- [ ] 📋 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](../../06-handbook/TEMPLATE/) öffnen und ausfüllen
+- [ ] 📝 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md](../../06-handbook/TEMPLATE/) bereithalten
+- [ ] 🔍 [../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) befolgen
+- [ ] 📋 [../../ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md](../../ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md) für Navigation konsultieren
+
+**⚠️ OHNE TEMPLATE-NUTZUNG = SESSION INVALID**
+
+---
 
 ---
 

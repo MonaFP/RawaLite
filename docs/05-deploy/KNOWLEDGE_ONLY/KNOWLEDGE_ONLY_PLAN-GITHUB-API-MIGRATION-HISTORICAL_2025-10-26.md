@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # GitHub API Migration Plan
 **Datum:** 02. Oktober 2025  
 **Zweck:** Migration von GitHub CLI zu direkter GitHub API für Update-System  

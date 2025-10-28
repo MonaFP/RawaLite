@@ -1,16 +1,65 @@
 # 🔍 RawaLite System Analysis Prompt - Vollständige Funktionsfähigkeits- und Konsistenzprüfung
 
-> **Erstellt:** 12.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Content modernization + ROOT_ integration)  
-> **Status:** VALIDATED - Reviewed and updated  
-> **Schema:** `VALIDATED_TEMPLATE-RAWALITE-SYSTEM-ANALYSIS-PROMPT_2025-10-17.md`
+> **Erstellt:** 12.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Historical Archive | **Typ:** Template - RawaLite System Analysis Prompt  
+> **Schema:** `KNOWLEDGE_ONLY_TEMPLATE-RAWALITE-SYSTEM-ANALYSIS-PROMPT_2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
+> **Archive Purpose:** Vollständige System-Analyse-Strategien (Historische Template-Referenz)
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Historical Archive (automatisch durch "System Analysis Prompt" erkannt)
+> - **TEMPLATE-QUELLE:** 00-meta KNOWLEDGE_ONLY Template
+> - **AUTO-UPDATE:** Bei System-Analysis-Update automatisch Archive erweitern
+> - **STATUS-KEYWORDS:** Erkannt durch "Historical Archive", "System Analysis", "v1.0.42.2+"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Historical Archive:**
+> - ✅ **System-Analysis-Archive** - Sichere historische Referenz für System-Analyse-Strategien
+> - ✅ **Template-Knowledge** - Archivierte System-Analysis-Patterns
+> - 🎯 **AUTO-REFERENCE:** Bei System-Analysis-History IMMER als Referenz verwenden, aber aktuelle Implementierung verifizieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "SYSTEM ANALYSIS NEEDED" → Archive-Template-Review erforderlich
+
+> **⚠️ SYSTEM ANALYSIS ARCHIVE STATUS:** v1.0.42.2+ System-Analyse-Strategien (27.10.2025)  
+> **Archive Status:** Vollständige Funktionsfähigkeits- und Konsistenzprüfung - historische Templates  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor System-Analysis-Operations  
+> **Critical Function:** Historical System-Analysis-Template für Quality-Assurance-Strategien
+
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `KNOWLEDGE_ONLY_` ✅ **Historische Archiv-Dokumente (KI-safe reference ohne aktuelle Implementierung)**
+- **TYP-KATEGORIE:** `TEMPLATE-` ✅ **Vorlagen/Templates** 
+- **SUBJECT:** `RAWALITE-SYSTEM-ANALYSIS-PROMPT` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-17` ✅ **Gültig und aktuell**
+
+### **KI-Interpretation:** 
+- **Thema:** RawaLite System Analysis Prompt (Historical System-Analyse-Templates)
+- **Status:** KNOWLEDGE_ONLY (historische Template-Referenz ohne aktuelle Implementierung)
+- **Quelle:** 00-meta/KNOWLEDGE_ONLY (Meta Archive Template Documentation)
+- **Priorität:** Mittel (Template-historisch-referenziell, verifiziere aktuelle System-Analyse-Tools)
+
+---
+
+## 🎯 **MANDATORY SESSION-START PROTOCOL (KI-Template-Vorgaben)**
+
+**ZWINGEND VOR SYSTEM-ANALYSIS-DEVELOPMENT:**
+- [ ] 📋 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](../../06-handbook/TEMPLATE/) öffnen und ausfüllen
+- [ ] 📝 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md](../../06-handbook/TEMPLATE/) bereithalten
+- [ ] 🔍 [../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) befolgen
+- [ ] 📋 [../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) für Current System-Analysis-Rules prüfen
+
+**⚠️ OHNE TEMPLATE-NUTZUNG = SESSION INVALID**  
+**⚠️ HISTORICAL ARCHIVE - AKTUELLE SYSTEM-ANALYSIS-TOOLS VERIFIZIEREN!**
+
+---
 
 > **⚠️ CRITICAL:** [../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - **MANDATORY READ vor System analysis**  
 > **🛡️ NEVER violate:** Siehe [../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) - Essential analysis patterns  
 > **📚 ALWAYS:** `pnpm validate:critical-fixes` vor System-Analyse  
 
-**Version:** v1.0.42.2+  
+**Version:** v1.0.42.2+ (Historical Reference)  
 **Zweck:** Umfassende Systemanalyse für Funktionsfähigkeit, Vollständigkeit und Konsistenz  
-**Zielgruppe:** KI-Assistenten, Entwickler, QA-Teams  
+**Zielgruppe:** KI-Assistenten, Entwickler, QA-Teams (Historical Context)  
 
 ---
 

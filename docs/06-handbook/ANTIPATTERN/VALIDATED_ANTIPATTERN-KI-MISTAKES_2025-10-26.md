@@ -1,9 +1,25 @@
 # ❌ KI Mistakes - Anti-Pattern Prevention
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-Consolidation completed)  
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** Anti-Pattern Guide | **Typ:** Session-Killer Prevention  
 > **Schema:** `VALIDATED_ANTIPATTERN-KI-MISTAKES_2025-10-26.md`  
 > **Source:** ../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md + Consolidated KI failure modes
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `Anti-Pattern Guide` → **PREVENTION-CRITICAL** - Session-killer Prevention Rules
+- `Session-Killer Prevention` → **ERROR-PREVENTION** - Critical mistake avoidance
+- `MANDATORY READ` → **COMPLIANCE-REQUIRED** - Zwingend einzuhalten  
+- `NIEMALS wiederholen` → **ABSOLUTE-FORBIDDEN** - Zero-tolerance patterns
+
+**📖 TEMPLATE SOURCE:** [VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md](../TEMPLATE/VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Neue Anti-Pattern entdeckt, Session-Killer-Fehler dokumentiert  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **ANTI-PATTERN-GUARD:** Erkenne und verhindere dokumentierte Fehler aktiv
+- ✅ **SESSION-PROTECTION:** Stoppe bei erkannten Session-Killer-Patterns sofort
+- ✅ **VALIDATION-PRIORITY:** Prüfe gegen Anti-Patterns vor Code-Generierung
+- ❌ **FORBIDDEN:** Dokumentierte Anti-Patterns ignorieren oder verwenden
 
 > **⚠️ MANDATORY READ - Diese Fehler NIEMALS wiederholen**  
 > **Zweck:** Session-killer prevention für KI development  
@@ -216,6 +232,68 @@ import logoUrl from '/src/assets/logo.png?url'
 - External dependency failures
 - Network-dependent functionality
 - PDF generation issues
+
+### **❌ FAILURE MODE 8: ABI/Development Process Anti-Patterns** ⭐ **KRITISCH (27.10.2025)**
+
+**Problem:** Start-Sleep unterbricht **laufende App-Prozesse**, verursacht ABI-Korruption und wiederkehrende Build-Fehler
+
+**Kritische Sequenz:**
+1. **App startet** (`pnpm dev:all`) - Native Module laden
+2. **KI führt Start-Sleep aus** (unterbricht laufenden Prozess)
+3. **App-Start bricht ab** (wegen Prozess-Interruption)
+4. **Nächster Versuch** → **ABI-Fehler vorhanden** (korrupter Module-State)
+
+**NIEMALS:**
+```bash
+# ❌ CRITICAL FAILURE: Laufende App mit Sleep unterbrechen
+pnpm dev:all                    # App startet, Module laden...
+Start-Sleep -Seconds 30         # ← TÖTET laufenden App-Prozess!
+# Ergebnis: Nächstes pnpm dev:all → ABI-Fehler
+
+# ❌ FORBIDDEN: Interruption während aktiver Prozesse
+PowerShell -ExecutionPolicy Bypass -File ".\scripts\MAINTAIN_NATIVE_ADDONS_FIX.ps1"
+Start-Sleep -Seconds 15         # ← UNTERBRICHT Rebuild-Prozess!
+
+# ❌ FORBIDDEN: ANY Start-Sleep während Prozesse laufen
+# Start-Sleep während App/Rebuild läuft = ABI-Korruption
+```
+
+**STATTDESSEN:**
+```bash
+# ✅ CORRECT: Prozesse natürlich beenden lassen, KEINE Unterbrechungen
+pnpm dev:all
+# Warten bis App vollständig gestartet (Terminal-Output beobachten)
+# NUR weitermachen wenn App voll geladen und stabil
+
+# ✅ CORRECT: Eine komplette Operation nach der anderen  
+PowerShell -ExecutionPolicy Bypass -File ".\scripts\MAINTAIN_NATIVE_ADDONS_FIX.ps1"
+# Warten auf "electron-rebuild succeeded" Nachricht
+# DANN App starten: pnpm dev:all
+
+# ✅ RULE: Wenn etwas läuft → vollständig beenden lassen
+```
+
+**STATTDESSEN:**
+```bash
+# ✅ CORRECT: ABI-Fix vor App-Start
+.\scripts\MAINTAIN_NATIVE_ADDONS_FIX.ps1
+# ODER: node scripts/BUILD_NATIVE_ELECTRON_REBUILD.cjs
+
+# ✅ CORRECT: Warten bis ABI-Rebuild komplett
+# Kein Sleep während laufenden Build-Prozess
+# Warten auf "electron-rebuild succeeded" Message
+
+# ✅ CORRECT: Prozesse cleanen vor neuem Versuch
+taskkill /F /IM node.exe
+taskkill /F /IM electron.exe
+```
+
+**Warning Signs:**
+- better-sqlite3 compilation failures
+- "failed in 12.2s at better-sqlite3" errors
+- ABI version mismatch (NODE_MODULE_VERSION)
+- Sleep/timeout während Native Module Build
+- Wiederkehrende ABI-Fehler nach Interruption
 
 ## 🛡️ **PREVENTION STRATEGIES**
 

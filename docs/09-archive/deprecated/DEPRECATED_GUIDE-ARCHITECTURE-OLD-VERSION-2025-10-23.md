@@ -1,5 +1,5 @@
 # 🏗️ Architektur - RawaLite
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 06.10.2025 | $12025-10-17 (Content modernization + ROOT_ integration)||--o{ OFFERS : "creates"
     CUSTOMERS ||--o{ INVOICES : "receives"
     CUSTOMERS ||--o{ TIMESHEETS : "logs_time_for"

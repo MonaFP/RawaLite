@@ -1,5 +1,5 @@
 # Navigation Header Heights 60px Update - Implementation Complete
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 23.10.2025 | **Letzte Aktualisierung:** 23.10.2025 (Initial Implementation)  
 > **Status:** COMPLETED | **Typ:** Implementation Report  
 > **Schema:** `COMPLETED_IMPL-NAVIGATION-HEADER-HEIGHTS-60PX-UPDATE_2025-10-23.md`

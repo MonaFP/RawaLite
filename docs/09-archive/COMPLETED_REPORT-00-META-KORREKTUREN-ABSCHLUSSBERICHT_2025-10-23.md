@@ -1,5 +1,5 @@
 # 00-META CODE-FIRST KORREKTUREN - ABSCHLUSSBERICHT
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Abgeschlossen:** 23.10.2025 | **Status:** ✅ **ERFOLGREICH ABGESCHLOSSEN**  
 > **Verbesserung:** 85% → 95% Konsistenz | **Scope:** 00-meta/ + ROOT-Dateien
 

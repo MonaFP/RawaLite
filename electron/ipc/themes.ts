@@ -1,10 +1,17 @@
 /**
  * IPC handlers for database theme management
  * 
+ * LEGACY ISOLATION STRATEGY:
+ * - Uses navigation-safe.ts for KI-safe type system
+ * - Accepts NavigationModeInput (legacy + KI-safe) at IPC entrance
+ * - Normalizes to KI-safe modes immediately with normalizeToKiSafe()
+ * - Theme operations use DatabaseThemeService with proper isolation
+ * 
  * Provides secure bridge between renderer and main process for theme operations.
  * Implements complete CRUD operations with proper error handling.
  * 
  * @since v1.0.42.7 (Database-Theme-System)
+ * @updated Legacy Isolation - KI-Safe Integration with navigation-safe.ts
  * @see {@link docs/04-ui/final/COMPLETED_IMPL-THEME-IPC-INTEGRATION_2025-10-17.md} IPC Integration Documentation
  * @see {@link docs/04-ui/final/COMPLETED_IMPL-THEME-SERVICE-LAYER_2025-10-17.md} Service Layer Implementation
  * @see {@link docs/ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md} Theme Development Rules
@@ -12,6 +19,28 @@
 
 import { ipcMain } from 'electron';
 import { DatabaseThemeService } from '../../src/services/DatabaseThemeService';
+import type { 
+  KiSafeNavigationMode, 
+  NavigationModeInput, 
+  NAVIGATION_MODES_SAFE 
+} from '../../src/types/navigation-safe';
+import { 
+  normalizeToKiSafe
+} from '../../src/types/navigation-safe';
+import { validateNavigationMode } from '../../src/services/NavigationModeNormalizationService';
+
+// Valid navigation modes (KI-Safe Only - Legacy handled via NavigationModeInput)
+const NAVIGATION_MODES_SAFE_ARRAY: KiSafeNavigationMode[] = [
+  'mode-dashboard-view', 'mode-data-panel', 'mode-compact-focus'
+];
+
+/**
+ * Validate navigation mode input (Legacy + KI-Safe) and normalize to KI-Safe
+ * Legacy isolation: Accept any NavigationModeInput, normalize immediately
+ */
+function validateNavigationModeInput(navigationMode: string): boolean {
+  return validateNavigationMode(navigationMode as NavigationModeInput);
+}
 
 let themeService: DatabaseThemeService | null = null;
 
@@ -256,18 +285,20 @@ function registerThemeHandlers() {
   });
 
   // Get applicable theme overrides for context
-  ipcMain.handle('themes:get-applicable-overrides', async (_, userId: string = 'default', navigationMode: string = 'header-navigation', isFocusMode: boolean = false, screenWidth: number = 1920) => {
+  ipcMain.handle('themes:get-applicable-overrides', async (_, userId: string = 'default', navigationMode: string = 'mode-dashboard-view', isFocusMode: boolean = false, screenWidth: number = 1920) => {
     try {
       if (!themeService) {
         throw new Error('Theme service not initialized');
       }
       
-      // Validate navigation mode
-      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
-        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      // Legacy isolation: Validate and normalize navigation mode
+      if (!validateNavigationModeInput(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}. Valid modes: ${NAVIGATION_MODES_SAFE_ARRAY.join(', ')}`);
       }
       
-      return await themeService.getApplicableThemeOverrides(userId, navigationMode as any, isFocusMode, screenWidth);
+      const safeNavigationMode = normalizeToKiSafe(navigationMode as NavigationModeInput);
+      
+      return await themeService.getApplicableThemeOverrides(userId, safeNavigationMode, isFocusMode, screenWidth);
     } catch (error) {
       console.error('[IPC:themes:get-applicable-overrides] Error:', error);
       throw error;
@@ -275,18 +306,20 @@ function registerThemeHandlers() {
   });
 
   // Get theme with applied overrides
-  ipcMain.handle('themes:get-with-overrides', async (_, userId: string = 'default', baseTheme: any, navigationMode: string = 'header-navigation', isFocusMode: boolean = false, screenWidth: number = 1920) => {
+  ipcMain.handle('themes:get-with-overrides', async (_, userId: string = 'default', baseTheme: any, navigationMode: string = 'mode-dashboard-view', isFocusMode: boolean = false, screenWidth: number = 1920) => {
     try {
       if (!themeService) {
         throw new Error('Theme service not initialized');
       }
       
-      // Validate navigation mode
-      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
-        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      // Legacy isolation: Validate and normalize navigation mode
+      if (!validateNavigationModeInput(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}. Valid modes: ${NAVIGATION_MODES_SAFE_ARRAY.join(', ')}`);
       }
       
-      return await themeService.getThemeWithOverrides(userId, baseTheme, navigationMode as any, isFocusMode, screenWidth);
+      const safeNavigationMode = normalizeToKiSafe(navigationMode as NavigationModeInput);
+      
+      return await themeService.getThemeWithOverrides(userId, baseTheme, safeNavigationMode, isFocusMode, screenWidth);
     } catch (error) {
       console.error('[IPC:themes:get-with-overrides] Error:', error);
       throw error;

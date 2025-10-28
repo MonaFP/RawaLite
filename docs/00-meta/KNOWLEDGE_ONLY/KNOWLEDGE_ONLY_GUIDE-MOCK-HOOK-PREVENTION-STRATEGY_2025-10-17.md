@@ -1,10 +1,24 @@
 # 🛡️ Mock-Hook Prevention Strategy
 
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Content modernization + ROOT_ integration)  
-> **Status:** VALIDATED - Reviewed and updated  
-> **Schema:** `VALIDATED_GUIDE-MOCK-HOOK-PREVENTION-STRATEGY_2025-10-17.md`
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Knowledge Archive | **Typ:** Guide - Mock Hook Prevention Strategy  
+> **Schema:** `KNOWLEDGE_ONLY_GUIDE-MOCK-HOOK-PREVENTION-STRATEGY_2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
 
-> **⚠️ CRITICAL:** [../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - **MANDATORY READ vor Hook development**  
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Knowledge Archive (automatisch durch "Prevention Strategy", "Mock-Hook" erkannt)
+> - **TEMPLATE-QUELLE:** KNOWLEDGE_ONLY Template
+> - **AUTO-UPDATE:** Bei Hook-Development automatisch Strategy referenzieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Prevention Strategy", "Mock-Hook", "Critical Fixes"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Knowledge Archive:**
+> - ✅ **Historical Strategy** - Bewährte Mock-Hook Prevention Patterns archiviert
+> - ⚠️ **Verification Required** - Vor Hook-Implementierung aktuelle Critical-Fixes-Registry prüfen
+> - 🎯 **AUTO-REFERENCE:** Bei Hook-Development automatisch diese Prevention-Strategy konsultieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "MOCK HOOK PROBLEM" → Prevention-Patterns verfügbar
+
+> **⚠️ CRITICAL:** [../../06-handbook/REFERENCE/VALIDATED_REFERENCE-CRITICAL-FIXES-CURRENT_2025-10-26.md](../../06-handbook/REFERENCE/VALIDATED_REFERENCE-CRITICAL-FIXES-CURRENT_2025-10-26.md) - **MANDATORY READ vor Hook development**  
 > **🛡️ NEVER violate:** Siehe [../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) - Essential hook patterns  
 > **📚 ALWAYS:** `pnpm validate:critical-fixes` vor Hook-Änderungen  
 

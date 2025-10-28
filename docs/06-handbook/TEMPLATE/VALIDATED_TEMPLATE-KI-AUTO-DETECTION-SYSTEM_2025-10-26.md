@@ -1,5 +1,5 @@
 # 🤖 KI-Auto-Detection System - Status Recognition Rules
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (Universal Template System Integration)  
 > **Status:** VALIDATED Template | **Typ:** KI-Behavior Detection System  
 > **Schema:** `VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md`

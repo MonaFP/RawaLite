@@ -1,5 +1,5 @@
 # Aktionsplan: Component Audit Lösungsvorschläge
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Zusammenfassung der empfohlenen Maßnahmen** aus dem Component Audit Report
 > 
 > **Datum:** 14. Oktober 2025 | **Version:** 1.0.0

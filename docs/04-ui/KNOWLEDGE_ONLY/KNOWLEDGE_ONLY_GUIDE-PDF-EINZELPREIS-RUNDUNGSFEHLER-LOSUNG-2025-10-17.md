@@ -1,5 +1,5 @@
 # PDF Einzelpreis & Rundungsfehler - Problemlösung
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **STATUS:** ⚠️ ACTIVE - Warten auf User-Validierung  
 $12025-10-17**VERSION:** v1.0.42.2  
 

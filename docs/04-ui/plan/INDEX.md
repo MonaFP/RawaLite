@@ -1,5 +1,5 @@
 # 🎨 UI/UX Plans - INDEX
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Letzte Aktualisierung:** 23.10.2025 (Schema-Migration + neue Navigation Plans)  
 > **Ordner:** `/docs/04-ui/plan/`  
 > **Zweck:** UI/UX Planungsdokumente und Implementierungs-Roadmaps
@@ -50,7 +50,7 @@ Alle Plans in diesem Ordner folgen der **KI-PRÄFIX-ERKENNUNGSREGELN**:
 ## 📚 **Related Documentation**
 
 ### **Implementation Guides:**
-- **UI Implementation:** [../final/](../final/) - Fertige UI-Implementierungen
+- **UI Implementation:** [../VALIDATED/](../VALIDATED/) - Fertige UI-Implementierungen
 - **Core Architecture:** [../../01-core/](../../01-core/) - System-übergreifende Architektur
 - **Database Integration:** [../../03-data/](../../03-data/) - Database-Design für UI-Systeme
 
@@ -60,4 +60,4 @@ Alle Plans in diesem Ordner folgen der **KI-PRÄFIX-ERKENNUNGSREGELN**:
 
 ---
 
-**📍 Navigation:** [Zurück zu 04-ui](../) | [Docs Root](../../) | [UI Final](../final/) | [UI Sessions](../sessions/)
+**📍 Navigation:** [Zurück zu 04-ui](../) | [Docs Root](../../) | [UI VALIDATED](../VALIDATED/) | [UI LESSON](../LESSON/)

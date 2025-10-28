@@ -1,5 +1,5 @@
 # FINAL COMPREHENSIVE CODE-FIRST CONSISTENCY REPORT
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 23.10.2025 | **Methodik:** Repository als Ground Truth  
 > **Status:** ✅ COMPLETED | **Scope:** Complete Documentation System Validation  
 > **Validator:** GitHub Copilot | **Coverage:** 6 Documentation Folders + ROOT Files

@@ -1,4 +1,4 @@
-````markdown
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 # 🎯 COMPLETED: Sub-Item System Implementation Plan
 
 > **Erstellt:** 04.10.2025 | **Letzte Aktualisierung:** 16.10.2025 (Status: VALIDATED → COMPLETED)  

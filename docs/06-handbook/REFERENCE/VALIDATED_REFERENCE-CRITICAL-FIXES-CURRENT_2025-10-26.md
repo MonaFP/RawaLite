@@ -1,9 +1,28 @@
 # 🚨 Critical Fixes - Current Session Reference
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-PRÄFIX Schema compliance)  
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** Live Reference | **Typ:** Session-Critical Info  
 > **Schema:** `VALIDATED_REFERENCE-CRITICAL-FIXES-CURRENT_2025-10-26.md`  
 > **Source:** ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Live Reference (automatisch durch "Critical Fixes", "Session Reference" erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook REFERENCE Template
+> - **AUTO-UPDATE:** Bei Critical Fixes Änderung automatisch Session-Reference aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Live Reference", "Session-Critical Info", "Critical Fixes"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Live Reference:**
+> - ✅ **Session-Critical** - Verlässliche Quelle für Session-Start Critical Fixes Check
+> - ✅ **Live Reference** - Authoritative Quelle für aktuelle kritische Bug-Fixes
+> - 🎯 **AUTO-REFERENCE:** Bei Session-Start automatisch diese Datei prüfen
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "CRITICAL PATTERN MISSING" → Critical-Fixes-Check erforderlich
+
+> **⚠️ CRITICAL FIXES STATUS:** 18 aktive critical fixes (27.10.2025)  
+> **Registry Status:** Live synchronisation aus ROOT-Registry aktiv  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor Code-Änderungen  
+> **Critical Function:** Session-start critical fixes prevention für KI-Sessions
 
 ## 📋 **SCHEMA-ÜBERSICHT nach KI-PRÄFIX-ERKENNUNGSREGELN**
 

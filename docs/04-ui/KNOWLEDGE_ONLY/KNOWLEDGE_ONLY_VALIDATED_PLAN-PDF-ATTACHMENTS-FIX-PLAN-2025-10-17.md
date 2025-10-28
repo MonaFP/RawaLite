@@ -1,5 +1,5 @@
 # PDF Attachments Fix Plan - 12.10.2025 (FINAL ANALYSIS)
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## 🎯 **Problem Statement (FINAL DIAGNOSIS)**
 **Befund**: Attachments werden KORREKT geladen, Anhang-Seite wird generiert  
 **Root Cause**: **PDF-Engine Fehler** - HTML zu groß wegen Base64-Bildern (2.3MB+)

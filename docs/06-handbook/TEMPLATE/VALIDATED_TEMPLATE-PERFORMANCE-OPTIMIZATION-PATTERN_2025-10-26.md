@@ -1,5 +1,5 @@
 # ⚡ Performance Problem - LESSON Pattern
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (Performance Template Creation)  
 > **Status:** VALIDATED Template | **Typ:** Performance Optimization Template  
 > **Schema:** `VALIDATED_TEMPLATE-PERFORMANCE-OPTIMIZATION-PATTERN_2025-10-26.md`

@@ -1,14 +1,28 @@
 # 📚 RawaLite Documentation Index
 
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (06-lessons obsolet entfernt - dezentrale LESSON/ Struktur aktiv)  
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** Production Ready - Central Navigation Hub | **Typ:** Documentation Index  
 > **Schema:** `INDEX.md` (Special Root Document)  
 > **🛡️ ROOT-PROTECTED:** Documentation Structure Central Hub
 
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch Content-Keywords erkannt)
+> - **TEMPLATE-QUELLE:** Special Root Document (INDEX.md Standard)
+> - **AUTO-UPDATE:** Bei Struktur-Änderung automatisch Navigation aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Production Ready", "Central Navigation Hub"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Production Ready:**
+> - ✅ **Navigation-Hub** - Verlässliche Quelle für Dokumentations-Struktur
+> - ✅ **Master-Index** - Authoritative Quelle für alle Dokumentations-Pfade
+> - 🎯 **AUTO-REFERENCE:** Bei Dokumentations-Fragen zuerst diesen Index konsultieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "STRUKTUR GEÄNDERT" → Navigation-Update erforderlich
+
 > **⚠️ DOCUMENTATION STATUS:** Post KNOWLEDGE_ONLY Cleanup (26.10.2025)  
 > **Quality Level:** 92.3% Schema Compliance (EXCELLENT - improved from 53%)  
 > **Validation Method:** Repository as Ground Truth + KI-PRÄFIX-ERKENNUNGSREGELN  
-> **Migration Reality:** 045 files (000-044), Latest: 044-cleanup-navigation-modes, 045-enforce-ki-safe-navigation  
+> **Migration Reality:** 046 migrations (000-045), Latest: 045-enforce-ki-safe-navigation  
 > **Critical Documentation Cleanup:** 90+ false COMPLETED/VALIDATED docs reclassified to KNOWLEDGE_ONLY
 
 ## � **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
@@ -128,7 +142,7 @@ Alle Dokumentationsordner enthalten: `final/`, `wip/`, `plan/`, `sessions/`
 
 ### **📁 03-data/ - Database & Data Management** ✅ **UPDATED (26.10.2025)**
 - **SQLite Database System:** Complete SQLite implementation with Migration 045 (latest)
-- **Migration Architecture:** Schema evolution with 045 migration files (000-044)
+- **Migration Architecture:** Schema evolution with 047 migration files (000-046)
 - **Field Mapping:** Consistent camelCase ↔ snake_case conversion
 - **Database Configuration Service:** Central configuration management (Migration 037)
 
@@ -170,7 +184,7 @@ Alle Dokumentationsordner enthalten: `final/`, `wip/`, `plan/`, `sessions/`
 - **Central Configuration Architecture:** Replaces multiple hardcoded constants
 
 ### ✅ **MIGRATION SYSTEM REALITY (000-044):**
-- **Current Migration Count:** 045 migration files (000-044, plus index)
+- **Current Migration Count:** 046 migration files (000-045), plus index.ts
 - **Latest Migration:** 044_cleanup_navigation_modes, 045_enforce_ki_safe_navigation
 - **Critical Migration 037:** Central Configuration Architecture implementation
 - **Layout Crisis Evidence:** Migrations 032-045 all attempting header height repairs
@@ -215,7 +229,7 @@ Alle Dokumentationsordner enthalten: `final/`, `wip/`, `plan/`, `sessions/`
 | **Schema Compliance** | ✅ **IMPROVED** | 92.3% (from 53%) | **26.10.2025** |
 | **Root Documentation** | ✅ **VALIDATED** | 6/6 Root Docs | **26.10.2025** |
 | **Database Configuration** | ✅ **PRODUCTION** | Phase 7 Complete | **21.10.2025** |
-| **Migration System** | ✅ **CURRENT** | 045 Files (000-044) | **25.10.2025** |
+| **Migration System** | ✅ **CURRENT** | 046 Migrations (000-045) | **27.10.2025** |
 | **Layout Crisis** | ⚠️ **DOCUMENTED** | Emergency Systems | **26.10.2025** |
 
 ---
@@ -235,7 +249,7 @@ Alle Dokumentationsordner enthalten: `final/`, `wip/`, `plan/`, `sessions/`
 ### **🔧 SYSTEM-REALITÄT:**
 - **Layout Crisis:** Emergency fallback systems active, 45+ repair migrations
 - **Over-Documentation:** 445% rate confirmed by Master Validation Script  
-- **Database Current:** 045 migrations (000-044), Central Configuration Phase 7 Complete
+- **Database Current:** 047 migrations (000-046), Central Configuration Phase 7 Complete
 - **Critical Validation:** `pnpm validate:critical-fixes` vor allen Code-Änderungen
 
 ### **🛡️ CRITICAL PATTERN PRESERVATION:**

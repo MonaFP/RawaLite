@@ -1,5 +1,5 @@
 # 🔧 Footer Visibility Fix Plan - Systematischer Database Schema Cleanup
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 25.10.2025 | **Letzte Aktualisierung:** 25.10.2025 (Systematische Root Cause Analysis basierter Plan)  
 > **Status:** VALIDATED - Einfacher systematischer Ansatz | **Typ:** PLAN  
 > **Schema:** `ROOT_VALIDATED_PLAN-FOOTER-VISIBILITY-FIX_2025-10-25.md`  

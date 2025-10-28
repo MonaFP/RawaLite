@@ -1,5 +1,5 @@
 # 03-data/ CODE-FIRST VALIDATION RESULTS
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Validierung:** 23.10.2025 | **Methode:** Repository als Ground Truth  
 > **Status:** ✅ ABGESCHLOSSEN | **Konsistenz:** 82% (GOOD with Critical Gaps)  
 > **Validator:** GitHub Copilot | **Scope:** Database & Migration Documentation

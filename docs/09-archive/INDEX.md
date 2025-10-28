@@ -1,8 +1,24 @@
 # 📦 RawaLite Documentation Archive
-
-> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 20.10.2025 (DEPRECATED Documentation Archival)  
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Purpose:** Central archive for deprecated and obsolete documentation  
 > **Schema:** Consolidated archive of all DEPRECATED_ prefixed documents
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `09-archive` → **ARCHIVE FOCUS** - Deprecated und obsolete Dokumentation
+- `DEPRECATED` → **ARCHIVED STATUS** - Nicht mehr aktive Dokumentation
+- `historical reference` → **REFERENCE ONLY** - Nur für Versions-Verfolgung
+- `27+ files` → **ARCHIVE SIZE** - Umfangreiche historische Sammlung
+
+**📖 TEMPLATE SOURCE:** [06-handbook/templates/INDEX-FOLDER-TEMPLATE.md](../06-handbook/templates/INDEX-FOLDER-TEMPLATE.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Documentation-Cleanup, Deprecation-Workflows, Archive-Operations  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ❌ **ARCHIVE-ONLY:** Nutze NICHT für aktive Development-Guidance
+- ✅ **HISTORICAL-REFERENCE:** Konsultiere für Version-Historie wenn nötig
+- ✅ **DEPRECATION-AWARENESS:** Erkenne veraltete Patterns in Archiv
+- ❌ **FORBIDDEN:** Archived Content als aktuelle Referenz verwenden
 
 ## 📋 **ARCHIVE OVERVIEW**
 

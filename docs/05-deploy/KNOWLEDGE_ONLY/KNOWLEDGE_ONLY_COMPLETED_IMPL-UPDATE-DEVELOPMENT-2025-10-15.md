@@ -2,7 +2,7 @@
 **Letzte Aktualisierung:** 02. Oktober 2025  
 **Zielgruppe:** Entwickler  
 **Kontext:** GitHub CLI → GitHub API Migration  
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## 📋 Entwicklungsübersicht
 
 Dieser Guide beschreibt die Implementierung der Migration vom GitHub CLI-basierten Update-System zu einem direkten GitHub HTTP API-basierten System.

@@ -11,7 +11,7 @@ interface HeaderStatisticsProps {
   className?: string;
 }
 
-export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title, className = 'header-statistics' }) => {
+export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title, ...props }) => {
   const location = useLocation();
   const { settings } = useUnifiedSettings();
   const { customers } = useCustomers();
@@ -56,8 +56,8 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title, class
   // Loading state mit CSS Variables
   if (isLoading) {
     return (
-      <div className={className}>
-        <div className="left-section">
+      <div data-component="statistics-header" data-loading="true">
+        <div data-section="left">
           Loading theme...
         </div>
       </div>
@@ -70,84 +70,84 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title, class
   }
 
   return (
-    <div className={className}>
+    <div data-component="statistics-header" data-navigation-mode="mode-dashboard-view">
       {/* Page Title Section */}
-      <div className="page-title-section">
-        <div className="page-title">
+      <div data-section="page-title">
+        <div data-element="title">
           {getPageTitle()}
         </div>
       </div>
 
       {/* Company Section mit CSS Variables */}
-      <div className="company-section">
-        <div className="company-logo">
+      <div data-section="company">
+        <div data-element="logo">
           {settings.companyData?.logo ? (
             <img 
               src={settings.companyData.logo} 
               alt="HeaderStatistics-Company" 
-              className="company-logo-img"
+              data-element="logo-image"
             />
           ) : (
-            <div className="company-logo-fallback">
+            <div data-element="logo-fallback">
               {(settings.companyData?.name || 'Firma').charAt(0)}
             </div>
           )}
         </div>
         
-        <div className="company-name">
+        <div data-element="company-name">
           {settings.companyData?.name || 'Firma'}
         </div>
       </div>
 
       {/* Statistics Cards mit CSS Variables */}
-      <div className="statistics-cards">
+      <div data-section="statistics-cards">
         {/* Kunden Card */}
-        <div className="statistic-card">
-          <div className="stat-icon">👥</div>
-          <div className="stat-value">{totalCustomers}</div>
-          <div className="stat-label">Kunden</div>
+        <div data-component="statistic-card">
+          <div data-element="icon">👥</div>
+          <div data-element="value">{totalCustomers}</div>
+          <div data-element="label">Kunden</div>
         </div>
 
         {/* Angebote Card */}
-        <div className="statistic-card">
-          <div className="stat-icon">📝</div>
-          <div className="stat-value">{totalOffers}</div>
-          <div className="stat-label">Angebote</div>
+        <div data-component="statistic-card">
+          <div data-element="icon">📝</div>
+          <div data-element="value">{totalOffers}</div>
+          <div data-element="label">Angebote</div>
         </div>
 
         {/* Offene Angebote Card */}
-        <div className="statistic-card">
-          <div className="stat-icon">⏳</div>
-          <div className="stat-value">{openOffers}</div>
-          <div className="stat-label">Offen</div>
+        <div data-component="statistic-card">
+          <div data-element="icon">⏳</div>
+          <div data-element="value">{openOffers}</div>
+          <div data-element="label">Offen</div>
         </div>
 
         {/* Angenommene Angebote Card */}
-        <div className="statistic-card success">
-          <div className="stat-icon">✅</div>
-          <div className="stat-value">{acceptedOffers}</div>
-          <div className="stat-label">Angenommen</div>
+        <div data-component="statistic-card" data-status="success">
+          <div data-element="icon">✅</div>
+          <div data-element="value">{acceptedOffers}</div>
+          <div data-element="label">Angenommen</div>
         </div>
 
         {/* Rechnungen Card */}
-        <div className="statistic-card">
-          <div className="stat-icon">💰</div>
-          <div className="stat-value">{totalInvoices}</div>
-          <div className="stat-label">Rechnungen</div>
+        <div data-component="statistic-card">
+          <div data-element="icon">💰</div>
+          <div data-element="value">{totalInvoices}</div>
+          <div data-element="label">Rechnungen</div>
         </div>
 
         {/* Unbezahlte Rechnungen Card */}
-        <div className="statistic-card warning">
-          <div className="stat-icon">⏰</div>
-          <div className="stat-value">{unpaidInvoices}</div>
-          <div className="stat-label">Offen</div>
+        <div data-component="statistic-card" data-status="warning">
+          <div data-element="icon">⏰</div>
+          <div data-element="value">{unpaidInvoices}</div>
+          <div data-element="label">Offen</div>
         </div>
 
         {/* Bezahlte Rechnungen Card */}
-        <div className="statistic-card success">
-          <div className="stat-icon">✅</div>
-          <div className="stat-value">{paidInvoices}</div>
-          <div className="stat-label">Bezahlt</div>
+        <div data-component="statistic-card" data-status="success">
+          <div data-element="icon">✅</div>
+          <div data-element="value">{paidInvoices}</div>
+          <div data-element="label">Bezahlt</div>
         </div>
       </div>
     </div>

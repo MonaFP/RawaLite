@@ -1,5 +1,5 @@
 # 🎨 UI Patterns: Table-like Forms Reference
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Header repariert, KI-PRÄFIX Schema compliance)  
 > **Status:** Reference | **Typ:** UI Patterns Documentation  
 > **Schema:** `VALIDATED_REFERENCE-UI-PATTERNS-TABLE-FORMS_2025-10-17.md`

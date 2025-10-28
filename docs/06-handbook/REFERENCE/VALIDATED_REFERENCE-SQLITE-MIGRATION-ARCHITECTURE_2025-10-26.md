@@ -1,8 +1,24 @@
 # 🔄 SQLite Migration Architecture - Database Migration Reference
 
-> **Erstellt:** 29.09.2025 | **Letzte Aktualisierung:** 27.10.2025 (Schema Version 46, KI-PRÄFIX Schema compliance)  
+> **Erstellt:** 29.09.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** Reference | **Typ:** Migration Architecture Documentation  
 > **Schema:** `VALIDATED_REFERENCE-SQLITE-MIGRATION-ARCHITECTURE_2025-10-26.md`
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `Migration Architecture` → **ARCHITECTURE-CRITICAL** - Core Database Migration System
+- `Database Migration Reference` → **MIGRATION-GUIDE** - Migration implementation patterns
+- `046 Migrationen aktiv` → **CURRENT-STATUS** - Live Migration count reference
+- `better-sqlite3` → **NATIVE-SYSTEM** - Production database technology
+
+**📖 TEMPLATE SOURCE:** [VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md](../TEMPLATE/VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Migration-System changes, neue Migration-Patterns, Architecture evolution  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **MIGRATION-COMPLIANCE:** Nutze für alle Database-Migration Implementierungen
+- ✅ **ARCHITECTURE-REFERENCE:** Befolge better-sqlite3 patterns bei DB-Operations
+- ✅ **VALIDATION-FIRST:** Prüfe Migration-Integrität vor Schema-Änderungen
+- ❌ **FORBIDDEN:** SQL.js patterns verwenden (deprecated architecture)
 
 ## 📋 **SCHEMA-ÜBERSICHT nach KI-PRÄFIX-ERKENNUNGSREGELN**
 
@@ -19,7 +35,7 @@
 > **📚 ALWAYS:** `pnpm validate:critical-fixes` vor Database-Änderungen  
 
 **Current Schema Version**: 46 (verified 27.10.2025)  
-**Migration Status**: ✅ 046 Migrationen aktiv  
+**Migration Status**: ✅ 046 Migrationen aktiv (000-045)  
 
 ## 🔄 **MIGRATION ARCHITECTURE: SQL.js → better-sqlite3**
 

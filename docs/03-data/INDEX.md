@@ -1,9 +1,25 @@
 # 03-data - Database & Data Management
 
 > **Purpose:** Database Schema, Field Mapping, Migrations, and Data Persistence  
-> **Last Updated:** 2025-10-26 (VALIDATED Content Quality Control - Obsolete PLANs entfernt, Duplikate bereinigt)  
+> **Last Updated:** 2025-10-27 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** ✅ ACTIVE | **Validation Status:** 100% Schema Compliance  
 > **Covers:** SQLite, Field Mapping, Migrations, Numbering Systems, Theme Database Integration
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `03-data` → **DATABASE FOCUS** - Schema, Migrations und Persistence
+- `ACTIVE` → **AKTIVE NUTZUNG** - Kontinuierliche Database-Operations
+- `Field Mapping` → **DATA PATTERNS** - Schema-zu-Code Übersetzung
+- `Schema Version 46` → **CURRENT STATE** - Aktuelle Database-Version
+
+**📖 TEMPLATE SOURCE:** [06-handbook/templates/INDEX-FOLDER-TEMPLATE.md](../06-handbook/templates/INDEX-FOLDER-TEMPLATE.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Schema-Änderungen, neue Migrations, Field-Mapping Updates  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **DATABASE-REFERENCE:** Nutze für Schema und Migration Patterns
+- ✅ **FIELD-MAPPING:** Befolge convertSQLQuery() Patterns strikt
+- ✅ **MIGRATION-SAFETY:** Validiere vor Schema-Änderungen
+- ❌ **FORBIDDEN:** Direct SQL ohne Field-Mapper verwenden
 
 > **🎯 VALIDATED CONTENT QUALITY CONTROL (26.10.2025):**  
 > **Issues Resolved:** Obsolete PLANs zu KNOWLEDGE_ONLY, veraltete REPORTs klassifiziert, Duplikate entfernt  

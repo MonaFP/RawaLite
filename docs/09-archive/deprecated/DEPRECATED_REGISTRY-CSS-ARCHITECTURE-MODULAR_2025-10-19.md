@@ -1,5 +1,5 @@
 # 🏗️ CSS Architecture Update - Modular Structure
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 19.10.2025 | **Letzte Aktualisierung:** 19.10.2025 (CSS Modularization Implementation Update)  
 > **Status:** UPDATED - Architecture Documentation | **Typ:** Architecture Update  
 > **Schema:** `UPDATED_REGISTRY-CSS-ARCHITECTURE-MODULAR-STRUCTURE_2025-10-19.md`

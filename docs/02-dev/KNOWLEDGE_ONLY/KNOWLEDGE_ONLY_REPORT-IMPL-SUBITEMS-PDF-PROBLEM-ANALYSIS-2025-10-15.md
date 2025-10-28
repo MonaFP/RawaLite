@@ -1,7 +1,28 @@
 # 🔍 SUB-ITEMS PDF PROBLEM: CRITICAL ANALYSIS
 
-> **Datum:** 13. Oktober 2025 | **Problem:** Sub-Items in Offers vs Invoices  
-> **Status:** ROOT CAUSE ANALYSIS | **Action:** Detailed Investigation
+> **Erstellt:** 13.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** ROOT CAUSE ANALYSIS | **Typ:** Critical Problem Analysis  
+> **Schema:** `KNOWLEDGE_ONLY_REPORT-IMPL-SUBITEMS-PDF-PROBLEM-ANALYSIS-2025-10-15.md`
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** ROOT CAUSE ANALYSIS (automatisch durch "ROOT CAUSE ANALYSIS", "CRITICAL ANALYSIS" erkannt)
+> - **TEMPLATE-QUELLE:** KNOWLEDGE_ONLY Historical Archive
+> - **AUTO-UPDATE:** Bei Sub-Items-PDF-Problem automatisch Analysis-Status aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "ROOT CAUSE ANALYSIS", "Sub-Items PDF", "Offers vs Invoices"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = ROOT CAUSE ANALYSIS:**
+> - 🔍 **Critical Analysis** - Verlässliche Quelle für Sub-Items PDF Problem zwischen Offers und Invoices
+> - 📊 **Historical Archive** - Detaillierte ROOT CAUSE Analysis für Template-Code Diskrepanzen
+> - 🎯 **AUTO-REFERENCE:** Bei Sub-Items-PDF-Problemen diese Analysis als Basis-Diagnose verwenden
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "SUB ITEMS PDF ERROR" → Diese Critical Analysis für Problemlösung konsultieren
+> - ⚠️ **IMPLEMENTATION VALIDATION:** Bei PDF-Template-Änderungen prüfen ob Problem noch relevant
+
+> **⚠️ SUB-ITEMS PDF STATUS:** ROOT CAUSE zwischen Offers vs Invoices analysiert (27.10.2025)  
+> **Registry Status:** Critical Analysis für Template-Code Diskrepanzen dokumentiert  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory bei PDF-Template Änderungen  
+> **Critical Function:** Authoritative sub-items PDF problem analysis für Offers vs Invoices
 
 ---
 

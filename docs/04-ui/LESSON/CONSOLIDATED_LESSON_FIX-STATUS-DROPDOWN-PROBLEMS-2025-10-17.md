@@ -1,5 +1,5 @@
 # Consolidated Lessons Learned: Status Dropdown Problems
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (StatusControl Unification Complete)
 
 **Status:** ✅ **SOLVED** - Complete StatusControl & Layout Unification achieved  

@@ -1,5 +1,5 @@
 # 📦 Deprecated Documentation Index
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Location:** `/docs/archive/deprecated/`  
 > **Created:** 20.10.2025 | **Purpose:** Direct index for deprecated files  
 > **Total Files:** 15 deprecated documents

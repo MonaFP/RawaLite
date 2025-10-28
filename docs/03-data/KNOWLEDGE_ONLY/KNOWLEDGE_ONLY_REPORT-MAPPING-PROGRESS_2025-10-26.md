@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # CamelCase ↔ Snake_Case Mapping - Progress Report
 
 > **Erstellt:** 30.09.2025 | **Letzte Aktualisierung:** 27.10.2025 (Schema Version korrigiert, KI-PRÄFIX compliance)  

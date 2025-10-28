@@ -1,5 +1,5 @@
 # 🎨 v1.5.2 - Beautiful Pastel Themes Implementation
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Feature Version:** v1.5.2  
 > **Implementation Date:** 2025-10-03  
 > $12025-10-17 (Content modernization + ROOT_ integration)| 'himmelblau' | 'lavendel' | 'pfirsich' | 'rose';

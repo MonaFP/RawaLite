@@ -1,5 +1,5 @@
 # 📋 **SubItems Hierarchy Management - Implementation Plan**
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Status:** 📋 **PLANNING**  
 **Version:** v1.0.42.5+  
 **Author:** RawaLite Team  

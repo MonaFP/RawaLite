@@ -1,5 +1,5 @@
 # ✅ Activity Templates Implementation - COMPLETED
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** Oktober 2025  
 **Status:** Vollständig implementiert  
 **Problem gelöst:** 0/6 Default Activity Templates in Database  

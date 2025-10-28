@@ -1,0 +1,70 @@
+/* ✅ GRID MODE: Compact Focus (dreizeiliges Layout) */
+
+:root {
+  --mode-compact-focus-sidebar-width: 240px;
+  --mode-compact-focus-header-height: 60px;
+  --mode-compact-focus-footer-height: 60px;
+
+  --db-mode-compact-focus-grid-template-columns: var(--mode-compact-focus-sidebar-width) 1fr;
+  --db-mode-compact-focus-grid-template-rows:
+    var(--mode-compact-focus-header-height)
+    1fr
+    var(--mode-compact-focus-footer-height);
+  --db-mode-compact-focus-grid-template-areas:
+    "sidebar header"
+    "sidebar main"
+    "sidebar footer";
+}
+
+[data-navigation-mode="mode-compact-focus"] {
+  display: grid;
+  min-height: 100vh;
+  width: 100%;
+  grid-template-columns: var(--db-mode-compact-focus-grid-template-columns);
+  grid-template-rows: var(--db-mode-compact-focus-grid-template-rows);
+  grid-template-areas: var(--db-mode-compact-focus-grid-template-areas);
+}
+
+[data-navigation-mode="mode-compact-focus"] .header {
+  grid-area: header;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+[data-navigation-mode="mode-compact-focus"] .sidebar {
+  grid-area: sidebar;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  overflow: auto;
+}
+
+[data-navigation-mode="mode-compact-focus"] .main,
+[data-navigation-mode="mode-compact-focus"] main,
+[data-navigation-mode="mode-compact-focus"] [data-area="main"] {
+  grid-area: main;
+  background: var(--bg);
+  overflow: auto;
+  min-height: 0;
+}
+
+[data-navigation-mode="mode-compact-focus"] .footer-area {
+  grid-area: footer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+}
+
+[data-navigation-mode="mode-compact-focus"][data-focus-mode="active"] .sidebar {
+  display: none;
+}
+
+[data-navigation-mode="mode-compact-focus"][data-focus-mode="active"] {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+}

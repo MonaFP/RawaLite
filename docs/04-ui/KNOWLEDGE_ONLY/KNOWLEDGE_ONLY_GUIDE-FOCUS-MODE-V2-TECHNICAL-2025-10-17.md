@@ -1,5 +1,5 @@
 # Focus Mode v2.0 - Technical Summary
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Changed Files
 
 ### Core Implementation

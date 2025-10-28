@@ -1,5 +1,5 @@
 # Electron Builder File-Locking & Native Module Issues
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Status:** 🔴 UNGELÖST  
 > **Betroffen:** Windows-Development mit VS Code  
 > **Erstellt:** 30. September 2025  

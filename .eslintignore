@@ -1,0 +1,3 @@
+temp-debug-scripts/
+*.cjs
+check-migration-*

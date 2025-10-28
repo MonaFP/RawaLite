@@ -1,5 +1,5 @@
 # 🏗️ v1.5.2 Context Architecture Integration
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Version:** v1.5.2  
 > **Updated:** 2025-10-03  
 > **Status:** ✅ Complete  

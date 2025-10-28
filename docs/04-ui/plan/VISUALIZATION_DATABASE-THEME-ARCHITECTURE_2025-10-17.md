@@ -1,5 +1,5 @@
 # 🏗️ Database-Theme-System - Architektur-Visualisierung
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 17.10.2025 | **Status:** Architectural Visualization | **Typ:** System Design  
 > **Schema:** `VISUALIZATION_DATABASE-THEME-ARCHITECTURE_2025-10-17.md`
 

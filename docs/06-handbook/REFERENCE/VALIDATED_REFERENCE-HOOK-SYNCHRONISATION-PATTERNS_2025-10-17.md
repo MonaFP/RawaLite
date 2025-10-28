@@ -1,5 +1,5 @@
 # 🔗 Hook-Synchronisation Patterns - Status Updates Reference
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Header repariert, KI-PRÄFIX Schema compliance)  
 > **Status:** Reference | **Typ:** Hook Synchronisation Patterns  
 > **Schema:** `VALIDATED_REFERENCE-HOOK-SYNCHRONISATION-PATTERNS_2025-10-17.md`

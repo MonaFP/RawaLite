@@ -18,27 +18,49 @@ import type Database from 'better-sqlite3';
 import { FieldMapper, mapToSQL, mapFromSQL } from '../lib/field-mapper';
 
 // TypeScript types for navigation system
-export type NavigationMode = 'header-statistics' | 'header-navigation' | 'full-sidebar';
+export type NavigationMode = 'mode-dashboard-view' | 'mode-data-panel' | 'mode-compact-focus';
 
 // TypeScript interfaces for navigation system
 export interface NavigationPreferences {
   id?: number;
   userId: string;
   navigationMode: NavigationMode;
-  headerHeight: number;
   sidebarWidth: number;
   autoCollapse: boolean;
   rememberFocusMode: boolean;
+  headerHeight: number;  // Added for layout consistency
   createdAt?: string;
   updatedAt?: string;
 }
 
-// NEW: Per-Mode Settings Interface (Migration 034)
+// NEW: Global Navigation Settings Interface (Migration 045)
+export interface NavigationGlobalSettings {
+  id?: number;
+  userId: string;
+  defaultNavigationMode: NavigationMode;
+  allowModeSwitching: boolean;
+  rememberLastMode: boolean;
+  showModeIndicator: boolean;
+  autoHideSidebarInFocus: boolean;
+  persistSidebarWidth: boolean;
+  showFooter: boolean;
+  footerShowModeInfo: boolean;
+  footerShowThemeInfo: boolean;
+  footerShowVersion: boolean;
+  footerShowFocusControls: boolean;
+  enableModeTransitions: boolean;
+  transitionDurationMs: number;
+  legacyModeMapping?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// NEW: Per-Mode Settings Interface (Migration 034) - DEPRECATED by Migration 045
 export interface NavigationModeSettings {
   id?: number;
   userId: string;
   navigationMode: NavigationMode;
-  headerHeight: number;
+  headerHeight: number;  // Required for cross-service compatibility
   sidebarWidth: number;
   autoCollapseMobile: boolean;
   autoCollapseTablet: boolean;
@@ -91,8 +113,8 @@ export interface NavigationLayoutConfig {
   navigationMode: NavigationMode;
   
   // Layout Dimensions
-  headerHeight: number;        // 60-220px range
   sidebarWidth: number;        // 180-320px range
+  headerHeight: number;        // Header height for layout calculations
   
   // Behavior Settings
   autoCollapse: boolean;       // Auto-collapse sidebar on mobile
@@ -126,57 +148,54 @@ export class DatabaseNavigationService {
    * @since Migration 037 - Centralized Constants Architecture
    */
   static readonly SYSTEM_DEFAULTS = {
-    // Header heights for each navigation mode
-    HEADER_HEIGHTS: {
-      'header-statistics': 160,
-      'header-navigation': 160,
-      'full-sidebar': 36
-    },
-    
     // Sidebar widths for each navigation mode
+    // Updated to use NEW Migration 045 schema modes
     SIDEBAR_WIDTHS: {
-      'header-statistics': 240,
-      'header-navigation': 280,
-      'full-sidebar': 240
+      'mode-dashboard-view': 200,      // Dashboard overview mode, compact sidebar
+      'mode-data-panel': 200,          // Data panel mode, compact sidebar
+      'mode-compact-focus': 280        // Compact focus mode, wider sidebar
     },
     
     // CSS Grid template rows for each mode
+    // Updated to use NEW Migration 045 schema modes with proper 3-row layout
     GRID_TEMPLATE_ROWS: {
-      'header-statistics': '160px 40px 1fr',
-      'header-navigation': '160px 40px 1fr',
-      'full-sidebar': '36px 40px 1fr'
+      'mode-dashboard-view': '160px 1fr 60px',   // Dashboard header + main + footer
+      'mode-data-panel': '160px 1fr 60px',       // Data panel header + main + footer  
+      'mode-compact-focus': '36px 1fr 60px'      // Minimal header + main + footer
     },
     
     // CSS Grid template columns for each mode
+    // Updated to use NEW Migration 045 schema modes with consistent sidebar widths
     GRID_TEMPLATE_COLUMNS: {
-      'header-statistics': '240px 1fr',
-      'header-navigation': '280px 1fr',
-      'full-sidebar': '240px 1fr'
+      'mode-dashboard-view': '240px 1fr',       // Statistics sidebar (compact navigation)
+      'mode-data-panel': '280px 1fr',           // Navigation sidebar (compact statistics)
+      'mode-compact-focus': '240px 1fr'         // Full sidebar (both navigation + statistics)
     },
     
     // CSS Grid template areas for each mode
-    // INDIVIDUALIZED: Each mode has its own specific layout structure
-    // RawaLite uses: sidebar (left, spans 3 rows), header (top right), focus-bar (middle right), main (bottom right)
+    // Updated to match ACTUAL CSS layout with 3-row layout (header, main, footer)
+    // RawaLite uses: sidebar (left column), header + main + footer (right column)
     GRID_TEMPLATE_AREAS: {
-      'header-statistics': '"sidebar header" "sidebar focus-bar" "sidebar main"',      // Sidebar spans full height, header only on right
-      'header-navigation': '"sidebar header" "sidebar focus-bar" "sidebar main"',      // Sidebar spans full height, header only on right
-      'full-sidebar': '"sidebar header" "sidebar focus-bar" "sidebar main"'           // Sidebar spans full height, minimal header on right
+      'mode-dashboard-view': '"sidebar header" "sidebar main" "sidebar footer"',     // Dashboard header + main + footer
+      'mode-data-panel': '"sidebar header" "sidebar main" "sidebar footer"',        // Data panel header + main + footer
+      'mode-compact-focus': '"sidebar header" "sidebar main" "sidebar footer"'       // Minimal header + main + footer
     },
     
     // Default user preferences (replaces hardcoded values in getUserNavigationPreferences)
+    // Updated to use NEW Migration 045 schema default
     DEFAULT_PREFERENCES: {
-      navigationMode: 'header-statistics' as NavigationMode,
-      headerHeight: 160,
-      sidebarWidth: 240,
+      navigationMode: 'mode-dashboard-view' as NavigationMode,  // New default mode
+      sidebarWidth: 200,                                        // Dashboard mode default
       autoCollapse: false,
-      rememberFocusMode: true
+      rememberFocusMode: true,
+      headerHeight: 160                                         // Added for layout consistency
     },
     
-    // Minimum heights for validation (replaces getOptimalHeaderHeight logic)
+    // Header height ranges for new modes
     MIN_HEADER_HEIGHTS: {
-      'header-statistics': 120,
-      'header-navigation': 120,
-      'full-sidebar': 36
+      'mode-dashboard-view': 160,
+      'mode-data-panel': 160,
+      'mode-compact-focus': 80    // User-requested: mindestens verdoppelt für Benutzerfreundlichkeit
     },
     
     // Maximum dimensions for validation
@@ -194,7 +213,7 @@ export class DatabaseNavigationService {
   } as const;
   
   // Type definitions for the constants
-  static readonly NAVIGATION_MODES = ['header-statistics', 'header-navigation', 'full-sidebar'] as const;
+  static readonly NAVIGATION_MODES = ['mode-dashboard-view', 'mode-data-panel', 'mode-compact-focus'] as const;
   
   // Prepared statements for performance
   private statements: {
@@ -206,7 +225,12 @@ export class DatabaseNavigationService {
     getModeHistory?: Database.Statement;
     cleanupOldHistory?: Database.Statement;
     
-    // NEW: Per-Mode Settings Statements (Migration 034)
+    // NEW: Global Navigation Settings Statements (Migration 045)
+    getNavigationSettings?: Database.Statement;
+    upsertNavigationSettings?: Database.Statement;
+    updateDefaultMode?: Database.Statement;
+    
+    // DEPRECATED: Per-Mode Settings Statements (Migration 034) - Replaced by Global Settings
     getModeSettings?: Database.Statement;
     upsertModeSettings?: Database.Statement;
     getAllModeSettings?: Database.Statement;
@@ -269,7 +293,7 @@ export class DatabaseNavigationService {
       WHERE user_id = ? AND changed_at < datetime('now', '-30 days')
     `);
     
-    // NEW: Per-Mode Settings Prepared Statements (Migration 034)
+    // === MIGRATION 034: PER-MODE SETTINGS STATEMENTS (RE-ACTIVATED) ===
     this.statements.getModeSettings = this.db.prepare(`
       SELECT * FROM user_navigation_mode_settings 
       WHERE user_id = ? AND navigation_mode = ?
@@ -277,16 +301,18 @@ export class DatabaseNavigationService {
     
     this.statements.upsertModeSettings = this.db.prepare(`
       INSERT OR REPLACE INTO user_navigation_mode_settings 
-      (user_id, navigation_mode, header_height, sidebar_width, auto_collapse_mobile, auto_collapse_tablet, 
-       remember_dimensions, mobile_breakpoint, tablet_breakpoint, grid_template_columns, grid_template_rows, 
+      (user_id, navigation_mode, header_height, sidebar_width, auto_collapse_mobile, auto_collapse_tablet,
+       remember_dimensions, mobile_breakpoint, tablet_breakpoint, grid_template_columns, grid_template_rows,
        grid_template_areas, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-        COALESCE((SELECT created_at FROM user_navigation_mode_settings WHERE user_id = ? AND navigation_mode = ?), CURRENT_TIMESTAMP), 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        COALESCE((SELECT created_at FROM user_navigation_mode_settings WHERE user_id = ? AND navigation_mode = ?), CURRENT_TIMESTAMP),
         CURRENT_TIMESTAMP)
     `);
     
     this.statements.getAllModeSettings = this.db.prepare(`
-      SELECT * FROM user_navigation_mode_settings WHERE user_id = ?
+      SELECT * FROM user_navigation_mode_settings 
+      WHERE user_id = ?
+      ORDER BY navigation_mode
     `);
     
     // NEW: Focus Mode Preferences Prepared Statements (Migration 035)
@@ -433,12 +459,6 @@ export class DatabaseNavigationService {
       // Update navigation mode
       this.statements.updateNavigationMode!.run(navigationMode, userId);
       
-      // Auto-adjust header height based on navigation mode requirements
-      const optimalHeight = this.getOptimalHeaderHeight(navigationMode, currentPrefs.headerHeight);
-      if (optimalHeight !== currentPrefs.headerHeight) {
-        await this.updateLayoutDimensions(userId, optimalHeight, undefined);
-      }
-      
       // Record mode change in history (if different)
       if (previousMode !== navigationMode) {
         await this.recordModeChange(userId, previousMode, navigationMode, sessionId);
@@ -457,30 +477,25 @@ export class DatabaseNavigationService {
   async updateLayoutDimensions(userId: string = 'default', headerHeight?: number, sidebarWidth?: number): Promise<boolean> {
     try {
       const currentPrefs = await this.getUserNavigationPreferences(userId);
-      
       const newHeaderHeight = headerHeight !== undefined ? headerHeight : currentPrefs.headerHeight;
       const newSidebarWidth = sidebarWidth !== undefined ? sidebarWidth : currentPrefs.sidebarWidth;
       
-      // Apply optimal height for current navigation mode
-      const optimalHeaderHeight = this.getOptimalHeaderHeight(currentPrefs.navigationMode, newHeaderHeight);
-      
       // Validate dimensions using SYSTEM_DEFAULTS
       const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
-      const minHeight = defaults.MIN_HEADER_HEIGHTS[currentPrefs.navigationMode] || 60;
-      const maxHeight = defaults.MAX_DIMENSIONS.headerHeight;
       const maxWidth = defaults.MAX_DIMENSIONS.sidebarWidth;
-      
-      if (optimalHeaderHeight < minHeight || optimalHeaderHeight > maxHeight) {
-        console.error('[DatabaseNavigationService] Invalid header height:', optimalHeaderHeight, `(range: ${minHeight}-${maxHeight})`);
-        return false;
-      }
+      const maxHeight = defaults.MAX_DIMENSIONS.headerHeight;
       
       if (newSidebarWidth < 180 || newSidebarWidth > maxWidth) {
         console.error('[DatabaseNavigationService] Invalid sidebar width:', newSidebarWidth, `(range: 180-${maxWidth})`);
         return false;
       }
       
-      this.statements.updateLayoutDimensions!.run(optimalHeaderHeight, newSidebarWidth, userId);
+      if (newHeaderHeight < 40 || newHeaderHeight > maxHeight) {
+        console.error('[DatabaseNavigationService] Invalid header height:', newHeaderHeight, `(range: 40-${maxHeight})`);
+        return false;
+      }
+      
+      this.statements.updateLayoutDimensions!.run(newHeaderHeight, newSidebarWidth, userId);
       return true;
     } catch (error) {
       console.error('[DatabaseNavigationService] Error updating layout dimensions:', error);
@@ -517,39 +532,16 @@ export class DatabaseNavigationService {
   }
 
   /**
-   * Get optimal header height for navigation mode
-   * NOW USES: SYSTEM_DEFAULTS.HEADER_HEIGHTS (centralized constants)
-   */
-  private getOptimalHeaderHeight(navigationMode: string, currentHeight: number): number {
-    // Use centralized SYSTEM_DEFAULTS instead of hardcoded values
-    return DatabaseNavigationService.SYSTEM_DEFAULTS.HEADER_HEIGHTS[navigationMode as NavigationMode] || 
-           DatabaseNavigationService.SYSTEM_DEFAULTS.HEADER_HEIGHTS['header-statistics'];
-  }
-
-  /**
    * Generate CSS Grid configuration based on navigation preferences
-   * CRITICAL FIX: Use per-mode settings instead of global preferences.headerHeight
-   * This ensures that mode-specific header heights from user_navigation_mode_settings are used
    */
   private async generateGridConfiguration(preferences: NavigationPreferences, userId: string = 'default'): Promise<Pick<NavigationLayoutConfig, 'gridTemplateColumns' | 'gridTemplateRows' | 'gridTemplateAreas'>> {
-    const { navigationMode, sidebarWidth } = preferences;
-    
-    // FIXED: Get mode-specific settings instead of using global preferences.headerHeight
-    const modeSettings = await this.getModeSpecificSettings(userId, navigationMode);
-    const headerHeight = modeSettings?.headerHeight || preferences.headerHeight;  // Per-mode or fallback to global
-    
-    console.log(`[DatabaseNavigationService] generateGridConfiguration for ${navigationMode}:`);
-    console.log(`  Per-mode settings found: ${!!modeSettings}`);
-    console.log(`  Mode-specific headerHeight: ${modeSettings?.headerHeight}px`);
-    console.log(`  Global headerHeight: ${preferences.headerHeight}px`);
-    console.log(`  Using headerHeight: ${headerHeight}px`);
-    
+    const { navigationMode, sidebarWidth, headerHeight } = preferences;
     const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
     
     return {
       gridTemplateColumns: `${sidebarWidth}px 1fr`,
-      gridTemplateRows: `${headerHeight}px 40px 1fr`,  // Now uses per-mode height!
-      gridTemplateAreas: defaults.GRID_TEMPLATE_AREAS[navigationMode] || defaults.GRID_TEMPLATE_AREAS['header-statistics']
+      gridTemplateRows: `${headerHeight}px 1fr auto`,  // FIX: Use database headerHeight instead of hardcoded defaults
+      gridTemplateAreas: defaults.GRID_TEMPLATE_AREAS[navigationMode] || defaults.GRID_TEMPLATE_AREAS['mode-dashboard-view']
     };
   }
 
@@ -557,14 +549,14 @@ export class DatabaseNavigationService {
    * Get default layout configuration
    * NOW USES: SYSTEM_DEFAULTS (centralized constants)
    */
-  private getDefaultLayoutConfig(navigationMode?: 'header-statistics' | 'header-navigation' | 'full-sidebar'): NavigationLayoutConfig {
-    const mode = navigationMode || 'header-statistics';
+  private getDefaultLayoutConfig(navigationMode?: NavigationMode): NavigationLayoutConfig {
+    const mode = navigationMode || 'mode-dashboard-view';
     const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
     
     return {
       navigationMode: mode,
-      headerHeight: defaults.HEADER_HEIGHTS[mode],
       sidebarWidth: defaults.SIDEBAR_WIDTHS[mode],
+      headerHeight: defaults.MIN_HEADER_HEIGHTS[mode],
       autoCollapse: defaults.DEFAULT_PREFERENCES.autoCollapse,
       rememberFocusMode: defaults.DEFAULT_PREFERENCES.rememberFocusMode,
       gridTemplateColumns: defaults.GRID_TEMPLATE_COLUMNS[mode],
@@ -580,8 +572,8 @@ export class DatabaseNavigationService {
    */
   async recordModeChange(
     userId: string, 
-    previousMode: 'header-statistics' | 'header-navigation' | 'full-sidebar' | undefined, 
-    newMode: 'header-statistics' | 'header-navigation' | 'full-sidebar',
+    previousMode: NavigationMode | undefined, 
+    newMode: NavigationMode,
     sessionId?: string
   ): Promise<boolean> {
     try {
@@ -636,14 +628,14 @@ export class DatabaseNavigationService {
   async getNavigationModeStatistics(userId: string = 'default'): Promise<Record<string, number>> {
     try {
       const result = this.db.prepare(`
-        SELECT new_mode, COUNT(*) as count 
-        FROM navigation_mode_history 
+        SELECT new_default_mode, COUNT(*) as count 
+        FROM user_navigation_mode_history 
         WHERE user_id = ? 
-        GROUP BY new_mode
-      `).all(userId) as Array<{ new_mode: string; count: number }>;
+        GROUP BY new_default_mode
+      `).all(userId) as Array<{ new_default_mode: string; count: number }>;
       
-      return result.reduce((acc, { new_mode, count }) => {
-        acc[new_mode] = count;
+      return result.reduce((acc, { new_default_mode, count }) => {
+        acc[new_default_mode] = count;
         return acc;
       }, {} as Record<string, number>);
     } catch (error) {
@@ -662,10 +654,10 @@ export class DatabaseNavigationService {
       const defaultPreferences: NavigationPreferences = {
         userId,
         navigationMode: defaults.DEFAULT_PREFERENCES.navigationMode,
-        headerHeight: defaults.DEFAULT_PREFERENCES.headerHeight,
         sidebarWidth: defaults.DEFAULT_PREFERENCES.sidebarWidth,
         autoCollapse: defaults.DEFAULT_PREFERENCES.autoCollapse,
-        rememberFocusMode: defaults.DEFAULT_PREFERENCES.rememberFocusMode
+        rememberFocusMode: defaults.DEFAULT_PREFERENCES.rememberFocusMode,
+        headerHeight: defaults.DEFAULT_PREFERENCES.headerHeight
       };
       
       return await this.setUserNavigationPreferences(userId, defaultPreferences);
@@ -680,23 +672,23 @@ export class DatabaseNavigationService {
    */
   async validateNavigationSchema(): Promise<boolean> {
     try {
-      // Check if user_navigation_preferences table exists
+      // Check if user_navigation_mode_settings table exists
       const tableInfo = this.db.prepare(`
-        SELECT name FROM sqlite_master WHERE type='table' AND name='user_navigation_preferences'
+        SELECT name FROM sqlite_master WHERE type='table' AND name='user_navigation_mode_settings'
       `).get();
       
       if (!tableInfo) {
-        console.error('[DatabaseNavigationService] Migration 028 not applied - user_navigation_preferences table missing');
+        console.error('[DatabaseNavigationService] Migration 034 not applied - user_navigation_mode_settings table missing');
         return false;
       }
       
-      // Check if navigation_mode_history table exists
+      // Check if navigation mode history table exists
       const historyTableInfo = this.db.prepare(`
-        SELECT name FROM sqlite_master WHERE type='table' AND name='navigation_mode_history'
+        SELECT name FROM sqlite_master WHERE type='table' AND name='user_navigation_mode_history'
       `).get();
       
       if (!historyTableInfo) {
-        console.warn('[DatabaseNavigationService] navigation_mode_history table missing - history features disabled');
+        console.warn('[DatabaseNavigationService] user_navigation_mode_history table missing - history features disabled');
         return true; // Not critical, main functionality works
       }
       
@@ -712,7 +704,7 @@ export class DatabaseNavigationService {
   /**
    * Get mode-specific navigation settings
    */
-  async getModeSpecificSettings(userId: string = 'default', navigationMode: 'header-statistics' | 'header-navigation' | 'full-sidebar'): Promise<NavigationModeSettings | null> {
+  async getModeSpecificSettings(userId: string = 'default', navigationMode: NavigationMode): Promise<NavigationModeSettings | null> {
     try {
       const row = this.statements.getModeSettings!.get(userId, navigationMode) as any;
       
@@ -740,7 +732,7 @@ export class DatabaseNavigationService {
       const updatedSettings: NavigationModeSettings = {
         userId,
         navigationMode: settings.navigationMode!,
-        headerHeight: defaults.HEADER_HEIGHTS[settings.navigationMode!],
+        headerHeight: defaults.MIN_HEADER_HEIGHTS[settings.navigationMode!],
         sidebarWidth: defaults.SIDEBAR_WIDTHS[settings.navigationMode!],
         autoCollapseMobile: false,
         autoCollapseTablet: false,
@@ -802,7 +794,7 @@ export class DatabaseNavigationService {
   /**
    * Get focus preferences for specific navigation mode
    */
-  async getFocusModePreferences(userId: string = 'default', navigationMode: 'header-statistics' | 'header-navigation' | 'full-sidebar'): Promise<FocusModePreferences | null> {
+  async getFocusModePreferences(userId: string = 'default', navigationMode: NavigationMode): Promise<FocusModePreferences | null> {
     try {
       const row = this.statements.getFocusPreferences!.get(userId, navigationMode) as any;
       
@@ -905,7 +897,7 @@ export class DatabaseNavigationService {
   /**
    * Get combined layout configuration with per-mode and focus settings
    */
-  async getEnhancedLayoutConfig(userId: string = 'default', navigationMode?: 'header-statistics' | 'header-navigation' | 'full-sidebar', inFocusMode: boolean = false): Promise<NavigationLayoutConfig & { modeSettings?: NavigationModeSettings; focusPreferences?: FocusModePreferences }> {
+  async getEnhancedLayoutConfig(userId: string = 'default', navigationMode?: NavigationMode, inFocusMode: boolean = false): Promise<NavigationLayoutConfig & { modeSettings?: NavigationModeSettings; focusPreferences?: FocusModePreferences }> {
     try {
       // Get base navigation preferences
       const basePrefs = await this.getUserNavigationPreferences(userId);
@@ -922,7 +914,6 @@ export class DatabaseNavigationService {
       
       // Apply mode-specific overrides if available
       if (modeSettings) {
-        baseConfig.headerHeight = modeSettings.headerHeight;
         baseConfig.sidebarWidth = modeSettings.sidebarWidth;
         
         // Apply custom grid templates if defined

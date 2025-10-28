@@ -1,5 +1,5 @@
 # 🗂️ Documentation Paths - Quick Navigation
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (06-lessons/ obsolete entfernt, KI-PRÄFIX Schema compliance)  
 > **Status:** Live Navigation | **Typ:** Quick Reference  
 > **Schema:** `VALIDATED_REFERENCE-DOCUMENTATION-PATHS_2025-10-26.md`  

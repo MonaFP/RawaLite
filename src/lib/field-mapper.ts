@@ -1,16 +1,19 @@
 /**
  * Robust Field Mapping zwischen JavaScript camelCase und SQL snake_case
  * 
- * Mappings basieren auf dem aktuellen SQLite-Schema:
- * - customers: company_name, contact_person, address_street, address_city, address_zip, address_country, tax_number, created_at, updated_at
+ * Mappings basieren auf dem aktuellen SQLite-Schema (validiert gegen Real DB 26.10.2025):
+ * - customers: number, name, email, phone, street, zip, city, notes, created_at, updated_at
  * - offers: customer_id, total_amount, tax_rate, valid_until, offer_number, created_at, updated_at  
  * - invoices: customer_id, offer_id, total_amount, tax_rate, due_date, paid_at, invoice_number, created_at, updated_at
- * - packages: created_at, updated_at
+ * - packages: internal_title, parent_package_id, total, add_vat, created_at, updated_at
  * - offer_line_items: offer_id, parent_item_id, unit_price, vat_rate, vat_amount, created_at, updated_at
  * - package_line_items: package_id, parent_item_id, unit_price, vat_rate, vat_amount, created_at, updated_at
  * - invoice_line_items: invoice_id, parent_item_id, unit_price, vat_rate, vat_amount, created_at, updated_at
  * - numbering_circles: last_number, created_at, updated_at
  * - settings: updated_at
+ * - user_navigation_preferences: user_id, navigation_mode, header_height, sidebar_width, auto_collapse, remember_focus_mode, created_at, updated_at
+ * - user_navigation_mode_settings: user_id, default_navigation_mode, show_footer, footer_show_*, allow_mode_switching, grid_template_*, created_at, updated_at
+ * - user_focus_mode_preferences: user_id, navigation_mode, auto_focus_enabled, transition_duration_ms, footer_*, created_at, updated_at
  */
 
 export class FieldMapper {
@@ -22,15 +25,27 @@ export class FieldMapper {
     'createdAt': 'created_at',
     'updatedAt': 'updated_at',
     
-    // Customer Felder
-    'companyName': 'company_name',
-    'contactPerson': 'contact_person',
-    'addressStreet': 'address_street',
-    'addressCity': 'address_city',
-    'addressZip': 'address_zip',
-    'addressCountry': 'address_country',
-    'taxNumber': 'tax_id',
-    'taxOffice': 'tax_office',
+    // Customer Felder (REAL DB Schema - validiert 25.10.2025)
+    // Real DB: id, number, name, email, phone, street, zip, city, notes, created_at, updated_at
+    'customerNumber': 'number',
+    'customerName': 'name',
+    'customerEmail': 'email',
+    'customerPhone': 'phone',
+    'customerStreet': 'street',
+    'customerZip': 'zip',
+    'customerCity': 'city',
+    'customerNotes': 'notes',
+    
+    // DEPRECATED Customer Mappings (kept for backward compatibility)
+    // Diese Felder existieren NICHT in Real DB, aber könnten in Legacy Code verwendet werden
+    'companyName': 'name',              // FALLBACK zu 'name'
+    'contactPerson': 'name',            // FALLBACK zu 'name'
+    'addressStreet': 'street',          // FALLBACK zu 'street'
+    'addressCity': 'city',              // FALLBACK zu 'city'
+    'addressZip': 'zip',                // FALLBACK zu 'zip'
+    // 'addressCountry': 'address_country',  // ❌ ENTFERNT - existiert nicht in Real DB
+    // 'taxNumber': 'tax_id',                // ❌ ENTFERNT - existiert nicht in Real DB
+    // 'taxOffice': 'tax_office',            // ❌ ENTFERNT - existiert nicht in Real DB
     
     // Bankdaten Felder (KRITISCH für Settings)
     'bankName': 'bank_name',
@@ -144,13 +159,57 @@ export class FieldMapper {
     'changedAt': 'changed_at',
     'sessionId': 'session_id',
     
+    // Footer Content System Felder (KRITISCH für Footer+Focus Mode Integration v1.0.59)
+    'showStatusInfo': 'show_status_info',
+    'showQuickActions': 'show_quick_actions',
+    'showApplicationInfo': 'show_application_info',
+    'showThemeSelector': 'show_theme_selector',
+    'showFocusModeToggle': 'show_focus_mode_toggle',
+    'customContentSlots': 'custom_content_slots',
+    'showFooterInNormalMode': 'show_footer_in_normal_mode',
+    'showFooterInFocusMode': 'show_footer_in_focus_mode',
+    'footerHeightPx': 'footer_height_px',
+    'footerPosition': 'footer_position',
+    'footerAutoHide': 'footer_auto_hide',
+    'footerAutoHideDelayMs': 'footer_auto_hide_delay_ms',
+    
+    // Focus Mode Preferences Felder (REAL DB Schema - Migration 042, validiert 25.10.2025)
+    'autoFocusEnabled': 'auto_focus_enabled',
+    'autoFocusDelaySeconds': 'auto_focus_delay_seconds',
+    'focusOnModeSwitch': 'focus_on_mode_switch',
+    'hideSidebarInFocus': 'hide_sidebar_in_focus',
+    'hideHeaderStatsInFocus': 'hide_header_stats_in_focus',
+    'dimBackgroundOpacity': 'dim_background_opacity',
+    'transitionDurationMs': 'transition_duration_ms',
+    'transitionEasing': 'transition_easing',
+    'blockNotifications': 'block_notifications',
+    'blockPopups': 'block_popups',
+    'blockContextMenu': 'block_context_menu',
+    'minimalUiMode': 'minimal_ui_mode',
+    'trackFocusSessions': 'track_focus_sessions',
+    'showFocusTimer': 'show_focus_timer',
+    'focusBreakReminders': 'focus_break_reminders',
+    'focusBreakIntervalMinutes': 'focus_break_interval_minutes',
+    
+    // Grid System Felder (REAL DB Schema - user_navigation_mode_settings)
+    'gridTemplateColumns': 'grid_template_columns',
+    'gridTemplateRows': 'grid_template_rows',
+    'gridTemplateAreas': 'grid_template_areas',
+    'autoCollapseMobile': 'auto_collapse_mobile',
+    'autoCollapseTablet': 'auto_collapse_tablet',
+    'rememberDimensions': 'remember_dimensions',
+    'mobileBreakpoint': 'mobile_breakpoint',
+    'tabletBreakpoint': 'tablet_breakpoint',
+    
     // Tabellennamen (für SQL-Queries)
     'packageLineItems': 'package_line_items',
     'offerLineItems': 'offer_line_items',
     'invoiceLineItems': 'invoice_line_items',
     'numberingCircles': 'numbering_circles',
     'userNavigationPreferences': 'user_navigation_preferences',
-    'navigationModeHistory': 'navigation_mode_history'
+    'navigationModeHistory': 'navigation_mode_history',
+    'userFooterContentPreferences': 'user_footer_content_preferences',
+    'userFocusModePreferences': 'user_focus_mode_preferences'
   };
 
   /**

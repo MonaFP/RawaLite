@@ -1,5 +1,5 @@
 # 🚀 Line Items Position Reordering - Implementation Report
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 16.10.2025 (Initial Implementation)  
 > **Status:** Production Ready | **Typ:** Completed Implementation Report  
 > **Schema:** `COMPLETED_IMPL-LINE-ITEMS-POSITION-REORDERING-2025-10-16.md`

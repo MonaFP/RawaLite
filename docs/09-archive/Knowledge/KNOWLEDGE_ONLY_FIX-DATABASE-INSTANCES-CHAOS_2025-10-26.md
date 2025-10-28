@@ -1,5 +1,5 @@
 # 🗄️ KNOWLEDGE_ONLY: Database Multiple Instances Chaos - Historical Debug Knowledge
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **⚠️ KI-USAGE WARNING:** This document is from Knowledge Archive  
 > **Status:** KNOWLEDGE_ONLY - Historical debugging insights  
 > **Created:** 26.10.2025 | **Source:** LESSON_FIX-DATABASE-MULTIPLE-INSTANCES-CHAOS_2025-10-22.md  

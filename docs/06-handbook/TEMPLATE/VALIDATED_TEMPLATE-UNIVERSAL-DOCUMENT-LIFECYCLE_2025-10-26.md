@@ -1,5 +1,5 @@
 # 🔄 [PROBLEM/FEATURE NAME] - [CURRENT_STATUS]
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** DD.MM.YYYY | **Letzte Aktualisierung:** DD.MM.YYYY (Grund der Änderung)  
 > **Status:** [CURRENT_STATUS] | **Typ:** [TYP] Documentation  
 > **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`

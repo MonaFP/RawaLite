@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # 🔍 VOLLSTÄNDIGE SCHEMA-MISMATCH ANALYSE - RawaLite
 
 > **Erstellt:** 15.10.2025 | $12025-10-17 (Content modernization + ROOT_ integration)| **Typ:** Field-Mapping Validation

@@ -1,5 +1,5 @@
 # 🔧 Database Service Patterns - Implementation Reference
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Service paths korrigiert, KI-PRÄFIX Schema compliance)  
 > **Status:** Technical Reference | **Typ:** Implementation Consolidation  
 > **Schema:** `VALIDATED_REFERENCE-DATABASE-SERVICE-PATTERNS_2025-10-20.md`

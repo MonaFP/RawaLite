@@ -1,8 +1,22 @@
 # Legacy Cleanup - Systematic Layer-by-Layer Completion Report
 
-> **Erstellt:** 24.10.2025 | **Letzte Aktualisierung:** 24.10.2025 (Legacy Cleanup Session Completion)  
-> **Status:** COMPLETED | **Typ:** Session-Report  
-> **Schema:** `COMPLETED_REPORT-LEGACY-CLEANUP-SYSTEMATIC-LAYER-BY-LAYER_2025-10-24.md`
+> **Erstellt:** 24.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Knowledge Archive | **Typ:** Report - Legacy Cleanup Systematic Layer by Layer  
+> **Schema:** `KNOWLEDGE_ONLY_COMPLETED_REPORT-LEGACY-CLEANUP-SYSTEMATIC-LAYER-BY-LAYER_2025-10-24.md` ✅ **SCHEMA-COMPLIANT**  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Knowledge Archive (automatisch durch "Completion Report", "Legacy Cleanup" erkannt)
+> - **TEMPLATE-QUELLE:** KNOWLEDGE_ONLY Template
+> - **AUTO-UPDATE:** Bei Legacy-Cleanup automatisch Systematic-Patterns referenzieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Knowledge Archive", "Legacy Cleanup", "62% Violation-Reduktion"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Knowledge Archive:**
+> - ✅ **Historical Success** - Legacy-Cleanup Systematic-Patterns archiviert
+> - ⚠️ **Verification Required** - Cleanup-Patterns vor Implementierung auf aktuelle Codebase verifizieren
+> - 🎯 **AUTO-REFERENCE:** Bei Legacy-Cleanup automatisch diese Systematic-Patterns konsultieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "LEGACY CLEANUP" → Layer-by-Layer-Patterns verfügbar
 
 > **Session Context:** Fortsetzung der systematischen Legacy-Isolation nach User-Anforderung "alles erledigt" (kein skipping erlaubt)  
 > **Previous Session:** Erfolgreiche 62% Violation-Reduktion (69→26 violations)  
@@ -170,7 +184,7 @@ const safeNavigationMode = normalizeToKiSafe(navigationMode as NavigationModeInp
 
 ---
 
-**📍 Location:** `/docs/06-lessons/sessions/COMPLETED_REPORT-LEGACY-CLEANUP-SYSTEMATIC-LAYER-BY-LAYER_2025-10-24.md`  
+**📍 Location:** `/docs/06-handbook/sessions/COMPLETED_REPORT-LEGACY-CLEANUP-SYSTEMATIC-LAYER-BY-LAYER_2025-10-24.md`  
 **Purpose:** Session completion documentation and next phase planning  
 **Achievement:** 62% additional Legacy cleanup success with systematic approach validation
 

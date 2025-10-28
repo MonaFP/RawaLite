@@ -1,5 +1,5 @@
 # 🛠️ MIGRATION PLAN: Navigation Grid & CSS-Entkopplung (DEPRECATED)
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 24.10.2025 | **Letzte Aktualisierung:** 25.10.2025 (DEPRECATED - Überkomplexer Ansatz für einfaches Problem)  
 > **Status:** 🗑️ DEPRECATED - Ersetzt durch einfachen Database Schema Fix  
 > **Schema:** `DEPRECATED_PLAN-NAV-GRID-REFACTOR_2025-10-24.md`  

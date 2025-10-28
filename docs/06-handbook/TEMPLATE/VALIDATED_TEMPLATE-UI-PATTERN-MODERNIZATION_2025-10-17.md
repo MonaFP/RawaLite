@@ -1,6 +1,6 @@
 ````markdown
 # ✅ PACKAGE FORM UI-PATTERN MODERNIZATION
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Component:** `src/components/PackageForm.tsx`  
 **Date:** 2025-10-13  
 **Issue:** PackageForm verwendete veraltetes sequenzielles UI-Pattern statt bewährte React.Fragment-Gruppierung  

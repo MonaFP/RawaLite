@@ -1,0 +1,74 @@
+/* ✅ GRID MODE: Dashboard View (ohne Focus-Bar, dreizeilig) */
+
+:root {
+  --mode-dashboard-view-sidebar-width: 240px;
+  --mode-dashboard-view-header-height: 160px;
+  --mode-dashboard-view-footer-height: 60px;
+
+  --db-mode-dashboard-view-grid-template-columns: var(--mode-dashboard-view-sidebar-width) 1fr;
+  --db-mode-dashboard-view-grid-template-rows:
+    var(--mode-dashboard-view-header-height)
+    1fr
+    var(--mode-dashboard-view-footer-height);
+  --db-mode-dashboard-view-grid-template-areas:
+    "sidebar header"
+    "sidebar main"
+    "sidebar footer";
+}
+
+[data-navigation-mode="mode-dashboard-view"] {
+  display: grid;
+  min-height: 100vh;
+  width: 100%;
+  grid-template-columns: var(--db-mode-dashboard-view-grid-template-columns);
+  grid-template-rows: var(--db-mode-dashboard-view-grid-template-rows);
+  grid-template-areas: var(--db-mode-dashboard-view-grid-template-areas);
+}
+
+[data-navigation-mode="mode-dashboard-view"] .header,
+[data-navigation-mode="mode-dashboard-view"] .header-statistics {
+  grid-area: header;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+[data-navigation-mode="mode-dashboard-view"] .sidebar,
+[data-navigation-mode="mode-dashboard-view"] .compact-sidebar,
+[data-navigation-mode="mode-dashboard-view"] .navigation-only-sidebar {
+  grid-area: sidebar;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  overflow: auto;
+}
+
+[data-navigation-mode="mode-dashboard-view"] .main,
+[data-navigation-mode="mode-dashboard-view"] main,
+[data-navigation-mode="mode-dashboard-view"] [data-area="main"] {
+  grid-area: main;
+  background: var(--bg);
+  overflow: auto;
+  min-height: 0;
+}
+
+[data-navigation-mode="mode-dashboard-view"] .footer-area {
+  grid-area: footer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+}
+
+[data-navigation-mode="mode-dashboard-view"][data-focus-mode="active"] .sidebar,
+[data-navigation-mode="mode-dashboard-view"][data-focus-mode="active"] .compact-sidebar {
+  display: none;
+}
+
+[data-navigation-mode="mode-dashboard-view"][data-focus-mode="active"] {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+}

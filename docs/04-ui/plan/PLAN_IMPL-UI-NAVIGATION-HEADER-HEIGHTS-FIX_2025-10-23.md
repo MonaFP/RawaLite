@@ -1,5 +1,5 @@
 # 📋 Implementierungsplan: Navigation Header Heights Fix
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 22.10.2025 | **Letzte Aktualisierung:** 23.10.2025 (Schema-Update + Ordner-Migration)  
 > **Status:** PLAN - Detaillierter Implementierungsplan  
 > **Schema:** `PLAN_IMPL-UI-NAVIGATION-HEADER-HEIGHTS-FIX_2025-10-23.md`
@@ -284,7 +284,7 @@ pnpm test --run
 #### **Documentation Updates:**
 1. **Lessons Learned (5 Min)**
    ```markdown
-   # Update: docs/06-lessons/sessions/LESSON_FIX-NAVIGATION-HEADER-HEIGHTS-SYSTEM-DEFAULTS-BUG_2025-10-22.md
+   # Update: docs/06-handbook/sessions/LESSON_FIX-NAVIGATION-HEADER-HEIGHTS-SYSTEM-DEFAULTS-BUG_2025-10-22.md
    - Status: SOLVED_ prefix
    - Implementation Details hinzufügen
    - Performance Metrics dokumentieren

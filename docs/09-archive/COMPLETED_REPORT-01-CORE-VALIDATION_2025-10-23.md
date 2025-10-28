@@ -1,5 +1,5 @@
 # 🧩 CODE-FIRST VALIDATION RESULT: 01-core/
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Analysiert:** 23. Oktober 2025  
 > **Status:** ⚠️ WARN (80% Konsistenz)  
 > **Ground Truth:** Repository Code & Database Schema

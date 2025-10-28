@@ -1,5 +1,5 @@
 # 🏗️ **PLAN: NavigationContext Nachhaltige Architektur-Implementierung**
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 22.10.2025 | **Letzte Aktualisierung:** 23.10.2025 (Schema-Update + Ordner-Migration)  
 > **Status:** PLAN (Entwurfsstatus) | **Typ:** Implementierungs-Roadmap  
 > **Schema:** `PLAN_IMPL-UI-NAVIGATION-CONTEXT-SUSTAINABLE-ARCHITECTURE_2025-10-23.md`

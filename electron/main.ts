@@ -21,6 +21,7 @@ import { registerFileHandlers } from './ipc/files'
 import { registerUpdateManagerHandlers } from './ipc/update-manager'
 import { registerUpdateIpc } from './ipc/updates'
 import { initializeThemeIpc } from './ipc/themes'
+import { initializeFooterIpc } from './ipc/footer'
 import { initializeNavigationIpc } from './ipc/navigation'
 import { initializeConfigurationIpc } from './ipc/configuration'
 
@@ -68,6 +69,7 @@ app.whenReady().then(async () => {
     
     // Initialize theme service with database
     initializeThemeIpc(getDb());
+    initializeFooterIpc(getDb());
     
     // Initialize navigation service with database
     initializeNavigationIpc(getDb());

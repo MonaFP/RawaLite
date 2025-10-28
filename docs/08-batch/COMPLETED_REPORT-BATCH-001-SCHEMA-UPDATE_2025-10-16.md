@@ -1,5 +1,5 @@
 # BATCH-001: Vollständige Schema-Implementierung
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **🎯 ZWECK:** Systematische Schema-Dokumentation aller Hauptdokumente  
 > **📅 DATUM:** 2025-10-16  
 > **🔄 SESSION:** KI-SCHEMA-UPDATE nach KI-SESSION-BRIEFING Instruktionen  

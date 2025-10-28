@@ -1,5 +1,5 @@
 # SQLite Migration - Ungelöste Probleme
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Stand:** 30. September 2025  
 > **Status:** 🔴 UNGELÖST  
 > **Kategorie:** Production Build Issues

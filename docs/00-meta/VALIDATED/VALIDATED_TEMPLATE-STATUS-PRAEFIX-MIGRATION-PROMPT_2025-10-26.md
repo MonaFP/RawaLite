@@ -1,5 +1,57 @@
 # 🔄 STATUS-PRÄFIX MIGRATION PROMPT
 
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Production Ready | **Typ:** Template - Status Präfix Migration Prompt  
+> **Schema:** `VALIDATED_TEMPLATE-STATUS-PRAEFIX-MIGRATION-PROMPT_2025-10-26.md` ✅ **SCHEMA-COMPLIANT**  
+> **Template Purpose:** Standardisierter Prompt für docs/ Migration zu STATUS-PRÄFIX Struktur
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch "STATUS-PRÄFIX Struktur" erkannt)
+> - **TEMPLATE-QUELLE:** 00-meta VALIDATED Template
+> - **AUTO-UPDATE:** Bei Migration-Prompt-Änderung automatisch Template aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Production Ready", "Migration Prompt", "STATUS-PRÄFIX"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Production Ready:**
+> - ✅ **Migration-Template** - Verlässliche Quelle für STATUS-PRÄFIX Migration-Workflow
+> - ✅ **Standardisierter-Prompt** - Authoritative Template für konsistente Migration
+> - 🎯 **AUTO-REFERENCE:** Bei Migration-Aufgaben IMMER dieses Template nutzen
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "MIGRATION NEEDED" → Template-Anwendung erforderlich
+
+> **⚠️ MIGRATION TEMPLATE STATUS:** Standardisierter Prompt für docs/ Ordner Migration (27.10.2025)  
+> **Template Status:** Vollständige Migration von Legacy-Struktur zu STATUS-PRÄFIX Ordnern  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor Migration-Operationen  
+> **Critical Function:** Authoritative Migration-Prompt für STATUS-PRÄFIX Implementation
+
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `VALIDATED_` ✅ **Validierte, stabile Dokumentation (verlässliche Quelle)**
+- **TYP-KATEGORIE:** `TEMPLATE-` ✅ **Vorlagen/Templates** 
+- **SUBJECT:** `STATUS-PRAEFIX-MIGRATION-PROMPT` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-26` ✅ **Gültig und aktuell**
+
+### **KI-Interpretation:** 
+- **Thema:** Status Präfix Migration Prompt (Template für STATUS-PRÄFIX Migration)
+- **Status:** VALIDATED (verlässliche Quelle für Migration-Workflow)
+- **Quelle:** 00-meta/VALIDATED (Meta Template Documentation)
+- **Priorität:** Hoch (Migration-kritisch, verlässliche Template-Referenz)
+
+---
+
+## 🎯 **MANDATORY SESSION-START PROTOCOL (KI-Template-Vorgaben)**
+
+**ZWINGEND VOR MIGRATION-DEVELOPMENT:**
+- [ ] 📋 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](../../06-handbook/TEMPLATE/) öffnen und ausfüllen
+- [ ] 📝 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md](../../06-handbook/TEMPLATE/) bereithalten
+- [ ] 🔍 [../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) befolgen
+- [ ] 📋 [../../../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md](../../../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md) für Migration-Rules prüfen
+
+**⚠️ OHNE TEMPLATE-NUTZUNG = SESSION INVALID**
+
+---
+
 > **Purpose:** Standardisierter Prompt für die Migration aller docs/ Ordner zu STATUS-PRÄFIX Struktur  
 > **Usage:** Nach jedem Ordner verwenden für konsistente KI-PRÄFIX-ERKENNUNGSREGELN Implementierung  
 > **Schema:** Vollständige Migration von Legacy-Struktur zu STATUS-PRÄFIX Ordnern

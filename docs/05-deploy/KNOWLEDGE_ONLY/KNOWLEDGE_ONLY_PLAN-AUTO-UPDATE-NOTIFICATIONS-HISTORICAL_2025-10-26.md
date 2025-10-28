@@ -1,5 +1,5 @@
 # 🔔 IMPLEMENTATION PLAN: Auto-Update Notifications - RawaLite
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Option A: Smart Sidebar Update Widget System**  
 > **Erstellt:** 2025-10-09 | **Status:** Planning Phase
 

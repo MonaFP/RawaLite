@@ -1,5 +1,5 @@
 # 🗄️ Database & Data Overview für KI - RawaLite v1.0.63
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 23.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Schema Version 46, Table Count 29, KI-PRÄFIX Schema compliance)  
 > **Status:** VALIDATED Reference | **Typ:** KI-Database Navigation Guide  
 > **Schema:** `VALIDATED_REFERENCE-DATABASE-OVERVIEW-AI_2025-10-26.md`  

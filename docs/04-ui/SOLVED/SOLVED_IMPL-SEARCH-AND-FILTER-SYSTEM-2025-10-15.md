@@ -1,5 +1,5 @@
 # Search and Filter System - Implementation Documentation
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 16.10.2025 (Angebote-Seite Such-/Filter-Integration abgeschlossen)
 
 ## 📝 Übersicht

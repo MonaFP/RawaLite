@@ -4,23 +4,50 @@
  * This service provides a clean interface for frontend components to access
  * the centralized configuration system through IPC communication.
  * 
+ * IMPORTANT: Navigation layout is now handled separately by NavigationIpcService.
+ * This service only handles global configuration (themes, colors, focus mode).
+ * 
  * Key Features:
- * - Single getActiveConfig() method replacing multiple service calls
+ * - Single getActiveConfig() method for global configuration
  * - Type-safe IPC communication
  * - Error handling and fallback support
  * - Caching for performance optimization
- * - Configuration update operations
+ * - Configuration update operations (theme, focus mode only)
  * 
  * Usage:
  * ```typescript
- * const config = await ConfigurationIpcService.getActiveConfig(userId, theme, navMode, focusMode);
+ * const config = await ConfigurationIpcService.getActiveConfig(userId, theme, focusMode);
+ * const layout = await NavigationIpcService.getPerModeNavigationLayout(userId, navMode, focusMode);
  * const success = await ConfigurationIpcService.updateActiveConfig(userId, updates);
  * ```
  * 
  * @since Migration 037 - Centralized Configuration Architecture
+ * @updated Per-Mode Navigation Header Isolation Fix - Schritt 2 (Navigation separation)
  */
 
-import type { ActiveConfiguration } from '../DatabaseConfigurationService';
+// ANTI-CORRUPTION: Separate interface for navigation-agnostic configuration
+export interface GlobalConfiguration {
+  // Theme Configuration
+  theme: string;
+  themeId: number;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  backgroundColor: string;
+  textColor: string;
+  
+  // Focus Mode Overrides
+  focusMode: boolean;
+  
+  // CSS Variables for Frontend (theme-only, no navigation)
+  cssVariables: Record<string, string>;
+  
+  // Configuration Source Tracking (for debugging)
+  configurationSource: {
+    theme: 'user' | 'system';
+  };
+}
+
 import type { NavigationMode } from '../DatabaseNavigationService';
 
 // ============================================================================
@@ -30,18 +57,18 @@ import type { NavigationMode } from '../DatabaseNavigationService';
 interface GetActiveConfigParams {
   userId: string;
   theme: string;
-  navigationMode: NavigationMode;
   focusMode: boolean;
+  // REMOVED: navigationMode
+  // Navigation mode is now handled separately by NavigationIpcService
 }
 
 interface UpdateActiveConfigParams {
   userId: string;
   updates: Partial<{
-    headerHeight: number;
-    sidebarWidth: number;
-    navigationMode: NavigationMode;
     theme: string;
     focusMode: boolean;
+    // REMOVED: headerHeight, sidebarWidth, navigationMode
+    // These are now handled by NavigationIpcService.updatePerModeNavigationLayout()
   }>;
 }
 
@@ -70,7 +97,7 @@ const CONFIGURATION_IPC_CHANNELS = {
 
 export class ConfigurationIpcService {
   private static instance: ConfigurationIpcService;
-  private configCache = new Map<string, { config: ActiveConfiguration; timestamp: number }>();
+  private configCache = new Map<string, { config: GlobalConfiguration; timestamp: number }>();
   private readonly CACHE_TTL = 30000; // 30 seconds cache TTL
 
   private constructor() {
@@ -88,31 +115,33 @@ export class ConfigurationIpcService {
   }
 
   /**
-   * CENTRAL CONFIGURATION METHOD
+   * CENTRAL CONFIGURATION METHOD (Navigation-Agnostic)
    * 
-   * This method replaces all separate configuration calls throughout the frontend.
-   * It provides a single source of truth for all configuration values.
+   * This method provides global configuration values (theme, colors, focus mode)
+   * WITHOUT navigation-specific layout values (headerHeight, sidebarWidth, etc.)
+   * 
+   * Navigation layout is now handled separately by NavigationIpcService.getPerModeNavigationLayout()
    * 
    * Replaces:
-   * - NavigationIpcService.getLayoutConfig()
    * - ThemeIpcService.getUserTheme()
    * - Various hardcoded configuration calls
    * 
+   * Does NOT replace:
+   * - NavigationIpcService.getPerModeNavigationLayout() (use that for layout)
+   * 
    * @param userId - User identifier
    * @param theme - Current theme key
-   * @param navigationMode - Current navigation mode
    * @param focusMode - Whether focus mode is active
-   * @returns Complete active configuration or null on error
+   * @returns Global configuration (no navigation layout) or null on error
    */
   async getActiveConfig(
     userId: string,
     theme: string,
-    navigationMode: NavigationMode,
     focusMode: boolean = false
-  ): Promise<ActiveConfiguration | null> {
+  ): Promise<GlobalConfiguration | null> {
     try {
-      // Generate cache key
-      const cacheKey = `${userId}-${theme}-${navigationMode}-${focusMode}`;
+      // Generate cache key (no longer includes navigationMode)
+      const cacheKey = `${userId}-${theme}-${focusMode}`;
       
       // Check cache first
       const cached = this.configCache.get(cacheKey);
@@ -124,22 +153,20 @@ export class ConfigurationIpcService {
       console.log('[ConfigurationIpcService] Fetching active configuration:', {
         userId,
         theme,
-        navigationMode,
         focusMode
       });
 
       const params: GetActiveConfigParams = {
         userId,
         theme,
-        navigationMode,
         focusMode
       };
 
-      const config = await (window as any).rawalite?.configuration?.getActiveConfig?.(params) as ActiveConfiguration | null;
+      const config = await (window as any).rawalite?.configuration?.getActiveConfig?.(params) as GlobalConfiguration | null;
 
       if (!config) {
         console.error('[ConfigurationIpcService] Failed to get active configuration');
-        return this.getEmergencyFallbackConfig(navigationMode, theme, focusMode);
+        return this.getEmergencyFallbackConfig(theme, focusMode);
       }
 
       // Cache the result
@@ -149,10 +176,8 @@ export class ConfigurationIpcService {
       });
 
       console.log('[ConfigurationIpcService] Active configuration retrieved successfully:', {
-        headerHeight: config.headerHeight,
-        sidebarWidth: config.sidebarWidth,
         theme: config.theme,
-        navigationMode: config.navigationMode,
+        focusMode: config.focusMode,
         configSource: config.configurationSource
       });
 
@@ -160,25 +185,23 @@ export class ConfigurationIpcService {
 
     } catch (error) {
       console.error('[ConfigurationIpcService] Error getting active configuration:', error);
-      return this.getEmergencyFallbackConfig(navigationMode, theme, focusMode);
+      return this.getEmergencyFallbackConfig(theme, focusMode);
     }
   }
 
   /**
-   * Update active configuration
+   * Update active configuration (Navigation-Agnostic)
    * 
-   * Updates specific configuration values and invalidates the cache.
+   * Updates global configuration values (theme, focus mode) and invalidates the cache.
+   * Navigation layout updates are now handled by NavigationIpcService.updatePerModeNavigationLayout()
    * 
    * @param userId - User identifier
-   * @param updates - Configuration updates to apply
+   * @param updates - Global configuration updates to apply (no navigation layout)
    * @returns Success status
    */
   async updateActiveConfig(
     userId: string,
     updates: Partial<{
-      headerHeight: number;
-      sidebarWidth: number;
-      navigationMode: NavigationMode;
       theme: string;
       focusMode: boolean;
     }>
@@ -354,30 +377,20 @@ export class ConfigurationIpcService {
   // ============================================================================
 
   /**
-   * Emergency fallback configuration
+   * Emergency fallback configuration (Navigation-Agnostic)
    * 
-   * Provides basic configuration when IPC communication fails.
+   * Provides basic global configuration when IPC communication fails.
+   * Navigation layout is NOT included - use NavigationIpcService for that.
    * 
-   * @param navigationMode - Navigation mode for fallback
    * @param theme - Theme for fallback
    * @param focusMode - Focus mode status
-   * @returns Emergency configuration
+   * @returns Emergency global configuration (no navigation layout)
    */
   private getEmergencyFallbackConfig(
-    navigationMode: NavigationMode,
     theme: string,
     focusMode: boolean
-  ): ActiveConfiguration {
-    console.warn('[ConfigurationIpcService] Using emergency fallback configuration');
-
-    // System defaults
-    const systemDefaults = {
-      'header-statistics': { headerHeight: 160, sidebarWidth: 240 },
-      'header-navigation': { headerHeight: 160, sidebarWidth: 280 },  // Fixed: 160 instead of 72
-      'full-sidebar': { headerHeight: 72, sidebarWidth: 240 }
-    };
-
-    const defaults = systemDefaults[navigationMode] || systemDefaults['header-statistics'];
+  ): GlobalConfiguration {
+    console.warn('[ConfigurationIpcService] Using emergency fallback configuration (global only)');
 
     // Basic theme colors
     const themeColors = {
@@ -389,12 +402,6 @@ export class ConfigurationIpcService {
     const colors = (themeColors as any)[theme] || themeColors['sage'];
 
     return {
-      // Navigation Layout
-      headerHeight: defaults.headerHeight,
-      sidebarWidth: defaults.sidebarWidth,
-      gridTemplateRows: `${defaults.headerHeight}px 40px 1fr`,
-      gridTemplateColumns: `${defaults.sidebarWidth}px 1fr`,
-      
       // Theme Configuration
       theme: theme || 'sage',
       themeId: 4, // Default to sage
@@ -407,21 +414,17 @@ export class ConfigurationIpcService {
       // Focus Mode
       focusMode: false,
       
-      // CSS Variables (minimal)
+      // CSS Variables (theme-only, no navigation)
       cssVariables: {
-        '--db-header-height': `${defaults.headerHeight}px`,
-        '--db-sidebar-width': `${defaults.sidebarWidth}px`,
-        '--db-theme-primary': colors.primary
+        '--db-theme-primary': colors.primary,
+        '--db-theme-secondary': colors.secondary,
+        '--db-theme-accent': colors.accent,
+        '--db-theme-background': '#fbfcfb',
+        '--db-theme-text': '#2d4a2d'
       },
       
-      // Additional Properties
-      navigationMode,
-      isCompactMode: navigationMode === 'full-sidebar',
-      
-      // Configuration Source (emergency)
+      // Configuration Source (emergency - theme only)
       configurationSource: {
-        headerHeight: 'system',
-        sidebarWidth: 'system',
         theme: 'system'
       }
     };
@@ -433,36 +436,31 @@ export class ConfigurationIpcService {
 // ============================================================================
 
 /**
- * Static convenience method for getting active configuration
+ * Static convenience method for getting active configuration (Navigation-Agnostic)
  * 
  * @param userId - User identifier
  * @param theme - Current theme
- * @param navigationMode - Current navigation mode
  * @param focusMode - Focus mode status
- * @returns Active configuration
+ * @returns Active global configuration (no navigation layout)
  */
 export async function getActiveConfig(
   userId: string,
   theme: string,
-  navigationMode: NavigationMode,
   focusMode: boolean = false
-): Promise<ActiveConfiguration | null> {
-  return ConfigurationIpcService.getInstance().getActiveConfig(userId, theme, navigationMode, focusMode);
+): Promise<GlobalConfiguration | null> {
+  return ConfigurationIpcService.getInstance().getActiveConfig(userId, theme, focusMode);
 }
 
 /**
- * Static convenience method for updating configuration
+ * Static convenience method for updating configuration (Navigation-Agnostic)
  * 
  * @param userId - User identifier
- * @param updates - Configuration updates
+ * @param updates - Global configuration updates (no navigation layout)
  * @returns Success status
  */
 export async function updateActiveConfig(
   userId: string,
   updates: Partial<{
-    headerHeight: number;
-    sidebarWidth: number;
-    navigationMode: NavigationMode;
     theme: string;
     focusMode: boolean;
   }>

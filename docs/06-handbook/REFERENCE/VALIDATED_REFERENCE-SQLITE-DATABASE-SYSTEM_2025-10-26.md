@@ -1,8 +1,24 @@
 # 🗄️ SQLite Database System - Implementation Reference
 
-> **Erstellt:** 29.09.2025 | **Letzte Aktualisierung:** 27.10.2025 (Schema korrigiert, KI-PRÄFIX Schema compliance)  
+> **Erstellt:** 29.09.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** Technical Reference | **Typ:** Implementation Documentation  
 > **Schema:** `VALIDATED_REFERENCE-SQLITE-DATABASE-SYSTEM_2025-10-26.md`
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `SQLite Database System` → **DATABASE-CORE** - Core Database Implementation
+- `Implementation Reference` → **TECHNICAL-GUIDE** - Detailed implementation patterns
+- `better-sqlite3` → **NATIVE-TECHNOLOGY** - Production database technology
+- `Schema Version 46` → **CURRENT-STATE** - Live database status
+
+**📖 TEMPLATE SOURCE:** [VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md](../TEMPLATE/VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Database technology changes, Schema updates, Migration system evolution  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **DATABASE-AUTHORITY:** Nutze als primary reference für alle Database-Operations
+- ✅ **NATIVE-COMPLIANCE:** Verwende better-sqlite3 patterns bei allen DB-Implementierungen
+- ✅ **SCHEMA-CONSISTENCY:** Prüfe Schema Version bei allen Database-Änderungen
+- ❌ **FORBIDDEN:** SQL.js oder WebAssembly Database patterns (deprecated)
 
 ## 📋 **SCHEMA-ÜBERSICHT nach KI-PRÄFIX-ERKENNUNGSREGELN**
 

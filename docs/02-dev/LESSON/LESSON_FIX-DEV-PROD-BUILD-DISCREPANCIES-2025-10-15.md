@@ -1,5 +1,23 @@
 # Lessons Learned: Dev vs. Prod Build Discrepancies
 
+> **Erstellt:** 08.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Active Lesson | **Typ:** Fix - Dev Prod Build Discrepancies  
+> **Schema:** `LESSON_FIX-DEV-PROD-BUILD-DISCREPANCIES-2025-10-15.md` ✅ **SCHEMA-COMPLIANT**  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Active Lesson (automatisch durch "AKTIVE ANALYSE", "Dev vs. Prod" erkannt)
+> - **TEMPLATE-QUELLE:** LESSON Template
+> - **AUTO-UPDATE:** Bei Dev-Prod-Discrepancies automatisch Lesson-Learned referenzieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Active Lesson", "Dev vs. Prod Build", "Version-Fixes"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📖 STATUS = Active Lesson:**
+> - ✅ **Critical Lesson** - Dev vs. Prod Build Discrepancies analysiert
+> - 🔍 **Comparison Analysis** - Für vergleichende Analyse bei ähnlichen Build-Problemen
+> - 🎯 **AUTO-REFERENCE:** Bei Dev-Prod-Build-Issues automatisch diese Lesson-Learned konsultieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "DEV PROD DISCREPANCIES" → Build-Issue-Patterns verfügbar
+
 ## Status: AKTIVE ANALYSE
 **Datum:** 8. Oktober 2025  
 **KI Session:** GitHub Copilot Fortsetzung  

@@ -1,5 +1,5 @@
 # 🧭 v1.5.2 - Enhanced Navigation System
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 03.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Content modernization + ROOT_ integration)  
 > **Status:** VALIDATED - Reviewed and updated  
 > **Schema:** `VALIDATED_GUIDE-ENHANCED-NAVIGATION_2025-10-17.md`

@@ -196,7 +196,7 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
   children, 
   themeIpcService,
   userId = 'default',
-  initialNavigationMode = 'header-statistics',
+  initialNavigationMode = 'mode-dashboard-view',
   initialFocusMode = false
 }) => {
   // Core state
@@ -301,7 +301,7 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
       const databaseThemeLoader = async () => {
         if (!configurationServiceRef.current) return null;
         try {
-          const config = await configurationServiceRef.current.getActiveConfig(userId, preferredThemeKey, navigationMode, focusMode);
+          const config = await configurationServiceRef.current.getActiveConfig(userId, preferredThemeKey, focusMode);
           if (config && themeServiceRef.current) {
             // Get the theme object by key from the configuration
             const themeKey = config.theme || preferredThemeKey;
@@ -333,13 +333,21 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
       if (configurationServiceRef.current) {
         try {
           console.log('[DatabaseThemeManager] Attempting central configuration enhancement...');
-          const config = await configurationServiceRef.current.getActiveConfig(userId, preferredThemeKey, navigationMode, focusMode);
+          const config = await configurationServiceRef.current.getActiveConfig(userId, preferredThemeKey, focusMode);
           
           if (config) {
             console.log('[DatabaseThemeManager] Central configuration loaded successfully');
             
-            setActiveConfig(config);
-            setNavigationMode(config.navigationMode);
+            // Note: GlobalConfiguration doesn't include navigation layout
+            // For theme purposes, we only use the theme-related fields
+            // Navigation layout is handled separately via NavigationIpcService
+            
+            // Don't set activeConfig as it expects ActiveConfiguration with navigation layout
+            // The theme-related config is already applied via the theme system
+            console.log('[DatabaseThemeManager] Theme configuration applied via central config');
+            
+            // Navigation mode is managed separately through NavigationIpcService
+            // setNavigationMode(config.navigationMode); // Not available in GlobalConfiguration
             setFocusMode(config.focusMode);
             
             // Update with central config theme if different
@@ -629,26 +637,25 @@ export const DatabaseThemeProvider: React.FC<DatabaseThemeProviderProps> = ({
       }
       
       const currentThemeKey = currentDatabaseTheme?.themeKey || 'sage';
-      const config = await configurationServiceRef.current.getActiveConfig(userId, currentThemeKey, navigationMode, focusMode);
+      const config = await configurationServiceRef.current.getActiveConfig(userId, currentThemeKey, focusMode);
       
       if (config) {
-        setActiveConfig(config);
+        // Note: GlobalConfiguration doesn't include navigation layout or navigationMode
+        // We only use it for theme-related updates
         
-        // Update local state from central configuration
+        // Update theme if different
         if (config.theme !== currentThemeKey) {
           // Load the new theme
           await setDatabaseTheme(config.theme);
         }
-        if (config.navigationMode !== navigationMode) {
-          setNavigationMode(config.navigationMode);
-        }
+        
+        // Focus mode comparison
         if (config.focusMode !== focusMode) {
           setFocusMode(config.focusMode);
         }
         
-        console.log('[DatabaseThemeManager] Configuration refreshed successfully:', {
+        console.log('[DatabaseThemeManager] Theme configuration refreshed successfully:', {
           theme: config.theme,
-          navigationMode: config.navigationMode,
           focusMode: config.focusMode,
           configSource: config.configurationSource
         });

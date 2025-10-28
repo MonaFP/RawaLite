@@ -1,5 +1,5 @@
 # 📅 Timesheet Day Grouping Feature - RawaLite
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Tagesgruppenansicht für Leistungsnachweise implementiert**  
 > **Erstellt:** 2025-10-09 | **Status:** Production Ready
 

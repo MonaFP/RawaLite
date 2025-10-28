@@ -1,9 +1,25 @@
 # 04-ui - User Interface & PDF Generation
 
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (CRITICAL Schema-Compliance Fix nach Layout-Problemen)  
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** ⚠️ LAYOUT-PROBLEME ERKANNT | **Validation Status:** INVALID - Massive Layout-Issues seit Theme Database Migration  
 > **Purpose:** UI Components, UX Design, PDF Generation, and Visual Systems  
 > **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `04-ui` → **UI FOCUS** - Interface-Design und PDF-Generation
+- `LAYOUT-PROBLEME ERKANNT` → **CRITICAL STATUS** - Aktive UI-Issues seit Migration
+- `PDF Generation` → **DOCUMENT FOCUS** - Theme-basierte PDF-Erstellung
+- `INVALID` → **UNSTABLE STATE** - Dokumentation benötigt Aktualisierung nach Fixes
+
+**📖 TEMPLATE SOURCE:** [06-handbook/templates/INDEX-FOLDER-TEMPLATE.md](../06-handbook/templates/INDEX-FOLDER-TEMPLATE.md)  
+**🔄 AUTO-UPDATE TRIGGER:** UI-Fixes, Theme-Changes, Layout-Reparaturen, PDF-Updates  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ⚠️ **CRITICAL-AWARENESS:** Berücksichtige aktive Layout-Probleme bei UI-Änderungen
+- ✅ **PDF-THEME-INTEGRATION:** Nutze Theme Database für PDF-Generation
+- ✅ **MIGRATION-SAFETY:** Teste UI-Änderungen nach Database-Migrations
+- ❌ **FORBIDDEN:** UI-Changes ohne Layout-Problem Verification
 
 > **🚨 CRITICAL STATUS UPDATE (26.10.2025):**  
 > **MASSIVE LAYOUT-PROBLEME:** Theme Database Migration verursachte kritische UI-Fehler  

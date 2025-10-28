@@ -1,9 +1,25 @@
 # 01-core - Standards & Core Architecture
 
 > **Purpose:** Coding Standards, System Architecture, Security, IPC, and Path Management  
-> **Last Updated:** 2025-10-26 (Legacy Document Reorganization + 06-handbook Integration)  
+> **Last Updated:** 2025-10-27 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** ✅ ACTIVE | **Validation Status:** 100% KI-PRÄFIX-ERKENNUNGSREGELN konform  
 > **Consolidates:** Core architecture + legacy document cleanup
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `01-core` → **CORE ARCHITECTURE** - Fundamentale System-Standards und Patterns
+- `ACTIVE` → **AKTIVE NUTZUNG** - Kontinuierlich referenzierte Architektur
+- `Security` → **SICHERHEITS-STANDARDS** - IPC und Path Management Patterns
+- `100% konform` → **VOLLSTÄNDIGE COMPLIANCE** - Alle Standards validiert
+
+**📖 TEMPLATE SOURCE:** [06-handbook/templates/INDEX-FOLDER-TEMPLATE.md](../06-handbook/templates/INDEX-FOLDER-TEMPLATE.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Architecture-Änderungen, neue Standards, System-Patterns  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **ARCHITECTURE-REFERENCE:** Nutze für System-Design und Code-Standards
+- ✅ **SECURITY-PATTERNS:** Befolge IPC und Path Management Richtlinien
+- ✅ **STANDARDS-COMPLIANCE:** Referenziere vor Architektur-Änderungen
+- ❌ **FORBIDDEN:** Core-Standards ohne Entwickler-Review ändern
 
 > **🎯 LEGACY REORGANIZATION RESULTS (26.10.2025):**  
 > **Migration Applied:** 13 Dokumente älter als 5 Tage reorganisiert  

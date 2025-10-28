@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # DEPRECATED: GitHubCliService (Historical Reference)
 
 **Status:** ❌ Deprecated - Replaced by GitHubApiService  

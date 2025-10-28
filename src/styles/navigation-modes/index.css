@@ -3,27 +3,27 @@
 /* 🎨 Import all navigation mode specific styles */
 
 /* Import einzelner Navigation Mode CSS-Dateien */
-@import './header-statistics.css';
-@import './header-navigation.css';
-@import './full-sidebar.css';
+@import './mode-dashboard-view.css';
+@import './mode-data-panel.css';
+@import './mode-compact-focus.css';
 
 /* =========================================
    NAVIGATION MODES OVERVIEW
    ========================================= */
 
 /*
-🎯 HEADER-STATISTICS Mode (header-statistics.css)
+🎯 MODE-DASHBOARD-VIEW Mode (mode-dashboard-view.css)
 - Statistics Header + Compact Navigation Sidebar
-- data-navigation-mode="header-statistics"
+- data-navigation-mode="mode-dashboard-view"
 - Optimiert für Dashboard-Übersicht
 
-🎯 HEADER-NAVIGATION Mode (header-navigation.css)  
+🎯 MODE-DATA-PANEL Mode (mode-data-panel.css)  
 - Navigation Header + Compact Statistics Sidebar
-- data-navigation-mode="header-navigation"
+- data-navigation-mode="mode-data-panel"
 - Optimiert für schnelle Navigation
 
-🎯 FULL-SIDEBAR Mode (full-sidebar.css)
+🎯 MODE-COMPACT-FOCUS Mode (mode-compact-focus.css)
 - Minimal Header + Full Sidebar
-- data-navigation-mode="full-sidebar"
+- data-navigation-mode="mode-compact-focus"
 - Optimiert für traditionelles Layout
 */

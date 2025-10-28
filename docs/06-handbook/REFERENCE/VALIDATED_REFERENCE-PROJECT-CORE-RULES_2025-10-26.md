@@ -1,9 +1,25 @@
 # 🚫 Project Core Rules - Unverhandelbare Regeln
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-PRÄFIX Schema compliance, aktuelle Version v1.0.63)  
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** Reference | **Typ:** Core Project Rules  
 > **Schema:** `VALIDATED_REFERENCE-PROJECT-CORE-RULES_2025-10-26.md`  
 > **Source:** Original VALIDATED_TEMPLATE-CODING-RULES_2025-10-26.md → Reference Content
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `Core Project Rules` → **REFERENCE-CRITICAL** - Unverhandelbare Projektregeln
+- `Reference` → **STABLE REFERENCE** - Verlässliche KI-Orientierung  
+- `Unverhandelbare Regeln` → **NON-NEGOTIABLE** - Absolute Einhaltung erforderlich
+- `session-kritische Referenz` → **SESSION-ESSENTIAL** - Für jede KI-Session erforderlich
+
+**📖 TEMPLATE SOURCE:** [VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md](../TEMPLATE/VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Core rules änderungen, neue Projektregeln, Critical-Fixes Updates  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **REFERENCE-PRIORITY:** Nutze als primäre Regel-Quelle bei allen Code-Änderungen
+- ✅ **COMPLIANCE-CHECK:** Überprüfe alle Änderungen gegen diese Regeln
+- ✅ **VIOLATION-PREVENTION:** Stoppe bei Regelverletzungen sofort
+- ❌ **FORBIDDEN:** Diese Regeln brechen oder umgehen
 
 ## 📋 **SCHEMA-ÜBERSICHT nach KI-PRÄFIX-ERKENNUNGSREGELN**
 

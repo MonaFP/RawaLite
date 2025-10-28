@@ -1,5 +1,5 @@
 # 🔧 KNOWLEDGE_ONLY: Build System Architecture - Historical Debugging Knowledge
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **⚠️ KI-USAGE WARNING:** This document is from Knowledge Archive  
 > **Status:** KNOWLEDGE_ONLY - Historical build system debugging insights  
 > **Created:** 26.10.2025 | **Source:** Multiple LESSON_FIX build system documents  

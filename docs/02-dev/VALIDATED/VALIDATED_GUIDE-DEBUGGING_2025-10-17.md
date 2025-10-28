@@ -1,8 +1,27 @@
 # 🔍 Debugging-Leitfaden - RawaLite
 
-> **Erstellt:** 29.09.2025 | **Letzte Aktualisierung:** 22.10.2025 (Database-Chaos Resolution Integration)  
+> **Erstellt:** 29.09.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** VALIDATED - Reviewed and updated  
 > **Schema:** `VALIDATED_GUIDE-DEBUGGING_2025-10-17.md`
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** VALIDATED (automatisch durch "Debugging Guide", "VALIDATED" erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook GUIDE Template
+> - **AUTO-UPDATE:** Bei Debugging-Patterns-Änderung automatisch Guide aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Debugging", "VALIDATED", "Troubleshooting"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = VALIDATED:**
+> - ✅ **Debugging-Guide** - Verlässliche Quelle für systematisches Debugging
+> - ✅ **VALIDATED** - Authoritative Standards für Debug-Prozesse
+> - 🎯 **AUTO-REFERENCE:** Bei Debug-Sessions automatisch konsultieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "DEBUGGING FAILED" → Guide-Check erforderlich
+
+> **⚠️ DEBUGGING STATUS:** Systematisches Debugging-Framework (27.10.2025)  
+> **Registry Status:** Validated Debugging-Patterns aktiv  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor Debug-Sessions  
+> **Critical Function:** Systematische Debug-Prozesse für KI-Sessions
 
 > **⚠️ CRITICAL:** [../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - **MANDATORY READ vor Debug-Sessions**  
 > **🛡️ NEVER violate:** Critical fixes müssen bei jedem Debug-Prozess beachtet werden  

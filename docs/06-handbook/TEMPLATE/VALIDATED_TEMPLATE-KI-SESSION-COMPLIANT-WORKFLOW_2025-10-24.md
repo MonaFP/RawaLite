@@ -1,5 +1,5 @@
 # 🔄 Navigation Mode Database Processing - UI/UX Prozess-Dokumentation
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 24.10.2025 | **Letzte Aktualisierung:** 24.10.2025 (Initial Documentation)  
 > **Status:** VALIDATED - Live System Analysis  
 > **Schema:** `VALIDATED_GUIDE-NAVIGATION-MODE-DATABASE-PROCESSING_2025-10-24.md`

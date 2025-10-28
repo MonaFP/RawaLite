@@ -1,5 +1,5 @@
 # 🗂️ Documentation Central Paths
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **🚀 ACTIVE:** Central path management für Cross-References  
 > **Inspiration:** Ähnlich wie `src/lib/paths.ts` für Code  
 > **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Phase 1+2 Updates - Schema-compliant filenames)  

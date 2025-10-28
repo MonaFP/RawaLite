@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # 🕒 Timesheet-System Implementation - Vollständige Wiederherstellung
 
 **Status:** ✅ VOLLSTÄNDIG IMPLEMENTIERT  

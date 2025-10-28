@@ -1,5 +1,5 @@
 # 🛠️ KNOWLEDGE_ONLY: ABI Problem Solution - Historical Build Debug Knowledge
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **⚠️ KI-USAGE WARNING:** This document is from Knowledge Archive  
 > **Status:** KNOWLEDGE_ONLY - Historical build debugging insights  
 > **Created:** 26.10.2025 | **Source:** SOLVED_FIX-ABI-PROBLEM-SOLUTION-2025-10-15.md  

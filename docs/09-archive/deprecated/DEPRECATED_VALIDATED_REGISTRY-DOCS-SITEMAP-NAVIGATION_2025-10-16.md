@@ -1,5 +1,5 @@
 # 🗂️ Documentation Sitemap
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **🗺️ NAVIGATION:** Vollständige Übersicht über die Dokumentationsstruktur  
 > **Schema:** `VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-16.md`
 

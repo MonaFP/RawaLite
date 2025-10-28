@@ -1,5 +1,5 @@
 # 📋 Hauptdokumente Übersicht - Aktualisierungs-Registry
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **🎯 ZWECK:** Zentrale Registry aller Hauptdokumente für systematische Aktualisierungen  
 > **📅 ERSTELLT:** 2025-10-16  
 > **🔄 STATUS:** VALIDATED - Vollständige Dokumentations-Übersicht  

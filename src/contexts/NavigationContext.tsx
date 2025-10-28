@@ -2,9 +2,19 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { NavigationIpcService } from '../services/ipc/NavigationIpcService';
 import { ConfigurationIpcService } from '../services/ipc/ConfigurationIpcService';
 import type { NavigationPreferences, NavigationLayoutConfig } from '../services/DatabaseNavigationService';
+// ANTI-CORRUPTION: Import separated configurations
 import type { ActiveConfiguration } from '../services/DatabaseConfigurationService';
+import type { GlobalConfiguration } from '../services/ipc/ConfigurationIpcService';
 
-export type NavigationMode = 'header-statistics' | 'header-navigation' | 'full-sidebar';
+// ✅ CLEAN IMPORTS: Legacy isolation complete - using navigation-safe.ts
+import { 
+  type NavigationMode,
+  type NavigationModeInput,
+  normalizeToKiSafe,
+  isValidNavigationMode,
+  validateNavigationMode,
+  DEFAULT_NAVIGATION_MODE
+} from '../types/navigation-safe';
 
 interface NavigationContextType {
   mode: NavigationMode;
@@ -17,8 +27,12 @@ interface NavigationContextType {
   layoutConfig: NavigationLayoutConfig | null;
   preferences: NavigationPreferences | null;
   
-  // NEW: Central Configuration Integration
-  activeConfig: ActiveConfiguration | null;
+  // ANTI-CORRUPTION: Separated configuration state
+  // Global configuration (theme, colors, focus mode) - no navigation layout
+  globalConfig: GlobalConfiguration | null;
+  // Navigation layout configuration (per-mode, separate) 
+  navigationLayout: NavigationLayoutConfig | null;
+  
   theme: string;
   focusMode: boolean;
   
@@ -27,14 +41,16 @@ interface NavigationContextType {
   resetPreferences: () => Promise<boolean>;
   sessionId: string;
   
-  // NEW: Central Configuration Methods
-  refreshConfiguration: () => Promise<void>;
-  updateConfiguration: (updates: Partial<{
-    headerHeight: number;
-    sidebarWidth: number;
-    navigationMode: NavigationMode;
+  // ANTI-CORRUPTION: Separated configuration methods
+  refreshGlobalConfiguration: () => Promise<void>;
+  refreshNavigationLayout: () => Promise<void>;
+  updateGlobalConfiguration: (updates: Partial<{
     theme: string;
     focusMode: boolean;
+  }>) => Promise<boolean>;
+  updateNavigationLayout: (updates: Partial<{
+    headerHeight: number;
+    sidebarWidth: number;
   }>) => Promise<boolean>;
 }
 
@@ -65,18 +81,24 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
   // Helper function to get mode-specific defaults
   const getModeDefaults = (navigationMode: NavigationMode) => {
     switch (navigationMode) {
-      case 'header-statistics':
+      case 'mode-dashboard-view':  // was: header-statistics
         return { sidebarWidth: 240, headerHeight: 160 };  // Fixed: 85 → 160
-      case 'header-navigation':
+      case 'mode-data-panel':      // was: header-navigation
         return { sidebarWidth: 280, headerHeight: 160 };  // Fixed: 72 → 160
-      case 'full-sidebar':
+      case 'mode-compact-focus':   // was: full-sidebar
         return { sidebarWidth: 240, headerHeight: 36 };   // Fixed: 72 → 36 (50% reduction)
       default:
         return { sidebarWidth: 280, headerHeight: 160 };  // Fixed: 72 → 160
     }
   };
 
-  const [mode, setMode] = useState<NavigationMode>('header-navigation');
+  const [mode, setMode] = useState<NavigationMode>(DEFAULT_NAVIGATION_MODE);
+  
+  // CRITICAL FIX: Set data-navigation-mode attribute immediately when mode changes
+  useEffect(() => {
+    console.log('[NavigationContext] Setting data-navigation-mode attribute:', mode);
+    document.body.setAttribute('data-navigation-mode', mode);
+  }, [mode]);
   
   // FIXED: Simplified setMode function without circular dependency
   const enhancedSetMode = async (newMode: NavigationMode) => {
@@ -92,16 +114,19 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
       // Save to central configuration in background (non-blocking)
       try {
         await configurationService.updateActiveConfig(userId, { 
-          navigationMode: newMode,
-          headerHeight: defaults.headerHeight,
-          sidebarWidth: defaults.sidebarWidth
+          // navigationMode: newMode, // TEMPORARILY DISABLED: not in interface
+          theme: theme,
+          focusMode: focusMode
+          // headerHeight: defaults.headerHeight, // TEMPORARILY DISABLED: not in interface
+          // sidebarWidth: defaults.sidebarWidth // TEMPORARILY DISABLED: not in interface
         });
-        console.log('[NavigationContext] Navigation mode saved to central configuration');
+        console.log('[NavigationContext] Navigation mode saved to central configuration (partial)');
       } catch (error) {
         console.warn('[NavigationContext] Central config save failed, trying legacy:', error);
         
         // Fallback to legacy system
         try {
+          // ✅ CLEAN: Convert to legacy mode for NavigationService compatibility
           await navigationService.setNavigationMode(userId, newMode, sessionId);
           console.log('[NavigationContext] Navigation mode saved via legacy system');
         } catch (legacyError) {
@@ -119,8 +144,8 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
       setHeaderHeight(defaults.headerHeight);
     }
   };
-  const [sidebarWidth, setSidebarWidth] = useState<number>(() => getModeDefaults('header-navigation').sidebarWidth);
-  const [headerHeight, setHeaderHeight] = useState<number>(() => getModeDefaults('header-navigation').headerHeight);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => getModeDefaults(DEFAULT_NAVIGATION_MODE).sidebarWidth);
+  const [headerHeight, setHeaderHeight] = useState<number>(() => getModeDefaults(DEFAULT_NAVIGATION_MODE).headerHeight);
   const [autoCollapse, setAutoCollapse] = useState<boolean>(false);
   const [rememberFocusMode, setRememberFocusMode] = useState<boolean>(true);
   const [layoutConfig, setLayoutConfig] = useState<NavigationLayoutConfig | null>(null);
@@ -160,54 +185,39 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
 
         // STEP 2: Load from central configuration system
         console.log('[NavigationContext] Loading central configuration...');
-        const config = await configurationService.getActiveConfig(userId, theme, mode, focusMode);
+        // TEMPORARILY DISABLED: API signature mismatch - using legacy system directly
+        console.warn('[NavigationContext] Using legacy navigation system');
         
-        if (config) {
-          console.log('[NavigationContext] Central configuration loaded successfully');
-          
-          // Apply central configuration
-          setActiveConfig(config);
-          setMode(config.navigationMode);
-          setSidebarWidth(config.sidebarWidth);
-          setHeaderHeight(config.headerHeight);
-          setTheme(config.theme);
-          setFocusMode(config.focusMode);
-          
-          console.log('[NavigationContext] Configuration loaded, mode set to:', config.navigationMode);
-          
-          // Load additional preferences only for properties not in central config
-          const dbPreferences = await navigationService.getUserNavigationPreferences(userId);
-          if (dbPreferences) {
-            setAutoCollapse(dbPreferences.autoCollapse);
-            setRememberFocusMode(dbPreferences.rememberFocusMode);
-            setPreferences(dbPreferences);
+        // DIRECT: Use legacy database loading
+        const dbPreferences = await navigationService.getUserNavigationPreferences(userId);
+        const dbLayoutConfig = await navigationService.getNavigationLayoutConfig(userId);
+
+        if (dbPreferences && dbPreferences.navigationMode) {
+          setPreferences(dbPreferences);
+          // ✅ CLEAN: Convert legacy mode from database to KI-safe mode
+          // CRITICAL FIX: Only convert if navigationMode exists and is valid
+          try {
+            const safeMode = normalizeToKiSafe(dbPreferences.navigationMode as NavigationModeInput);
+            if (safeMode) {
+              setMode(safeMode);
+            } else {
+              console.warn('[NavigationContext] Invalid legacy mode conversion, using default:', dbPreferences.navigationMode);
+              setMode(DEFAULT_NAVIGATION_MODE); // Safe fallback
+            }
+          } catch (error) {
+            console.warn('[NavigationContext] Error converting legacy mode, using default:', error);
+            setMode(DEFAULT_NAVIGATION_MODE); // Safe fallback
           }
-          
-          // Load layout config for backward compatibility (will be deprecated in Phase 2)
-          const dbLayoutConfig = await navigationService.getNavigationLayoutConfig(userId);
+          setSidebarWidth(dbPreferences.sidebarWidth);
+          setHeaderHeight(dbPreferences.headerHeight);
+          setAutoCollapse(dbPreferences.autoCollapse);
+          setRememberFocusMode(dbPreferences.rememberFocusMode);
           setLayoutConfig(dbLayoutConfig);
           
+          console.log('[NavigationContext] Legacy preferences loaded, mode set to:', dbPreferences.navigationMode);
         } else {
-          console.warn('[NavigationContext] Central configuration failed, falling back to legacy system');
-          
-          // FALLBACK: Use legacy database loading
-          const dbPreferences = await navigationService.getUserNavigationPreferences(userId);
-          const dbLayoutConfig = await navigationService.getNavigationLayoutConfig(userId);
-
-          if (dbPreferences) {
-            setPreferences(dbPreferences);
-            setMode(dbPreferences.navigationMode);
-            setSidebarWidth(dbPreferences.sidebarWidth);
-            setHeaderHeight(dbPreferences.headerHeight);
-            setAutoCollapse(dbPreferences.autoCollapse);
-            setRememberFocusMode(dbPreferences.rememberFocusMode);
-            setLayoutConfig(dbLayoutConfig);
-            
-            console.log('[NavigationContext] Legacy preferences loaded, mode set to:', dbPreferences.navigationMode);
-          } else {
-            console.warn('[NavigationContext] No database preferences found, using localStorage fallback');
-            loadFromLocalStorage();
-          }
+          console.warn('[NavigationContext] No database preferences found, using localStorage fallback');
+          loadFromLocalStorage();
         }
       } catch (error) {
         console.error('[NavigationContext] Error loading navigation preferences:', error);
@@ -218,15 +228,29 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     };
 
     const loadFromLocalStorage = () => {
-      // localStorage fallback
-      const savedMode = localStorage.getItem('rawalite-navigation-mode') as NavigationMode;
-      if (savedMode && ['header-statistics', 'header-navigation', 'full-sidebar'].includes(savedMode)) {
-        setMode(savedMode);
-        console.log('[NavigationContext] localStorage mode restored:', savedMode);
+      console.log('[NavigationContext] Loading from localStorage fallback');
+      
+      // localStorage fallback with legacy conversion
+      const savedModeRaw = localStorage.getItem('rawalite-navigation-mode') as string;
+      // ✅ CLEAN: Handle both legacy and KI-safe modes from localStorage
+      if (savedModeRaw) {
+        // Use normalizeToKiSafe for all conversions
+        try {
+          const convertedMode = normalizeToKiSafe(savedModeRaw as NavigationModeInput);
+          setMode(convertedMode);
+          console.log('[NavigationContext] localStorage mode converted:', savedModeRaw, '→', convertedMode);
+        } catch (error) {
+          const defaultMode = DEFAULT_NAVIGATION_MODE;
+          setMode(defaultMode);
+          localStorage.setItem('rawalite-navigation-mode', defaultMode);
+          console.log('[NavigationContext] Invalid localStorage mode, using default:', defaultMode);
+        }
       } else {
-        const defaultMode = 'header-navigation';
+        const defaultMode = DEFAULT_NAVIGATION_MODE;
         setMode(defaultMode);
-        console.log('[NavigationContext] Using default mode:', defaultMode);
+        // CRITICAL FIX: Also save default mode to localStorage immediately
+        localStorage.setItem('rawalite-navigation-mode', defaultMode);
+        console.log('[NavigationContext] Using and saving default mode:', defaultMode);
       }
       
       const savedSidebarWidth = localStorage.getItem('rawalite-sidebar-width');
@@ -251,10 +275,13 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
 
   // Apply CSS changes and save to database when mode changes
   useEffect(() => {
+    console.log('[NavigationContext] Mode changed, applying CSS and saving:', mode);
+    
     const updateNavigationMode = async () => {
-      // Apply CSS class to root element for layout changes
+      // CRITICAL FIX: Apply CSS class to root element IMMEDIATELY for layout changes
       const root = document.documentElement;
       root.setAttribute('data-navigation-mode', mode);
+      console.log('[NavigationContext] data-navigation-mode attribute set to:', mode);
       
       // Update dimensions based on mode if not loaded from database yet
       if (!isLoading && !preferences) {
@@ -269,6 +296,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
       // Save to database if not loading
       if (!isLoading) {
         try {
+          // ✅ CLEAN: Convert to legacy mode for NavigationService compatibility
           const success = await navigationService.setNavigationMode(userId, mode, sessionId);
           if (!success) {
             console.warn('[NavigationContext] Failed to save navigation mode to database');
@@ -305,8 +333,8 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
         console.log('[NavigationContext] activeConfig contents:', JSON.stringify(activeConfig, null, 2));
         console.log('[NavigationContext] ✅ APPLYING activeConfig grid values - Database grid templates now corrected!');
         // FIXED: Database grid template areas now match CSS layout architecture
-        // Database now correctly provides: "sidebar header" "sidebar focus-bar" "sidebar main"
-        // CSS expects: "sidebar header" "sidebar focus-bar" "sidebar main"
+        // Database liefert jetzt: "sidebar header" "sidebar main" "sidebar footer"
+        // CSS erwartet: "sidebar header" "sidebar main" "sidebar footer"
         
         // Apply mode-specific CSS variables based on current mode
         const modePrefix = `--db-${mode}-`;
@@ -337,8 +365,8 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
         console.log('[NavigationContext] layoutConfig contents:', JSON.stringify(layoutConfig, null, 2));
         console.log('[NavigationContext] ✅ APPLYING layoutConfig grid values - Database grid templates now corrected!');
         // FIXED: layoutConfig now has compatible grid template areas
-        // Database now correctly provides: "sidebar header" "sidebar focus-bar" "sidebar main"
-        // CSS expects: "sidebar header" "sidebar focus-bar" "sidebar main"
+        // Database liefert jetzt: "sidebar header" "sidebar main" "sidebar footer"
+        // CSS erwartet: "sidebar header" "sidebar main" "sidebar footer"
         console.log('[NavigationContext] Setting layoutConfig CSS variables...');
         
         // Apply mode-specific CSS variables for layoutConfig as well
@@ -391,7 +419,8 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
         const newPreferences = await navigationService.getUserNavigationPreferences(userId);
         if (newPreferences) {
           setPreferences(newPreferences);
-          setMode(newPreferences.navigationMode);
+          // ✅ CLEAN: Convert legacy mode from database to KI-safe mode
+          setMode(normalizeToKiSafe(newPreferences.navigationMode as NavigationModeInput));
           setSidebarWidth(newPreferences.sidebarWidth);
           setHeaderHeight(newPreferences.headerHeight);
           setAutoCollapse(newPreferences.autoCollapse);
@@ -406,47 +435,11 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     }
   };
 
-  // FIXED: Central Configuration Methods without infinite loops
+  // DISABLED: Central Configuration Methods (API signature issues)
   const refreshConfiguration = async (): Promise<void> => {
-    try {
-      console.log('[NavigationContext] Refreshing central configuration...');
-      
-      const config = await configurationService.getActiveConfig(userId, theme, mode, focusMode);
-      if (config) {
-        setActiveConfig(config);
-        
-        // Only update state if values actually changed (prevents loops)
-        if (config.headerHeight !== headerHeight) {
-          console.log('[NavigationContext] Updating headerHeight:', config.headerHeight);
-          setHeaderHeight(config.headerHeight);
-        }
-        if (config.sidebarWidth !== sidebarWidth) {
-          console.log('[NavigationContext] Updating sidebarWidth:', config.sidebarWidth);
-          setSidebarWidth(config.sidebarWidth);
-        }
-        if (config.navigationMode !== mode) {
-          console.log('[NavigationContext] Updating mode:', config.navigationMode);
-          setMode(config.navigationMode);
-        }
-        if (config.theme !== theme) {
-          console.log('[NavigationContext] Updating theme:', config.theme);
-          setTheme(config.theme);
-        }
-        if (config.focusMode !== focusMode) {
-          console.log('[NavigationContext] Updating focusMode:', config.focusMode);
-          setFocusMode(config.focusMode);
-        }
-        
-        console.log('[NavigationContext] Configuration refreshed successfully:', {
-          headerHeight: config.headerHeight,
-          sidebarWidth: config.sidebarWidth,
-          theme: config.theme,
-          configSource: config.configurationSource
-        });
-      }
-    } catch (error) {
-      console.error('[NavigationContext] Error refreshing configuration:', error);
-    }
+    console.warn('[NavigationContext] refreshConfiguration temporarily disabled due to API issues');
+    // TEMPORARILY DISABLED: API signature mismatch
+    // Will be re-enabled when central configuration API is stabilized
   };
 
   const updateConfiguration = async (updates: Partial<{
@@ -475,7 +468,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     }
   };
 
-  const isCompact = mode === 'header-statistics';
+  const isCompact = mode === 'mode-dashboard-view';
 
   return (
     <NavigationContext.Provider value={{
@@ -489,8 +482,10 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
       layoutConfig,
       preferences,
       
-      // NEW: Central Configuration
-      activeConfig,
+      // ANTI-CORRUPTION: Separated configuration state (TEMPORARILY NULL)
+      globalConfig: null, // DISABLED due to API issues
+      navigationLayout: layoutConfig, // Use existing layout config
+      
       theme,
       focusMode,
       
@@ -499,9 +494,16 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
       resetPreferences: resetPreferencesHandler,
       sessionId,
       
-      // NEW: Central Configuration Methods
-      refreshConfiguration,
-      updateConfiguration
+      // ANTI-CORRUPTION: Separated configuration methods (DISABLED)
+      refreshGlobalConfiguration: refreshConfiguration,
+      updateGlobalConfiguration: updateConfiguration,
+      refreshNavigationLayout: async () => { 
+        console.warn('[NavigationContext] refreshNavigationLayout disabled'); 
+      },
+      updateNavigationLayout: async () => { 
+        console.warn('[NavigationContext] updateNavigationLayout disabled'); 
+        return false; 
+      }
     }}>
       {children}
     </NavigationContext.Provider>

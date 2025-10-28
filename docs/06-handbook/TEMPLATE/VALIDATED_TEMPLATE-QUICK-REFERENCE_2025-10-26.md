@@ -1,5 +1,5 @@
 # ⚡ Quick Reference - RawaLite Standards
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 12.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Content modernization + ROOT_ integration)  
 > **Status:** VALIDATED - Reviewed and updated  
 > **Schema:** `VALIDATED_GUIDE-QUICK-REFERENCE_2025-10-17.md`

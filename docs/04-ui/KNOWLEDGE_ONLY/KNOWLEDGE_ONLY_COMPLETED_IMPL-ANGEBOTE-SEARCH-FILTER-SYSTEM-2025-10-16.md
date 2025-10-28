@@ -1,5 +1,5 @@
 # Angebote Search/Filter System - Implementation
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 16.10.2025 (Implementation abgeschlossen)  
 > **Status:** ✅ COMPLETED - Angebote-Seite Search/Filter vollständig implementiert  
 > **Schema:** `COMPLETED_IMPL-ANGEBOTE-SEARCH-FILTER-SYSTEM-2025-10-16.md`

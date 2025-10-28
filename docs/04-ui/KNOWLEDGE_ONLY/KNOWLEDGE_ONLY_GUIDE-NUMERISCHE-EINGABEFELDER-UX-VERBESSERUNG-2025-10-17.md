@@ -1,5 +1,5 @@
 # ✅ SOLVED: Numerische Eingabefelder UX-Verbesserung
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Problem Description
 Die numerischen Eingabefelder in allen Formularen hatten schlechte Usability:
 - Ungewollte Spinner/Pfeiltasten störten die Eingabe

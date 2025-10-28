@@ -1,10 +1,24 @@
 # SYSTEMATIC FIX PRESERVATION STRATEGY
 
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Content modernization + ROOT_ integration)  
-> **Status:** VALIDATED - Reviewed and updated  
-> **Schema:** `VALIDATED_GUIDE-SYSTEMATIC-FIX-PRESERVATION-STRATEGY_2025-10-17.md`
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Knowledge Archive | **Typ:** Guide - Systematic Fix Preservation Strategy  
+> **Schema:** `KNOWLEDGE_ONLY_GUIDE-SYSTEMATIC-FIX-PRESERVATION-STRATEGY_2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
 
-> **⚠️ CRITICAL:** [../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - **MANDATORY READ - This strategy protects these fixes**  
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Knowledge Archive (automatisch durch "Preservation Strategy", "Systematic Fix" erkannt)
+> - **TEMPLATE-QUELLE:** KNOWLEDGE_ONLY Template
+> - **AUTO-UPDATE:** Bei Critical-Fixes automatisch Strategy referenzieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Preservation Strategy", "Systematic Fix", "Critical Fixes"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Knowledge Archive:**
+> - ✅ **Historical Strategy** - Bewährte Fix-Preservation-Patterns archiviert
+> - ⚠️ **Verification Required** - Vor Fix-Implementation aktuelle Critical-Fixes-Registry prüfen
+> - 🎯 **AUTO-REFERENCE:** Bei Fix-Development automatisch diese Preservation-Strategy konsultieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "FIX PRESERVATION" → Strategy-Patterns verfügbar
+
+> **⚠️ CRITICAL:** [../../06-handbook/REFERENCE/VALIDATED_REFERENCE-CRITICAL-FIXES-CURRENT_2025-10-26.md](../../06-handbook/REFERENCE/VALIDATED_REFERENCE-CRITICAL-FIXES-CURRENT_2025-10-26.md) - **MANDATORY READ - This strategy protects these fixes**  
 > **🛡️ NEVER violate:** Siehe [../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) - Essential fix preservation patterns  
 > **📚 ALWAYS:** `pnpm validate:critical-fixes` is the core tool this strategy enables  
 

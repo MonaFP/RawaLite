@@ -1,5 +1,5 @@
 # INDEX.md UPDATE REPORT - Post CODE-FIRST Validation
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 23.10.2025 | **Scope:** Complete INDEX.md system update  
 > **Status:** ✅ COMPLETED | **Coverage:** All main documentation folders
 

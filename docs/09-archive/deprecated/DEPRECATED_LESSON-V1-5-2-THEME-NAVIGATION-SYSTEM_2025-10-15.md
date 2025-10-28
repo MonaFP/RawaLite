@@ -1,5 +1,5 @@
 # 🎓 LESSONS-LEARNED-v1-5-2-theme-navigation-system
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Project:** v1.5.2 Beautiful Pastel Themes & Enhanced Navigation  
 > **Date:** 2025-10-03  
 > **Session Type:** Feature Implementation  

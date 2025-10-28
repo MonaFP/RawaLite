@@ -1,7 +1,28 @@
 # ⚡ QUICK REFERENCE: PackageLineItem.amount → unitPrice
 
-**Status:** 📋 GEPLANT  
-**Vollständiger Plan:** [`PLAN_UNIFY_PACKAGE_UNITPRICE.md`](./PLAN_UNIFY_PACKAGE_UNITPRICE.md)
+> **Erstellt:** 14.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** 📋 GEPLANT | **Typ:** Quick Reference  
+> **Schema:** `KNOWLEDGE_ONLY_PLAN-UNIFY-PACKAGE-UNITPRICE-QUICKREF-2025-10-15.md`
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** 📋 GEPLANT (automatisch durch "📋 GEPLANT", "QUICK REFERENCE" erkannt)
+> - **TEMPLATE-QUELLE:** KNOWLEDGE_ONLY Historical Archive
+> - **AUTO-UPDATE:** Bei unitPrice-Quick-Reference-Änderung automatisch Plan-Status aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "QUICK REFERENCE", "PackageLineItem.amount", "unitPrice"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = 📋 GEPLANT:**
+> - ⚡ **Quick Reference** - Schnelle Übersicht für PackageLineItem unitPrice Vereinheitlichung
+> - 📋 **Historical Planning** - Quick Reference für geplante aber nicht implementierte Änderungen
+> - 🎯 **AUTO-REFERENCE:** Bei schneller unitPrice-Orientierung dieses Quick Reference verwenden
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "QUICK PACKAGE UNITPRICE" → Diese Referenz für schnelle Übersicht
+> - ⚠️ **IMPLEMENTATION WARNING:** Quick Reference ist GEPLANT - aktuelle Code-Realität kann abweichen
+
+> **⚠️ QUICK REFERENCE STATUS:** PackageLineItem unitPrice Quick Reference geplant aber nicht implementiert (27.10.2025)  
+> **Registry Status:** Schnelle Übersicht für unitPrice Vereinheitlichungs-Plan  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor Package-Interface-Änderungen  
+> **Critical Function:** Quick Reference für unitPrice Unification Planning
 
 ---
 

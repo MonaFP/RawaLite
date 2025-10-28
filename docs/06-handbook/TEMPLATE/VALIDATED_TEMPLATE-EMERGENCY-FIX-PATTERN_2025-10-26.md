@@ -1,5 +1,5 @@
 # 🚨 Emergency Fix - SOLVED Pattern
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (Emergency Template Creation)  
 > **Status:** VALIDATED Template | **Typ:** Emergency Fix Template  
 > **Schema:** `VALIDATED_TEMPLATE-EMERGENCY-FIX-PATTERN_2025-10-26.md`

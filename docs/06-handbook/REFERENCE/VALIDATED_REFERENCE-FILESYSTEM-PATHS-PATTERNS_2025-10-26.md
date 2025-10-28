@@ -1,5 +1,5 @@
 # 🗂️ Filesystem Paths - Code Implementation Patterns
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-PRÄFIX Schema compliance)  
 > **Status:** Reference | **Typ:** Code Implementation Patterns  
 > **Schema:** `VALIDATED_REFERENCE-FILESYSTEM-PATHS-PATTERNS_2025-10-26.md`  

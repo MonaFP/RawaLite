@@ -1,10 +1,24 @@
 # PowerShell in package.json - Best Practices
 
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Content modernization + ROOT_ integration)  
-> **Status:** VALIDATED - Reviewed and updated  
-> **Schema:** `VALIDATED_GUIDE-POWERSHELL-PACKAGE-JSON-BEST-PRACTICES_2025-10-17.md`
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Production Ready | **Typ:** Guide - PowerShell Package.json Best Practices  
+> **Schema:** `VALIDATED_GUIDE-POWERSHELL-PACKAGE-JSON-BEST-PRACTICES_2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
 
-> **⚠️ CRITICAL:** [../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - **MANDATORY READ vor PowerShell work**  
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch "PowerShell", "Best Practices" erkannt)
+> - **TEMPLATE-QUELLE:** VALIDATED Template
+> - **AUTO-UPDATE:** Bei PowerShell-Development automatisch Best-Practices referenzieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Production Ready", "PowerShell", "Windows-Development"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **✅ STATUS = Production Ready:**
+> - ✅ **PowerShell Authority** - Verlässliche Quelle für PowerShell Best-Practices in package.json
+> - ✅ **Windows-Development Guide** - Authoritative Windows-Development-Patterns
+> - 🎯 **AUTO-REFERENCE:** Bei PowerShell-Script-Development automatisch diese Best-Practices konsultieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "POWERSHELL SCRIPTS" → Windows-Development-Patterns verfügbar
+
+> **⚠️ CRITICAL:** [../../06-handbook/REFERENCE/VALIDATED_REFERENCE-CRITICAL-FIXES-CURRENT_2025-10-26.md](../../06-handbook/REFERENCE/VALIDATED_REFERENCE-CRITICAL-FIXES-CURRENT_2025-10-26.md) - **MANDATORY READ vor PowerShell work**  
 > **🛡️ NEVER violate:** Siehe [../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) - Essential development patterns  
 > **📚 ALWAYS:** `pnpm validate:critical-fixes` vor Script-Änderungen  
 

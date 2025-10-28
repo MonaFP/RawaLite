@@ -13,23 +13,23 @@
   --theme-grid-bg: var(--bg);
   --theme-grid-text: var(--foreground);
   
-  /* Focus Bar Theme Variables */
-  --theme-focus-bar-bg: color-mix(in srgb, var(--accent) 15%, transparent 85%);
-  --theme-focus-bar-border: color-mix(in srgb, var(--accent) 20%, transparent 80%);
-  --theme-focus-bar-text: var(--foreground);
-  --theme-focus-bar-height: 40px;
+  /* Footer Theme Variables */
+  --theme-footer-bg: var(--secondary);
+  --theme-footer-border: var(--border);
+  --theme-footer-text: var(--foreground);
+  --theme-footer-height: 60px;
   
-  /* HEADER-STATISTICS Mode - Statistics Header + Compact Navigation Sidebar */
-  --header-statistics-sidebar-width: 240px;
-  --header-statistics-header-height: 160px; /* Angepasst: Logo-Bereich Höhe */
+  /* mode-dashboard-view (was: HEADER-STATISTICS) - Statistics Header + Compact Navigation Sidebar */
+  --mode-dashboard-view-sidebar-width: 240px;
+  --mode-dashboard-view-header-height: 80px; /* FIXED: Compact Header wie mode-compact-focus */
   
-  /* HEADER-NAVIGATION Mode - Navigation Header + Compact Statistics Sidebar */
-  --header-navigation-sidebar-width: 280px; /* Breiter für bessere Navigation */
-  --header-navigation-header-height: 160px; /* Angleichung: gleiche Höhe wie header-statistics */
+  /* MODE-DATA-PANEL (was: HEADER-NAVIGATION) - Navigation Header + Compact Statistics Sidebar */
+  --mode-data-panel-sidebar-width: 280px; /* Breiter für bessere Navigation */
+  --mode-data-panel-header-height: 80px; /* FIXED: Compact Header wie mode-compact-focus */
   
-  /* FULL-SIDEBAR Mode - Minimal Header + Full Sidebar */
-  --full-sidebar-sidebar-width: 240px;
-  --full-sidebar-header-height: 36px;
+  /* MODE-COMPACT-FOCUS (was: FULL-SIDEBAR) - Minimal Header + Full Sidebar */
+  --mode-compact-focus-sidebar-width: 240px;
+  --mode-compact-focus-header-height: 80px; /* BASELINE: Funktionierendes Compact Header */
 }
 
 /* Base App Grid Layout - Database-Theme Integration */
@@ -54,85 +54,183 @@
   position: relative;
 }
 
-/* Focus Bar Area - Database-Theme Integration */
-.focus-bar-area {
-  grid-area: focus-bar;
+/* Footer Area - Database-Theme Integration */
+.footer-area,
+.app .footer,
+.app footer {
+  grid-area: footer;
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  padding: 8px 16px;
-  background: var(--theme-focus-bar-bg, color-mix(in srgb, var(--accent) 15%, transparent 85%));
-  border-bottom: 1px solid var(--theme-focus-bar-border, color-mix(in srgb, var(--accent) 20%, transparent 80%));
-  color: var(--theme-focus-bar-text, var(--foreground));
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--theme-footer-bg, var(--secondary));
+  border-top: 1px solid var(--theme-footer-border, var(--border));
+  color: var(--theme-footer-text, var(--foreground));
+  min-height: 60px;
+  height: 60px;
+  box-sizing: border-box;
+}
+
+/* Footer Area - NEU! */
+.footer-area {
+  grid-area: footer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--theme-footer-bg, var(--secondary));
+  border-top: 1px solid var(--theme-footer-border, var(--border));
+  color: var(--theme-footer-text, var(--foreground));
+  height: 60px;
+  min-height: 60px;
+  max-height: 60px;
+}
+
+/* Footer Content Styles */
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.footer-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.footer-status-item {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent/10);
+}
+
+.footer-focus-indicator {
+  background: var(--accent);
+  color: var(--accent-foreground);
+  font-weight: 500;
+}
+
+.footer-focus-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.footer-focus-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.footer-focus-btn:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.footer-focus-variants {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-focus-variant-label {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.footer-version {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  font-family: monospace;
 }
 
 /* =========================================
    COMPONENT STYLES PER NAVIGATION MODE
    ========================================= */
 
-/* 🎯 HEADER-STATISTICS Mode Components */
-[data-navigation-mode="header-statistics"] .header-statistics {
+/* 🎯 Dashboard View Mode Components */
+[data-navigation-mode="mode-dashboard-view"] .header {
   grid-area: header;
-  /* Header Statistics Component für Header-Statistics Mode */
+  /* Header mit Statistics und Dashboard Features */
 }
 
-[data-navigation-mode="header-statistics"] .compact-sidebar {
+[data-navigation-mode="mode-dashboard-view"] .compact-sidebar {
   grid-area: sidebar;
-  /* Compact Sidebar für Header-Statistics Mode */
+  /* Kompakte Navigation */
 }
 
-/* 🎯 HEADER-NAVIGATION Mode Components */
-[data-navigation-mode="header-navigation"] .header-navigation {
+/* 🎯 Data Panel Mode Components */
+[data-navigation-mode="mode-data-panel"] .header {
   grid-area: header;
-  /* Header Navigation Component für Header-Navigation Mode */
+  /* Header mit integrierter Navigation */
 }
 
-[data-navigation-mode="header-navigation"] .navigation-only-sidebar {
+[data-navigation-mode="mode-data-panel"] .navigation-only-sidebar {
   grid-area: sidebar;
-  /* Navigation Only Sidebar für Header-Navigation Mode */
+  /* Reine Navigation im Sidebar */
 }
 
-/* 🎯 FULL-SIDEBAR Mode Components */
-[data-navigation-mode="full-sidebar"] .header {
+/* 🎯 Compact Focus Mode Components */
+[data-navigation-mode="mode-compact-focus"] .header {
   grid-area: header;
-  /* Standard Header für Full-Sidebar Mode */
+  /* Standard Header für mode-compact-focus Mode */
 }
 
-[data-navigation-mode="full-sidebar"] .sidebar {
+[data-navigation-mode="mode-compact-focus"] .sidebar {
   grid-area: sidebar;
-  /* Full Sidebar für Full-Sidebar Mode */
+  /* Full Sidebar für mode-compact-focus Mode */
 }
 
 /* =========================================
-   NAVIGATION MODES GRID LAYOUTS - DATABASE-FIRST
+   NAVIGATION MODES GRID LAYOUTS - DATABASE-FIRST KI-SAFE
    ========================================= */
 
-/* 🎯 HEADER-STATISTICS Mode - Statistics Header + Compact Navigation Sidebar */
-[data-navigation-mode="header-statistics"] .app {
-  grid-template-columns: var(--db-header-statistics-grid-template-columns, var(--header-statistics-sidebar-width, 240px) 1fr);
-  grid-template-rows: var(--db-header-statistics-grid-template-rows, var(--header-statistics-header-height, 160px) var(--theme-focus-bar-height, 40px) 1fr);
-  grid-template-areas: var(--db-header-statistics-grid-template-areas, 
+/* 🎯 mode-dashboard-view Mode - Statistics Header + Compact Navigation Sidebar (FIXED: COMPACT HEADER) */
+[data-navigation-mode="mode-dashboard-view"] {
+  grid-template-columns: var(--db-mode-dashboard-view-grid-template-columns, var(--mode-dashboard-view-sidebar-width, 240px) 1fr);
+  grid-template-rows: var(--db-mode-dashboard-view-grid-template-rows, var(--mode-dashboard-view-header-height, 80px) 1fr 60px);
+  grid-template-areas: var(--db-mode-dashboard-view-grid-template-areas, 
     "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main");
+    "sidebar main"
+    "sidebar footer");
 }
 
-/* 🎯 HEADER-NAVIGATION Mode - Navigation Header + Compact Statistics Sidebar */
-[data-navigation-mode="header-navigation"] .app {
-  grid-template-columns: var(--db-header-navigation-grid-template-columns, var(--header-navigation-sidebar-width, 280px) 1fr);
-  grid-template-rows: var(--db-header-navigation-grid-template-rows, var(--header-navigation-header-height, 160px) var(--theme-focus-bar-height, 40px) 1fr);
-  grid-template-areas: var(--db-header-navigation-grid-template-areas,
+/* 🎯 MODE-DATA-PANEL Mode - Navigation Header + Compact Statistics Sidebar (FIXED: COMPACT HEADER) */
+[data-navigation-mode="mode-data-panel"] {
+  grid-template-columns: var(--db-mode-data-panel-grid-template-columns, var(--mode-data-panel-sidebar-width, 280px) 1fr);
+  grid-template-rows: var(--db-mode-data-panel-grid-template-rows, var(--mode-data-panel-header-height, 80px) 1fr 60px);
+  grid-template-areas: var(--db-mode-data-panel-grid-template-areas,
     "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main");
+    "sidebar main"
+    "sidebar footer");
 }
 
-/* 🎯 FULL-SIDEBAR Mode - Minimal Header + Full Sidebar */
-[data-navigation-mode="full-sidebar"] .app {
-  grid-template-columns: var(--db-full-sidebar-grid-template-columns, var(--full-sidebar-sidebar-width, 240px) 1fr);
-  grid-template-rows: var(--db-full-sidebar-grid-template-rows, var(--full-sidebar-header-height, 36px) var(--theme-focus-bar-height, 40px) 1fr);
-  grid-template-areas: var(--db-full-sidebar-grid-template-areas,
+/* 🎯 MODE-COMPACT-FOCUS Mode - Minimal Header + Full Sidebar (3-ROW FOOTER-CORRECTED) */
+[data-navigation-mode="mode-compact-focus"] {
+  grid-template-columns: var(--db-mode-compact-focus-grid-template-columns, var(--mode-compact-focus-sidebar-width, 240px) 1fr);
+  grid-template-rows: var(--db-mode-compact-focus-grid-template-rows, var(--mode-compact-focus-header-height, 36px) 1fr 60px);
+  grid-template-areas: var(--db-mode-compact-focus-grid-template-areas,
     "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main");
+    "sidebar main"
+    "sidebar footer");
 }

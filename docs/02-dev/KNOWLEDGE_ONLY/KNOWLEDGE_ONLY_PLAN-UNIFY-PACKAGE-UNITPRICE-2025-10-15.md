@@ -1,8 +1,28 @@
 # 🎯 PLAN: Vereinheitlichung PackageLineItem.amount → unitPrice
 
-**Status:** 📋 GEPLANT (NICHT AUSGEFÜHRT)  
-**Erstellt:** 2025-10-14  
-**Ziel:** Konsistente Benennung aller Line Item Interfaces
+> **Erstellt:** 14.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** 📋 GEPLANT (NICHT AUSGEFÜHRT) | **Typ:** Implementation Plan  
+> **Schema:** `KNOWLEDGE_ONLY_PLAN-UNIFY-PACKAGE-UNITPRICE-2025-10-15.md`
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** 📋 GEPLANT (automatisch durch "📋 GEPLANT", "NICHT AUSGEFÜHRT" erkannt)
+> - **TEMPLATE-QUELLE:** KNOWLEDGE_ONLY Historical Archive
+> - **AUTO-UPDATE:** Bei unitPrice-Vereinheitlichung automatisch Plan-Status aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "GEPLANT", "PackageLineItem.amount", "unitPrice Unification"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = 📋 GEPLANT:**
+> - ⚠️ **Implementation Pending** - Plan existiert aber NICHT IMPLEMENTIERT - bei Verwendung aktuelle Implementation prüfen
+> - 📋 **Historical Planning** - Detaillierte Analyse für unitPrice Vereinheitlichung vorhanden
+> - 🎯 **AUTO-REFERENCE:** Bei PackageLineItem-Problemen diesen Plan als Grundlage verwenden
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "PACKAGE UNITPRICE ERROR" → Prüfen ob dieser Plan noch relevant
+> - ⚠️ **IMPLEMENTATION WARNING:** Plan ist NICHT AUSGEFÜHRT - aktuelle Code-Realität kann abweichen
+
+> **⚠️ UNITPRICE UNIFICATION STATUS:** Plan vorhanden aber NICHT IMPLEMENTIERT (27.10.2025)  
+> **Registry Status:** Historischer Plan für PackageLineItem.amount → unitPrice Vereinheitlichung  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor Package-Interface-Änderungen  
+> **Critical Function:** Detaillierte Planungsgrundlage für unitPrice Unification (PENDING IMPLEMENTATION)
 
 ---
 

@@ -1,5 +1,5 @@
 # Logo Management Workflow
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Complete guide for identifying, diagnosing, and fixing logo placement issues in RawaLite**
 
 ---

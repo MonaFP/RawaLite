@@ -147,7 +147,7 @@ Status: ALLE VIOLATIONS BEHOBEN ✅
 
 ---
 
-**📍 Location:** `/docs/06-lessons/sessions/LESSON_FIX-NAVIGATION-MODE-ENDLESS-LOOP_2025-10-25.md`  
+**📍 Location:** `/docs/06-handbook/sessions/LESSON_FIX-NAVIGATION-MODE-ENDLESS-LOOP_2025-10-25.md`  
 **Purpose:** Dokumentation der Zirkularität zur Vermeidung weiterer Loops  
 **Next Steps:** Fokus auf die 9 className Violations, KEINE neuen Pläne
 

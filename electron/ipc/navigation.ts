@@ -4,6 +4,11 @@
  * Provides secure bridge between renderer and main process for navigation operations.
  * Implements complete CRUD operations with proper error handling.
  * 
+ * ✅ LEGACY ISOLATION STRATEGY:
+ * - Uses navigation-safe.ts for KI-safe type handling
+ * - Legacy modes converted at IPC boundaries only
+ * - IPC methods work EXCLUSIVELY with KI-Safe modes internally
+ * 
  * @since v1.0.45+ (Database-Navigation-System)
  * @see {@link docs/ROOT_VALIDATED_REGISTRY-CSS-THEME-NAVIGATION-ARCHITECTURE_2025-10-17.md} Navigation Integration Architecture
  * @see {@link docs/ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md} Critical Fixes Registry
@@ -11,15 +16,45 @@
  */
 
 import { ipcMain } from 'electron';
+
+// ✅ CLEAN TYPE IMPORTS from navigation-safe.ts
+import { 
+  KiSafeNavigationMode,
+  NavigationModeInput,
+  NAVIGATION_MODES_SAFE,
+  isValidNavigationMode,
+  normalizeToKiSafe,
+  DEFAULT_NAVIGATION_MODE
+} from '../../src/types/navigation-safe';
+
+// Import boolean validation function
+import { validateNavigationMode } from '../../src/services/NavigationModeNormalizationService';
+
+// ✅ LEGACY-ISOLATED DatabaseNavigationService
 import { DatabaseNavigationService } from '../../src/services/DatabaseNavigationService';
 
+// ✅ ALIAS für saubere Migration (alle IPC handlers verwenden NavigationMode = KiSafeNavigationMode)
+export type NavigationMode = KiSafeNavigationMode;
+
 let navigationService: DatabaseNavigationService | null = null;
+
+/**
+ * ✅ CLEAN VALIDATION: KI-Safe + NavigationModeInput support
+ * Accepts legacy modes via input but normalizes immediately to KI-safe
+ */
+function validateNavigationModeInput(navigationMode: string): boolean {
+  return validateNavigationMode(navigationMode as NavigationModeInput);
+}
 
 /**
  * Initialize navigation service with database connection
  */
 export function initializeNavigationIpc(db: any) {
   navigationService = new DatabaseNavigationService(db);
+  
+  // Service is initialized through constructor - no separate initialize() method needed
+  console.log('[NavigationIPC] DatabaseNavigationService initialized successfully');
+  
   registerNavigationHandlers();
 }
 
@@ -60,12 +95,14 @@ function registerNavigationHandlers() {
         throw new Error('Navigation service not initialized');
       }
       
-      // Validate navigation mode
-      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
-        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      // ✅ LEGACY ISOLATION: Validate and normalize input
+      if (!validateNavigationModeInput(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}. Valid modes: ${NAVIGATION_MODES_SAFE.join(', ')}`);
       }
       
-      return await navigationService.setNavigationMode(userId, navigationMode as any, sessionId);
+      const kiSafeMode = normalizeToKiSafe(navigationMode as NavigationModeInput);
+
+      return await navigationService.setNavigationMode(userId, kiSafeMode, sessionId);
     } catch (error) {
       console.error('[IPC:navigation:set-navigation-mode] Error:', error);
       throw error;
@@ -159,12 +196,15 @@ function registerNavigationHandlers() {
         throw new Error('Navigation service not initialized');
       }
       
-      // Validate navigation mode
-      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
-        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      // ✅ LEGACY ISOLATION: Validate and normalize input
+      if (!validateNavigationModeInput(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}. Valid modes: ${NAVIGATION_MODES_SAFE.join(', ')}`);
       }
       
-      return await navigationService.getModeSpecificSettings(userId, navigationMode as any);
+      // ✅ NORMALIZATION: Convert input to KI-safe for internal operations
+      const kiSafeMode = normalizeToKiSafe(navigationMode as NavigationModeInput);
+      
+      return await navigationService.getModeSpecificSettings(userId, kiSafeMode as any);
     } catch (error) {
       console.error('[IPC:navigation:get-mode-settings] Error:', error);
       throw error;
@@ -206,12 +246,15 @@ function registerNavigationHandlers() {
         throw new Error('Navigation service not initialized');
       }
       
-      // Validate navigation mode
-      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
-        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      // ✅ LEGACY ISOLATION: Validate and normalize input
+      if (!validateNavigationModeInput(navigationMode)) {
+        throw new Error(`Invalid navigation mode: ${navigationMode}. Valid modes: ${NAVIGATION_MODES_SAFE.join(', ')}`);
       }
       
-      return await navigationService.getFocusModePreferences(userId, navigationMode as any);
+      // ✅ NORMALIZATION: Convert input to KI-safe for internal operations
+      const kiSafeMode = normalizeToKiSafe(navigationMode as NavigationModeInput);
+      
+      return await navigationService.getFocusModePreferences(userId, kiSafeMode as any);
     } catch (error) {
       console.error('[IPC:navigation:get-focus-preferences] Error:', error);
       throw error;
@@ -251,9 +294,13 @@ function registerNavigationHandlers() {
         throw new Error('Navigation service not initialized');
       }
       
-      // Validate navigation mode if provided
-      if (navigationMode && !['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
-        throw new Error(`Invalid navigation mode: ${navigationMode}`);
+      // Legacy isolation: Validate navigation mode if provided
+      if (navigationMode) {
+        if (!validateNavigationModeInput(navigationMode)) {
+          throw new Error(`Invalid navigation mode: ${navigationMode}. Valid modes: ${NAVIGATION_MODES_SAFE.join(', ')} (+ legacy)`);
+        }
+        // Normalize to KI-safe immediately
+        navigationMode = normalizeToKiSafe(navigationMode as NavigationModeInput);
       }
       
       return await navigationService.getEnhancedLayoutConfig(userId, navigationMode as any, inFocusMode);
@@ -263,7 +310,7 @@ function registerNavigationHandlers() {
     }
   });
 
-  console.log('[NavigationIPC] Navigation IPC handlers registered successfully (15 handlers)');
+  console.log('[NavigationIPC] Navigation IPC handlers registered successfully (15 handlers - Footer via dedicated Footer IPC)');
 }
 
 /**

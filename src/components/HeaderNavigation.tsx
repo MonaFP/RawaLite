@@ -2,15 +2,17 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useUnifiedSettings } from '../hooks/useUnifiedSettings';
 import { useTheme } from '../hooks/useTheme';
+import { useNavigation } from '../contexts/NavigationContext';
 
 interface HeaderNavigationProps {
   title?: string;
   className?: string;
 }
 
-export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title, className = 'header-navigation' }) => {
+export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title, className = 'header', ...props }) => {
   const location = useLocation();
   const { settings } = useUnifiedSettings();
+  const { mode: navigationMode } = useNavigation();
   const { 
     getThemedPageTitle, 
     isLoading, 
@@ -19,6 +21,24 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title, class
     companyConfig,
     navigationConfig 
   } = useTheme();
+  
+  // CRITICAL FIX: Defensive check for undefined navigation mode
+  if (!navigationMode || (navigationMode as any) === 'undefined') {
+    console.warn('[HeaderNavigation] Navigation mode is undefined, rendering fallback');
+    return (
+      <div className="header" data-navigation-mode="mode-data-panel" data-fallback="true">
+        <div className="left-section">
+          <div className="loading-message">Navigation wird geladen...</div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Only render HeaderNavigation content for mode-data-panel mode
+  if (navigationMode !== 'mode-data-panel') {  // was: header-navigation
+    console.log('[HeaderNavigation] Current mode is not mode-data-panel:', navigationMode);
+    return null;
+  }
   
   // Dynamic title with theme integration
   const getPageTitle = () => {
@@ -39,7 +59,7 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title, class
   // Loading and error handling for theme
   if (isLoading) {
     return (
-      <div className="header-navigation">
+      <div className="header" data-navigation-mode="mode-data-panel">
         <div className="left-section">
           Loading theme...
         </div>
@@ -53,7 +73,7 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title, class
   }
 
   return (
-    <div className="header-navigation">
+    <div className="header" data-navigation-mode="mode-data-panel">
       {/* Firmenname + Logo + Page Title */}
       <div className="left-section">
         {/* Company Section */}
@@ -67,10 +87,10 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title, class
             <img 
               src={settings.companyData.logo} 
               alt="HeaderNavigation-Company" 
-              className="company-logo"
+              data-company="logo"
             />
           ) : (
-            <div className="company-logo">
+            <div data-company="logo">
               G
             </div>
           )}
@@ -83,7 +103,7 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title, class
       </div>
 
       {/* Navigation Menu */}
-      <nav className="navigation-section">
+      <nav data-navigation-section="primary-navigation">
         {navigationItems.map((item) => {
           const isActive = location.pathname === item.to || 
                           (item.to === '/angebote' && location.pathname.startsWith('/angebote/'));
@@ -92,24 +112,25 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title, class
             <NavLink
               key={item.to}
               to={item.to}
-              className={isActive ? 'nav-item active' : 'nav-item'}
+              data-navigation-item={isActive ? 'active' : 'default'}
             >
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-label">{item.label}</span>
+              <span data-icon="navigation">{item.icon}</span>
+              <span data-label="navigation">{item.label}</span>
             </NavLink>
           );
         })}
       </nav>
 
       {/* Settings Link */}
-      <div className="right-section">
+      <div data-navigation-section="settings">
         <NavLink
           to="/einstellungen"
-          className={location.pathname === '/einstellungen' ? 'settings-link active' : 'settings-link'}
+          data-navigation-settings={location.pathname === '/einstellungen' ? 'active' : 'default'}
           style={{
-            backgroundColor: location.pathname === '/einstellungen' ? navigationConfig.activeBg : navigationConfig.itemBg,
-            color: location.pathname === '/einstellungen' ? navigationConfig.activeText : navigationConfig.itemText,
-            border: `1px solid ${navigationConfig.itemBorder}`
+            backgroundColor: location.pathname === '/einstellungen' ? navigationConfig?.activeBg || 'blue' : navigationConfig?.itemBg || 'gray',
+            color: location.pathname === '/einstellungen' ? navigationConfig?.activeText || 'white' : navigationConfig?.itemText || 'black',
+            border: `1px solid ${navigationConfig?.itemBorder || 'black'}`,
+            padding: '5px'
           }}
         >
           ⚙️

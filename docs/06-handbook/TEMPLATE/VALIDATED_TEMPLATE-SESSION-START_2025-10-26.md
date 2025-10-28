@@ -1,5 +1,5 @@
 # � Session-Start Template - [SESSION_TYP] - [DATUM]
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (Phase 1: Echtes Template erstellt)  
 > **Status:** Template | **Typ:** Ausfüllbares Session-Start Template  
 > **Schema:** `VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md`  

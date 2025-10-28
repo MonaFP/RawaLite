@@ -1,5 +1,5 @@
 # 📋 Implementierungsplan: Navigation Header Heights Fix
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 22.10.2025 | **Letzte Aktualisierung:** 23.10.2025 (Schema-Update + Ordner-Migration)  
 > **Status:** PLAN - Detaillierter Implementierungsplan  
 > **Schema:** `PLAN_IMPL-UI-NAVIGATION-HEADER-HEIGHTS-FIX_2025-10-23.md`

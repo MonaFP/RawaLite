@@ -248,11 +248,11 @@ export class DatabaseConfigurationService {
     const systemDefaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
     
     return {
-      headerHeight: systemDefaults.HEADER_HEIGHTS[navigationMode] || systemDefaults.HEADER_HEIGHTS['header-statistics'],
-      sidebarWidth: systemDefaults.SIDEBAR_WIDTHS[navigationMode] || systemDefaults.SIDEBAR_WIDTHS['header-statistics'],
-      gridTemplateRows: systemDefaults.GRID_TEMPLATE_ROWS[navigationMode] || systemDefaults.GRID_TEMPLATE_ROWS['header-statistics'],
-      gridTemplateColumns: systemDefaults.GRID_TEMPLATE_COLUMNS[navigationMode] || systemDefaults.GRID_TEMPLATE_COLUMNS['header-statistics'],
-      isCompactMode: navigationMode === 'full-sidebar'
+      headerHeight: systemDefaults.MIN_HEADER_HEIGHTS[navigationMode] || systemDefaults.MIN_HEADER_HEIGHTS['mode-dashboard-view'],
+      sidebarWidth: systemDefaults.SIDEBAR_WIDTHS[navigationMode] || systemDefaults.SIDEBAR_WIDTHS['mode-dashboard-view'],
+      gridTemplateRows: systemDefaults.GRID_TEMPLATE_ROWS[navigationMode] || systemDefaults.GRID_TEMPLATE_ROWS['mode-dashboard-view'],
+      gridTemplateColumns: systemDefaults.GRID_TEMPLATE_COLUMNS[navigationMode] || systemDefaults.GRID_TEMPLATE_COLUMNS['mode-dashboard-view'],
+      isCompactMode: navigationMode === 'mode-compact-focus'
     };
   }
   
@@ -309,17 +309,7 @@ export class DatabaseConfigurationService {
       configSource.sidebarWidth = 'theme';
     }
     
-    // Priority 2: User Navigation Preferences
-    if (sources.userNavPrefs?.headerHeight) {
-      headerHeight = sources.userNavPrefs.headerHeight;
-      configSource.headerHeight = 'user';
-    }
-    if (sources.userNavPrefs?.sidebarWidth) {
-      sidebarWidth = sources.userNavPrefs.sidebarWidth;
-      configSource.sidebarWidth = 'user';
-    }
-    
-    // Priority 3: Mode-Specific Settings (Migration 034)
+    // Priority 2: Mode-Specific Settings (Migration 034) - HIGHER PRIORITY than global user prefs
     if (sources.modeSettings?.headerHeight) {
       headerHeight = sources.modeSettings.headerHeight;
       configSource.headerHeight = 'mode';
@@ -327,6 +317,17 @@ export class DatabaseConfigurationService {
     if (sources.modeSettings?.sidebarWidth) {
       sidebarWidth = sources.modeSettings.sidebarWidth;
       configSource.sidebarWidth = 'mode';
+    }
+    
+    // Priority 3: Global User Navigation Preferences (FALLBACK when no mode-specific setting exists)
+    // Only apply if mode-specific settings are not available
+    if (!sources.modeSettings?.headerHeight && sources.userNavPrefs?.headerHeight) {
+      headerHeight = sources.userNavPrefs.headerHeight;
+      configSource.headerHeight = 'user';
+    }
+    if (!sources.modeSettings?.sidebarWidth && sources.userNavPrefs?.sidebarWidth) {
+      sidebarWidth = sources.userNavPrefs.sidebarWidth;
+      configSource.sidebarWidth = 'user';
     }
     
     // Priority 4: Focus Mode Settings (highest priority when active)
@@ -545,7 +546,7 @@ export class DatabaseConfigurationService {
         // Validate header height is within reasonable bounds
         const mode = userNavPrefs.navigationMode || 'header-statistics';
         const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
-        const expectedHeight = defaults.HEADER_HEIGHTS[mode as NavigationMode];
+        const expectedHeight = defaults.MIN_HEADER_HEIGHTS[mode as NavigationMode];
         
         if (userNavPrefs.headerHeight && Math.abs(userNavPrefs.headerHeight - expectedHeight) > 50) {
           issues.push(`Header height ${userNavPrefs.headerHeight}px significantly differs from expected ${expectedHeight}px for mode ${mode}`);

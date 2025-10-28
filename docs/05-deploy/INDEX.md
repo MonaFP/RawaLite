@@ -1,16 +1,31 @@
-# 05-deploy – Deployment & Updates# 05-deploy - Deployment & Update System
+# 05-deploy - Deployment & Update System
 
-
-
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (06-lessons Verweise entfernt - dezentrale LESSON Struktur)    > **Purpose:** Deployment Processes, Auto-Update System, Distribution, and Release Management  
-
-> **Status:** Production Ready | **Typ:** Index> **Last Updated:** 2025-10-23 (Post CODE-FIRST Validation)  
-
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Purpose:** Deployment Processes, Auto-Update System, Distribution, and Release Management  
 > **Status:** ✅ ACTIVE | **Validation Status:** 91% Consistency (EXCELLENT)  
-
-Diese Sektion behandelt alle Aspekte von Deployment, Updates und Release-Management für RawaLite.> **Consolidates:** deployment + update-manager + distribution  
-
+> **Consolidates:** deployment + update-manager + distribution  
 > **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `05-deploy` → **DEPLOYMENT FOCUS** - Release und Update-Management
+- `ACTIVE` → **AKTIVE NUTZUNG** - Kontinuierliche Deployment-Operations
+- `Auto-Update System` → **UPDATE-MANAGER** - Automatische Software-Updates
+- `91% Consistency` → **HIGH QUALITY** - Exzellente Dokumentations-Qualität
+
+**📖 TEMPLATE SOURCE:** [06-handbook/templates/INDEX-FOLDER-TEMPLATE.md](../06-handbook/templates/INDEX-FOLDER-TEMPLATE.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Release-Workflows, Update-Manager Änderungen, Distribution-Updates  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **DEPLOYMENT-REFERENCE:** Nutze für Release und Build Workflows
+- ✅ **UPDATE-SAFETY:** Befolge Auto-Update Patterns strikt
+- ✅ **RELEASE-VALIDATION:** Validiere vor Production-Releases
+- ❌ **FORBIDDEN:** Release-Operationen ohne Validation-Suite
+
+> **🎯 CODE-FIRST VALIDATION RESULTS (23.10.2025):**  
+> **Quality Level:** EXCELLENT - Build system fully operational and documented  
+> **Strengths:** Build Configuration (95%), Release Automation (90%), CI/CD (92%)  
+> **Validation Report:** [Archived as COMPLETED_REPORT-05-DEPLOY-VALIDATION_2025-10-23.md](../archive/)
 
 ## STATUS-PRÄFIX Struktur (25.10.2025)
 

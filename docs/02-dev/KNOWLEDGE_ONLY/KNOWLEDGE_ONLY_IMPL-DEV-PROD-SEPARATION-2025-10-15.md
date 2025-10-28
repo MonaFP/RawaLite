@@ -1,5 +1,23 @@
 # Dev-Prod Separation Implementation - RawaLite
 
+> **Erstellt:** 12.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Knowledge Archive | **Typ:** Implementation - Dev Prod Separation  
+> **Schema:** `KNOWLEDGE_ONLY_IMPL-DEV-PROD-SEPARATION-2025-10-15.md` ✅ **SCHEMA-COMPLIANT**  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Knowledge Archive (automatisch durch "PRODUCTION VALIDATED", "Dev-Prod Separation" erkannt)
+> - **TEMPLATE-QUELLE:** KNOWLEDGE_ONLY Template
+> - **AUTO-UPDATE:** Bei Dev-Prod-Separation automatisch Implementation-Pattern referenzieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Knowledge Archive", "Dev-Prod Separation", "v1.0.42.4"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Knowledge Archive:**
+> - ✅ **Historical Success** - Dev-Prod Separation Implementation archiviert
+> - ⚠️ **Verification Required** - Separation-Pattern vor Implementierung auf aktuelle Architektur verifizieren
+> - 🎯 **AUTO-REFERENCE:** Bei Dev-Prod-Setup automatisch diese Implementation-Patterns konsultieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "DEV PROD SEPARATION" → Environment-Patterns verfügbar
+
 **Status:** ✅ **PRODUCTION VALIDATED**  
 **Version:** v1.0.42.4  
 **Author:** RawaLite Team  

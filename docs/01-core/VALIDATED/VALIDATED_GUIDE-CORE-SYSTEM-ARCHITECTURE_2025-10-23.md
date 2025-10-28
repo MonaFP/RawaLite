@@ -1,8 +1,56 @@
 # CORE SYSTEM ARCHITECTURE - RawaLite (Current State v1.0.54)
 
-> **Erstellt:** 23.10.2025 | **Letzte Aktualisierung:** 23.10.2025 (COMPLETE ARCHITECTURE UPDATE - Migration 040, 14-Layer Architecture)  
-> **Status:** VALIDATED - Current Repository State | **Typ:** System Architecture Guide  
-> **Schema:** `VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-23.md`
+> **Erstellt:** 23.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Production Ready | **Typ:** Guide - Core System Architecture  
+> **Schema:** `VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-23.md` ✅ **SCHEMA-COMPLIANT**  
+> **Repository State:** v1.0.54 mit 14-Layer Architecture und Migration 040
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch "14-Layer Architecture" erkannt)
+> - **TEMPLATE-QUELLE:** 01-core VALIDATED Template
+> - **AUTO-UPDATE:** Bei Core-System-Änderung automatisch Architecture aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Production Ready", "14-Layer Architecture", "Migration 040"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Production Ready:**
+> - ✅ **System-Architecture** - Verlässliche Quelle für gesamte Core-System-Struktur
+> - ✅ **Multi-Service-Architecture** - Authoritative Landkarte für Service-Layer-Design
+> - 🎯 **AUTO-REFERENCE:** Bei System-Design-Fragen IMMER dieses Dokument nutzen
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "SYSTEM ARCHITECTURE BROKEN" → Architecture-Update erforderlich
+
+> **⚠️ CORE SYSTEM STATUS:** 14-Layer Architecture, Migration 040 applied, v1.0.54 (27.10.2025)  
+> **Migration Status:** Database-First Architecture mit Advanced Configuration System  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor System-Änderungen  
+> **Critical Function:** Authoritative Core-System-Architecture für Development-Sessions
+
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `VALIDATED_` ✅ **Validierte, stabile Dokumentation (verlässliche Quelle)**
+- **TYP-KATEGORIE:** `GUIDE-` ✅ **Leitfäden/Anleitungen** 
+- **SUBJECT:** `CORE-SYSTEM-ARCHITECTURE` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-23` ✅ **Gültig und aktuell**
+
+### **KI-Interpretation:** 
+- **Thema:** Core System Architecture (Multi-Service 14-Layer Architecture)
+- **Status:** VALIDATED (verlässliche Quelle für System-Design)
+- **Quelle:** 01-core/VALIDATED (Core Architecture Documentation)
+- **Priorität:** Sehr hoch (System-kritisch, verlässliche Architektur-Referenz)
+
+---
+
+## 🎯 **MANDATORY SESSION-START PROTOCOL (KI-Template-Vorgaben)**
+
+**ZWINGEND VOR SYSTEM-ARCHITECTURE-DEVELOPMENT:**
+- [ ] 📋 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](../../06-handbook/TEMPLATE/) öffnen und ausfüllen
+- [ ] 📝 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md](../../06-handbook/TEMPLATE/) bereithalten
+- [ ] 🔍 [../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) befolgen
+- [ ] 📋 [../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) für Critical Fixes prüfen
+
+**⚠️ OHNE TEMPLATE-NUTZUNG = SESSION INVALID**
+
+---
 
 > **🤖 KI-SESSION-BRIEFING COMPLIANCE:**
 > **✅ Critical Fixes Validation:** 16/16 patterns preserved und validiert  
@@ -10,11 +58,11 @@
 > **🎯 Phase:** COMPLETE ARCHITECTURE UPDATE - Current State Documentation
 
 > **🔗 Verwandte Dokumentation:**
-> **Critical Fixes:** [ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - 16 Active Critical Fixes  
-> **KI Instructions:** [ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) - Development Standards  
+> **Critical Fixes:** [../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) - 16 Active Critical Fixes  
+> **KI Instructions:** [../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md](../../ROOT_VALIDATED_GUIDE-KI-INSTRUCTIONS_2025-10-17.md) - Development Standards  
 > **IPC Documentation:** [VALIDATED_REGISTRY-IPC-INDEX-2025-10-17.md](VALIDATED_REGISTRY-IPC-INDEX-2025-10-17.md) - Complete IPC Channel Registry  
-> **Migration System:** [Migration Index](../../03-data/final/) - Database Schema Evolution (000→040)  
-> **Service Layer:** [Development Standards](../../02-dev/final/) - Service Layer Patterns  
+> **Migration System:** [../../03-data/final/](../../03-data/final/) - Database Schema Evolution (000→040)  
+> **Service Layer:** [../../02-dev/final/](../../02-dev/final/) - Service Layer Patterns  
 
 ---
 

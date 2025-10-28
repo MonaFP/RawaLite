@@ -1,5 +1,23 @@
 # Lessons Learned – ICO Format Error in electron-builder
 
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Knowledge Archive | **Typ:** Fix - ICO Format Error Debugging  
+> **Schema:** `KNOWLEDGE_ONLY_FIX-ICO-FORMAT-ERROR-2025-10-15.md` ✅ **SCHEMA-COMPLIANT**  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Knowledge Archive (automatisch durch "Lessons Learned", "Debugging" erkannt)
+> - **TEMPLATE-QUELLE:** KNOWLEDGE_ONLY Template
+> - **AUTO-UPDATE:** Bei electron-builder ICO-Problem automatisch referenzieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Lessons Learned", "ICO Format Error", "electron-builder"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Knowledge Archive:**
+> - ✅ **Historical Reference** - Sicherer Archiv für ICO-Format-Debugging-Versuche
+> - ⚠️ **Verification Required** - Vor Implementierung aktuelle electron-builder Version prüfen
+> - 🎯 **AUTO-REFERENCE:** Bei ICO-Format-Fehlern automatisch diese Lesson-Learned konsultieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "ICO FORMAT ERROR" → Debugging-Historie verfügbar
+
 Diese Datei dokumentiert alle Debugging- und Analyse-Versuche zum ICO Format Fehler beim electron-builder Build Process.  
 Ziel: **KI soll wissen, was bereits probiert wurde, mit welchem Ergebnis**, um Doppelarbeit zu vermeiden.
 

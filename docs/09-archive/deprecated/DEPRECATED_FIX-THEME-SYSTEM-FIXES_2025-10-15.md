@@ -1,5 +1,5 @@
 # Theme-System Korrekturen - PDF Farbdarstellung
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 03. Oktober 2025  
 **Version:** 1.0.13  
 **Problem gelöst:** PDF-Generierung verwendet korrekte Theme-Farben für alle 6 Themes

@@ -1,5 +1,5 @@
 # Database Migration 011: Offer Line Items Extension
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Version:** 010 → 011  
 **Date:** 2025-10-03  
 **Purpose:** Extend offer_line_items table to support dual sub-item system  

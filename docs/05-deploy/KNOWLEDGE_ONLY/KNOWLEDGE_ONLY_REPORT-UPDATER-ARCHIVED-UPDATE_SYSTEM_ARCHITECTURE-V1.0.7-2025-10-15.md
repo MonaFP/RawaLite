@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # Update System Architecture
 **Letzte Aktualisierung:** 02. Oktober 2025  
 **Status:** 🔄 Migration zu GitHub API geplant  

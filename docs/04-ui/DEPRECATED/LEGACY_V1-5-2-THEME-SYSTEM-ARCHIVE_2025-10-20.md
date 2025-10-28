@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # 🗃️ Legacy Theme System Archive (v1.5.2)
 
 > **Erstellt:** 20.10.2025 | **Archiviert:** 20.10.2025 (Konsolidierte Legacy-Dokumentation)  

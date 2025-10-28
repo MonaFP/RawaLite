@@ -1,5 +1,5 @@
 # 🔒 Security Architecture - Security Concepts & Authentication Reference
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Header korrigiert, KI-PRÄFIX Schema compliance)  
 > **Status:** Reference | **Typ:** Security Architecture Documentation  
 > **Schema:** `VALIDATED_REFERENCE-SECURITY-ARCHITECTURE_2025-10-26.md`

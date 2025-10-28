@@ -1,5 +1,5 @@
 # 🔍 ANALYSE: Readonly "Summe" Display - Wo liegt das Problem?
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 $12025-10-17**Status:** 🔴 KRITISCHE KLARSTELLUNG  
 **User-Hinweis:** "die stelle, die wir ändern müssen bzw fehlerhaft dargestellt wird, IST readonly"
 

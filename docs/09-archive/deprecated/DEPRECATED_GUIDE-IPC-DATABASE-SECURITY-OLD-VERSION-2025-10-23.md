@@ -1,5 +1,5 @@
 # IPC Security Model für Database Access
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 29.09.2025 | $12025-10-17 (Content modernization + ROOT_ integration)|| filePath.includes('~')) {
     throw new Error('Invalid backup path: Directory traversal detected');
   }

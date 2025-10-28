@@ -1,5 +1,5 @@
 # 🎉 InvoiceForm Drag-Drop Integration - Session Report
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Implementation Complete)  
 > **Status:** Production Ready | **Typ:** Completed Session Report  
 > **Schema:** `COMPLETED_REPORT-INVOICEFORM-DRAG-DROP-INTEGRATION-SESSION-2025-10-17.md`

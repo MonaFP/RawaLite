@@ -1,11 +1,59 @@
 # 🔧 Troubleshooting Guide - Fix Preservation System
 
-> **Problemlösungen für das Critical Fix Preservation System**  
-> **Erstellt:** 15.10.2025 | $12025-10-17 (Content modernization + ROOT_ integration)| **Status:** Production Ready
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Historical Archive | **Typ:** Guide - Troubleshooting Knowledge Only  
+> **Schema:** `KNOWLEDGE_ONLY_GUIDE-TROUBLESHOOTING-2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
+> **Archive Purpose:** Problemlösungen für das Critical Fix Preservation System (Historische Referenz)
 
-> **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Historical Archive (automatisch durch "KNOWLEDGE_ONLY" erkannt)
+> - **TEMPLATE-QUELLE:** 00-meta KNOWLEDGE_ONLY Template
+> - **AUTO-UPDATE:** Bei Troubleshooting-Update automatisch Archive erweitern
+> - **STATUS-KEYWORDS:** Erkannt durch "Historical Archive", "KNOWLEDGE_ONLY", "Fix Preservation"
 
-## 📋 **SCHEMA-ÜBERSICHT**
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Historical Archive:**
+> - ✅ **Historische-Referenz** - Sichere historische Referenz ohne aktuelle Implementierung
+> - ✅ **Troubleshooting-Knowledge** - Archivierte Problemlösungs-Strategien
+> - 🎯 **AUTO-REFERENCE:** Bei Troubleshooting-History IMMER als Referenz verwenden, aber aktuelle Implementierung verifizieren
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "TROUBLESHOOTING HISTORY" → Archive-Review erforderlich
+
+> **⚠️ KNOWLEDGE ARCHIVE STATUS:** Historical Fix Preservation Troubleshooting (27.10.2025)  
+> **Archive Status:** Problemlösungen für Critical Fix Preservation System - historische Strategien  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor Archive-Referencing  
+> **Critical Function:** Historical Troubleshooting-Knowledge für Fix-Preservation-Strategien
+
+## 📋 **SCHEMA-ÜBERSICHT (KI-PRÄFIX-ERKENNUNGSREGELN)**
+
+### **Document Classification:**
+- **STATUS-PRÄFIX:** `KNOWLEDGE_ONLY_` ✅ **Historische Archiv-Dokumente (KI-safe reference ohne aktuelle Implementierung)**
+- **TYP-KATEGORIE:** `GUIDE-` ✅ **Leitfäden/Anleitungen** 
+- **SUBJECT:** `TROUBLESHOOTING` ✅ **Spezifisch identifiziert**
+- **DATUM:** `2025-10-17` ✅ **Gültig und aktuell**
+
+### **KI-Interpretation:** 
+- **Thema:** Troubleshooting Guide (Historical Fix Preservation Strategies)
+- **Status:** KNOWLEDGE_ONLY (historische Referenz ohne aktuelle Implementierung)
+- **Quelle:** 00-meta/KNOWLEDGE_ONLY (Meta Archive Documentation)
+- **Priorität:** Mittel (Historisch-referenziell, verifiziere aktuelle Implementierung)
+
+---
+
+## 🎯 **MANDATORY SESSION-START PROTOCOL (KI-Template-Vorgaben)**
+
+**ZWINGEND VOR TROUBLESHOOTING-DEVELOPMENT:**
+- [ ] 📋 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](../../06-handbook/TEMPLATE/) öffnen und ausfüllen
+- [ ] 📝 [../../06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md](../../06-handbook/TEMPLATE/) bereithalten
+- [ ] 🔍 [../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../../../.github/prompts/KI-SESSION-BRIEFING.prompt.md) befolgen
+- [ ] 📋 [../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md](../../ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md) für Current Critical Fixes prüfen
+
+**⚠️ OHNE TEMPLATE-NUTZUNG = SESSION INVALID**  
+**⚠️ HISTORICAL ARCHIVE - AKTUELLE IMPLEMENTIERUNG VERIFIZIEREN!**
+
+---
+
+> **Problemlösungen für das Critical Fix Preservation System**
 
 ### **Naming Convention:**
 ```
@@ -32,13 +80,6 @@ Beispiel: VALIDATED_GUIDE-TROUBLESHOOTING-2025-10-15.md
 - `TEMPLATE-` - Vorlagen, Templates
 - `TRACKING-` - Status-Tracking, Quality-Tracking
 - `PLAN-` - Planungsdokumente, Roadmaps
-
----
-
-> **Problemlösungen für das Critical Fix Preservation System**  
-> **Erstellt:** 2025-10-03 | **Status:** Production Ready
-
----
 
 ## 🎯 **Übersicht**
 

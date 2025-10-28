@@ -1,9 +1,23 @@
 # Scripts Naming Schema & Standards Guide
 
-> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Integration + Template-Vorgaben Update)  
+> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** Production Ready | **Typ:** Guide - Scripts Schema & Standards  
 > **Schema:** `ROOT_VALIDATED_GUIDE-SCRIPTS-SCHEMA_2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
 > **🛡️ ROOT-PROTECTED:** Kritisch für Script-Management, NIEMALS verschieben!
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch "76.3% Schema Compliance" erkannt)
+> - **TEMPLATE-QUELLE:** ROOT_VALIDATED_GUIDE Template
+> - **AUTO-UPDATE:** Bei Scripts-Änderung automatisch Schema-Guide aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Production Ready", "42/55 Scripts", "Authoritative naming schema"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **✅ STATUS = Production Ready:**
+> - ✅ **Scripts-Schema** - Verlässliche Quelle für KATEGORIE_SCOPE_SUBJECT_ACTION.ext Format
+> - ✅ **Naming-Standards** - Authoritative Standards für alle Automation-Scripts
+> - 🎯 **AUTO-REFERENCE:** Bei Script-Creation dieses Schema befolgen
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "SCRIPT NAMING ERROR" → Schema-Compliance-Check erforderlich
 
 > **⚠️ SCRIPT REALITY CHECK:** 76.3% Schema Compliance (42/55 Scripts) (26.10.2025)  
 > **Registry Status:** Scripts Registry sync validated  

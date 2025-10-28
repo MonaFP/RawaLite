@@ -1,5 +1,23 @@
 ## 📘 **`DOCUMENTATION-RESTRUCTURING-PLAN-v2.md`**
 
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** DEPRECATED - Ersetzt durch ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION | **Typ:** Plan - Documentation Restructuring V2  
+> **Schema:** `DEPRECATED_PLAN-DOCUMENTATION-RESTRUCTURING-V2-2025-10-15.md` ✅ **SCHEMA-COMPLIANT**  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** DEPRECATED - Obsolete (automatisch durch "DEPRECATED_PLAN", "Restructuring V2" erkannt)
+> - **TEMPLATE-QUELLE:** DEPRECATED Template
+> - **AUTO-UPDATE:** Bei Documentation-Struktur-Fragen automatisch auf aktuelle Navigation verweisen
+> - **STATUS-KEYWORDS:** Erkannt durch "DEPRECATED", "Documentation Restructuring", "V2"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **❌ STATUS = DEPRECATED:**
+> - ❌ **ACTIVE IGNORE** - Nicht für aktuelle Implementierung verwenden
+> - 📖 **HISTORICAL ONLY** - Nur für Verständnis alter Struktur-Entscheidungen
+> - 🔄 **AUTO-REDIRECT:** Bei Struktur-Fragen auf [../../ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md](../../ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md) verweisen
+> - ⚠️ **REPLACEMENT:** Aktuelle Documentation-Struktur in ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION
+
 ```md
 # 🗂️ RawaLite Documentation Restructuring Plan (v2)
 

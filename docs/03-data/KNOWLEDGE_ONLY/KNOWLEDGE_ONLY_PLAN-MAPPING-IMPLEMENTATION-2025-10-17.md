@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # CamelCase ↔ Snake_Case Mapping Implementation Plan
 **"Doppelte Sicherheit" - Vollumfängliche Mapping-Architektur**
 

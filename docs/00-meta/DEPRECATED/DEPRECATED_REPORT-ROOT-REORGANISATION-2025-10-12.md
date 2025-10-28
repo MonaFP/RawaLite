@@ -1,5 +1,23 @@
 # ROOT-DATEIEN REORGANISATION
 
+> **Erstellt:** 12.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** DEPRECATED - Workspace Organisation abgeschlossen | **Typ:** Report - Root Reorganisation  
+> **Schema:** `DEPRECATED_REPORT-ROOT-REORGANISATION-2025-10-12.md` ✅ **SCHEMA-COMPLIANT**  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** DEPRECATED - Obsolete (automatisch durch "DEPRECATED_REPORT", "Root Reorganisation" erkannt)
+> - **TEMPLATE-QUELLE:** DEPRECATED Template
+> - **AUTO-UPDATE:** Bei Workspace-Organisation-Fragen automatisch auf aktuelle Struktur verweisen
+> - **STATUS-KEYWORDS:** Erkannt durch "DEPRECATED", "Root Reorganisation", "Workspace Organisation"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **❌ STATUS = DEPRECATED:**
+> - ❌ **ACTIVE IGNORE** - Report obsolete, Workspace-Organisation abgeschlossen
+> - 📖 **HISTORICAL ONLY** - Nur für Verständnis alter Root-Reorganisation-Workflows
+> - 🔄 **AUTO-REDIRECT:** Bei Workspace-Struktur-Fragen auf aktuelle docs/ Struktur verweisen
+> - ⚠️ **REPLACEMENT:** Aktuelle Workspace-Organisation ist etabliert und stabil
+
 **Datum:** 12. Oktober 2025  
 **Durchgeführt von:** KI-Assistant  
 **Kontext:** Workspace-Organisation nach RawaLite Strukturlogik  

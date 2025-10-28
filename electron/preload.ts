@@ -356,6 +356,27 @@ contextBridge.exposeInMainWorld('rawalite', {
     validateSchema: () => 
       ipcRenderer.invoke('navigation:validate-schema') as Promise<boolean>,
   },
+  // 🦶 Footer Management API (Enhanced Focus-Bar Approach)
+  footer: {
+    getContentPreferences: (userId?: string, navigationMode?: string) => 
+      ipcRenderer.invoke('footer:get-content-preferences', userId, navigationMode) as Promise<any>,
+    updateContentPreferences: (preferences: any) => 
+      ipcRenderer.invoke('footer:update-content-preferences', preferences) as Promise<boolean>,
+    getFocusModePreferences: (userId?: string) => 
+      ipcRenderer.invoke('footer:get-focus-mode-preferences', userId) as Promise<any>,
+    updateFocusModePreferences: (preferences: any) => 
+      ipcRenderer.invoke('footer:update-focus-mode-preferences', preferences) as Promise<boolean>,
+    getConfiguration: (userId?: string) => 
+      ipcRenderer.invoke('footer:get-configuration', userId) as Promise<any>,
+    getStatusInfo: () => 
+      ipcRenderer.invoke('footer:get-status-info') as Promise<any>,
+    executeQuickAction: (actionId: string) => 
+      ipcRenderer.invoke('footer:execute-quick-action', actionId) as Promise<boolean>,
+    getQuickActions: () => 
+      ipcRenderer.invoke('footer:get-quick-actions') as Promise<any[]>,
+    validateSystem: () => 
+      ipcRenderer.invoke('footer:validate-system') as Promise<boolean>,
+  },
   
   // 🔧 Central Configuration Management API
   configuration: {

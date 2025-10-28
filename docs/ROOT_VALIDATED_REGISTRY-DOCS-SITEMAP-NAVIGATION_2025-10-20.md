@@ -1,9 +1,23 @@
 # RawaLite Documentation - Vollständige Sitemap & Navigation
 
-> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Ordnerstruktur korrigiert: /final/ → STATUS-PRÄFIX, Schema Version 46 Update)  
+> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (06-handbook Struktur-Korrektur - ABWEICHENDE thematische Ordner dokumentiert)  
 > **Status:** Production Ready | **Typ:** Registry - Documentation Sitemap & Navigation  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md` ✅ **SCHEMA-COMPLIANT**  
 > **🛡️ ROOT-PROTECTED:** Master Navigation für gesamte Documentation, NIEMALS verschieben!
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch "180+ Dokumente strukturiert" erkannt)
+> - **TEMPLATE-QUELLE:** ROOT_VALIDATED_REGISTRY Template
+> - **AUTO-UPDATE:** Bei Dokumentations-Struktur-Änderung automatisch Navigation aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Master-Sitemap", "180+ Dokumente", "Production Ready"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Production Ready:**
+> - ✅ **Navigation-Hub** - Verlässliche Quelle für gesamte Dokumentations-Struktur
+> - ✅ **Master-Sitemap** - Authoritative Landkarte für alle 8 Dokumentations-Bereiche
+> - 🎯 **AUTO-REFERENCE:** Bei Dokumentations-Navigation IMMER dieses Registry verwenden
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "NAVIGATION BROKEN" → Sitemap-Update erforderlich
 
 > **⚠️ DOCUMENTATION NAVIGATION STATUS:** 180+ Dokumente strukturiert (27.10.2025)  
 > **Folder Structure:** STATUS-PRÄFIX Ordner (VALIDATED/, COMPLETED/, SOLVED/, etc.) - /final/ veraltet!  
@@ -176,8 +190,18 @@ docs/05-deploy/
 └── DEPRECATED/                   # Veraltete Deployment-Inhalte
 ```
 
-### **📂 06-handbook (Templates & Referenzen)**
+### **📂 06-handbook (Templates & Referenzen - ABWEICHENDE Struktur)**
+```
+docs/06-handbook/
+├── INDEX.md
+├── test-auto-detection.md
+├── ANTIPATTERN/                  # Fehler-Prevention
+├── REFERENCE/                    # Aktueller Projekt-Stand  
+├── TEMPLATE/                     # Session-Templates
+└── ISSUES/                       # Bekannte Probleme
+```
 - **Purpose:** Template-System für KI-Sessions, Referenz-Dokumentation, Anti-Pattern Registry
+- **AUSNAHME:** Verwendet thematische Ordner statt STATUS-PRÄFIX Struktur
 - **Key Features:** SESSION-START Templates, Database Schema Reference, KI-Mistakes Anti-Pattern
 - **Critical Files:**
   - `TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md` (Session-Start Template)

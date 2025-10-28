@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # 🎯 Navigation Mode Class Violations - SOLVED
 
 > **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (Fix-Implementation)  

@@ -1,3 +1,5 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # SQLiteAdapter - Vollständigkeits-Analyse & Implementation Report
 **Datum: 30. September 2025**  
 **Status: ✅ VOLLSTÄNDIG IMPLEMENTIERT**

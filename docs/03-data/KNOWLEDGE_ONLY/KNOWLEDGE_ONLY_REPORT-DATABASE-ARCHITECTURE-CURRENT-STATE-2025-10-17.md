@@ -1,3 +1,5 @@
+vCAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 # 📊 RawaLite Database Architecture - Current State (Schema Version 46)
 
 > **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Schema Version korrigiert 29→46, KI-PRÄFIX compliance)  

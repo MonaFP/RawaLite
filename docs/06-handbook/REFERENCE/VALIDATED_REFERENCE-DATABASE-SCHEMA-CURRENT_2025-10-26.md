@@ -1,9 +1,25 @@
 # 🗄️ Database Schema - Live Reference
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Schema Version auf 46 korrigiert, KI-PRÄFIX Schema compliance)  
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Status:** Live Database Schema | **Typ:** Current Schema State  
 > **Schema:** `VALIDATED_REFERENCE-DATABASE-SCHEMA-CURRENT_2025-10-26.md`  
 > **Source:** ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md
+
+## 🤖 **KI-AUTO-DETECTION SYSTEM**
+
+**🎯 STATUS DETECTION KEYWORDS:**
+- `Live Database Schema` → **SCHEMA-CRITICAL** - Aktuelle Production Database Struktur
+- `Current Schema State` → **LIVE-REFERENCE** - Real-time Database Status
+- `046 Migrationen aktiv` → **MIGRATION-STATUS** - Aktueller Schema-Stand
+- `Production database` → **PRODUCTION-READY** - Live Environment Status
+
+**📖 TEMPLATE SOURCE:** [VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md](../TEMPLATE/VALIDATED_TEMPLATE-KI-AUTO-DETECTION-SYSTEM_2025-10-26.md)  
+**🔄 AUTO-UPDATE TRIGGER:** Migration-Änderungen, Schema-Updates, Database-Strukturänderungen  
+**🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+- ✅ **SCHEMA-PRIORITY:** Nutze als primäre Database-Referenz für alle DB-Operations  
+- ✅ **MIGRATION-CHECK:** Überprüfe aktuelle Migration-Anzahl vor Schema-Änderungen
+- ✅ **FIELD-MAPPER-COMPLIANCE:** Verwende Field-Mapper für alle SQL-Queries
+- ❌ **FORBIDDEN:** Hardcoded Schema-Annahmen ohne Verification
 
 ## 📋 **SCHEMA-ÜBERSICHT nach KI-PRÄFIX-ERKENNUNGSREGELN**
 
@@ -17,7 +33,7 @@
 
 > **⚡ LIVE SCHEMA - Aktueller Datenbank-Zustand**  
 > **Zweck:** Current database schema reference für KI-Sessions  
-> **Migration Status:** 46 Migrationen aktiv (Schema Version 46 verified 27.10.2025)
+> **Migration Status:** 046 Migrationen aktiv (000-045, Schema Version 46 verified 27.10.2025)
 
 ## 🎯 **CURRENT SCHEMA OVERVIEW**
 
@@ -25,7 +41,7 @@
 - **Location:** `C:\Users\ramon\AppData\Roaming\Electron\database\rawalite.db`
 - **Engine:** SQLite 3.x mit WAL mode
 - **Size:** ~5100KB (Production database with real data)
-- **Migration Count:** 46 aktive Migrationen (Schema Version 46)
+- **Migration Count:** 046 aktive Migrationen (000-045, Schema Version 46)
 - **Last Schema Update:** Migration 046 (verified 27.10.2025)
 - **Active Tables:** 29 Tabellen total (verified via database inspection)
 

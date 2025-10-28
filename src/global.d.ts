@@ -203,6 +203,18 @@ declare interface Window {
       resetPreferences: (userId?: string) => Promise<boolean>;
       validateSchema: () => Promise<boolean>;
     };
+    // 🦶 Footer Management API (Enhanced Focus-Bar Approach)
+    footer: {
+      getContentPreferences: (userId?: string, navigationMode?: string) => Promise<any>;
+      updateContentPreferences: (preferences: any) => Promise<boolean>;
+      getFocusModePreferences: (userId?: string) => Promise<any>;
+      updateFocusModePreferences: (preferences: any) => Promise<boolean>;
+      getConfiguration: (userId?: string) => Promise<any>;
+      getStatusInfo: () => Promise<any>;
+      executeQuickAction: (actionId: string) => Promise<boolean>;
+      getQuickActions: () => Promise<any[]>;
+      validateSystem: () => Promise<boolean>;
+    };
   };
   // 📄 PDF API (v1.7.5 Rollback for native Electron PDF generation)
   electronAPI?: {

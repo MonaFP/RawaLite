@@ -32,14 +32,15 @@ function colorize(text, color) {
 
 // Expected folder structure - UPDATED for current repo structure
 const EXPECTED_FOLDERS = {
-  '00-meta': 'Meta-documentation, project management, KI instructions',
+  '00-meta': 'Project meta-documentation, KI instructions',
   '01-core': 'Core system architecture, standards, testing',
   '02-dev': 'Development implementation, ABI tools, lessons',
   '03-data': 'Database, SQLite, migrations, field mapping',
   '04-ui': 'User interface, components, PDF, themes',
   '05-deploy': 'Deployment, updates, GitHub integration',
-  '06-lessons': 'Lessons learned, session reports, retrospectives',
-  'archive': 'Archived deprecated and backup documents'
+  '06-handbook': 'Templates, references, antipatterns (KI-HANDBOOK)',
+  '08-batch': 'Batch processing and operations',
+  '09-archive': 'Archived deprecated and backup documents'
 };
 
 // Naming pattern rules - UPDATED for current schema

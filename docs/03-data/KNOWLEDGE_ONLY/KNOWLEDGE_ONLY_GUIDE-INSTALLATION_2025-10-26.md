@@ -1,3 +1,4 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 # SQLite Database Installation & Setup Guide
 
 **Version**: 1.0.0  

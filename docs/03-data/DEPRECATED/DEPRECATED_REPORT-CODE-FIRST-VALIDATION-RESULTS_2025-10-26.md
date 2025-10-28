@@ -1,3 +1,8 @@
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
+
+
+
 # 03-data/ CODE-FIRST VALIDATION RESULTS
 
 > **Validierung:** 23.10.2025 | **Methode:** Repository als Ground Truth  
