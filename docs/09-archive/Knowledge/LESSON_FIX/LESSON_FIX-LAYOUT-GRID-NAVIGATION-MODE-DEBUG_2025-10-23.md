@@ -1,5 +1,5 @@
 # 🐛 Layout Grid Navigation Mode Debug Session
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 23.10.2025 | **Letzte Aktualisierung:** 23.10.2025 (Debug Session Start)  
 > **Status:** ACTIVE DEBUGGING | **Typ:** Lessons Learned Debug Session  
 > **Schema:** `LESSON_FIX-LAYOUT-GRID-NAVIGATION-MODE-DEBUG_2025-10-23.md`

@@ -1,5 +1,5 @@
 # Lessons Learned – Sub-Items PDF Architecture Analysis
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ---
 id: LL-PDF-001
 bereich: 09-pdf/sub-items-rendering

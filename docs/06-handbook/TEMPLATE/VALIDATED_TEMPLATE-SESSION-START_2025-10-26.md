@@ -1,9 +1,27 @@
-# � Session-Start Template - [SESSION_TYP] - [DATUM]
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (Phase 1: Echtes Template erstellt)  
-> **Status:** Template | **Typ:** Ausfüllbares Session-Start Template  
+# 📋 Session-Start Template - [SESSION_TYP] - [DATUM]
+
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Entfernung)  
+> **Status:** Production Ready | **Typ:** Template - Ausfüllbares Session-Start Template  
 > **Schema:** `VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md`  
 > **Usage:** Kopiere und fülle Platzhalter aus für neue sessions
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch "Session-Start Template", "Ausfüllbar" erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook TEMPLATE Session-Start Template
+> - **AUTO-UPDATE:** Bei Session-Protokoll-Änderung automatisch Template aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Session-Start Template", "Ausfüllbar", "Production Ready"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Production Ready:**
+> - ✅ **Session-Template** - Verlässliche Vorlage für strukturierte Session-Vorbereitung
+> - ✅ **Copy-Paste-Ready** - Vollständig bereit zum Kopieren und Ausfüllen für neue Sessions
+> - 🎯 **AUTO-REFERENCE:** Bei Session-Start IMMER dieses Template verwenden
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "SESSION TEMPLATE NEEDED" → Template kopieren und ausfüllen
+
+> **⚠️ SESSION-TEMPLATE STATUS:** Production Ready für alle Session-Start-Protokolle (29.10.2025)  
+> **Template Integration:** KI-SESSION-BRIEFING mandatory vor jeder Session-Creation  
+> **Critical Function:** Strukturierte Session-Vorbereitung mit vollständiger KI-Integration
 
 > **🎯 AUSFÜLLBARES TEMPLATE - Platzhalter ersetzen**  
 > **Zweck:** Strukturierte Session-Vorbereitung mit Checkliste  
@@ -28,7 +46,26 @@ CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 - [ ] **Project Rules gelesen:** [06-handbook/REFERENCE/VALIDATED_REFERENCE-PROJECT-CORE-RULES_2025-10-26.md](../REFERENCE/VALIDATED_REFERENCE-PROJECT-CORE-RULES_2025-10-26.md)
 - [ ] **Anti-patterns reviewed:** [06-handbook/ANTIPATTERN/VALIDATED_ANTIPATTERN-KI-MISTAKES_2025-10-26.md](../ANTIPATTERN/VALIDATED_ANTIPATTERN-KI-MISTAKES_2025-10-26.md)
 - [ ] **Known Issues checked:** [06-handbook/ISSUES/](../ISSUES/) (falls vorhanden)
+- [ ] **Backup Strategy prepared:** Bei file replacement immer `.backup` file erstellen
 - [ ] **Validation executed:** `pnpm validate:critical-fixes`
+
+### **🔒 FILE BACKUP PROTOCOL (BEI FILE REPLACEMENT):**
+```powershell
+# MANDATORY: Backup vor jeder file replacement Operation
+Copy-Item "path/to/file.ts" -Destination "path/to/file.ts.backup"
+
+# Verify backup exists
+Test-Path "path/to/file.ts.backup"  # Must return True
+
+# DANN erst file replacement durchführen
+```
+
+**Backup Required für:**
+- ✅ Complete file rewrite oder replacement
+- ✅ Complex refactoring operations  
+- ✅ Legacy cleanup mit structural changes
+- ✅ Service layer modifications
+- ✅ Type system changes affecting multiple files
 
 ### **🎯 SESSION SCOPE (AUSFÜLLEN):**
 ```markdown

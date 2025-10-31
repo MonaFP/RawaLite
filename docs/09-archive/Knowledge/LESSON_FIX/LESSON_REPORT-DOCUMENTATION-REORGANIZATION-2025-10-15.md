@@ -1,5 +1,5 @@
 # LESSONS LEARNED: KI-Optimierte Dokumentationsreorganisation
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 2025-10-02  
 **Status:** ✅ ABGESCHLOSSEN  
 **Kategorie:** Documentation Architecture  

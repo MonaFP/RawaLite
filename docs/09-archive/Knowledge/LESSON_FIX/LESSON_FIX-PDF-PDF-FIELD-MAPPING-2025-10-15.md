@@ -1,5 +1,5 @@
 # PDF Field Mapping Fix - RawaLite
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Problem Summary
 PDF generation showing "undefined" values for offer titles and "Invalid Date" for validUntil fields.
 

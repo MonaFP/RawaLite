@@ -1,5 +1,4 @@
 # Feature Documentation: Image Upload für Angebote
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Übersicht
 Das Image Upload System ermöglicht es Benutzern, Bilder zu Angebotspositionen hinzuzufügen, die automatisch in generierten PDFs angezeigt werden.
 

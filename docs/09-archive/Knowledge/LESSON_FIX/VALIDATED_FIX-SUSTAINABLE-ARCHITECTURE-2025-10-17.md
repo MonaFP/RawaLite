@@ -1,5 +1,5 @@
 # RawaLite Nachhaltige Architektur-Bereinigung
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## 📋 Status: ✅ COMPLETED
 **Last Updated:** 17.10.2025  
 **Version:** v1.0.47 (Migration 029 applied)  

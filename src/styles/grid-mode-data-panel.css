@@ -1,19 +1,17 @@
 /* ✅ GRID MODE: Data Panel (dreizeilig, keine Focus-Bar) */
 
 :root {
-  --mode-data-panel-sidebar-width: 280px;
+  --mode-data-panel-sidebar-width: 240px; /* CORRECTED: CompactSidebar is 240px like Dashboard View */
   --mode-data-panel-header-height: 160px;
   --mode-data-panel-footer-height: 60px;
 
   --db-mode-data-panel-grid-template-columns: var(--mode-data-panel-sidebar-width) 1fr;
   --db-mode-data-panel-grid-template-rows:
     var(--mode-data-panel-header-height)
-    1fr
-    var(--mode-data-panel-footer-height);
+    1fr;
   --db-mode-data-panel-grid-template-areas:
     "sidebar header"
-    "sidebar main"
-    "sidebar footer";
+    "sidebar main";
 }
 
 [data-navigation-mode="mode-data-panel"] {
@@ -23,6 +21,7 @@
   grid-template-columns: var(--db-mode-data-panel-grid-template-columns);
   grid-template-rows: var(--db-mode-data-panel-grid-template-rows);
   grid-template-areas: var(--db-mode-data-panel-grid-template-areas);
+  /* ✅ FIXED: Nahtloses Layout wie Compact Focus - kein gap oder padding */
 }
 
 [data-navigation-mode="mode-data-panel"] .header,
@@ -51,13 +50,15 @@
 }
 
 [data-navigation-mode="mode-data-panel"] .footer-area {
-  grid-area: footer;
+  /* REMOVED: grid-area: footer; - Now uses Flex positioning within main */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
   background: var(--card);
   border-top: 1px solid var(--border);
+  margin-top: auto; /* Flex positioning */
+  flex: 0 0 auto; /* Fixed size */
 }
 
 [data-navigation-mode="mode-data-panel"][data-focus-mode="active"] .sidebar,
@@ -69,6 +70,5 @@
   grid-template-columns: 1fr;
   grid-template-areas:
     "header"
-    "main"
-    "footer";
+    "main";
 }

@@ -94,11 +94,9 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
 
   const [mode, setMode] = useState<NavigationMode>(DEFAULT_NAVIGATION_MODE);
   
-  // CRITICAL FIX: Set data-navigation-mode attribute immediately when mode changes
-  useEffect(() => {
-    console.log('[NavigationContext] Setting data-navigation-mode attribute:', mode);
-    document.body.setAttribute('data-navigation-mode', mode);
-  }, [mode]);
+  // REMOVED: Redundant DOM attribute setting - App.tsx handles this via JSX
+  // The data-navigation-mode attribute is set directly in App.tsx JSX: <div className="app" data-navigation-mode={mode}>
+  // No need for manual DOM manipulation - React handles this automatically
   
   // FIXED: Simplified setMode function without circular dependency
   const enhancedSetMode = async (newMode: NavigationMode) => {
@@ -278,10 +276,9 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     console.log('[NavigationContext] Mode changed, applying CSS and saving:', mode);
     
     const updateNavigationMode = async () => {
-      // CRITICAL FIX: Apply CSS class to root element IMMEDIATELY for layout changes
-      const root = document.documentElement;
-      root.setAttribute('data-navigation-mode', mode);
-      console.log('[NavigationContext] data-navigation-mode attribute set to:', mode);
+      // REMOVED: Redundant DOM attribute setting - App.tsx handles this via JSX
+      // The data-navigation-mode is set in App.tsx: <div className="app" data-navigation-mode={mode}>
+      console.log('[NavigationContext] Mode changed to:', mode, '(DOM attribute handled by App.tsx JSX)');
       
       // Update dimensions based on mode if not loaded from database yet
       if (!isLoading && !preferences) {

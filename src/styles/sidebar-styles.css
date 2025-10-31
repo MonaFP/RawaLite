@@ -8,14 +8,14 @@
   background: var(--sidebar-bg);
   border-right: 1px solid rgba(255,255,255,.08);
   padding: 16px 12px;
-  min-height: 100vh;
+  height: 100%; /* ✅ FIXED: Grid-Area height statt min-height: 100vh */
   box-shadow: 2px 0 10px rgba(0,0,0,.2);
   width: 100%;
-  height: 100%;
   box-sizing: border-box;
+  overflow-y: auto; /* ✅ ADDED: Scroll für lange Inhalte */
 }
 
-/* Compact Sidebar Styles for Header Mode - 240px optimiert */
+/* Compact Sidebar Styles - 280px für CSS Grid Compatibility */
 .compact-sidebar {
   grid-area: sidebar;
   background: var(--sidebar-bg);
@@ -23,13 +23,13 @@
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  width: 240px !important;  /* ✅ FIX: Aus alter Doku - explizite Breite */
+  width: 280px !important;  /* ✅ FIX: CSS Grid erwartet 280px in ALLEN Modi */
   height: 100%;
   box-sizing: border-box;
   gap: 20px;
 }
 
-/* Navigation Only Sidebar - 240px optimiert für bessere Lesbarkeit */
+/* Navigation Only Sidebar - 280px width für CSS Grid consistency */
 .navigation-only-sidebar {
   grid-area: sidebar;
   background: var(--sidebar-bg);
@@ -37,7 +37,7 @@
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 280px !important;  /* ✅ FIX: CSS Grid erwartet 280px wie CompactSidebar */
   height: 100%;
   box-sizing: border-box;
   gap: 24px;

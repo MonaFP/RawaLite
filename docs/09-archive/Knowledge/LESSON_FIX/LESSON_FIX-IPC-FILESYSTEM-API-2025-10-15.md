@@ -1,5 +1,5 @@
 # LESSONS LEARNED: IPC-basierte Filesystem API
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Problem gelöst:** ❌ **NICHT GELÖST** - ERR_FILE_NOT_FOUND weiterhin vorhanden  
 **Lösung implementiert:** IPC-basierte Filesystem API (war nicht die root cause)  
 **Datum:** 29.09.2025  

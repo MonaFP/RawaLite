@@ -1,5 +1,5 @@
 # Lessons Learned: Sub-Items Dev-Prod PDF Consistency Fix
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Status:** ✅ **PRODUCTION FIXED**  
 **Version:** v1.0.42.5  
 **Author:** RawaLite Team  

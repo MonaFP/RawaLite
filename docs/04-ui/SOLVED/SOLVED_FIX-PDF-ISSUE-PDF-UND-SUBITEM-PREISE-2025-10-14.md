@@ -1,5 +1,4 @@
 # Issue Report: PDF & SubItem Pricing
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Drei Issues aus User-Testing** nach OfferForm SubItems Bug Fix (v1.0.42.5)
 > 
 > **Datum:** 14. Oktober 2025 | **Version:** 1.0.0

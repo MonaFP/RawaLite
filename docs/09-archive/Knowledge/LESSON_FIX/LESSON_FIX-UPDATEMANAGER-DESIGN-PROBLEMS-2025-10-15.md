@@ -1,5 +1,5 @@
 # Lessons Learned: UpdateManager Design & Progress Bar Problems
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ---
 **ID:** LL-UPDATEMANAGER-002  
 **Bereich:** ui/update-manager  

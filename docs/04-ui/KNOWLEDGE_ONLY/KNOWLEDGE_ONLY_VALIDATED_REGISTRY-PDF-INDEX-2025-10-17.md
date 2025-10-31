@@ -1,5 +1,4 @@
 # 40-pdf INDEX
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## 📄 Übersicht: PDF-System
 
 ### 🎯 Zweck

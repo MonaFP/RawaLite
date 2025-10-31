@@ -1,5 +1,5 @@
 # Lessons Learned – Nummernkreis-Debugging Session
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Problem:** Angebotsnummern zeigen lange Timestamp-Zahlen (AN-1759581138675) statt 4-stellige Nummern (AN-0001)  
 **Datum:** 2025-10-04  
 **Session:** Nummernkreis-Service Debugging

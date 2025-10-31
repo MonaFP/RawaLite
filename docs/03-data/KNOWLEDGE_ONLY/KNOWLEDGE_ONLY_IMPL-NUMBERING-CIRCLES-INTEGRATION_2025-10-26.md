@@ -1,5 +1,4 @@
 # Numbering Circles Integration Architecture
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 2. Oktober 2025  
 **Kontext:** Frontend-Database Integration für Nummernkreise  
 **Problem:** Dual-System mit localStorage vs SQLite Database

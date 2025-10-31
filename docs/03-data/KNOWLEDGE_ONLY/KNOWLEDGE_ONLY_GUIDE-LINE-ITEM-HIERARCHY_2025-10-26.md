@@ -1,5 +1,4 @@
 # Line Item Hierarchy Fields – Documentation
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 $12025-10-17**Version:** Schema v24
 
 ## 🎯 Ziel
@@ -40,5 +39,3 @@ $12025-10-17**Version:** Schema v24
 ## 📌 Folgeaufgaben
 - PDF-Views (Phase 3) nutzen hierarchy_level und sort_order für sortierte Ausgabe.
 - Frontend kann später hierarchyLevel aktiv pflegen (nicht blocker für diese Phase).
-
-

@@ -1,6 +1,6 @@
 # RawaLite - Implementations Overview & Registry
 
-> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 30.10.2025 (CRITICAL FIX: Navigation System Code-Verification - Korrektur der falschen 4-Modi-Behauptung zu tatsächlichen 3 Modi)  
 > **Status:** Production Ready | **Typ:** Registry - Implementation Overview & Status  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-IMPLEMENTATIONS-OVERVIEW_2025-10-17.md` ✅ **SCHEMA-COMPLIANT**  
 > **🛡️ ROOT-PROTECTED:** Master Registry für alle Implementierungen, NIEMALS verschieben!
@@ -77,16 +77,18 @@
 - **Location:** `src/persistence/`
 - **Key Files:** `SQLiteAdapter.ts`, `migrations/`, `database.ts`
 - **Pattern:** Field-Mapper + Adapter-Pattern
-- **Migration:** Aktuell bei Migration 028 (Navigation System)
+- **Migration:** Schema Version 47 (Migration 037 - Central Configuration Complete)
 - **Guards:** `pnpm validate:migrations`, Schema-Validation
 - **CRITICAL:** NIEMALS snake_case SQL hardcoden - IMMER convertSQLQuery()
+- **Database-First Rule:** Alle Business Logic über Service Layer + Field-Mapper
 
 ### 🔐 **IPC Communication System**
 - **Location:** `electron/ipc/`, `src/lib/ipc/`
 - **Pattern:** Type-Safe Channel-Registry + Validation
 - **Security:** Whitelist-basiert, Input-Validation, Process-Isolation
 - **Guards:** `pnpm validate:ipc`, Channel-Registry
-- **Key Channels:** `database:*`, `pdf:*`, `backup:*`, `auth:*`
+- **Key Channels:** `database:*`, `pdf:*`, `backup:*`, `auth:*`, `configuration:*` (NEW)
+- **Navigation IPC:** `configuration:get-active-config`, `configuration:update-navigation-mode`
 
 ### 📱 **Frontend Architecture (React + TypeScript)**
 - **Location:** `src/components/`, `src/pages/`, `src/hooks/`
@@ -98,10 +100,17 @@
 ### 🎨 **Theme & Styling System**
 - **Location:** `src/styles/` (CSS) + `src/services/` (Services)
 - **Architecture:** Database-First + Modular CSS + CSS Variables + Status System
-- **Services:** `DatabaseThemeService.ts`, `DatabaseNavigationService.ts` (in `src/services/`)
+- **Services:** `DatabaseThemeService.ts`, `DatabaseNavigationService.ts`, `DatabaseConfigurationService.ts` (in `src/services/`)
 - **Themes:** 6 Themes (sage, sky, lavender, peach, rose, default)
-- **Navigation:** 3 Modi (header, sidebar, full-sidebar)
+- **Navigation:** **3 Modi** (CODE-VERIFIED) - **INDIVIDUAL CONFIGURATION** per Mode:
+  - `mode-dashboard-view` (Dashboard View mit Statistiken) ✅ AKTUELL
+  - `mode-data-panel` (Erweiterte Datenansicht mit Navigation) ✅ AKTUELL  
+  - `mode-compact-focus` (Minimale Oberfläche für konzentriertes Arbeiten) ✅ AKTUELL
+- **Legacy Mapping:** `header-statistics` → `mode-dashboard-view`, `header-navigation` → `mode-data-panel`, `full-sidebar` → `mode-compact-focus`
+- **Per-Mode Settings:** Migration 034-036 (individuell konfigurierbare Header Heights + Mode-Settings)
+- **Central Configuration:** DatabaseConfigurationService als Single Source of Truth (Phase 7 Complete)
 - **Status Colors:** CSS Variables Master-Source (pastel colors)
+- **⚠️ LEGACY WARNING:** Navigation System verwendet neue naming convention `mode-*` (aktuell) mit Legacy-Kompatibilität für `header-*` und `full-sidebar` Namen
 
 ### 📄 **PDF Generation Pipeline**
 - **Location:** `src/main/services/PdfService.ts`
@@ -130,8 +139,8 @@
 |---------|----------|-------|--------|
 | **DatabaseService** | `src/main/services/` (legacy location) | Database-Abstraction | ⚠️ Legacy |
 | **DatabaseThemeService** | `src/services/DatabaseThemeService.ts` | Theme CRUD + Validation | ✅ Produktiv |
-| **DatabaseNavigationService** | `src/services/DatabaseNavigationService.ts` | Navigation Preferences | ✅ Produktiv |
-| **DatabaseConfigurationService** | `src/services/DatabaseConfigurationService.ts` | Central Configuration Management | ✅ **PHASE 7 COMPLETE** |
+| **DatabaseNavigationService** | `src/services/DatabaseNavigationService.ts` | Navigation Preferences + Per-Mode Settings | ✅ Produktiv |
+| **DatabaseConfigurationService** | `src/services/DatabaseConfigurationService.ts` | Central Configuration Management (Single Source of Truth) | ✅ **PHASE 7 COMPLETE** |
 | **UpdateManagerService** | `src/main/services/UpdateManagerService.ts` | Auto-Updates + GitHub | ✅ Produktiv |
 | **GitHubApiService** | `src/main/services/GitHubApiService.ts` | Release-Download + Verify | ✅ Produktiv |
 | **AuthService** | `src/main/services/` (if exists) | Session Management | ⚠️ Verify |
@@ -362,9 +371,12 @@ pnpm validate:ipc            # IPC security
 - ❌ Hardcoded snake_case SQL ohne convertSQLQuery()
 - ❌ Externe Links oder shell.openExternal()
 - ❌ npm/yarn statt pnpm
-- ❌ app.getPath() außerhalb paths.ts
+- ❌ app.getPath() außerhalb paths.ts (Renderer Process - verwende PATHS System)
 - ❌ Direktimporte SQLiteAdapter/DexieAdapter
 - ❌ Entfernung von Critical Fix Patterns
+- ✅ **Navigation Modes:** Code-verifiziert: 3 Modi (`mode-dashboard-view`, `mode-data-panel`, `mode-compact-focus`) mit Legacy-Kompatibilität
+- ❌ **Database-First:** Direkte Database-Access ohne Service Layer + Field-Mapper
+- ❌ **Central Configuration:** Bypassing DatabaseConfigurationService für Konfiguration
 
 ---
 
@@ -384,10 +396,11 @@ pnpm validate:ipc            # IPC security
 
 ---
 
-## 🔮 **ZUKUNFTS-ROADMAP**
+### 🔮 **ZUKUNFTS-ROADMAP**
 
 ### 🎯 **Geplante Features**
 - **Central Configuration System** - ✅ **PHASE 7 COMPLETE** - DatabaseConfigurationService mit vollem IPC + Test-Coverage
+- **Navigation Mode Legacy Cleanup** - ⚠️ **PENDING** - Obsolete Navigation Mode Namen identifizieren und migrieren
 - **Advanced Reporting** - Extended PDF templates
 - **Multi-Language Support** - i18n infrastructure
 - **Plugin System** - Extensible architecture

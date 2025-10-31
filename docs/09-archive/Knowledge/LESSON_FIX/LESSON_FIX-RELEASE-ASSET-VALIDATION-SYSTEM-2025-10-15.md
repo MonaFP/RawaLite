@@ -1,5 +1,5 @@
 # LESSONS LEARNED: Release Asset Validation System
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Problem:** "Failed to parse URL from" error recurring despite previous fixes  
 > **Root Cause:** Releases created without assets due to GitHub Actions failures  
 > **Solution:** Multi-layer asset validation system  

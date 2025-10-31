@@ -167,8 +167,8 @@ export class DatabaseNavigationService {
     // CSS Grid template columns for each mode
     // Updated to use NEW Migration 045 schema modes with consistent sidebar widths
     GRID_TEMPLATE_COLUMNS: {
-      'mode-dashboard-view': '240px 1fr',       // Statistics sidebar (compact navigation)
-      'mode-data-panel': '280px 1fr',           // Navigation sidebar (compact statistics)
+      'mode-dashboard-view': '240px 1fr',       // NavigationOnly sidebar (compact navigation)
+      'mode-data-panel': '240px 1fr',           // CompactSidebar (company + statistics cards) - CORRECTED from 280px
       'mode-compact-focus': '240px 1fr'         // Full sidebar (both navigation + statistics)
     },
     

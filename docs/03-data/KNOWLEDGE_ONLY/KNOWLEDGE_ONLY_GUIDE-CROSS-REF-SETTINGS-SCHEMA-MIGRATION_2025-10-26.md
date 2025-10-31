@@ -1,5 +1,3 @@
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-
 # Settings Schema Migration - Cross-Reference
 
 **Problem:** SQLite Settings-Tabelle Schema-Mismatch mit SettingsAdapter  

@@ -4,6 +4,7 @@
 @import url('./styles/fallback-grid.css');              /* 1. Emergency Fallback (niedrigste Priorität) */
 @import url('./styles/layout-grid.css');                /* 2. Database-First Layout (höchste Priorität) */
 @import url('./styles/header-styles.css');
+@import url('./styles/header-navigation.css');          /* ✅ NEW: HeaderNavigation Component Styling */
 @import url('./styles/sidebar-styles.css');
 @import url('./styles/main-content.css');
 

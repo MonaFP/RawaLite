@@ -1,5 +1,5 @@
 # Lessons Learned – API Bereinigung & PATH Compliance
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert alle Debugging- und Analyse-Versuche zu Legacy API Cleanup und PATH System Compliance.  
 Ziel: **KI soll wissen, was bereits probiert wurde, mit welchem Ergebnis**, um Doppelarbeit zu vermeiden.
 

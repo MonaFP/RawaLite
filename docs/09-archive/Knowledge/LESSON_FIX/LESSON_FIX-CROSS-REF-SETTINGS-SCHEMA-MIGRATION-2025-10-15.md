@@ -1,5 +1,5 @@
 # Settings Schema Migration - Cross-Reference
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Problem:** SQLite Settings-Tabelle Schema-Mismatch mit SettingsAdapter  
 **Kategorie:** Database Schema Evolution  
 **Status:** ✅ Gelöst (2025-10-01)  

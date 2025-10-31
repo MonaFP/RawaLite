@@ -1,5 +1,5 @@
 # better-sqlite3 Electron ABI Fix Implementation
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## 🎯 Problem Solved
 Fixed Node.js MODULE_VERSION 127 vs Electron ABI 125 compilation conflicts that prevented proper database access for status dropdown debugging.
 

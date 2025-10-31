@@ -1,5 +1,5 @@
 # Lessons Learned – Update Installation Error
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## 📑 Problem Statement
 ---
 id: LL-UPDATE-002

@@ -1,5 +1,5 @@
 # Lessons Learned – SQLite Nummernkreis-System
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert alle Debugging- und Analyse-Versuche zum **SQLite-basierten Nummernkreis-System**.  
 Ziel: **KI soll wissen, was bereits probiert wurde, mit welchem Ergebnis**, um Doppelarbeit zu vermeiden.
 

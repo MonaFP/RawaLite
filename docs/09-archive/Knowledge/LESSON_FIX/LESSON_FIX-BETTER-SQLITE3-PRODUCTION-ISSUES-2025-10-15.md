@@ -1,5 +1,5 @@
 # better-sqlite3 Production Issues - Ungelöst
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Status:** 🔴 UNGELÖST  
 > **Typ:** Native Module Packaging  
 > **Betroffen:** Production Builds, Installation  

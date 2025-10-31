@@ -1,5 +1,5 @@
 # Nummernkreise Problem & Lösung
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 2025-10-02  
 **Status:** ✅ Gelöst  
 **Kategorie:** Production Bug - Datenbank Migration

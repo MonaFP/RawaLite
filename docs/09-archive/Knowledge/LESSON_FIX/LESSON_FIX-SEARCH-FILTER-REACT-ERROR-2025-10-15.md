@@ -1,5 +1,5 @@
 # Lessons Learned – Search Filter React Error
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert alle Debugging-Versuche zum React Minified Error #31 bei der Search & Filter Implementierung.
 **Ziel:** React-Rendering-Fehler bei SearchAndFilterBar-Komponenten beheben.
 

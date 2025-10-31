@@ -1,6 +1,6 @@
 # RawaLite Documentation - Vollständige Sitemap & Navigation
 
-> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (06-handbook Struktur-Korrektur - ABWEICHENDE thematische Ordner dokumentiert)  
+> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 30.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Schema-Update - KNOWLEDGE_ONLY_ Präfix Integration + Navigation-Modi-Korrektur)  
 > **Status:** Production Ready | **Typ:** Registry - Documentation Sitemap & Navigation  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md` ✅ **SCHEMA-COMPLIANT**  
 > **🛡️ ROOT-PROTECTED:** Master Navigation für gesamte Documentation, NIEMALS verschieben!
@@ -64,6 +64,7 @@ Beispiel: ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md
 - `VALIDATED_` - Validierte, stabile Dokumentation (verlässliche Quelle)
 - `SOLVED_` - Gelöste Probleme und Fixes (fertige Lösung)
 - `LESSON_` - Lessons Learned und Debugging (vergleichende Analyse)
+- `KNOWLEDGE_ONLY_` - Historische Archiv-Dokumente (KI-safe reference ohne aktuelle Implementierung)
 - `WIP_` - Work in Progress (nur Orientierung)
 - `COMPLETED_` - Abgeschlossene Implementierungen (fertige Reports)
 - `PLAN_` - Planungsdokumente und Roadmaps (Entwurfsstatus)
@@ -274,23 +275,24 @@ docs/09-archive/
 ## 📊 **DOKUMENTATIONS-STATISTIKEN (v1.0.54)**
 
 ### **Dokument-Verteilung:**
-- **ROOT Documents:** 9 kritische KI-Dokumente
+- **ROOT Documents:** 10 kritische KI-Dokumente
 - **00-meta:** 20+ Meta-Dokumente
 - **01-core:** 40+ Kern-Architektur Dokumente  
 - **02-dev:** 30+ Development-Dokumente
 - **03-data:** 40+ Database-Dokumente
 - **04-ui:** 60+ UI/Theme-Dokumente
 - **05-deploy:** 35+ Deployment-Dokumente
-- **06-lessons:** 30+ Session-Reports
-- **08-batch:** 5+ Batch-Operations
-- **archive:** 15+ DEPRECATED Dokumente
+- **06-handbook:** 20+ Templates & Referenzen (thematische Struktur)
+- **08-batch:** 30+ Session-Reports & Batch-Operations
+- **09-archive:** 25+ DEPRECATED Dokumente + historische Backups
 
 ### **Dokumentations-Status:**
-- **Aktuelle Version:** v1.0.63 (Schema Version 46 - Current Production)
-- **Schema Compliance:** 95%+ aller Dokumente
+- **Aktuelle Version:** v1.0.63+ (Schema Version 46 - Current Production)
+- **Schema Compliance:** 95%+ aller Dokumente (STATUS-PRÄFIX System etabliert)
 - **Migration Stand:** Schema Version 46 (47 TypeScript migration files)
-- **Critical Fixes:** 16+ protected patterns
+- **Critical Fixes:** 18+ protected patterns (aktuelle Navigation-Modi verifiziert)
 - **Service Architecture:** 18+ business services documented
+- **Navigation System:** 3 Modi code-verifiziert (`mode-dashboard-view`, `mode-data-panel`, `mode-compact-focus`)
 
 ---
 
@@ -321,6 +323,9 @@ find docs/ -name "COMPLETED_*" -type f
 
 # Lessons Learned
 find docs/ -name "LESSON_*" -type f
+
+# Knowledge-Only Archive (historische Referenzen)
+find docs/ -name "KNOWLEDGE_ONLY_*" -type f
 ```
 
 ### **Nach ROOT Dokumenten suchen:**
@@ -353,4 +358,4 @@ find docs/ -maxdepth 1 -name "ROOT_*" -type f
 
 ---
 
-*Letzte Aktualisierung: 27. Oktober 2025 | Repository v1.0.63 | Schema Version 46 (Production) | Nächste Review: November 2025*
+*Letzte Aktualisierung: 30. Oktober 2025 | Repository v1.0.63+ | Schema Version 46 (Production) | Navigation-Modi verifiziert | Nächste Review: November 2025*

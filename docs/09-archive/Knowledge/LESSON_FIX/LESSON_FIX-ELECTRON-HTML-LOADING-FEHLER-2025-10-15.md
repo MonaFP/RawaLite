@@ -1,5 +1,5 @@
 # Lessons Learned – Electron HTML Loading Fehler
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert alle Debugging- und Analyse-Versuche zu **ERR_FILE_NOT_FOUND beim App-Start**.  
 Ziel: **KI soll wissen, was bereits probiert wurde, mit welchem Ergebnis**, um Doppelarbeit zu vermeiden.
 

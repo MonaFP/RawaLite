@@ -5,6 +5,7 @@ import { useCustomers } from '../hooks/useCustomers';
 import { useOffers } from '../hooks/useOffers';
 import { useInvoices } from '../hooks/useInvoices';
 import { useTheme } from '../hooks/useTheme';
+import { useNavigation } from '../contexts/NavigationContext';
 
 interface HeaderStatisticsProps {
   title?: string;
@@ -17,6 +18,7 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title, ...pr
   const { customers } = useCustomers();
   const { offers } = useOffers();
   const { invoices } = useInvoices();
+  const { mode: currentNavigationMode } = useNavigation(); // ✅ LEGACY FIX: Dynamic navigation mode
   const { 
     getThemedPageTitle, 
     isLoading, 
@@ -70,7 +72,7 @@ export const HeaderStatistics: React.FC<HeaderStatisticsProps> = ({ title, ...pr
   }
 
   return (
-    <div data-component="statistics-header" data-navigation-mode="mode-dashboard-view">
+    <div data-component="statistics-header" data-navigation-mode={currentNavigationMode}>
       {/* Page Title Section */}
       <div data-section="page-title">
         <div data-element="title">

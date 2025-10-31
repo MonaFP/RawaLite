@@ -1,5 +1,5 @@
 # Lessons Learned – UpdateManager Installation Error v1.0.32 → v1.0.34
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert alle Debugging- und Analyse-Versuche zum UpdateManager Fehler zwischen v1.0.32 und v1.0.34.  
 Ziel: **KI soll wissen, was bereits probiert wurde, mit welchem Ergebnis**, um Doppelarbeit zu vermeiden.
 

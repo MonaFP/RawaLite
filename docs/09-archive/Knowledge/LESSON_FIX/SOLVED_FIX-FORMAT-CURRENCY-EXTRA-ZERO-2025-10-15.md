@@ -1,5 +1,5 @@
 # 🔍 DEBUG REPORT: Extra "0" in Summe - KI-FAILURE LESSONS
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Problem:** `Summe: 270,00 €0` statt `270,00 €`  
 **Status:** 🔴 AKTIV DEBUGGING (Session 2025-10-15) - **KI-FAILURE-PATTERN DOKUMENTIERT**  
 **Datum:** 2025-10-15  

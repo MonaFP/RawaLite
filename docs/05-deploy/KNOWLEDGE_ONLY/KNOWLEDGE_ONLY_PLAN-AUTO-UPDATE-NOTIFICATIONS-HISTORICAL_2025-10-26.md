@@ -1,7 +1,19 @@
 # 🔔 IMPLEMENTATION PLAN: Auto-Update Notifications - RawaLite
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Option A: Smart Sidebar Update Widget System**  
 > **Erstellt:** 2025-10-09 | **Status:** Planning Phase
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Documentation Ready (automatisch durch Erkannt durch "Deployment System", "Release Management", "Distribution" erkannt)
+> - **TEMPLATE-QUELLE:** 05-deploy Deployment Documentation Template
+> - **AUTO-UPDATE:** Bei Deployment-Änderung automatisch Documentation aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Deployment System", "Release Management", "Distribution"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):** 
+ **📚 STATUS = Deployment Documentation:**
+ - ✅ **Release System** - Verlässliche Quelle für Deployment-Architecture
+ - ✅ **Distribution Management** - Standards für Release und Deployment-Design
+ - 🎯 **AUTO-REFERENCE:** Bei Deployment-Entwicklung diese Documentation nutzen
+ - 🔄 **AUTO-TRIGGER:** Bei Keywords "DEPLOYMENT ERROR" → Release-Compliance prüfen
 
 ---
 

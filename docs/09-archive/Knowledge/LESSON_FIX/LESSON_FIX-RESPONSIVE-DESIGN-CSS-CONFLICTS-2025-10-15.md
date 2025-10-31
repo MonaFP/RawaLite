@@ -1,5 +1,5 @@
 # LESSONS LEARNED: Responsive Design CSS Conflicts
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 2025-10-05  
 **Version:** v1.0.13  
 **Problem:** Status-Dropdown Funktionalität vollständig blockiert durch Tabellen-CSS-Vererbung  

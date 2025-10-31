@@ -1,5 +1,5 @@
 # ✅ SOLVED: Lessons Learned - Sub-Item Positioning Issue
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Problem Description
 
 **Issue**: Sub-Items erscheinen nicht eingerückt unter ihren Parent-Items im OfferForm Component. 

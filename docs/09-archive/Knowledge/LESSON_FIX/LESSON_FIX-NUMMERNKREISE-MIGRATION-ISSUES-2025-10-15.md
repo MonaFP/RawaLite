@@ -1,5 +1,5 @@
 # Nummernkreise - Migration & Production Issues
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Übersicht
 
 Die Nummernkreise sind ein zentraler Bestandteil von RawaLite und verwalten die automatische Nummerierung für verschiedene Dokumenttypen.

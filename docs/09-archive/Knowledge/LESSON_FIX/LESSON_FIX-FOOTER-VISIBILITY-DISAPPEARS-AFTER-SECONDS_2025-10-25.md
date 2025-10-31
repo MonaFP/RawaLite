@@ -1,5 +1,5 @@
 # Footer Visibility Issue - Disappears After Seconds
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 25.10.2025 | **Letzte Aktualisierung:** 25.10.2025 (Analyse & Fixplan aktualisiert)  
 > **Status:** IN ARBEIT – KI-safe Migration & Layout-Refactor | **Typ:** Lessons Learned  
 > **Schema:** `LESSON_FIX-FOOTER-VISIBILITY-DISAPPEARS-AFTER-SECONDS_2025-10-25.md`

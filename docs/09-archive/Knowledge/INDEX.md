@@ -1,5 +1,5 @@
 # 📚 Knowledge Archive - Historical Debug Insights
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (Initial Setup)  
 > **Status:** Knowledge Archive | **Typ:** Historical Documentation  
 > **Schema:** `KNOWLEDGE-ARCHIVE_INDEX_2025-10-26.md`

@@ -6,46 +6,21 @@
  * 
  * Basiert auf Migration 041 Schema und Field-Mapper Integration.
  * 
- * ✅ Phase 3.2: KI-Safe Mode Names Migration
- * - Legacy: 'header-statistics' | 'header-navigation' | 'full-sidebar'
- * - KI-Safe: 'mode-dashboard-view' | 'mode-data-panel' | 'mode-compact-focus'
+ * ✅ Phase 3.2: KI-Safe Mode Names - LEGACY CLEANUP COMPLETE
+ * - Modern Only: 'mode-dashboard-view' | 'mode-data-panel' | 'mode-compact-focus'
+ * - Legacy conversion removed: Use navigation-safe.ts for any needed conversion
  * 
  * @version 1.0.59
- * @date 2025-10-24
+ * @date 2025-10-29 (Legacy cleanup)
  * @author GitHub Copilot
  */
 
-// Import KI-safe NavigationMode type 
-export type NavigationMode = 'mode-dashboard-view' | 'mode-data-panel' | 'mode-compact-focus';
+// ✅ CLEAN: Import from navigation-safe.ts - single source of truth
+import { type NavigationMode } from './navigation-safe';
 
-// Legacy mode mapping for Migration 041 compatibility
-export const LEGACY_MODE_MAPPING = {
-  'mode-dashboard-view': 'header-statistics',
-  'mode-data-panel': 'header-navigation', 
-  'mode-compact-focus': 'full-sidebar'
-} as const;
-
-export const REVERSE_LEGACY_MODE_MAPPING = {
-  'header-statistics': 'mode-dashboard-view',
-  'header-navigation': 'mode-data-panel',
-  'full-sidebar': 'mode-compact-focus'
-} as const;
-
-export type LegacyNavigationMode = 'header-statistics' | 'header-navigation' | 'full-sidebar';
-
-/**
- * Convert KI-safe mode to legacy mode for database compatibility
- */
-export function convertToLegacyMode(mode: NavigationMode): LegacyNavigationMode {
-  return LEGACY_MODE_MAPPING[mode];
-}
-
-/**
- * Convert legacy mode to KI-safe mode from database
- */
-export function convertFromLegacyMode(legacyMode: LegacyNavigationMode): NavigationMode {
-  return REVERSE_LEGACY_MODE_MAPPING[legacyMode];
-}
+// ✅ LEGACY DEBT REMOVED: No more LEGACY_MODE_MAPPING pollution
+// ✅ LEGACY DEBT REMOVED: No more conversion functions pollution
+// Use navigation-safe.ts normalizeToKiSafe() for any needed conversion
 
 /**
  * Footer Content Preferences für unterschiedliche Navigation Modi
@@ -79,12 +54,12 @@ export interface FooterContentPreferences {
  * Entspricht dem snake_case Schema der SQLite-Tabelle nach Migration 041.
  * Wird automatisch via Field-Mapper zu/von FooterContentPreferences konvertiert.
  * 
- * ⚠️ Legacy compatibility: Database still stores legacy mode names
+ * ✅ CLEAN: Database now uses modern navigation modes (Migration 044+)
  */
 export interface FooterContentPreferencesDB {
   id?: number;
   user_id: string;
-  navigation_mode: LegacyNavigationMode;  // ⚠️ Database stores legacy format
+  navigation_mode: string;  // ✅ Modern: Stores KI-safe mode names directly
   
   // Footer Content Configuration
   show_status_info: boolean;

@@ -121,21 +121,7 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({ title, class
         })}
       </nav>
 
-      {/* Settings Link */}
-      <div data-navigation-section="settings">
-        <NavLink
-          to="/einstellungen"
-          data-navigation-settings={location.pathname === '/einstellungen' ? 'active' : 'default'}
-          style={{
-            backgroundColor: location.pathname === '/einstellungen' ? navigationConfig?.activeBg || 'blue' : navigationConfig?.itemBg || 'gray',
-            color: location.pathname === '/einstellungen' ? navigationConfig?.activeText || 'white' : navigationConfig?.itemText || 'black',
-            border: `1px solid ${navigationConfig?.itemBorder || 'black'}`,
-            padding: '5px'
-          }}
-        >
-          ⚙️
-        </NavLink>
-      </div>
+      {/* ✅ REMOVED: Settings Button - Einstellungen bereits in Navigation Menu enthalten */}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 # Anmerkungen PDF Styling Fix
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Fix für Issues #1 & #2:** Anmerkungen-Box Breite & Theme-Farben Integration
 > 
 > **Datum:** 14. Oktober 2025 | **Version:** 1.0.42.6

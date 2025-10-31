@@ -1,5 +1,5 @@
 # 🔄 Navigation Mode Endless Loop - Analyse der Zirkularität
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 25.10.2025 | **Letzte Aktualisierung:** 25.10.2025 (Analyse der letzten 3 Tage)  
 > **Status:** LESSON | **Typ:** Debug-Session Analysis  
 > **Schema:** `LESSON_FIX-NAVIGATION-MODE-ENDLESS-LOOP_2025-10-25.md`

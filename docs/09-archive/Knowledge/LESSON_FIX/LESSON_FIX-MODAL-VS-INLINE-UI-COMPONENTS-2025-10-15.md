@@ -1,5 +1,5 @@
 # LESSONS LEARNED: Modal vs Inline UI Components
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 2025-10-01  
 **Problem:** UpdateDialog Modal-Overlay überlappt mit Seiteninhalt  
 **Lösung:** Hybrid-Ansatz mit separater UpdateStatus Component  

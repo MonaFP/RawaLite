@@ -1,4 +1,3 @@
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 # Update System Testing Strategy
 $12025-10-17 (Content modernization + ROOT_ integration)| Test-Typ | Anzahl | Coverage | Ausführungszeit |
 |----------|--------|----------|-----------------|

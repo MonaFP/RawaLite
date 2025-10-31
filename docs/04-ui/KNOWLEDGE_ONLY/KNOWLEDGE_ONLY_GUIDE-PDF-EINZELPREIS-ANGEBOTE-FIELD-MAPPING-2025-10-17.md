@@ -1,5 +1,4 @@
 # 🐞 SOLVED: PDF Einzelpreis-Problem bei Angeboten
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Problem Description
 Bei PDF-Export von **Angeboten** wurden die Einzelpreise als "€0,00" angezeigt, während bei **Rechnungen** die korrekten Einzelpreise angezeigt wurden.
 

@@ -61,7 +61,7 @@ export const NavigationOnlySidebar: React.FC<NavigationOnlySidebarProps> = ({ cl
       path: '/einstellungen',
       label: 'Einstellungen',
       icon: '⚙️',
-      description: 'App-Konfiguration'
+      description: 'System-Konfiguration'
     }
   ];
 
@@ -70,7 +70,7 @@ export const NavigationOnlySidebar: React.FC<NavigationOnlySidebarProps> = ({ cl
       width: '240px',
       display: 'flex',
       flexDirection: 'column',
-      padding: '16px 12px',
+      padding: '0px 12px 16px 12px', // 🔧 BORDER FIX: Top padding entfernt (16px → 0px) für perfekte Header-Alignment
       gap: '8px'
     }}>
       {/* Logo Section */}
@@ -78,23 +78,25 @@ export const NavigationOnlySidebar: React.FC<NavigationOnlySidebarProps> = ({ cl
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: '24px',
-        padding: '12px 8px',
-        borderBottom: '1px solid rgba(255,255,255,0.08)'
+        height: '160px', // 🔧 CRITICAL FIX: Match exact header height for perfect alignment
+        marginBottom: '0px', // 🔧 BORDER FIX: Removed margin so border aligns with header bottom
+        padding: '0px', // 🔧 PRECISION FIX: Remove ALL padding for perfect center alignment
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        boxSizing: 'border-box' // 🔧 ENSURE: Padding is included in height calculation
       }}>
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '4px'
+          gap: '0px' // 🔧 PRECISION FIX: Remove gap for perfect vertical centering
         }}>
           <img
             src={logoUrl}
             alt="NavigationOnlySidebar"
             style={{
-              width: "100%", 
-              maxWidth: "120px",
-              height: "auto", 
+              height: "120px", // 🔧 SIZE FIX: Logo größer gemacht - 75% der Container-Höhe (160px)
+              width: "auto", // ✅ FIXED: Auto-width für Proportionen
+              maxWidth: "240px", // ✅ INCREASED: Mehr Platz für größeres Logo
               objectFit: "contain",
               filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))"
             }}
@@ -107,7 +109,8 @@ export const NavigationOnlySidebar: React.FC<NavigationOnlySidebarProps> = ({ cl
         display: 'flex',
         flexDirection: 'column',
         gap: '4px',
-        flex: 1
+        flex: 1,
+        marginTop: '24px' // 🔧 SPACING FIX: Add space after border (moved from logo container)
       }}>
         {navigationItems.map((item) => {
           const isActive = location.pathname === item.path || 

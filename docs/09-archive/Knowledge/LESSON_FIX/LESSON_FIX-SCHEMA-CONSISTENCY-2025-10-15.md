@@ -1,5 +1,5 @@
 # Lessons Learned: Schema Consistency & Field Mapping
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 2. Oktober 2025  
 **Kontext:** Umfassende Schema-Konsistenz-Reparatur in RawaLite v1.0.0  
 **Problem:** Customer Creation Fehler durch inkonsistente camelCase ↔ snake_case Mappings

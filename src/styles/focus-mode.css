@@ -56,11 +56,10 @@ body[data-focus-mode="zen"] .navigation-only-sidebar {
 
 body[data-focus-mode="zen"] .app {
   grid-template-columns: 0 1fr;
-  grid-template-rows: 72px 1fr var(--theme-footer-height, 60px);
+  grid-template-rows: 72px 1fr; /* ✅ FIXED: 2-Zeilen - Footer via Flex */
   grid-template-areas:
     "header header"
-    "main main"
-    "footer footer";
+    "main main"; /* ✅ FIXED: Kein Footer-Grid - Footer via Flex positioniert */
 }
 
 /* Mini Mode – kompakter Header, Footer bleibt sichtbar */
@@ -72,11 +71,10 @@ body[data-focus-mode="mini"] .navigation-only-sidebar {
 
 body[data-focus-mode="mini"] .app {
   grid-template-columns: 0 1fr;
-  grid-template-rows: 48px 1fr var(--theme-footer-height, 60px);
+  grid-template-rows: 48px 1fr; /* ✅ FIXED: 2-Zeilen - Footer via Flex */
   grid-template-areas:
     "header header"
-    "main main"
-    "footer footer";
+    "main main"; /* ✅ FIXED: Kein Footer-Grid - Footer via Flex positioniert */
 }
 
 body[data-focus-mode="mini"] .header {

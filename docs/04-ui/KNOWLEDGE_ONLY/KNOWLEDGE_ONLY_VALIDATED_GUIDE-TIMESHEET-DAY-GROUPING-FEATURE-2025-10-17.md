@@ -1,7 +1,19 @@
 # 📅 Timesheet Day Grouping Feature - RawaLite
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Tagesgruppenansicht für Leistungsnachweise implementiert**  
 > **Erstellt:** 2025-10-09 | **Status:** Production Ready
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Validated Documentation (automatisch durch Erkannt durch "UI System", "Theme Management", "Frontend Development" erkannt)
+> - **TEMPLATE-QUELLE:** 04-ui User Interface Documentation Template
+> - **AUTO-UPDATE:** Bei UI-Component-Änderung automatisch Documentation aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "UI System", "Theme Management", "Frontend Development"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):** 
+ **📚 STATUS = Validated:**
+ - ✅ **UI Documentation** - Verlässliche Quelle für Component und Theme Management
+ - ✅ **Frontend Standards** - Authoritative Standards für UI-Entwicklung
+ - 🎯 **AUTO-REFERENCE:** Bei UI-Entwicklung IMMER diese Documentation konsultieren
+ - 🔄 **AUTO-TRIGGER:** Bei Keywords "UI BROKEN" → Frontend-Documentation-Update erforderlich
 
 ---
 

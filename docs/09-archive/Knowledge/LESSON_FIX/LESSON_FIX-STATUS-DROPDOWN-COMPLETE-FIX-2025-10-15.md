@@ -1,5 +1,5 @@
 # Lessons Learned – Status Dropdown Fix PAUSIERT (DB-Zugang Problem)
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert den Status Dropdown Debug-Prozess und warum er pausiert wurde.  
 Ziel: **KI soll verstehen dass mehrere Probleme existieren und DB-Zugang erforderlich ist**.
 

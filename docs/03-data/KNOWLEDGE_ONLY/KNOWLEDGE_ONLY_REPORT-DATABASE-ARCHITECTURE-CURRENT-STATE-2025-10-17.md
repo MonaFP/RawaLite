@@ -1,8 +1,20 @@
-vCAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-
+v
 # 📊 RawaLite Database Architecture - Current State (Schema Version 46)
 
 > **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Schema Version korrigiert 29→46, KI-PRÄFIX compliance)  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Documentation Ready (automatisch durch Erkannt durch "Database System", "Migration Management", "Schema Design" erkannt)
+> - **TEMPLATE-QUELLE:** 03-data Database Documentation Template
+> - **AUTO-UPDATE:** Bei Database-Schema-Änderung automatisch Documentation aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Database System", "Migration Management", "Schema Design"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):** 
+ **📚 STATUS = Database Documentation:**
+ - ✅ **Database System** - Verlässliche Quelle für Database-Architecture
+ - ✅ **Schema Management** - Standards für Migration und Database-Design
+ - 🎯 **AUTO-REFERENCE:** Bei Database-Entwicklung diese Documentation nutzen
+ - 🔄 **AUTO-TRIGGER:** Bei Keywords "DATABASE ERROR" → Schema-Compliance prüfen
 > **Status:** Production Reference | **Typ:** Database Architecture Documentation  
 > **Schema:** `KNOWLEDGE_ONLY_REPORT-DATABASE-ARCHITECTURE-CURRENT-STATE-2025-10-17.md`
 

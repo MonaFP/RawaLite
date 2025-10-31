@@ -1,5 +1,5 @@
 # Lessons Learned – PDF Logo & Field Mapping Issues
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert alle Debugging- und Analyse-Versuche zu PDF-Logo-Darstellung und Field-Mapping-Problemen.  
 Ziel: **KI soll wissen, was bereits probiert wurde, mit welchem Ergebnis**, um Doppelarbeit zu vermeiden.
 

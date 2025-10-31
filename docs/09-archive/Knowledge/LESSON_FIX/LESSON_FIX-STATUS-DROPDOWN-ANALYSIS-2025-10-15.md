@@ -1,5 +1,5 @@
 # RawaLite Status-Dropdown Problem - Umfassender Statusbericht
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 05. Oktober 2025  
 **Problem:** Status-Dropdown bei Angeboten und Rechnungen hat keine Funktion  
 **Analyse-Status:** ✅ Komplett - Keine Reparaturen durchgeführt

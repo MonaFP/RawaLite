@@ -1,5 +1,4 @@
 # ARCHITEKTUR: Update System - Component Separation & State Management
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 $12025-10-17**Version:** v1.0.42.2  
 **Bereich:** Update System Architecture  
 **Änderung:** Modal/Inline Component Separation

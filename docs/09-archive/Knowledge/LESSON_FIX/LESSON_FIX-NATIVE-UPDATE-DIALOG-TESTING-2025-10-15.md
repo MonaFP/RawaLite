@@ -1,5 +1,5 @@
 # Lessons Learned: Native Update Dialog System Testing
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## 📋 **Session Overview**
 **Datum:** 2025-10-07  
 **Ziel:** Implementation und Testing des nativen Update Manager Dialog Systems  

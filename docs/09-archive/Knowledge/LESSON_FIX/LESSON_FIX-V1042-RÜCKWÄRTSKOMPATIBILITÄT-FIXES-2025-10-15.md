@@ -1,5 +1,5 @@
 # Lessons Learned – v1.0.42 Rückwärtskompatibilitäts-Fixes
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Date:** 2025-10-11  
 **Session:** v1.0.42 Emergency Hotfix - Rückwärtskompatibilität Implementation  
 **Context:** Behebung von Update-Problemen für v1.0.41 Benutzer durch robuste Settings-Migration  

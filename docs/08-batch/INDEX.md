@@ -1,6 +1,5 @@
 # 📦 Batch Documentation - Index
-
-> **🎯 ZWECK:** Detaillierte Dokumentation aller Batch-Updates für systematische Nachverfolgung  
++> **🎯 ZWECK:** Detaillierte Dokumentation aller Batch-Updates für systematische Nachverfolgung  
 > **📅 ERSTELLT:** 2025-10-16 | **UPDATED:** 2025-10-27 (KI-AUTO-DETECTION SYSTEM Integration)  
 > **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
 

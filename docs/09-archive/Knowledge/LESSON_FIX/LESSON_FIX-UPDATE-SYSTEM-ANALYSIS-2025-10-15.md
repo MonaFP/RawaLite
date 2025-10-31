@@ -1,5 +1,5 @@
 # Lessons Learned: Update System Analysis (v1.0.13)
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Date:** 2025-10-07  
 **Session:** Update Dialog Architecture Overhaul + Problem Analysis  
 **Context:** Native Dialog Implementation with Systematic Testing  

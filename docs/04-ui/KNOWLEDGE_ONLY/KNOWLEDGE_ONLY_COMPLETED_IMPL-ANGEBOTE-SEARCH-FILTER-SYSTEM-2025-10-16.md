@@ -1,6 +1,18 @@
 # Angebote Search/Filter System - Implementation
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 16.10.2025 (Implementation abgeschlossen)  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Implementation Complete (automatisch durch Erkannt durch "Documentation Status", "Technical Documentation" erkannt)
+> - **TEMPLATE-QUELLE:** General Documentation Template
+> - **AUTO-UPDATE:** Bei Content-Änderung automatisch Documentation aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Documentation Status", "Technical Documentation"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):** 
+ **📚 STATUS = Documentation:**
+ - ✅ **Technical Documentation** - Verlässliche Quelle für Development Standards
+ - ✅ **Implementation Guide** - Authoritative Standards für Projekt-Entwicklung
+ - 🎯 **AUTO-REFERENCE:** Bei Development-Fragen diese Documentation nutzen
+ - 🔄 **AUTO-TRIGGER:** Bei Keywords "TECHNICAL ERROR" → Documentation-Update erforderlich
 > **Status:** ✅ COMPLETED - Angebote-Seite Search/Filter vollständig implementiert  
 > **Schema:** `COMPLETED_IMPL-ANGEBOTE-SEARCH-FILTER-SYSTEM-2025-10-16.md`
 

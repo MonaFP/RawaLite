@@ -1,8 +1,26 @@
 # 🔄 [PROBLEM/FEATURE NAME] - [CURRENT_STATUS]
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-> **Erstellt:** DD.MM.YYYY | **Letzte Aktualisierung:** DD.MM.YYYY (Grund der Änderung)  
-> **Status:** [CURRENT_STATUS] | **Typ:** [TYP] Documentation  
-> **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`
+
+> **Erstellt:** DD.MM.YYYY | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Entfernung)  
+> **Status:** Production Ready | **Typ:** Template - Universal Document Lifecycle  
+> **Schema:** `VALIDATED_TEMPLATE-UNIVERSAL-DOCUMENT-LIFECYCLE_2025-10-26.md`
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch "universal lifecycle template" erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook TEMPLATE Universal Document Lifecycle Template
+> - **AUTO-UPDATE:** Bei Document-Lifecycle-Änderung automatisch Template aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "universal lifecycle template", "Production Ready"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Production Ready:**
+> - ✅ **Lifecycle-Template** - Verlässliche Vorlage für Universal-Document-Lifecycle und Status-Management
+> - ✅ **Document-Lifecycle** - Strukturiertes Template mit Status-Transition-Management
+> - 🎯 **AUTO-REFERENCE:** Bei Document-Lifecycle IMMER dieses Template verwenden
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "UNIVERSAL DOCUMENT LIFECYCLE" → Template kopieren und anwenden
+
+> **⚠️ LIFECYCLE-TEMPLATE STATUS:** Production Ready für alle Document-Lifecycle-Workflows (29.10.2025)  
+> **Template Integration:** KI-SESSION-BRIEFING compatible mit Document-Lifecycle-Management  
+> **Critical Function:** Strukturierte Document-Lifecycle mit vollständiger Status-Transition-Control
 
 > **🤖 KI-AUTO-DETECTION SYSTEM:**
 > - **AKTUELLER STATUS:** [CURRENT_STATUS] (wird automatisch durch Keywords erkannt)

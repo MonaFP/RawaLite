@@ -1,5 +1,5 @@
 # Lessons Learned: Status Dropdown CSS-Spezifitätsproblem
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 5. Oktober 2025  
 **Problem:** Status Dropdown in AngebotePage funktioniert nicht trotz CSS-Korrekturen  
 **Status:** 🔴 UNGELÖST (mehrere Lösungsversuche erfolglos)

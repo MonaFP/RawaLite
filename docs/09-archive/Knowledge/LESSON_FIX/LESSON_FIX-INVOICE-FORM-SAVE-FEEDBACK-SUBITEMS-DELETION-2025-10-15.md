@@ -1,5 +1,5 @@
 # Lessons Learned – InvoiceForm: Missing Save Feedback & SubItems Deletion
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Date:** October 9, 2025  
 **Problem:** Zwei kritische UX-Probleme in InvoiceForm.tsx  
 **Status:** ✅ RESOLVED  

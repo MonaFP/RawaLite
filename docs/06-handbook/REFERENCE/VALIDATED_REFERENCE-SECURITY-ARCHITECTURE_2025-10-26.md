@@ -1,8 +1,22 @@
 # 🔒 Security Architecture - Security Concepts & Authentication Reference
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Header korrigiert, KI-PRÄFIX Schema compliance)  
+
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Trigger entfernt)  
 > **Status:** Reference | **Typ:** Security Architecture Documentation  
 > **Schema:** `VALIDATED_REFERENCE-SECURITY-ARCHITECTURE_2025-10-26.md`
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Reference (automatisch durch "Security Architecture", "Authentication Reference" erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook REFERENCE Template
+> - **AUTO-UPDATE:** Bei Security-Architecture-Änderung automatisch Reference aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Reference", "Security Architecture", "Authentication"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **🔒 STATUS = Reference:**
+> - ✅ **Security-Reference** - Verlässliche Quelle für Security Architecture Patterns
+> - ✅ **Authentication-Patterns** - Authoritative Regeln für sichere Authentifizierung
+> - 🎯 **AUTO-REFERENCE:** Bei Security-Implementierung IMMER diese Patterns befolgen
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "SECURITY VIOLATION" → Security-Compliance Check erforderlich
 
 ## 📋 **SCHEMA-ÜBERSICHT nach KI-PRÄFIX-ERKENNUNGSREGELN**
 

@@ -1,8 +1,22 @@
 # 06-handbook – KI-Arbeitshandbuch
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Trigger entfernt)  
 > **Status:** Production Ready | **Typ:** KI-Handbook  
 > **Purpose:** KI-optimiertes Arbeitshandbuch für effiziente Session-Starts und Problem-Solving
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch "KI-Arbeitshandbuch", "Session-Starts" erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook INDEX Template
+> - **AUTO-UPDATE:** Bei Handbook-Struktur-Änderung automatisch INDEX aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Production Ready", "KI-Handbook", "Problem-Solving"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Production Ready:**
+> - ✅ **KI-Handbook** - Verlässliche Quelle für effiziente KI-Session-Durchführung
+> - ✅ **Template-Hub** - Authoritative Quelle für alle Session-Start Templates
+> - 🎯 **AUTO-REFERENCE:** Bei neuer Session IMMER diese Handbook-Struktur nutzen
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "TEMPLATE MISSING" → Handbook-Navigation erforderlich
 
 ## 🤖 **KI-AUTO-DETECTION SYSTEM**
 

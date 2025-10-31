@@ -1,5 +1,4 @@
 # 📄 Benutzer-Handbuch: PDF Anhang-Seite
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Feature:** Separate Anhang-Seite in PDF-Exporten  
 **Verfügbar ab:** RawaLite v1.0.42.3  
 **Betrifft:** Angebote und Rechnungen mit Dateianhängen  

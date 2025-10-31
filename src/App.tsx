@@ -45,9 +45,11 @@ export default function App(){
     if (active) return null; // Hide sidebar in all focus modes
     
     if (mode === 'mode-dashboard-view') {  // was: header-statistics
-      return <NavigationOnlySidebar className="compact-sidebar" />; // Only navigation in sidebar when statistics are in header
+      return <NavigationOnlySidebar className="navigation-only-sidebar" />; // Only navigation in sidebar when statistics are in header
     } else if (mode === 'mode-compact-focus') {  // was: full-sidebar
       return <Sidebar className="sidebar" />;
+    } else if (mode === 'mode-data-panel') {
+      return <CompactSidebar className="compact-sidebar" />; // Data Panel: Company + Statistics sidebar (CORRECTED)
     } else {
       return <CompactSidebar className="compact-sidebar" />; // Compact sidebar with statistics when navigation is in header
     }
@@ -109,10 +111,11 @@ export default function App(){
       {renderHeader()}
       
       <main className="main">
-        <Outlet />
+        <div className="main-content">
+          <Outlet />
+        </div>
+        <Footer />
       </main>
-      
-      <Footer />
     </div>
   );
 }

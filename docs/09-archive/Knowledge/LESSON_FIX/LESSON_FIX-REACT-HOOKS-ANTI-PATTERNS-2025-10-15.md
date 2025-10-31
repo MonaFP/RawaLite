@@ -1,5 +1,5 @@
 # LESSONS LEARNED: React Hooks Anti-Patterns und Render-Loop Prevention
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 2025-10-01  
 **Problem:** Infinite Render Loops durch useCallback Dependencies  
 **Lösung:** 5-Phasen Systematische Hook-Optimierung (A1-A5)  

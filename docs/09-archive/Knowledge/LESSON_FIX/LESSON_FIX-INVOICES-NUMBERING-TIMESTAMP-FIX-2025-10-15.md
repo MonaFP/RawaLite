@@ -1,5 +1,5 @@
 # Lessons Learned – Rechnungen Nummernkreis Timestamp-Problem
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert das identische Problem wie bei Angeboten: Timestamp-Fallback verhindert korrekte Nummernkreis-Verwendung.  
 **Ziel:** Rechnungen sollen RE-0001, RE-0002, etc. bekommen statt Timestamp-basierte Nummern.
 

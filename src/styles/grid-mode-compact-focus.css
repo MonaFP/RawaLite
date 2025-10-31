@@ -8,12 +8,10 @@
   --db-mode-compact-focus-grid-template-columns: var(--mode-compact-focus-sidebar-width) 1fr;
   --db-mode-compact-focus-grid-template-rows:
     var(--mode-compact-focus-header-height)
-    1fr
-    var(--mode-compact-focus-footer-height);
+    1fr;
   --db-mode-compact-focus-grid-template-areas:
     "sidebar header"
-    "sidebar main"
-    "sidebar footer";
+    "sidebar main";
 }
 
 [data-navigation-mode="mode-compact-focus"] {
@@ -48,13 +46,15 @@
 }
 
 [data-navigation-mode="mode-compact-focus"] .footer-area {
-  grid-area: footer;
+  /* REMOVED: grid-area: footer; - Now uses Flex positioning within main */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
   background: var(--card);
   border-top: 1px solid var(--border);
+  margin-top: auto; /* Flex positioning */
+  flex: 0 0 auto; /* Fixed size */
 }
 
 [data-navigation-mode="mode-compact-focus"][data-focus-mode="active"] .sidebar {
@@ -65,6 +65,5 @@
   grid-template-columns: 1fr;
   grid-template-areas:
     "header"
-    "main"
-    "footer";
+    "main";
 }

@@ -1,9 +1,23 @@
 # 🗄️ Database Schema - Live Reference
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration)  
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Trigger entfernt)  
 > **Status:** Live Database Schema | **Typ:** Current Schema State  
 > **Schema:** `VALIDATED_REFERENCE-DATABASE-SCHEMA-CURRENT_2025-10-26.md`  
 > **Source:** ROOT_VALIDATED_MASTER-DATABASE-THEME-SYSTEM-COMPLETE_2025-10-20.md
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Live Database Schema (automatisch durch "Schema Version 46", "Current Database State" erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook REFERENCE Template
+> - **AUTO-UPDATE:** Bei Schema-Änderung automatisch Database Reference aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Live Database Schema", "Current Schema State", "Migration 047"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📊 STATUS = Live Database Schema:**
+> - ✅ **Schema-Reference** - Verlässliche Quelle für aktuelle Database Schema
+> - ✅ **Migration-Status** - Authoritative Quelle für Migration Stand
+> - 🎯 **AUTO-REFERENCE:** Bei Database-Operationen IMMER diese Schema-Reference prüfen
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "SCHEMA MISMATCH" → Schema-Validation erforderlich
 
 ## 🤖 **KI-AUTO-DETECTION SYSTEM**
 

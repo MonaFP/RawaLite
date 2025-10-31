@@ -1,5 +1,5 @@
 # Lessons Learned – Rabatt-System Bug (Status-Sync Issue)
-
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 16.10.2025 | **Status:** ANALYZING | **Schweregrad:** HIGH
 
 Diese Datei dokumentiert die systematische Analyse des Rabatt-System Bugs bei Status-Änderungen.

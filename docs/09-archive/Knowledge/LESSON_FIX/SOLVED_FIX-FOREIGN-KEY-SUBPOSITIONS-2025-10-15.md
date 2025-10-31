@@ -1,5 +1,5 @@
 # Bugfix: FOREIGN KEY Fehler und Sub-Positionen in PDF
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Problemanalyse
 
 ### Problem 1: FOREIGN KEY constraint failed bei Angebot-Updates

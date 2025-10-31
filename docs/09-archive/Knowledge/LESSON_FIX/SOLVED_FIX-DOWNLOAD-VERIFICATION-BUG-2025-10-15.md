@@ -1,5 +1,5 @@
 # 🚨 Active Issue: Download Verification Bug
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Status**: CRITICAL - User-blocking  
 **Affected Versions**: v1.0.8, v1.0.9, v1.0.10  
 **Last Updated**: October 2, 2025

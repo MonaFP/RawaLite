@@ -1,5 +1,5 @@
 # UI Component Fix: OfferForm Parent-Child Hierarchy
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Component:** `src/components/OfferForm.tsx`  
 **Date:** 2025-10-03  
 **Issue:** Corrupted JSX structure and redundant UI elements  

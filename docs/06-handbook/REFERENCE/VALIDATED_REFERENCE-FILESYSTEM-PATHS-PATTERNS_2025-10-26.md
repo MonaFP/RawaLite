@@ -1,6 +1,19 @@
 # 🗂️ Filesystem Paths - Code Implementation Patterns
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (KI-PRÄFIX Schema compliance)  
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Reference (automatisch durch Dateiname und Inhalt erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook Template
+> - **AUTO-UPDATE:** Bei Änderung automatisch aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Reference", "VALIDATED", "06-handbook"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Reference:**
+> - ✅ **Handbook-Reference** - Verlässliche Quelle für KI-Session-Durchführung
+> - ✅ **Template-System** - Authoritative Dokumentation
+> - 🎯 **AUTO-REFERENCE:** Bei relevanten Tasks automatisch referenzieren
+> - 🔄 **AUTO-TRIGGER:** Bei entsprechenden Keywords automatisch aktivieren
+
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Trigger entfernt)  
 > **Status:** Reference | **Typ:** Code Implementation Patterns  
 > **Schema:** `VALIDATED_REFERENCE-FILESYSTEM-PATHS-PATTERNS_2025-10-26.md`  
 > **Distinct from:** VALIDATED_REFERENCE-DOCUMENTATION-PATHS_2025-10-26.md (Documentation Navigation)

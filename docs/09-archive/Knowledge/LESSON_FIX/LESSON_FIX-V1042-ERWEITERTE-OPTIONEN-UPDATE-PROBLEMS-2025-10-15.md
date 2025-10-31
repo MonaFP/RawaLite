@@ -1,5 +1,5 @@
 # Lessons Learned – v1.0.42 Erweiterte Optionen Update-Probleme
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Date:** 2025-10-11  
 **Session:** v1.0.42 Update-Problem Investigation  
 **Context:** "Erweiterte Optionen" Feature Flag Checkboxes verursachen Update-System Probleme  

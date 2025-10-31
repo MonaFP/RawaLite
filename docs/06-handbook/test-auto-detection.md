@@ -1,6 +1,19 @@
 # 🧪 Navigation Database Problem - WIP
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Documentation (automatisch durch Dateiname und Inhalt erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook Template
+> - **AUTO-UPDATE:** Bei Änderung automatisch aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Documentation", "VALIDATED", "06-handbook"
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (Template System Test)  
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Documentation:**
+> - ✅ **Handbook-Reference** - Verlässliche Quelle für KI-Session-Durchführung
+> - ✅ **Template-System** - Authoritative Dokumentation
+> - 🎯 **AUTO-REFERENCE:** Bei relevanten Tasks automatisch referenzieren
+> - 🔄 **AUTO-TRIGGER:** Bei entsprechenden Keywords automatisch aktivieren
+
++> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Trigger entfernt)  
 > **Status:** WIP Test Document | **Typ:** System Integration Test  
 
 > **🎯 PURPOSE:** Test der Auto-Detection und Template-System-Funktionalität

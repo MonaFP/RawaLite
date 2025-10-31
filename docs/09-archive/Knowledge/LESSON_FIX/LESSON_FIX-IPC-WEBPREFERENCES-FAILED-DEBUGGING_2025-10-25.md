@@ -1,5 +1,5 @@
 # Lessons Learned: IPC webPreferences Fix Failed - Systematic Debugging Required
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 25.10.2025 | **Letzte Aktualisierung:** 25.10.2025 (Initial creation)  
 > **Status:** LESSON - Active Problem | **Typ:** Debugging Session  
 > **Schema:** `LESSON_FIX-IPC-WEBPREFERENCES-FAILED-DEBUGGING_2025-10-25.md`

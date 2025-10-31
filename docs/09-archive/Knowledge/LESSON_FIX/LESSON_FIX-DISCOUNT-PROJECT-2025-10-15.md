@@ -1,5 +1,7 @@
 # Lessons Learned - Rabattsystem & Theme-Korrekturen
 
+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+
 **Projekt:** Rabattsystem Implementierung  
 **Zeitraum:** Oktober 2025  
 **Version:** 1.0.13  

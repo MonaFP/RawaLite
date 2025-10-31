@@ -1,5 +1,5 @@
 # Lessons Learned – Status Dropdown Fix in AngebotePage
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert die Lösung des Status Dropdown Problems in der AngebotePage.  
 Ziel: **KI soll verstehen wie React re-render Issues mit Table Keys gelöst wurden**.
 

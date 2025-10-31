@@ -1,5 +1,4 @@
 # 🏗️ ARCHITEKTUR: PDF Anhang-Seite System
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Erstellt:** 2025-10-11  
 **Version:** v1.0.42.3+  
 **Status:** ✅ Produktiv implementiert  

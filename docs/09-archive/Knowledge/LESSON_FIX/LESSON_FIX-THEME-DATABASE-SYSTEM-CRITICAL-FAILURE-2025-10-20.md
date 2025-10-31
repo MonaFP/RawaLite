@@ -1,5 +1,5 @@
 # 🚨 LESSON: Theme Database System Critical Failure - App Start Broken
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **⚠️ CRITICAL BUG:** Theme System komplett non-functional nach Migration 027  
 > **Status:** ACTIVE DEBUGGING SESSION | 20. Oktober 2025  
 > **Symptoms:** Sidebar/Header blitzen auf (<1s), dann nur Content visible  

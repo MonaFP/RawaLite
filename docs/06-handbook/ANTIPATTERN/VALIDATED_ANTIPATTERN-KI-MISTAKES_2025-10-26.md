@@ -341,6 +341,41 @@ pnpm dev:all                      # Must start clean
 - ❌ Release workflow deviation
 - ❌ Service layer bypassed
 - ❌ ROOT_ document moved
+- **❌ NEW (29.10.2025): File replacement ohne backup creation**
+- **❌ NEW (29.10.2025): Complex refactoring ohne backup preservation**
+
+### **❌ FAILURE MODE 11: File Operations ohne Backup (NEW 29.10.2025)**
+
+**NIEMALS:**
+- File replacement ohne vorherige `.backup` creation
+- Complete file rewrite ohne backup preservation
+- Complex refactoring ohne backup strategy
+- Remove operations ohne backup safety
+- Overwrite existing files ohne backup protection
+
+**STATTDESSEN:**
+```powershell
+# ✅ CORRECT: Create backup before file replacement
+Copy-Item "path/to/file.ts" -Destination "path/to/file.ts.backup"
+
+# ✅ Verify backup exists
+Test-Path "path/to/file.ts.backup"  # Must return True
+
+# ✅ THEN proceed with file operations
+```
+
+**Warning Signs:**
+- File corruption during development
+- Lost code during refactoring
+- Unable to rollback failed changes
+- Missing backup files in workspace
+
+**Recovery Actions:**
+1. **STOP** file operations immediately
+2. **CHECK** for existing backup files (.backup extension)
+3. **CREATE** backup before any further changes
+4. **IMPLEMENT** backup policy for session
+5. **VALIDATE** backup creation workflow
 
 **Recovery Actions:**
 1. **STOP** all development immediately

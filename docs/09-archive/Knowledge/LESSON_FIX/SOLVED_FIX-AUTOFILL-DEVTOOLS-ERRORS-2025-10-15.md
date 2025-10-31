@@ -1,5 +1,5 @@
 # Lessons Learned – Electron Autofill DevTools Errors
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Problem:** Wiederkehrende Autofill-Errors in Electron DevTools Console  
 **Datum:** 2025-10-04  
 **Session:** Electron DevTools Error Analysis

@@ -15,16 +15,15 @@
 .app:not([data-navigation-mode]) {
   /* Minimal funktionsfähiges Grid Layout */
   grid-template-columns: 240px 1fr;
-  grid-template-rows: 160px 1fr 60px;
+  grid-template-rows: 160px 1fr; /* ✅ FIXED: 2-Zeilen - Footer via Flex */
   grid-template-areas: 
     "sidebar header"
-    "sidebar main"
-    "sidebar footer";
+    "sidebar main"; /* ✅ FIXED: Kein Footer-Grid - Footer via Flex positioniert */
   
   /* Container-Sicherheit */
-  overflow: hidden;
+  overflow: auto; /* ✅ FIXED: auto statt hidden für flexible Inhalte */
   min-height: 100vh;
-  height: 100vh;
+  /* ✅ REMOVED: height: 100vh - allows flexible content growth */
 }
 
 /* Emergency Content Area Binding - verhindert Content außerhalb */

@@ -1,5 +1,5 @@
 # Lessons Learned: UpdateDialog Minimal Repair (2025-10-02)
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## 🎯 **Problem Context**
 
 Nach der Hook-Refactoring-Session (useUpdateChecker.ts entfernt) war die UpdateDialog-Component komplett defekt:

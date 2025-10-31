@@ -1,5 +1,5 @@
 # ✅ SOLVED: VS Code File-Locking Problem mit electron-builder
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Problem gelöst:** 02. Oktober 2025  
 > **Lösung:** Output Directory Isolation  
 > **Aufwand:** Minimal - 1 Zeile Konfigurationsänderung  

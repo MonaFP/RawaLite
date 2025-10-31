@@ -1,5 +1,5 @@
 # Lessons Learned – PDF Container Page Breaks
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert alle Debugging- und Analyse-Versuche zu visuell geschlossenen Containern bei PDF-Seitenumbrüchen.  
 **Ziel:** Container sollen bei Seitenumbrüchen **visuell geschlossen** aussehen (vollständige Rahmen auf beiden Seiten).
 

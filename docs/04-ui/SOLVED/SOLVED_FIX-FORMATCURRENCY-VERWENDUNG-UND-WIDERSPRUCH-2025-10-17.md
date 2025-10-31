@@ -1,5 +1,4 @@
 # 🔍 ANALYSE: formatCurrency() Verwendung & Widerspruch Unit Price
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 $12025-10-17**Status:** 🔴 KRITISCHE ANALYSE  
 **Kontext:** User-Frage zur Spezifität von `formatCurrency()` und widersprüchlicher Doku
 
@@ -495,4 +494,3 @@ sondern **FALSCH für Input-Felder** (egal ob unit price, total, oder andere Wer
 
 **Status:** ✅ **ANALYSIERT & AUFGELÖST**  
 $12025-10-17**Ergebnis:** Widerspruch war Kommunikations-Problem, keine Code-Inkonsistenz
-

@@ -1,5 +1,5 @@
 # Lessons Learned – Settings & Angebote Mapping-Probleme
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert alle Debugging-Versuche zu persistenten Mapping-Problemen in Settings und Angebote-Status.  
 **Ziel:** Systematische Analyse warum SQL-Fixes nicht funktionieren, Root-Cause identifizieren.
 

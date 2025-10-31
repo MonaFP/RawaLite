@@ -1,5 +1,7 @@
 # Lessons Learned – Database Schema Migration Issues Fix
 
+
+
 **Datum:** 2. Oktober 2025  
 **Version:** v1.0.1  
 **GitHub Release:** https://github.com/MonaFP/RawaLite/releases/tag/v1.0.1

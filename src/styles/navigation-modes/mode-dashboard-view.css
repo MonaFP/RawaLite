@@ -37,7 +37,7 @@
    HEADER STATISTICS COMPONENT
    ========================================= */
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] {
   grid-area: header;
   display: flex;
   align-items: center;
@@ -54,7 +54,7 @@
 }
 
 /* Company Section - Header Statistics Mode */
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .company-section {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] [data-section="company"] {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -62,20 +62,32 @@
   min-width: 200px;
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .company-logo {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] [data-element="logo-image"] {
   width: 40px;
   height: 40px;
   border-radius: 8px;
   object-fit: cover;
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .company-name {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] [data-element="logo-fallback"] {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--theme-company-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+}
+
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] [data-element="company-name"] {
   font-size: 1.1em;
   font-weight: var(--theme-company-weight);
   color: var(--theme-company-color);
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .page-title {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] [data-element="title"] {
   font-size: 1.2em;
   font-weight: 500;
   color: var(--theme-header-text);
@@ -83,7 +95,7 @@
 }
 
 /* Statistics Cards Container - Header Statistics Mode */
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistics-cards {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] [data-section="statistics-cards"] {
   display: flex;
   align-items: center;
   gap: 20px;
@@ -94,75 +106,78 @@
   height: 100%; /* Nutzt die komplette verfügbare Höhe bei 80px COMPACT HEADER */
 }
 
-/* Individual Statistic Card - Header Statistics Mode - COMPACT DESIGN */
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistic-card {
+/* Individual Statistic Card - Header Statistics Mode - CONTENT-BASIERTES PADDING */
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"] {
   background: var(--theme-stat-bg);
   border: 1px solid var(--theme-stat-border);
   border-radius: 8px;
-  padding: 12px 18px; /* COMPACT: Reduziert von 21px 25px */
+  padding: 0; /* KORRIGIERT: Kein Card-Padding, Content-Elemente erhalten individuelles Padding */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px; /* COMPACT: Reduziert von 8px */
-  min-width: 100px; /* COMPACT: Reduziert von 110px */
-  width: 100px;
-  height: 50px; /* COMPACT: Reduziert von 85px für 80px Header */
+  gap: 8px; /* Abstand zwischen Content-Elementen */
+  min-width: 120px; /* Card-Breite basierend auf Content */
+  width: 120px;
+  height: 70px; /* Card-Höhe basierend auf Content */
   text-align: center;
   box-sizing: border-box;
   flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistic-card:hover {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"]:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .stat-icon {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"] [data-element="icon"] {
   font-size: 16px;
   line-height: 1;
   opacity: 0.8;
+  padding: 8px 20px 0 20px; /* CONTENT-PADDING: 8px oben, 20px rechts/links, 0 unten */
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .stat-value {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"] [data-element="value"] {
   font-size: 1.4em;
   font-weight: 700;
   color: var(--theme-stat-value);
   line-height: 1.2;
   margin: 0;
+  padding: 0 20px; /* CONTENT-PADDING: 20px rechts/links */
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .stat-label {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"] [data-element="label"] {
   font-size: 0.75em;
   color: var(--theme-stat-text);
   opacity: 0.9;
   line-height: 1.2;
   margin: 0;
+  padding: 0 20px 8px 20px; /* CONTENT-PADDING: 20px rechts/links, 8px unten */
 }
 
 /* Status-specific Card Variants - Header Statistics Mode */
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistic-card.success {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"][data-status="success"] {
   border-color: var(--theme-stat-success);
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistic-card.success .stat-value {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"][data-status="success"] [data-element="value"] {
   color: var(--theme-stat-success);
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistic-card.warning {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"][data-status="warning"] {
   border-color: var(--theme-stat-warning);
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistic-card.warning .stat-value {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"][data-status="warning"] [data-element="value"] {
   color: var(--theme-stat-warning);
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistic-card.danger {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"][data-status="danger"] {
   border-color: var(--theme-stat-danger);
 }
 
-[data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistic-card.danger .stat-value {
+[data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"][data-status="danger"] [data-element="value"] {
   color: var(--theme-stat-danger);
 }
 
@@ -177,7 +192,7 @@
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 280px !important; /* FIX: Dashboard View Gap - CSS Grid erwartet 280px, nicht 100% */
   height: 100%;
   box-sizing: border-box;
   gap: 20px;
@@ -238,31 +253,32 @@
    ========================================= */
 
 @media (max-width: 1024px) {
-  [data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view {
+  [data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] {
     padding: 12px 20px;
     gap: 16px;
   }
   
-  [data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistics-cards {
+  [data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] [data-section="statistics-cards"] {
     gap: 12px;
   }
   
-  [data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistic-card {
-    min-width: 80px;
-    width: 80px;
-    padding: 8px 12px;
+  [data-navigation-mode="mode-dashboard-view"] [data-component="statistic-card"] {
+    min-width: 110px; /* ADJUSTED: Für kleinere Screens mit ausreichend Padding */
+    width: 110px;
+    height: 70px; /* ADJUSTED: Etwas kleiner aber mit gutem Innenabstand */
+    padding: 16px 20px; /* MAINTAINED: Ausreichend Padding auch bei kleineren Cards */
   }
 }
 
 @media (max-width: 768px) {
-  [data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view {
+  [data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] {
     flex-direction: column;
     height: auto;
     padding: 12px 16px;
     gap: 12px;
   }
   
-  [data-navigation-mode="mode-dashboard-view"] .mode-dashboard-view .statistics-cards {
+  [data-navigation-mode="mode-dashboard-view"] [data-component="statistics-header"] [data-section="statistics-cards"] {
     width: 100%;
     justify-content: space-around;
     gap: 8px;

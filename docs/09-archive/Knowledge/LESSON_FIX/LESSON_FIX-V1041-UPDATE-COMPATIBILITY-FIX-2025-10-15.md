@@ -1,5 +1,5 @@
 # Lessons Learned – v1.0.41 Update Compatibility Fix
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 11. Oktober 2025  
 **Status:** ✅ ABGESCHLOSSEN  
 **Kategorie:** Update System Compatibility  

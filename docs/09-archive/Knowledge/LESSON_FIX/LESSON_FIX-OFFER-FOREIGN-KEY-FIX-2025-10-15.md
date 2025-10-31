@@ -1,5 +1,5 @@
 # LESSONS LEARNED: Offer Foreign Key Constraint Fix
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 2025-10-03  
 **Problem:** FOREIGN KEY constraint error beim Aktualisieren von Angeboten mit Sub-Items  
 **Status:** ✅ GELÖST  

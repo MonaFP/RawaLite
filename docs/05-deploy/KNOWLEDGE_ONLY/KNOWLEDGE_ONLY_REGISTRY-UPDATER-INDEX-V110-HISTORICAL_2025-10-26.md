@@ -1,5 +1,4 @@
 # 12-update-manager - Update System Overview
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Purpose:** Auto-update mechanisms, update manager implementation, and version control systems
 
 ## 📋 **Contents**

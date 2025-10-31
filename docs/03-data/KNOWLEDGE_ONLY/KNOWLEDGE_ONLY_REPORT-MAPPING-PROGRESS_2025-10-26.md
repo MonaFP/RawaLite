@@ -1,8 +1,19 @@
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-
 # CamelCase ↔ Snake_Case Mapping - Progress Report
 
 > **Erstellt:** 30.09.2025 | **Letzte Aktualisierung:** 27.10.2025 (Schema Version korrigiert, KI-PRÄFIX compliance)  
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Documentation Ready (automatisch durch Erkannt durch "Documentation Status", "Technical Documentation" erkannt)
+> - **TEMPLATE-QUELLE:** General Documentation Template
+> - **AUTO-UPDATE:** Bei Content-Änderung automatisch Documentation aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Documentation Status", "Technical Documentation"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):** 
+ **📚 STATUS = Documentation:**
+ - ✅ **Technical Documentation** - Verlässliche Quelle für Development Standards
+ - ✅ **Implementation Guide** - Authoritative Standards für Projekt-Entwicklung
+ - 🎯 **AUTO-REFERENCE:** Bei Development-Fragen diese Documentation nutzen
+ - 🔄 **AUTO-TRIGGER:** Bei Keywords "TECHNICAL ERROR" → Documentation-Update erforderlich
 > **Status:** Historical Reference | **Typ:** Implementation Progress Report  
 > **Schema:** `KNOWLEDGE_ONLY_REPORT-MAPPING-PROGRESS_2025-10-26.md`
 

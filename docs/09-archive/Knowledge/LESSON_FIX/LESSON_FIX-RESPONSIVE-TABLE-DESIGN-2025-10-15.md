@@ -1,5 +1,5 @@
 # LESSONS LEARNED: Responsive Table Design & Status Dropdown Fix
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## 📅 **Datum:** 2025-10-05
 ## 🎯 **Ziel:** Konsistentes, responsives Tabellen-Design mit funktionierendem Status-Dropdown
 

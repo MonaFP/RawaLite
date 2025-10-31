@@ -1,6 +1,19 @@
 # 🗄️ Database & Data Overview für KI - RawaLite v1.0.63
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-> **Erstellt:** 23.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Schema Version 46, Table Count 29, KI-PRÄFIX Schema compliance)  
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Reference (automatisch durch Dateiname und Inhalt erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook Template
+> - **AUTO-UPDATE:** Bei Änderung automatisch aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Reference", "VALIDATED", "06-handbook"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **📚 STATUS = Reference:**
+> - ✅ **Handbook-Reference** - Verlässliche Quelle für KI-Session-Durchführung
+> - ✅ **Template-System** - Authoritative Dokumentation
+> - 🎯 **AUTO-REFERENCE:** Bei relevanten Tasks automatisch referenzieren
+> - 🔄 **AUTO-TRIGGER:** Bei entsprechenden Keywords automatisch aktivieren
+
+> **Erstellt:** 23.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Trigger entfernt)  
 > **Status:** VALIDATED Reference | **Typ:** KI-Database Navigation Guide  
 > **Schema:** `VALIDATED_REFERENCE-DATABASE-OVERVIEW-AI_2025-10-26.md`  
 > **🏗️ Migration:** docs/03-data/VALIDATED → 06-handbook/REFERENCE

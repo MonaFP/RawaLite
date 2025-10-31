@@ -25,9 +25,9 @@ import type {
   NAVIGATION_MODES_SAFE 
 } from '../../src/types/navigation-safe';
 import { 
-  normalizeToKiSafe
+  normalizeToKiSafe,
+  isValidNavigationMode
 } from '../../src/types/navigation-safe';
-import { validateNavigationMode } from '../../src/services/NavigationModeNormalizationService';
 
 // Valid navigation modes (KI-Safe Only - Legacy handled via NavigationModeInput)
 const NAVIGATION_MODES_SAFE_ARRAY: KiSafeNavigationMode[] = [
@@ -39,7 +39,7 @@ const NAVIGATION_MODES_SAFE_ARRAY: KiSafeNavigationMode[] = [
  * Legacy isolation: Accept any NavigationModeInput, normalize immediately
  */
 function validateNavigationModeInput(navigationMode: string): boolean {
-  return validateNavigationMode(navigationMode as NavigationModeInput);
+  return isValidNavigationMode(navigationMode as NavigationModeInput);
 }
 
 let themeService: DatabaseThemeService | null = null;

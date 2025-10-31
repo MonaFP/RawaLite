@@ -1,5 +1,5 @@
 # Lessons Learned – Update Manager Window Problems
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ---
 id: LL-UPDATE-MANAGER-01
 bereich: 11-deployment/update-system

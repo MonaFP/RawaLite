@@ -1,5 +1,5 @@
 # Lessons Learned: PDF Attachments & Notes Display
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Problem Summary
 ### Attachments Issue
 - **Issue**: PDF generation failed with ERR_INVALID_URL when processing large Base64 images (dijkea.png 1747KB)

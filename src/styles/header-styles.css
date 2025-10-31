@@ -47,8 +47,8 @@
   color: var(--theme-header-text, var(--muted));
   box-shadow: 0 1px 3px rgba(0,0,0,.15);
   box-sizing: border-box;
-  height: 72px; /* ✅ ERHÖHT für Dashboard-Content: Title + Path + Date + Version */
-  min-height: 72px; /* ✅ Ausreichend für alle Header-Elemente */
+  height: 100%; /* ✅ FIXED: 100% statt 72px - passt sich Grid-Row an */
+  min-height: 80px; /* ✅ FIXED: 80px statt 72px - konsistent mit Grid-Definition */
 }
 
 .header .title {

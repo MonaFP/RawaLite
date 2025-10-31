@@ -8,12 +8,10 @@
   --db-mode-dashboard-view-grid-template-columns: var(--mode-dashboard-view-sidebar-width) 1fr;
   --db-mode-dashboard-view-grid-template-rows:
     var(--mode-dashboard-view-header-height)
-    1fr
-    var(--mode-dashboard-view-footer-height);
+    1fr;
   --db-mode-dashboard-view-grid-template-areas:
     "sidebar header"
-    "sidebar main"
-    "sidebar footer";
+    "sidebar main";
 }
 
 [data-navigation-mode="mode-dashboard-view"] {
@@ -51,13 +49,15 @@
 }
 
 [data-navigation-mode="mode-dashboard-view"] .footer-area {
-  grid-area: footer;
+  /* REMOVED: grid-area: footer; - Now uses Flex positioning within main */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
   background: var(--card);
   border-top: 1px solid var(--border);
+  margin-top: auto; /* Flex positioning */
+  flex: 0 0 auto; /* Fixed size */
 }
 
 [data-navigation-mode="mode-dashboard-view"][data-focus-mode="active"] .sidebar,
@@ -69,6 +69,5 @@
   grid-template-columns: 1fr;
   grid-template-areas:
     "header"
-    "main"
-    "footer";
+    "main";
 }

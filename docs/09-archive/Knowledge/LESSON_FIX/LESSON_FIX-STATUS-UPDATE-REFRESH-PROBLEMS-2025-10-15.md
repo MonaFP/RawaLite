@@ -1,5 +1,5 @@
 # Lessons Learned: Status Update & PDF Anmerkungen Probleme
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ---
 **ID:** LL-STATUS-REFRESH-003  
 **Bereich:** ui/status-management, pdf/generation  

@@ -1,10 +1,24 @@
 # 🛤️ PATHS System - Management Reference
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 27.10.2025 (Header korrigiert als REFERENCE, KI-PRÄFIX Schema compliance)  
+
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Trigger entfernt)  
 > **Status:** Reference | **Typ:** PATHS System Documentation  
 > **Schema:** `VALIDATED_REFERENCE-PATHS-SYSTEM_2025-10-26.md`
 
-## � **SCHEMA-ÜBERSICHT nach KI-PRÄFIX-ERKENNUNGSREGELN**
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Reference (automatisch durch "PATHS System", "Management Reference" erkannt)
+> - **TEMPLATE-QUELLE:** 06-handbook REFERENCE Template
+> - **AUTO-UPDATE:** Bei PATHS-System-Änderung automatisch Reference aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Reference", "PATHS System", "Main/Renderer Process separation"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
+> 
+> **🛤️ STATUS = Reference:**
+> - ✅ **PATHS-Reference** - Verlässliche Quelle für Filesystem Path Management
+> - ✅ **Process-Separation** - Authoritative Regeln für Main/Renderer Process path access
+> - 🎯 **AUTO-REFERENCE:** Bei Path-Operations IMMER diese PATHS-Regeln befolgen
+> - 🔄 **AUTO-TRIGGER:** Bei Keywords "PATHS VIOLATION" → Emergency Stop + PATHS-Compliance Check
+
+## 📋 **SCHEMA-ÜBERSICHT nach KI-PRÄFIX-ERKENNUNGSREGELN**
 
 ### **STATUS-PRÄFIX:** `VALIDATED_`
 - **Bedeutung:** Validierte, stabile Dokumentation (verlässliche Quelle)

@@ -1,5 +1,5 @@
 # Lessons Learned – Migration 017 Platform Default Value Fix
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert die Migration 017 Debugging-Session und die Lösung des SQLite DEFAULT-Wert Problems.  
 Ziel: **KI soll wissen, was bereits probiert wurde, mit welchem Ergebnis**, um Doppelarbeit zu vermeiden.
 

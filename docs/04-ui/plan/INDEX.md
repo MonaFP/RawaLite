@@ -1,5 +1,4 @@
 # 🎨 UI/UX Plans - INDEX
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Letzte Aktualisierung:** 23.10.2025 (Schema-Migration + neue Navigation Plans)  
 > **Ordner:** `/docs/04-ui/plan/`  
 > **Zweck:** UI/UX Planungsdokumente und Implementierungs-Roadmaps

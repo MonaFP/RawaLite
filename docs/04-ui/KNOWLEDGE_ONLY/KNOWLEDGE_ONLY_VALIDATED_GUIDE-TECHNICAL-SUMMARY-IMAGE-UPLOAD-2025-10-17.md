@@ -1,5 +1,4 @@
 # Technical Summary: Image Upload System Implementation
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Quick Reference
 
 ### Feature Status: ✅ COMPLETE

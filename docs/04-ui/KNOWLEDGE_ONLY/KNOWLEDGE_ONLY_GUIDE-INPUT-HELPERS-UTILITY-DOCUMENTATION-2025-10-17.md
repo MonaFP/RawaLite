@@ -1,5 +1,4 @@
 # 🎯 Input-Helper Utility Documentation
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Overview
 Die `input-helpers.ts` Utility bietet konsistente Funktionen für benutzerfreundliche numerische Eingabefelder in RawaLite.
 

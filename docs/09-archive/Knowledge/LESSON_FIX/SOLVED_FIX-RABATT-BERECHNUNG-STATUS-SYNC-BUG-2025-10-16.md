@@ -1,5 +1,5 @@
 # 🔧 SOLVED: Rabatt-Berechnung Status-Sync Bug
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 16.10.2025 | **Letzte Aktualisierung:** 16.10.2025 (User-Validation bestätigt) | **Status:** ✅ SOLVED
 
 **Problem:** Rabatt-Status und Input-Felder waren nicht synchronisiert, führte zu falscher PDF-Anzeige und Attachment-Verlust.

@@ -27,9 +27,6 @@ import {
   DEFAULT_NAVIGATION_MODE
 } from '../../src/types/navigation-safe';
 
-// Import boolean validation function
-import { validateNavigationMode } from '../../src/services/NavigationModeNormalizationService';
-
 // ✅ LEGACY-ISOLATED DatabaseNavigationService
 import { DatabaseNavigationService } from '../../src/services/DatabaseNavigationService';
 
@@ -43,7 +40,7 @@ let navigationService: DatabaseNavigationService | null = null;
  * Accepts legacy modes via input but normalizes immediately to KI-safe
  */
 function validateNavigationModeInput(navigationMode: string): boolean {
-  return validateNavigationMode(navigationMode as NavigationModeInput);
+  return isValidNavigationMode(navigationMode as NavigationModeInput);
 }
 
 /**

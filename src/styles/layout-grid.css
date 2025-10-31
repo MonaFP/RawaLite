@@ -23,8 +23,8 @@
   --mode-dashboard-view-sidebar-width: 240px;
   --mode-dashboard-view-header-height: 80px; /* FIXED: Compact Header wie mode-compact-focus */
   
-  /* MODE-DATA-PANEL (was: HEADER-NAVIGATION) - Navigation Header + Compact Statistics Sidebar */
-  --mode-data-panel-sidebar-width: 280px; /* Breiter für bessere Navigation */
+  /* MODE-DATA-PANEL (was: HEADER-NAVIGATION) - Navigation Header + Company Statistics Sidebar */
+  --mode-data-panel-sidebar-width: 240px; /* CORRECTED: CompactSidebar like Dashboard View */
   --mode-data-panel-header-height: 80px; /* FIXED: Compact Header wie mode-compact-focus */
   
   /* MODE-COMPACT-FOCUS (was: FULL-SIDEBAR) - Minimal Header + Full Sidebar */
@@ -39,26 +39,48 @@
   background: var(--theme-grid-bg, var(--bg));
   color: var(--theme-grid-text, var(--foreground));
   width: 100%;
-  height: 100vh;
-  overflow: hidden; /* Verhindert Content außerhalb Container */
+  /* FIXED: Removed height: 100vh - allows flexible content growth */
+  overflow: auto; /* FIXED: Changed from hidden to auto - enables content flexibility */
   position: relative;
 }
 
-/* Main Content Area - Ensures content stays within bounds */
+/* Main Content Area - Flex Container for Footer Positioning (CORRECTED) */
 .app .main-content,
 .app [data-area="main"],
 .app main {
   grid-area: main;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
   min-height: 0; /* Wichtig für CSS Grid overflow */
+  overflow: auto; /* Main scrollt, nicht Container */
   position: relative;
 }
 
-/* Footer Area - Database-Theme Integration */
+/* Content Area within Main - Flexible content grows */
+.app main .main-content,
+.app main > *:not(.footer-area):not(footer) {
+  flex: 1 1 auto; /* Grows to fill available space, can shrink */
+  overflow: auto; /* Content scrolling within this area */
+  min-height: 0; /* Allow shrinking for flex */
+}
+
+/* Footer positioned via Flex, not Grid - exactly like DevTools test */
+.app main .footer-area,
+.app main footer,
+.app main .app-footer {
+  flex: 0 0 auto; /* Fixed size, no grow */
+  margin-top: auto; /* Pushes footer to bottom */
+  align-self: stretch; /* Full width */
+  position: static; /* Override any absolute/sticky positioning */
+  grid-area: unset; /* Remove any grid-area assignment */
+}
+
+/* Footer Area - Flex-based positioning (NO MORE GRID) - DevTools-Test-Compliant */
 .footer-area,
 .app .footer,
-.app footer {
-  grid-area: footer;
+.app footer,
+.app-footer {
+  /* REMOVED: grid-area: footer; - Footer is now positioned via Flex */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -69,11 +91,17 @@
   min-height: 60px;
   height: 60px;
   box-sizing: border-box;
+  
+  /* Flex positioning - attaches to bottom of main (DevTools-Test pattern) */
+  margin-top: auto;
+  align-self: stretch; /* Full width */
+  position: static; /* No fixed/sticky positioning */
+  grid-area: unset; /* Remove any grid area assignment */
 }
 
-/* Footer Area - NEU! */
+/* Footer Area - Consistent Flex setup (DevTools-Test-Compliant) */
 .footer-area {
-  grid-area: footer;
+  /* REMOVED: grid-area: footer; - Now uses Flex positioning */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -84,6 +112,12 @@
   height: 60px;
   min-height: 60px;
   max-height: 60px;
+  
+  /* Flex positioning instead of Grid (DevTools-Test pattern) */
+  margin-top: auto;
+  align-self: stretch;
+  position: static;
+  grid-area: unset;
 }
 
 /* Footer Content Styles */
@@ -205,32 +239,35 @@
    NAVIGATION MODES GRID LAYOUTS - DATABASE-FIRST KI-SAFE
    ========================================= */
 
-/* 🎯 mode-dashboard-view Mode - Statistics Header + Compact Navigation Sidebar (FIXED: COMPACT HEADER) */
-[data-navigation-mode="mode-dashboard-view"] {
-  grid-template-columns: var(--db-mode-dashboard-view-grid-template-columns, var(--mode-dashboard-view-sidebar-width, 240px) 1fr);
-  grid-template-rows: var(--db-mode-dashboard-view-grid-template-rows, var(--mode-dashboard-view-header-height, 80px) 1fr 60px);
+/* 🎯 mode-dashboard-view Mode - Statistics Header + Compact Navigation Sidebar (FLEX-FOOTER FIX) */
+/* 🔧 SPECIFICITY FIX: html .app selector increases specificity to override Body CSS */
+/* 🚨 CRITICAL FIX: CSS Fallback Values corrected from '240px 1fr' to '240px 889px' for consistency */
+html .app[data-navigation-mode="mode-dashboard-view"] {
+  grid-template-columns: var(--db-mode-dashboard-view-grid-template-columns, 240px 889px) !important;
+  grid-template-rows: var(--db-mode-dashboard-view-grid-template-rows, var(--mode-dashboard-view-header-height, 80px) 1fr) !important;
   grid-template-areas: var(--db-mode-dashboard-view-grid-template-areas, 
     "sidebar header"
-    "sidebar main"
-    "sidebar footer");
+    "sidebar main") !important;
 }
 
-/* 🎯 MODE-DATA-PANEL Mode - Navigation Header + Compact Statistics Sidebar (FIXED: COMPACT HEADER) */
-[data-navigation-mode="mode-data-panel"] {
-  grid-template-columns: var(--db-mode-data-panel-grid-template-columns, var(--mode-data-panel-sidebar-width, 280px) 1fr);
-  grid-template-rows: var(--db-mode-data-panel-grid-template-rows, var(--mode-data-panel-header-height, 80px) 1fr 60px);
+/* 🎯 MODE-DATA-PANEL Mode - Navigation Header + Compact Statistics Sidebar (FLEX-FOOTER FIX) */
+/* 🔧 SPECIFICITY FIX: html .app selector increases specificity to override Body CSS */
+/* 🚨 CRITICAL FIX: CSS Fallback Values corrected from '280px 1fr' to '280px 849px' */
+html .app[data-navigation-mode="mode-data-panel"] {
+  grid-template-columns: var(--db-mode-data-panel-grid-template-columns, 240px 849px) !important;
+  grid-template-rows: var(--db-mode-data-panel-grid-template-rows, var(--mode-data-panel-header-height, 80px) 1fr) !important;
   grid-template-areas: var(--db-mode-data-panel-grid-template-areas,
     "sidebar header"
-    "sidebar main"
-    "sidebar footer");
+    "sidebar main") !important;
 }
 
-/* 🎯 MODE-COMPACT-FOCUS Mode - Minimal Header + Full Sidebar (3-ROW FOOTER-CORRECTED) */
-[data-navigation-mode="mode-compact-focus"] {
-  grid-template-columns: var(--db-mode-compact-focus-grid-template-columns, var(--mode-compact-focus-sidebar-width, 240px) 1fr);
-  grid-template-rows: var(--db-mode-compact-focus-grid-template-rows, var(--mode-compact-focus-header-height, 36px) 1fr 60px);
+/* 🎯 MODE-COMPACT-FOCUS Mode - Minimal Header + Full Sidebar (FLEX-FOOTER FIX) */
+/* 🔧 SPECIFICITY FIX: html .app selector increases specificity to override Body CSS */
+/* 🚨 CRITICAL FIX: CSS Fallback Values corrected from '240px 1fr' to '240px 889px' for consistency */
+html .app[data-navigation-mode="mode-compact-focus"] {
+  grid-template-columns: var(--db-mode-compact-focus-grid-template-columns, 240px 889px) !important;
+  grid-template-rows: var(--db-mode-compact-focus-grid-template-rows, var(--mode-compact-focus-header-height, 80px) 1fr) !important; /* ✅ FIXED: 80px statt 36px */
   grid-template-areas: var(--db-mode-compact-focus-grid-template-areas,
     "sidebar header"
-    "sidebar main"
-    "sidebar footer");
+    "sidebar main") !important;
 }

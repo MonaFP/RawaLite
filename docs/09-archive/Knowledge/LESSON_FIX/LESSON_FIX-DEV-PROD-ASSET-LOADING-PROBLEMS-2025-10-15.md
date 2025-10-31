@@ -1,5 +1,8 @@
 # LESSONS LEARNED: Dev-Prod Asset Loading Probleme
 
+
+
+
 **Datum:** 2025-10-08  
 **Version:** v1.0.22  
 **Kontext:** Logo Assets werden in Production nicht geladen trotz korrekter Builds

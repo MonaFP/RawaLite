@@ -1,8 +1,19 @@
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-
 # 🔍 VOLLSTÄNDIGE SCHEMA-MISMATCH ANALYSE - RawaLite
 
 > **Erstellt:** 15.10.2025 | $12025-10-17 (Content modernization + ROOT_ integration)| **Typ:** Field-Mapping Validation
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** Documentation Ready (automatisch durch Erkannt durch "Documentation Status", "Technical Documentation" erkannt)
+> - **TEMPLATE-QUELLE:** General Documentation Template
+> - **AUTO-UPDATE:** Bei Content-Änderung automatisch Documentation aktualisieren
+> - **STATUS-KEYWORDS:** Erkannt durch "Documentation Status", "Technical Documentation"
+
+> **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):** 
+ **📚 STATUS = Documentation:**
+ - ✅ **Technical Documentation** - Verlässliche Quelle für Development Standards
+ - ✅ **Implementation Guide** - Authoritative Standards für Projekt-Entwicklung
+ - 🎯 **AUTO-REFERENCE:** Bei Development-Fragen diese Documentation nutzen
+ - 🔄 **AUTO-TRIGGER:** Bei Keywords "TECHNICAL ERROR" → Documentation-Update erforderlich
 
 ## 📋 **ANALYSE-ÜBERSICHT**
 

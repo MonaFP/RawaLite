@@ -1,5 +1,5 @@
 # LESSON LEARNED: Scripts-Validation-System Regex-Pattern-Bugs
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 > **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 17.10.2025 (Lesson nach erfolgreicher Reparatur)  
 > **Status:** COMPLETED - Validation jetzt 100% funktional  
 > **Schema:** `LESSON_FIX-SCRIPTS-VALIDATION-SYSTEM-REGEX-PATTERNS_2025-10-17.md`  

@@ -1,5 +1,5 @@
 # Lessons Learned – v1.0.41 AutoUpdatePreferences Implementation Errors
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Date:** 2025-10-11  
 **Session:** v1.0.41 → v1.0.42 Emergency Rollback Analysis  
 **Context:** Root cause investigation of Settings-System crashes preventing Update-System access  

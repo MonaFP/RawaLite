@@ -1,5 +1,5 @@
 # Lessons Learned – PackageForm UI State Management & Dropdown Probleme
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 Diese Datei dokumentiert alle Debugging- und Analyse-Versuche zu **PackageForm UI State Management Problemen** inkl. SubItems Parent-Zuordnung und Dropdown-Synchronisation.  
 Ziel: **KI soll wissen, was bereits probiert wurde, mit welchem Ergebnis**, um Doppelarbeit zu vermeiden.
 

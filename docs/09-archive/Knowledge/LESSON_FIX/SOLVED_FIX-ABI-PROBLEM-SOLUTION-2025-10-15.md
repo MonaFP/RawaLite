@@ -1,5 +1,5 @@
 # ABI-Problem Lösung - PowerShell 7 Build Issues
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## 🚨 Problem Beschreibung
 
 Wenn du RawaLite mit **PowerShell 7** buildest, bekommst du ABI (Application Binary Interface) Fehler bei better-sqlite3:

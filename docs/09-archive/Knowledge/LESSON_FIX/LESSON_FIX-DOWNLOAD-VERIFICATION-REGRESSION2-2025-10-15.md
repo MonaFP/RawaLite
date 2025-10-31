@@ -1,5 +1,5 @@
 # Lessons Learned – Download Verification Regression
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **File Size Mismatch Paradox ist zurück trotz vorheriger Fixes**
 
 ---

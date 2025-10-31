@@ -1,5 +1,3 @@
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
-
 # Documentation Cleanup Plan - Update Manager
 **Datum:** 12. Oktober 2025  
 **Version:** v1.0.42.2  

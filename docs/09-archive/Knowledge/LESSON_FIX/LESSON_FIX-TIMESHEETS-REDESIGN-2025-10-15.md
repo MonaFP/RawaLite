@@ -1,5 +1,5 @@
 # Lessons Learned: Timesheets/Leistungsnachweise Redesign
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 **Datum:** 5. Oktober 2025  
 **Kontext:** Komplette Überarbeitung der TimesheetsPage UI und Funktionalität  
 **Problem:** Database errors, UX regression nach Rollback, inconsistente UI patterns

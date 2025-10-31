@@ -1,5 +1,5 @@
 # Lessons Learned: Image Upload System für Angebote
-
++CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
 ## Zusammenfassung
 Erfolgreiche Implementierung eines vollständigen Bild-Upload-Systems für Angebotspositionen mit PDF-Integration.
 
