@@ -1,5 +1,9 @@
 # ✅ SOLVED: Sub-Item Visual Hierarchy Implementation
-+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
++> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** KNOWLEDGE_ONLY
+> - **TEMPLATE-QUELLE:** 06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md
+> - **AUTO-UPDATE:** Bei ähnlichen Problemen als Referenz nutzen
+> - **STATUS-KEYWORDS:** Erkannt durch LESSON_FIX, Knowledge Base, Historical Reference
 **Component:** `src/components/OfferForm.tsx` + `src/adapters/SQLiteAdapter.ts`  
 **Date:** 2025-10-04  
 **Issue:** Sub-Items erschienen nicht visuell eingerückt unter Parent-Items  

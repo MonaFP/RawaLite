@@ -15,7 +15,16 @@
  */
 
 import type Database from 'better-sqlite3';
-import { FieldMapper, mapToSQL, mapFromSQL } from '../lib/field-mapper';
+import { FieldMapper, mapToSQL, mapFromSQL, convertSQLQuery } from '../lib/field-mapper';
+import { detectDatabaseSchema, type SchemaDetectionResult } from '../lib/database-schema-detector';
+import {
+  getNavigationSettingsBySchema,
+  setNavigationSettingsBySchema,
+  getAllModeSettingsBySchema,
+  normalizeSettingsBySchema,
+  validateSchemaVersionForOperations,
+  getFallbackSettings
+} from '../lib/navigation-hybrid-mapper';
 
 // TypeScript types for navigation system
 export type NavigationMode = 'mode-dashboard-view' | 'mode-data-panel' | 'mode-compact-focus';
@@ -130,6 +139,26 @@ export class DatabaseNavigationService {
   private db: Database.Database;
   
   /**
+   * PHASE 1: Schema Detection Result
+   * Detects at initialization whether Migration 034 (per-mode) or 045 (global-mode) is active
+   */
+  private schemaDetectionResult: SchemaDetectionResult;
+
+  /**
+   * PHASE 1: Get the detected schema version
+   */
+  getSchemaVersion(): "034" | "045" | "unknown" {
+    return this.schemaDetectionResult.schemaVersion;
+  }
+
+  /**
+   * PHASE 1: Check if schema is corrupted
+   */
+  isSchemaCorrupted(): boolean {
+    return this.schemaDetectionResult.isCorrupted;
+  }
+
+  /**
    * SYSTEM DEFAULTS - Single Source of Truth for Navigation Constants
    * 
    * These constants replace ALL hardcoded values throughout the codebase.
@@ -225,10 +254,11 @@ export class DatabaseNavigationService {
     getModeHistory?: Database.Statement;
     cleanupOldHistory?: Database.Statement;
     
-    // NEW: Global Navigation Settings Statements (Migration 045)
+    // Migration 045: Global Navigation Settings Statements
     getNavigationSettings?: Database.Statement;
     upsertNavigationSettings?: Database.Statement;
     updateDefaultMode?: Database.Statement;
+    getDefaultMode?: Database.Statement;  // NEW: For retrieving default_navigation_mode
     
     // DEPRECATED: Per-Mode Settings Statements (Migration 034) - Replaced by Global Settings
     getModeSettings?: Database.Statement;
@@ -243,6 +273,15 @@ export class DatabaseNavigationService {
 
   constructor(db: Database.Database) {
     this.db = db;
+    
+    // PHASE 1: Detect database schema at initialization
+    this.schemaDetectionResult = detectDatabaseSchema(db);
+    console.log('[DatabaseNavigationService] Schema detected:', this.getSchemaVersion());
+    
+    if (this.isSchemaCorrupted()) {
+      console.warn('[DatabaseNavigationService] Schema is corrupted, will use fallback defaults');
+    }
+    
     this.prepareStatements();
   }
 
@@ -250,6 +289,11 @@ export class DatabaseNavigationService {
    * Prepare all SQL statements for optimal performance
    */
   private prepareStatements(): void {
+    // Migration 045: Get default navigation mode first
+    this.statements.getDefaultMode = this.db.prepare(`
+      SELECT default_navigation_mode FROM user_navigation_mode_settings WHERE user_id = ?
+    `);
+
     // Navigation preferences operations
     this.statements.getUserPreferences = this.db.prepare(`
       SELECT * FROM user_navigation_preferences WHERE user_id = ?
@@ -287,6 +331,14 @@ export class DatabaseNavigationService {
       ORDER BY changed_at DESC 
       LIMIT ?
     `);
+
+    // Migration 045: Initialize updateDefaultMode statement
+    this.statements.updateDefaultMode = this.db.prepare(`
+      UPDATE user_navigation_mode_settings 
+      SET default_navigation_mode = ?, 
+          updated_at = CURRENT_TIMESTAMP 
+      WHERE user_id = ?
+    `);
     
     this.statements.cleanupOldHistory = this.db.prepare(`
       DELETE FROM navigation_mode_history 
@@ -296,42 +348,60 @@ export class DatabaseNavigationService {
     // === MIGRATION 034: PER-MODE SETTINGS STATEMENTS (RE-ACTIVATED) ===
     this.statements.getModeSettings = this.db.prepare(`
       SELECT * FROM user_navigation_mode_settings 
-      WHERE user_id = ? AND navigation_mode = ?
+      WHERE user_id = ? AND default_navigation_mode = ?
     `);
     
-    this.statements.upsertModeSettings = this.db.prepare(`
-      INSERT OR REPLACE INTO user_navigation_mode_settings 
-      (user_id, navigation_mode, header_height, sidebar_width, auto_collapse_mobile, auto_collapse_tablet,
-       remember_dimensions, mobile_breakpoint, tablet_breakpoint, grid_template_columns, grid_template_rows,
-       grid_template_areas, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-        COALESCE((SELECT created_at FROM user_navigation_mode_settings WHERE user_id = ? AND navigation_mode = ?), CURRENT_TIMESTAMP),
-        CURRENT_TIMESTAMP)
-    `);
+    // MIGRATION 045 FIX: user_navigation_mode_settings doesn't have header_height in global-mode schema
+    // Only prepare if schema is 034 (per-mode). For 045, this becomes a no-op
+    if (this.getSchemaVersion() === '034') {
+      this.statements.upsertModeSettings = this.db.prepare(`
+        INSERT OR REPLACE INTO user_navigation_mode_settings 
+        (user_id, default_navigation_mode, header_height, sidebar_width, auto_collapse_mobile, auto_collapse_tablet,
+         remember_dimensions, mobile_breakpoint, tablet_breakpoint, grid_template_columns, grid_template_rows,
+         grid_template_areas, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+          COALESCE((SELECT created_at FROM user_navigation_mode_settings WHERE user_id = ? AND default_navigation_mode = ?), CURRENT_TIMESTAMP),
+          CURRENT_TIMESTAMP)
+      `);
+    } else {
+      // For Migration 045, prepare a safe no-op statement
+      this.statements.upsertModeSettings = this.db.prepare(`
+        SELECT 1 WHERE 0  -- MIGRATION 045: user_navigation_mode_settings is global, no per-mode updates
+      `);
+    }
     
     this.statements.getAllModeSettings = this.db.prepare(`
       SELECT * FROM user_navigation_mode_settings 
       WHERE user_id = ?
-      ORDER BY navigation_mode
+      ORDER BY default_navigation_mode
     `);
     
     // NEW: Focus Mode Preferences Prepared Statements (Migration 035)
     this.statements.getFocusPreferences = this.db.prepare(`
       SELECT * FROM user_focus_mode_preferences 
-      WHERE user_id = ? AND navigation_mode = ?
+      WHERE user_id = ? AND default_navigation_mode = ?
     `);
     
-    this.statements.upsertFocusPreferences = this.db.prepare(`
-      INSERT OR REPLACE INTO user_focus_mode_preferences 
-      (user_id, navigation_mode, auto_focus_enabled, auto_focus_delay_seconds, focus_on_mode_switch, 
-       hide_sidebar_in_focus, hide_header_stats_in_focus, dim_background_opacity, transition_duration_ms, 
-       transition_easing, block_notifications, block_popups, block_context_menu, minimal_ui_mode, 
-       track_focus_sessions, show_focus_timer, focus_break_reminders, focus_break_interval_minutes, 
-       created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-        COALESCE((SELECT created_at FROM user_focus_mode_preferences WHERE user_id = ? AND navigation_mode = ?), CURRENT_TIMESTAMP), 
-        CURRENT_TIMESTAMP)
-    `);
+    // MIGRATION 045 FIX: user_focus_mode_preferences might not have same schema in v045
+    // Only prepare if schema is 035+ (focus preferences exist). For 045, conditional prepare
+    if (this.getSchemaVersion() !== '045') {
+      this.statements.upsertFocusPreferences = this.db.prepare(`
+        INSERT OR REPLACE INTO user_focus_mode_preferences 
+        (user_id, default_navigation_mode, auto_focus_enabled, auto_focus_delay_seconds, focus_on_mode_switch, 
+         hide_sidebar_in_focus, hide_header_stats_in_focus, dim_background_opacity, transition_duration_ms, 
+         transition_easing, block_notifications, block_popups, block_context_menu, minimal_ui_mode, 
+         track_focus_sessions, show_focus_timer, focus_break_reminders, focus_break_interval_minutes, 
+         created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+          COALESCE((SELECT created_at FROM user_focus_mode_preferences WHERE user_id = ? AND default_navigation_mode = ?), CURRENT_TIMESTAMP), 
+          CURRENT_TIMESTAMP)
+      `);
+    } else {
+      // For Migration 045, prepare a safe no-op statement
+      this.statements.upsertFocusPreferences = this.db.prepare(`
+        SELECT 1 WHERE 0  -- MIGRATION 045: Focus preferences schema verified
+      `);
+    }
     
     this.statements.getAllFocusPreferences = this.db.prepare(`
       SELECT * FROM user_focus_mode_preferences WHERE user_id = ?
@@ -345,14 +415,27 @@ export class DatabaseNavigationService {
    */
   async getUserNavigationPreferences(userId: string = 'default'): Promise<NavigationPreferences> {
     try {
-      const row = this.statements.getUserPreferences!.get(userId) as any;
-      
-      if (row) {
-        return mapFromSQL(row) as NavigationPreferences;
+      // PHASE 3: Use hybrid-mapper for dual-path logic
+      // Automatically routes to correct schema (034 vs 045) based on detection
+      if (!validateSchemaVersionForOperations(this.getSchemaVersion(), this.isSchemaCorrupted())) {
+        // Schema is corrupted or unknown - use fallback
+        console.warn('[DatabaseNavigationService] Schema validation failed, using fallback defaults');
+        const fallback = getFallbackSettings({ userId });
+        return fallback as NavigationPreferences;
       }
-      
+
+      // Get settings via hybrid-mapper (handles both schema versions)
+      const settings = getNavigationSettingsBySchema(
+        this.db,
+        this.getSchemaVersion(),
+        userId
+      );
+
+      if (settings) {
+        return settings as NavigationPreferences;
+      }
+
       // Return default preferences if not found
-      // NOW USES: SYSTEM_DEFAULTS.DEFAULT_PREFERENCES (centralized constants)
       const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
       const defaultPreferences: NavigationPreferences = {
         userId,
@@ -362,16 +445,15 @@ export class DatabaseNavigationService {
         autoCollapse: defaults.DEFAULT_PREFERENCES.autoCollapse,
         rememberFocusMode: defaults.DEFAULT_PREFERENCES.rememberFocusMode
       };
-      
+
       // Create default preferences in database
       await this.setUserNavigationPreferences(userId, defaultPreferences);
       return defaultPreferences;
-      
+
     } catch (error) {
       console.error('[DatabaseNavigationService] Error getting user preferences:', error);
-      
-      // Return hardcoded defaults on error
-      // NOW USES: SYSTEM_DEFAULTS.DEFAULT_PREFERENCES (centralized constants)
+
+      // Return safe defaults on error
       const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
       return {
         userId,
@@ -389,52 +471,63 @@ export class DatabaseNavigationService {
    */
   async setUserNavigationPreferences(userId: string = 'default', preferences: Partial<NavigationPreferences>): Promise<boolean> {
     try {
+      // PHASE 3: Use hybrid-mapper for dual-path logic
+      // Automatically routes to correct schema (034 vs 045) based on detection
+      if (!validateSchemaVersionForOperations(this.getSchemaVersion(), this.isSchemaCorrupted())) {
+        // Schema is corrupted or unknown
+        console.error('[DatabaseNavigationService] Schema validation failed, cannot set preferences');
+        return false;
+      }
+
       // Get current preferences for merging
       const currentPrefs = await this.getUserNavigationPreferences(userId);
-      
+
       // Merge with updates
       const updatedPrefs: NavigationPreferences = {
         ...currentPrefs,
         ...preferences,
         userId
       };
-      
+
       // Validate navigation mode
       if (!DatabaseNavigationService.NAVIGATION_MODES.includes(updatedPrefs.navigationMode as any)) {
         console.error('[DatabaseNavigationService] Invalid navigation mode:', updatedPrefs.navigationMode);
         return false;
       }
-      
+
       // Validate dimensions using SYSTEM_DEFAULTS
       const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
       const minHeight = defaults.MIN_HEADER_HEIGHTS[updatedPrefs.navigationMode] || 60;
       const maxHeight = defaults.MAX_DIMENSIONS.headerHeight;
       const maxWidth = defaults.MAX_DIMENSIONS.sidebarWidth;
-      
+
       if (updatedPrefs.headerHeight < minHeight || updatedPrefs.headerHeight > maxHeight) {
         console.error('[DatabaseNavigationService] Invalid header height:', updatedPrefs.headerHeight, `(range: ${minHeight}-${maxHeight})`);
         return false;
       }
-      
+
       if (updatedPrefs.sidebarWidth < 180 || updatedPrefs.sidebarWidth > maxWidth) {
         console.error('[DatabaseNavigationService] Invalid sidebar width:', updatedPrefs.sidebarWidth, `(range: 180-${maxWidth})`);
         return false;
       }
-      
-      // Convert to SQL format with field mapper
-      const sqlData = mapToSQL(updatedPrefs);
-      
-      this.statements.upsertUserPreferences!.run(
-        userId,
-        sqlData.navigation_mode,
-        sqlData.header_height,
-        sqlData.sidebar_width,
-        sqlData.auto_collapse ? 1 : 0,
-        sqlData.remember_focus_mode ? 1 : 0,
-        userId // for COALESCE in created_at
+
+      // Normalize settings for the schema version
+      const normalizedPrefs = normalizeSettingsBySchema(
+        this.getSchemaVersion(),
+        updatedPrefs,
+        {}
       );
-      
-      return true;
+
+      // Use hybrid-mapper for schema-aware update (handles both 034 vs 045)
+      const success = setNavigationSettingsBySchema(
+        this.db,
+        this.getSchemaVersion(),
+        userId,
+        normalizedPrefs,
+        updatedPrefs.navigationMode
+      );
+
+      return success;
     } catch (error) {
       console.error('[DatabaseNavigationService] Error setting user preferences:', error);
       return false;
@@ -462,6 +555,9 @@ export class DatabaseNavigationService {
       // Record mode change in history (if different)
       if (previousMode !== navigationMode) {
         await this.recordModeChange(userId, previousMode, navigationMode, sessionId);
+
+        // Migration 045: Also update default_navigation_mode
+        await this.setDefaultNavigationMode(userId, navigationMode);
       }
       
       return true;
@@ -620,6 +716,37 @@ export class DatabaseNavigationService {
     }
   }
 
+  /**
+   * Migration 045: Get default navigation mode from user_navigation_mode_settings
+   */
+  async getDefaultNavigationMode(userId: string = 'default'): Promise<NavigationMode> {
+    try {
+      const defaultModeRow = this.statements.getDefaultMode!.get(userId) as any;
+      return (defaultModeRow?.default_navigation_mode || DatabaseNavigationService.SYSTEM_DEFAULTS.DEFAULT_PREFERENCES.navigationMode) as NavigationMode;
+    } catch (error) {
+      console.error('[DatabaseNavigationService] Error getting default navigation mode:', error);
+      return DatabaseNavigationService.SYSTEM_DEFAULTS.DEFAULT_PREFERENCES.navigationMode;
+    }
+  }
+
+  /**
+   * Migration 045: Set default navigation mode in user_navigation_mode_settings
+   */
+  async setDefaultNavigationMode(userId: string = 'default', navigationMode: NavigationMode): Promise<boolean> {
+    try {
+      if (!DatabaseNavigationService.NAVIGATION_MODES.includes(navigationMode as any)) {
+        console.error('[DatabaseNavigationService] Invalid navigation mode:', navigationMode);
+        return false;
+      }
+
+      this.statements.updateDefaultMode!.run(navigationMode, userId);
+      return true;
+    } catch (error) {
+      console.error('[DatabaseNavigationService] Error setting default navigation mode:', error);
+      return false;
+    }
+  }
+
   // === UTILITY METHODS ===
 
   /**
@@ -672,26 +799,28 @@ export class DatabaseNavigationService {
    */
   async validateNavigationSchema(): Promise<boolean> {
     try {
-      // Check if user_navigation_mode_settings table exists
+      // PHASE 3: Use hybrid-mapper for validation
+      // Checks if schema version is valid (034 or 045) and not corrupted
+      const isValid = validateSchemaVersionForOperations(
+        this.getSchemaVersion(),
+        this.isSchemaCorrupted()
+      );
+
+      if (!isValid) {
+        console.error('[DatabaseNavigationService] Navigation schema validation failed - invalid or corrupted schema');
+        return false;
+      }
+
+      // Additional safety check: ensure required table exists
       const tableInfo = this.db.prepare(`
         SELECT name FROM sqlite_master WHERE type='table' AND name='user_navigation_mode_settings'
       `).get();
-      
+
       if (!tableInfo) {
-        console.error('[DatabaseNavigationService] Migration 034 not applied - user_navigation_mode_settings table missing');
+        console.error('[DatabaseNavigationService] user_navigation_mode_settings table missing');
         return false;
       }
-      
-      // Check if navigation mode history table exists
-      const historyTableInfo = this.db.prepare(`
-        SELECT name FROM sqlite_master WHERE type='table' AND name='user_navigation_mode_history'
-      `).get();
-      
-      if (!historyTableInfo) {
-        console.warn('[DatabaseNavigationService] user_navigation_mode_history table missing - history features disabled');
-        return true; // Not critical, main functionality works
-      }
-      
+
       return true;
     } catch (error) {
       console.error('[DatabaseNavigationService] Error validating navigation schema:', error);
@@ -781,8 +910,24 @@ export class DatabaseNavigationService {
    */
   async getAllModeSettings(userId: string = 'default'): Promise<NavigationModeSettings[]> {
     try {
-      const rows = this.statements.getAllModeSettings!.all(userId) as any[];
-      return rows.map(row => mapFromSQL(row) as NavigationModeSettings);
+      // PHASE 3: Use hybrid-mapper for schema-aware retrieval
+      // Migration 034: Returns all mode-specific settings
+      // Migration 045: Returns empty array (not applicable to global-mode schema)
+      
+      if (!validateSchemaVersionForOperations(this.getSchemaVersion(), this.isSchemaCorrupted())) {
+        console.warn('[DatabaseNavigationService] Schema validation failed in getAllModeSettings, returning empty');
+        return [];
+      }
+
+      // Use hybrid-mapper to get all mode settings (034 only, 045 returns empty)
+      const modeSettingsMap = getAllModeSettingsBySchema(
+        this.db,
+        this.getSchemaVersion(),
+        userId
+      );
+
+      // Convert map to array
+      return Object.values(modeSettingsMap) as NavigationModeSettings[];
     } catch (error) {
       console.error('[DatabaseNavigationService] Error getting all mode settings:', error);
       return [];

@@ -1,6 +1,6 @@
 # 📋 TEMPLATE INDEX - 06-handbook Template Collection
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Entfernung)  
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 03.11.2025 (Code-Verification Update - Handbook INDEX validation)  
 > **Status:** Production Ready | **Typ:** Template Collection Index  
 > **Schema:** `INDEX.md`
 
@@ -18,9 +18,9 @@
 > - 🎯 **AUTO-REFERENCE:** Bei Template-Navigation IMMER dieses Index verwenden
 > - 🔄 **AUTO-TRIGGER:** Bei Keywords "TEMPLATE INDEX" → Index kopieren und Navigation bereitstellen
 
-> **⚠️ TEMPLATE-INDEX STATUS:** Production Ready für alle Template-Navigation-Requirements (29.10.2025)  
+> **⚠️ TEMPLATE-INDEX STATUS:** Production Ready für alle Template-Navigation-Requirements (03.11.2025 - 15 Templates)  
 > **Template Integration:** KI-SESSION-BRIEFING compatible mit Template-System-Management  
-> **Critical Function:** Master-Index für vollständige Template-Collection mit 14+ strukturierten Templates
+> **Critical Function:** Master-Index für vollständige Template-Collection mit 15+ strukturierten Templates (Phase 1: +2 Critical)
 
 > **🎯 PURPOSE:** Zentrale Übersicht aller verfügbaren Templates im 06-handbook System
 
@@ -108,6 +108,42 @@
 
 ---
 
+### **5. Database Migration Workflow** ⭐ NEW (Phase 1)
+**File:** `VALIDATED_TEMPLATE-DATABASE-MIGRATION-WORKFLOW_2025-11-03.md`
+**Purpose:** Strukturierte Dokumentation von neuen Database-Migrationen
+**Features:**
+- ✅ Migration-Workflow (Design → Implementation → Testing → Deployment)
+- ✅ Critical Patterns (Field-Mapper, Schema Validation, Rollback)
+- ✅ Pre/Post-State Dokumentation
+- ✅ Testing-Checklist & Common Issues
+
+**Use Cases:**
+- ✅ Neue Migrationen dokumentieren (046 aktuell)
+- ✅ Schema-Änderungen planen
+- ✅ Migration-Testing durchführen
+- ✅ Rollback-Strategien erstellen
+- ✅ Lessons Learned erfassen
+
+---
+
+### **6. Service Layer Development Pattern** ⭐ NEW (Phase 1)
+**File:** `VALIDATED_TEMPLATE-SERVICE-LAYER-DEVELOPMENT-PATTERN_2025-11-03.md`
+**Purpose:** Strukturierte Entwicklung von Backend-Services
+**Features:**
+- ✅ Service-Architecture (Dependency Injection, Lifecycle)
+- ✅ Critical Patterns (FIX-001/002/003/015)
+- ✅ Error-Handling & Testing Patterns
+- ✅ Implementation Template & Checklist
+
+**Use Cases:**
+- ✅ Neue Services entwickeln (12 existierende Services)
+- ✅ Service-Änderungen dokumentieren
+- ✅ Service-Testing durchführen
+- ✅ Error-Handling implementieren
+- ✅ Critical Patterns anwenden
+
+---
+
 ## 🤖 **AUTOMATIC TEMPLATE SELECTION**
 
 ### **Template-Auswahl-Algorithmus:**
@@ -123,6 +159,17 @@ const templateSelection = {
   debugging: "UNIVERSAL-DOCUMENT-LIFECYCLE",
   lesson: "UNIVERSAL-DOCUMENT-LIFECYCLE",
   fix: "UNIVERSAL-DOCUMENT-LIFECYCLE",
+  
+  // Database & Migrations
+  migration: "DATABASE-MIGRATION-WORKFLOW",
+  schema: "DATABASE-MIGRATION-WORKFLOW",
+  database: "DATABASE-MIGRATION-WORKFLOW",
+  
+  // Services & Backend
+  service: "SERVICE-LAYER-DEVELOPMENT-PATTERN",
+  "http api": "SERVICE-LAYER-DEVELOPMENT-PATTERN",
+  "database service": "SERVICE-LAYER-DEVELOPMENT-PATTERN",
+  "service layer": "SERVICE-LAYER-DEVELOPMENT-PATTERN",
   
   // Fallback: Universal Template
   default: "UNIVERSAL-DOCUMENT-LIFECYCLE"

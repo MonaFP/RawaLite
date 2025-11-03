@@ -1,5 +1,9 @@
 # Navigation Mode Migration 044 - Implementation Plan
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** KNOWLEDGE_ONLY
+> - **TEMPLATE-QUELLE:** 06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md
+> - **AUTO-UPDATE:** Bei ähnlichen Problemen als Referenz nutzen
+> - **STATUS-KEYWORDS:** Erkannt durch LESSON_FIX, Knowledge Base, Historical Reference
 > **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 26.10.2025 (Option B: Migration 046 - Detaillierter Plan)  
 > **Status:** READY FOR IMPLEMENTATION (Option B approved) | **Typ:** Implementation Plan  
 > **Schema:** `WIP_IMPL-NAVIGATION-MODE-MIGRATION-044_2025-10-26.md`  

@@ -8,10 +8,15 @@ let instance: Database.Database | null = null;
 
 /**
  * Get database file path - synchronous for main process
+ * ✅ FIX-1.1: isDev differentiation implemented
+ * Dev: rawalite-dev.db (development database)
+ * Prod: rawalite.db (production database)
  */
 function getDbPath(): string {
   const userData = app.getPath('userData');
-  return path.join(userData, 'database', 'rawalite.db');
+  const isDev = !app.isPackaged; // ✅ FIX-1.1: Environment detection
+  const dbFileName = isDev ? 'rawalite-dev.db' : 'rawalite.db'; // ✅ Dev/Prod separation
+  return path.join(userData, 'database', dbFileName);
 }
 
 /**

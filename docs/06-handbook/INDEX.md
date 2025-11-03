@@ -1,6 +1,6 @@
 # 06-handbook – KI-Arbeitshandbuch
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Trigger entfernt)  
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 03.11.2025 (KI-Template-System Documentation Integration)  
 > **Status:** Production Ready | **Typ:** KI-Handbook  
 > **Purpose:** KI-optimiertes Arbeitshandbuch für effiziente Session-Starts und Problem-Solving
 
@@ -38,9 +38,11 @@ KI-optimiertes Arbeitshandbuch für effiziente Session-Starts und Problem-Solvin
 
 ## 🎯 **Handbook-Struktur (KI-optimiert)**
 
-### **REFERENCE/ (15 files)**
+### **REFERENCE/ (17 files)**
 **Live-Informationen und Architektur-Referenzen**
 
+- **KI-Template-System Architecture** ⭐ (Layer 1/2/3 Erklärung, Workflows, Praktische Beispiele)
+- **KI-Template QuickRef** ⭐ (Schnelle Referenz, Vergleichstabellen, Decision Trees)
 - Aktuelle Database Schema (Migration 044)
 - Architecture Overview (Services, PATHS, IPC)
 - Technology Stack Summary
@@ -99,9 +101,9 @@ KI-optimiertes Arbeitshandbuch für effiziente Session-Starts und Problem-Solvin
 
 ## 📊 **Status Overview**
 
-**Handbook Completeness:** 85% (Content migrated from domain folders)
+**Handbook Completeness:** 90% (KI-Template-System documented)
 
-- **REFERENCE/**: ✅ 15 architecture references (COMPLETE)
+- **REFERENCE/**: ✅ 17 architecture references (COMPLETE - +2 KI-Template-System docs)
 - **TEMPLATE/**: ✅ 4 session templates (COMPLETE)
 - **ISSUES/**: ⚠️ Needs known issues registry
 - **ANTIPATTERN/**: ✅ 1 StatusControl antipattern (BASIC)
@@ -127,6 +129,6 @@ KI-optimiertes Arbeitshandbuch für effiziente Session-Starts und Problem-Solvin
 
 ---
 
-**File Count:** 20 files (REFERENCE: 15, TEMPLATE: 4, ANTIPATTERN: 1)  
-**Migration Date:** 2025-10-26  
-**Structure:** KI-optimized 4-folder system with session templates
+**File Count:** 22 files (REFERENCE: 17, TEMPLATE: 4, ANTIPATTERN: 1)  
+**Migration Date:** 2025-10-26 | **Last Update:** 2025-11-03 (KI-Template-System docs)  
+**Structure:** KI-optimized 4-folder system with session templates + 3-layer architecture documentation

@@ -106,31 +106,9 @@ export async function up(db: Database.Database): Promise<void> {
       
       console.log('🎭 Updating focus mode settings consistency...');
       
-      // Update focus mode header heights to be proportionally reduced
-      // full-sidebar: 72px → 52px (20px reduction)
-      // header modes: 160px → 140px (20px reduction)
-      
-      const focusFullSidebar = db.prepare(`
-        UPDATE user_focus_mode_preferences 
-        SET focus_header_height = 52,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE navigation_mode = 'full-sidebar' 
-        AND (focus_header_height IS NULL OR focus_header_height != 52)
-      `);
-      
-      const focusFullChanges = focusFullSidebar.run();
-      console.log(`  ✅ Updated focus mode full-sidebar heights: ${focusFullChanges.changes} records`);
-      
-      const focusHeaderModes = db.prepare(`
-        UPDATE user_focus_mode_preferences 
-        SET focus_header_height = 140,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE navigation_mode IN ('header-statistics', 'header-navigation') 
-        AND (focus_header_height IS NULL OR focus_header_height != 140)
-      `);
-      
-      const focusHeaderChanges = focusHeaderModes.run();
-      console.log(`  ✅ Updated focus mode header heights: ${focusHeaderChanges.changes} records`);
+      // Note: user_focus_mode_preferences table exists but doesn't have focus_header_height column
+      // This step is skipped to avoid column not found errors
+      console.log('  ℹ️  Focus mode preferences exist but focus_header_height column not available (this is expected)');
 
       // ========================================================================
       // STEP 4: Validate Configuration Consistency
@@ -190,16 +168,6 @@ export async function up(db: Database.Database): Promise<void> {
       
       console.log('📝 Recording migration metadata...');
       
-      // Record the migration completion with details
-      const migrationRecord = db.prepare(`
-        INSERT INTO migration_log (
-          migration_version, 
-          description, 
-          applied_at, 
-          details
-        ) VALUES (?, ?, CURRENT_TIMESTAMP, ?)
-      `);
-      
       const migrationDetails = JSON.stringify({
         purpose: 'Centralized Configuration Architecture',
         issues_fixed: [
@@ -210,14 +178,23 @@ export async function up(db: Database.Database): Promise<void> {
         changes_made: {
           full_sidebar_height: '60px → 72px',
           header_modes_height: 'standardized to 160px',
-          focus_mode_heights: 'proportionally reduced (20px less)',
+          focus_mode_heights: 'skipped (column not available in schema)',
           per_mode_settings: 'synchronized with main preferences'
         },
-        total_records_updated: fullSidebarChanges.changes + headerStatsChanges.changes + headerNavChanges.changes + modeSettingsFullChanges.changes + modeSettingsHeaderChanges.changes + focusFullChanges.changes + focusHeaderChanges.changes,
+        total_records_updated: fullSidebarChanges.changes + headerStatsChanges.changes + headerNavChanges.changes + modeSettingsFullChanges.changes + modeSettingsHeaderChanges.changes,
         validation_status: inconsistencies.length === 0 ? 'consistent' : 'needs_review'
       });
       
       try {
+        // Record the migration completion with details (migration_log table may not exist)
+        const migrationRecord = db.prepare(`
+          INSERT INTO migration_log (
+            migration_version, 
+            description, 
+            applied_at, 
+            details
+          ) VALUES (?, ?, CURRENT_TIMESTAMP, ?)
+        `);
         migrationRecord.run(37, 'Centralized Configuration Architecture - Fix Header Heights', migrationDetails);
         console.log('  ✅ Migration metadata recorded successfully');
       } catch (error) {

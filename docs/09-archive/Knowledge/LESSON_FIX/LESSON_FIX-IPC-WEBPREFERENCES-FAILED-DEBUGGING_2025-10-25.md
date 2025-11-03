@@ -1,5 +1,9 @@
 # Lessons Learned: IPC webPreferences Fix Failed - Systematic Debugging Required
-+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
++> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** KNOWLEDGE_ONLY
+> - **TEMPLATE-QUELLE:** 06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md
+> - **AUTO-UPDATE:** Bei ähnlichen Problemen als Referenz nutzen
+> - **STATUS-KEYWORDS:** Erkannt durch LESSON_FIX, Knowledge Base, Historical Reference
 > **Erstellt:** 25.10.2025 | **Letzte Aktualisierung:** 25.10.2025 (Initial creation)  
 > **Status:** LESSON - Active Problem | **Typ:** Debugging Session  
 > **Schema:** `LESSON_FIX-IPC-WEBPREFERENCES-FAILED-DEBUGGING_2025-10-25.md`

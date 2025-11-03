@@ -1,5 +1,9 @@
 # LESSONS LEARNED: Safe Package Updates
-+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
++> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** KNOWLEDGE_ONLY
+> - **TEMPLATE-QUELLE:** 06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md
+> - **AUTO-UPDATE:** Bei ähnlichen Problemen als Referenz nutzen
+> - **STATUS-KEYWORDS:** Erkannt durch LESSON_FIX, Knowledge Base, Historical Reference
 **Date:** 2025-10-08  
 **Version:** v1.0.22  
 **Context:** Sichere Package Updates nach pnpm outdated Analyse

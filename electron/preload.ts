@@ -48,7 +48,66 @@ contextBridge.exposeInMainWorld('rawalite', {
         deletedFiles: string[];
       }>,
   },
-  // 🗂️ Pfad-Management API (Phase 2)
+  // � Rollback & Migration API (Phase 2)
+  rollback: {
+    status: () => 
+      ipcRenderer.invoke('rollback:status') as Promise<{
+        success: boolean;
+        currentVersion: number;
+        targetVersion: number;
+        pendingCount: number;
+        pendingMigrations: Array<{ version: number; name: string; type: string }>;
+      }>,
+    migrate: (targetVersion: number) => 
+      ipcRenderer.invoke('rollback:migrate', targetVersion) as Promise<{
+        success: boolean;
+        message: string;
+        previousVersion: number;
+        newVersion: number;
+        timestamp?: string;
+      }>,
+    listBackups: (backupDir: string) => 
+      ipcRenderer.invoke('rollback:listBackups', backupDir) as Promise<{
+        success: boolean;
+        backups: Array<{
+          filename: string;
+          path: string;
+          size: number;
+          created: string;
+          type: 'pre-migration' | 'hot' | 'vacuum' | 'unknown';
+          sizeFormatted: string;
+        }>;
+        directory: string;
+        count: number;
+      }>,
+    restore: (backupPath: string, targetPath: string) => 
+      ipcRenderer.invoke('rollback:restore', backupPath, targetPath) as Promise<{
+        success: boolean;
+        message: string;
+        backupPath: string;
+        targetPath: string;
+        size: number;
+        sizeFormatted: string;
+        timestamp: string;
+      }>,
+    validateBackup: (backupPath: string) => 
+      ipcRenderer.invoke('rollback:validateBackup', backupPath) as Promise<{
+        success: boolean;
+        valid: boolean;
+        size?: number;
+        sizeFormatted?: string;
+        created?: string;
+        errors: string[];
+      }>,
+    cleanupBackups: (backupDir: string, keepCount?: number) => 
+      ipcRenderer.invoke('rollback:cleanupBackups', backupDir, keepCount) as Promise<{
+        success: boolean;
+        deletedCount: number;
+        deletedFiles: string[];
+        remainingCount: number;
+      }>,
+  },
+  // �🗂️ Pfad-Management API (Phase 2)
   paths: {
     get: (pathType: 'userData' | 'documents' | 'downloads') => 
       ipcRenderer.invoke('paths:get', pathType) as Promise<string>,

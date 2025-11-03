@@ -100,22 +100,16 @@ export async function up(db: Database): Promise<void> {
     `).get();
     
     if (focusTable) {
-      console.log('🎯 Step 4: Updating focus mode preferences for full-sidebar mode...');
-      const updateFocusPrefs = db.prepare(`
-        UPDATE user_focus_mode_preferences 
-        SET focus_header_height = 28,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE navigation_mode = 'full-sidebar' 
-        AND (focus_header_height IS NULL OR focus_header_height != 28)
-      `);
-      const focusChanges = updateFocusPrefs.run();
-      console.log(`  ✅ Updated ${focusChanges.changes} focus mode preferences (focus height: 28px)`);
+      console.log('🎯 Step 4: Checking focus mode preferences for full-sidebar mode...');
+      // Note: focus_header_height column doesn't exist in the schema
+      // We skip this step to avoid column not found errors
+      console.log('  ℹ️  Focus mode preferences exist but focus_header_height column not available (this is expected)');
     }
 
     console.log('✅ Migration 039 completed successfully!');
     console.log('📊 Summary:');
     console.log(`   - full-sidebar header height: 72px → 36px`);
-    console.log(`   - full-sidebar focus height: 52px → 28px`);
+    console.log(`   - focus mode: column not available in schema (skipped)`);
     console.log(`   - Updated CHECK constraint: header_height >= 36`);
     console.log(`   - Matches SYSTEM_DEFAULTS and CSS fallback values`);
     
@@ -163,14 +157,8 @@ export async function down(db: Database): Promise<void> {
     `).get();
     
     if (focusTable) {
-      const revertFocusPrefs = db.prepare(`
-        UPDATE user_focus_mode_preferences 
-        SET focus_header_height = 52,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE navigation_mode = 'full-sidebar' 
-        AND focus_header_height = 28
-      `);
-      revertFocusPrefs.run();
+      // Note: focus_header_height column doesn't exist, so we skip this
+      console.log('  ℹ️  Focus mode preferences exist but focus_header_height column not available (skipped)');
     }
 
     console.log('✅ Migration 039 rollback completed');

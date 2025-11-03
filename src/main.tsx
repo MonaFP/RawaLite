@@ -26,6 +26,7 @@ import PackageEditPage from "./pages/PackageEditPage";
 import RechnungenPage from "./pages/RechnungenPage";
 import TimesheetsPage from "./pages/TimesheetsPage";
 import EinstellungenPage from "./pages/EinstellungenPage";
+import RollbackPage from "./pages/RollbackPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { UpdateManagerPage } from "./pages/UpdateManagerPage";
 
@@ -70,6 +71,10 @@ const routerConfig = [
       {
         path: "einstellungen",
         element: <EinstellungenPage />,
+      },
+      {
+        path: "rollback",
+        element: <RollbackPage />,
       },
       {
         path: "*",

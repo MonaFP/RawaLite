@@ -37,6 +37,7 @@
 - **Installation Guide:** [VALIDATED_GUIDE-INSTALLATION-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-INSTALLATION-2025-10-17.md) - SQLite database installation & setup
 - **Line Item Hierarchy:** [VALIDATED_GUIDE-LINE-ITEM-HIERARCHY-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-LINE-ITEM-HIERARCHY-2025-10-17.md) - Hierarchical data patterns
 - **Settings Schema Migration:** [VALIDATED_GUIDE-CROSS-REF-SETTINGS-SCHEMA-MIGRATION-2025-10-17.md](VALIDATED/VALIDATED_GUIDE-CROSS-REF-SETTINGS-SCHEMA-MIGRATION-2025-10-17.md) - Settings cross-references
+ - **Migration 047 Konsolidierung:** [VALIDATED_GUIDE-MIGRATION-047-NAV-NORMALIZATION-2025-11-03.md](VALIDATED/VALIDATED_GUIDE-MIGRATION-047-NAV-NORMALIZATION-2025-11-03.md) - Navigation/Heights/History Konsolidierung
 
 ### **📂 COMPLETED/** - Abgeschlossene Implementierungen (9 Dateien)
 - **Migration 011:** Offer line items extension
@@ -44,6 +45,7 @@
 - **Activity Templates:** Template system implementation
 - **Numbering Circles:** Integration documentation
 - **Mapping Progress:** [COMPLETED_REPORT-MAPPING-PROGRESS-2025-10-17.md](COMPLETED/COMPLETED_REPORT-MAPPING-PROGRESS-2025-10-17.md) - Field-mapping implementation completion
+ - **Prod-DB Recovery:** [COMPLETED_SOLVED_INCIDENT-DB-RECOVERY-2025-11-03.md](COMPLETED/COMPLETED_SOLVED_INCIDENT-DB-RECOVERY-2025-11-03.md) - Atomar/reversibel
 
 ### **📂 KNOWLEDGE_ONLY/** - Knowledge Archive (3 Dateien)
 - **Field-Mapper Plans:** [KNOWLEDGE_ONLY_PLAN-FIELD-MAPPER-MISMATCHES-2025-10-17.md](KNOWLEDGE_ONLY/KNOWLEDGE_ONLY_PLAN-FIELD-MAPPER-MISMATCHES-2025-10-17.md) - Historical analysis (bereits implementiert)

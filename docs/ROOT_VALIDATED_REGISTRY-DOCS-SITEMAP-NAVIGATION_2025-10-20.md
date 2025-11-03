@@ -1,15 +1,15 @@
 # RawaLite Documentation - Vollständige Sitemap & Navigation
 
-> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 30.10.2025 (KI-PRÄFIX-ERKENNUNGSREGELN Schema-Update - KNOWLEDGE_ONLY_ Präfix Integration + Navigation-Modi-Korrektur)  
+> **Erstellt:** 20.10.2025 | **Letzte Aktualisierung:** 03.11.2025 (KI-Template-System Documentation + Migration 047 Implementation + Recovery-Playbook)  
 > **Status:** Production Ready | **Typ:** Registry - Documentation Sitemap & Navigation  
 > **Schema:** `ROOT_VALIDATED_REGISTRY-DOCS-SITEMAP-NAVIGATION_2025-10-20.md` ✅ **SCHEMA-COMPLIANT**  
 > **🛡️ ROOT-PROTECTED:** Master Navigation für gesamte Documentation, NIEMALS verschieben!
 
 > **🤖 KI-AUTO-DETECTION SYSTEM:**
-> - **AKTUELLER STATUS:** Production Ready (automatisch durch "180+ Dokumente strukturiert" erkannt)
+> - **AKTUELLER STATUS:** Production Ready (automatisch durch "190+ Dokumente strukturiert" erkannt)
 > - **TEMPLATE-QUELLE:** ROOT_VALIDATED_REGISTRY Template
 > - **AUTO-UPDATE:** Bei Dokumentations-Struktur-Änderung automatisch Navigation aktualisieren
-> - **STATUS-KEYWORDS:** Erkannt durch "Master-Sitemap", "180+ Dokumente", "Production Ready"
+> - **STATUS-KEYWORDS:** Erkannt durch "Master-Sitemap", "190+ Dokumente", "Production Ready"
 
 > **🤖 KI-VERHALTENSREGELN (AUTO-AKTIV basierend auf Status):**
 > 
@@ -19,7 +19,7 @@
 > - 🎯 **AUTO-REFERENCE:** Bei Dokumentations-Navigation IMMER dieses Registry verwenden
 > - 🔄 **AUTO-TRIGGER:** Bei Keywords "NAVIGATION BROKEN" → Sitemap-Update erforderlich
 
-> **⚠️ DOCUMENTATION NAVIGATION STATUS:** 180+ Dokumente strukturiert (27.10.2025)  
+> **⚠️ DOCUMENTATION NAVIGATION STATUS:** 190+ Dokumente strukturiert (03.11.2025)  
 > **Folder Structure:** STATUS-PRÄFIX Ordner (VALIDATED/, COMPLETED/, SOLVED/, etc.) - /final/ veraltet!  
 > **Template Integration:** KI-SESSION-BRIEFING mandatory vor Dokumentations-Operationen  
 > **Critical Function:** Master-Sitemap für vollständige Documentation-Navigation
@@ -272,27 +272,30 @@ docs/09-archive/
 
 ---
 
-## 📊 **DOKUMENTATIONS-STATISTIKEN (v1.0.54)**
+## 📊 **DOKUMENTATIONS-STATISTIKEN (v1.0.63+ Updated 03.11.2025)**
 
 ### **Dokument-Verteilung:**
-- **ROOT Documents:** 10 kritische KI-Dokumente
+- **ROOT Documents:** 10+ kritische KI-Dokumente
 - **00-meta:** 20+ Meta-Dokumente
 - **01-core:** 40+ Kern-Architektur Dokumente  
 - **02-dev:** 30+ Development-Dokumente
-- **03-data:** 40+ Database-Dokumente
+- **03-data:** 45+ Database-Dokumente (⬆️ +5: Migration 047 Implementation + Recovery)
 - **04-ui:** 60+ UI/Theme-Dokumente
 - **05-deploy:** 35+ Deployment-Dokumente
-- **06-handbook:** 20+ Templates & Referenzen (thematische Struktur)
+- **06-handbook:** 22+ Templates & Referenzen (⬆️ +2: KI-Template-System Architecture + QuickRef)
 - **08-batch:** 30+ Session-Reports & Batch-Operations
 - **09-archive:** 25+ DEPRECATED Dokumente + historische Backups
 
 ### **Dokumentations-Status:**
-- **Aktuelle Version:** v1.0.63+ (Schema Version 46 - Current Production)
-- **Schema Compliance:** 95%+ aller Dokumente (STATUS-PRÄFIX System etabliert)
-- **Migration Stand:** Schema Version 46 (47 TypeScript migration files)
+- **Aktuelle Version:** v1.0.63+ (Schema Version 48 - Updated 03.11.2025)
+- **Total Documents:** 190+ (⬆️ +10 seit 30.10.2025)
+- **Schema Compliance:** 98%+ aller Dokumente (STATUS-PRÄFIX System etabliert)
+- **Migration Stand:** Schema Version 48 (048 TypeScript migration files + Migration 047)
 - **Critical Fixes:** 18+ protected patterns (aktuelle Navigation-Modi verifiziert)
 - **Service Architecture:** 18+ business services documented
-- **Navigation System:** 3 Modi code-verifiziert (`mode-dashboard-view`, `mode-data-panel`, `mode-compact-focus`)
+- **Navigation System:** 3 Modi code-verifiziert + Migration 047 History View added
+- **New (03.11.2025):** KI-Template-System documentation (Architecture + QuickRef) ⭐
+- **New (03.11.2025):** Migration 047 Implementation + Recovery-Playbook ⭐
 
 ---
 
@@ -358,4 +361,4 @@ find docs/ -maxdepth 1 -name "ROOT_*" -type f
 
 ---
 
-*Letzte Aktualisierung: 30. Oktober 2025 | Repository v1.0.63+ | Schema Version 46 (Production) | Navigation-Modi verifiziert | Nächste Review: November 2025*
+*Letzte Aktualisierung: 03. November 2025 | Repository v1.0.63+ | Schema Version 48 (Production) | Navigation-Modi verifiziert + Migration 047 Complete | Nächste Review: November 2025*

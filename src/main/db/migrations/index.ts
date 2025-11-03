@@ -56,6 +56,7 @@ import * as migration043 from './043_convert_legacy_navigation_modes';
 import * as migration044 from './044_cleanup_navigation_modes';
 import * as migration045 from './045_enforce_ki_safe_navigation';
 import * as migration046 from './046_add_navigation_mode_history';
+import * as migration047 from './047_add_navigation_mode_history_view';
 
 export const migrations: Migration[] = [
   {
@@ -339,6 +340,12 @@ export const migrations: Migration[] = [
     name: '046_add_navigation_mode_history',
     up: migration046.up,
     down: migration046.down
+  },
+  {
+    version: 48,
+    name: '047_add_navigation_mode_history_view',
+    up: migration047.up,
+    down: migration047.down
   }
 ];
 

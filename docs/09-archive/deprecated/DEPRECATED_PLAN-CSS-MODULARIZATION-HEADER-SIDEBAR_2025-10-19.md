@@ -1,5 +1,9 @@
 # 🏗️ CSS Modularization Plan - Header, Sidebar & Layout Refactoring (UPDATED)
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** KNOWLEDGE_ONLY (Archived Historical Reference)
+> - **TEMPLATE-QUELLE:** 06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md
+> - **AUTO-UPDATE:** Bei ähnlichen Problemen als Referenz nutzen
+> - **STATUS-KEYWORDS:** Erkannt durch Archive, DEPRECATED, Historical Reference
 > **Erstellt:** 19.10.2025 | **Letzte Aktualisierung:** 19.10.2025 (Phase 3 Analyse Integration + 89% Reduction Potential dokumentiert)  
 > **Status:** PLAN - Enhanced mit Phase 3+ Roadmap | **Typ:** CSS-Refactoring-Plan  
 > **Schema:** `PLAN_REFACTOR-CSS-MODULARIZATION-HEADER-SIDEBAR-LAYOUT_2025-10-19.md`

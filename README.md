@@ -1,5 +1,12 @@
 # 🏢 RawaLite
 
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** VALIDATED (Archivierte Dokumentation)
+> - **TEMPLATE-QUELLE:** 06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md
+> - **AUTO-UPDATE:** Bei ähnlichen Problemen als Referenz nutzen
+> - **STATUS-KEYWORDS:** Erkannt durch Dateiname, Schema-Konformität
+
 > **Moderne Desktop-Anwendung für Rechnungs- und Angebotsverwaltung**  
 > Electron + React + TypeScript + SQLite  
 > **Schema:** `[STATUS-PRÄFIX]_[TYP]-[SUBJECT]-[SPECIFIER]_YYYY-MM-DD.md`

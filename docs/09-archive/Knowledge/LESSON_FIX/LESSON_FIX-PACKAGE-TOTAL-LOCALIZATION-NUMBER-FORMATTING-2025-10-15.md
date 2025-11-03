@@ -1,5 +1,9 @@
 # Lessons Learned – PackageForm Total Display & German Localization
-+CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
++> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** KNOWLEDGE_ONLY
+> - **TEMPLATE-QUELLE:** 06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md
+> - **AUTO-UPDATE:** Bei ähnlichen Problemen als Referenz nutzen
+> - **STATUS-KEYWORDS:** Erkannt durch LESSON_FIX, Knowledge Base, Historical Reference
 Diese Datei dokumentiert die Analyse und Lösung von **Lokalisierungs- und Zahlenformatierungs-Problemen** in der PackageForm nach dem `unitPrice` Refactoring.  
 Ziel: **KI soll Root Cause Pattern verstehen** und ähnliche I18n-Fehler in Zukunft vermeiden.
 

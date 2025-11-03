@@ -33,6 +33,7 @@
 - **Complete System Architecture:** [VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md](VALIDATED/VALIDATED_GUIDE-CORE-SYSTEM-ARCHITECTURE_2025-10-18.md) - 6-layer architecture with Database-Theme-System integration
 - **Debugging Standards:** [VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md](VALIDATED/VALIDATED_GUIDE-DEBUGGING-SYSTEMATIC-APPROACH_2025-10-15.md) - Systematic problem-solving approach
 - **✅ CURRENT:** Nur noch aktuell relevante Core-Standards (alle älteren migriert)
+ - **DB Env Separation:** [VALIDATED_GUIDE-DB-ENV-SEPARATION-2025-11-03.md](VALIDATED/VALIDATED_GUIDE-DB-ENV-SEPARATION-2025-11-03.md) - Dev/Prod DB-Pfad-Trennung via PATHS/IPC
 
 ### **📂 COMPLETED/** - Abgeschlossene Core-Implementierungen (2 Dateien)
 - Fertige Reports und Implementierungsdokumentation (aktuelle Implementations)

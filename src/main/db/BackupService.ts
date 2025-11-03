@@ -14,10 +14,15 @@ function getBackupDir(): string {
 
 /**
  * Get database file path
+ * ✅ FIX-1.2: isDev differentiation implemented (matching Database.ts)
+ * Dev: rawalite-dev.db (development database)
+ * Prod: rawalite.db (production database)
  */
 function getDbPath(): string {
   const userData = app.getPath('userData');
-  return path.join(userData, 'database', 'rawalite.db');
+  const isDev = !app.isPackaged; // ✅ FIX-1.2: Environment detection (matches Database.ts)
+  const dbFileName = isDev ? 'rawalite-dev.db' : 'rawalite.db'; // ✅ Dev/Prod separation
+  return path.join(userData, 'database', dbFileName);
 }
 
 /**

@@ -1,7 +1,11 @@
 // electron/main.ts - Clean Refactored Version
 
 import { app, BrowserWindow, ipcMain } from 'electron'
+import * as fs from 'fs'
+import * as path from 'path'
 import { UpdateManagerService } from '../src/main/services/UpdateManagerService'
+// ✅ FIX-1.4: Config Validation
+import { ConfigValidationService } from '../src/main/services/ConfigValidationService'
 // 🗄️ Database imports
 import { getDb } from '../src/main/db/Database'
 import { runAllMigrations } from '../src/main/db/MigrationService'
@@ -17,6 +21,7 @@ import { registerNumberingHandlers } from './ipc/numbering'
 import { registerPdfCoreHandlers } from './ipc/pdf-core'
 import { registerDatabaseHandlers } from './ipc/database'
 import { registerBackupHandlers } from './ipc/backup'
+import { registerRollbackHandlers } from './ipc/rollback' // ✅ Phase 2: Rollback handlers
 import { registerFileHandlers } from './ipc/files'
 import { registerUpdateManagerHandlers } from './ipc/update-manager'
 import { registerUpdateIpc } from './ipc/updates'
@@ -30,6 +35,10 @@ console.log('[RawaLite] MAIN ENTRY:', __filename, 'NODE_ENV=', process.env.NODE_
 
 const isDev = !app.isPackaged
 
+// ✅ FIX-1.3: isDev logging for environment detection
+console.log(`[RawaLite] Environment: ${isDev ? '🔨 DEVELOPMENT' : '🚀 PRODUCTION'} (isPackaged=${app.isPackaged})`);
+console.log(`[RawaLite] Database will use: ${isDev ? 'rawalite-dev.db' : 'rawalite.db'}`);
+
 // 🗄️ Database IPC Handlers - EXTRACTED to ipc/database.ts
 
 // 💾 Backup IPC Handlers - EXTRACTED to ipc/backup.ts
@@ -41,8 +50,78 @@ const isDev = !app.isPackaged
 // === APP INITIALIZATION ===
 let updateManager: UpdateManagerService;
 
+// 🆕 PHASE 1: Fresh DB on First Install Detection
+const DB_INITIALIZED_MARKER = path.join(
+  app.getPath('userData'),
+  'database',
+  '.db-initialized'
+);
+
+const ensureFreshDbOnFirstRun = () => {
+  const isFirstRun = !fs.existsSync(DB_INITIALIZED_MARKER);
+  
+  if (isFirstRun) {
+    console.log('🆕 [PHASE 1] First run detected - Fresh DB initialization starting...');
+    
+    try {
+      const dbPath = path.join(app.getPath('userData'), 'database', 'rawalite.db');
+      const dbDir = path.dirname(dbPath);
+      
+      // Ensure directory exists
+      fs.mkdirSync(dbDir, { recursive: true });
+      
+      // Remove old DB if exists (clean slate)
+      if (fs.existsSync(dbPath)) {
+        console.log(`  ⚠️  Found existing DB, removing for fresh start: ${dbPath}`);
+        fs.unlinkSync(dbPath);
+      }
+      
+      console.log(`  ✅ Fresh DB path ready: ${dbPath}`);
+      
+      // Create marker file
+      const markerDir = path.dirname(DB_INITIALIZED_MARKER);
+      fs.mkdirSync(markerDir, { recursive: true });
+      fs.writeFileSync(DB_INITIALIZED_MARKER, JSON.stringify({
+        version: app.getVersion(),
+        timestamp: new Date().toISOString(),
+        initialized: true,
+        type: 'fresh-start'
+      }, null, 2));
+      
+      console.log(`  ✅ [PHASE 1] First-run marker created`);
+    } catch (error) {
+      console.error('❌ [PHASE 1] Error during first-run setup:', error);
+      throw error;
+    }
+  } else {
+    console.log('✅ [PHASE 1] Existing installation detected - using existing DB');
+  }
+};
+
 app.whenReady().then(async () => {
   try {
+    // 🆕 PHASE 1: Ensure fresh DB on first run
+    console.log('🆕 [PHASE 1] Checking first-run status...');
+    ensureFreshDbOnFirstRun();
+    
+    // ✅ FIX-1.4: Validate configuration before startup
+    console.log('🔧 Validating application configuration...')
+    const configValidation = ConfigValidationService.validateConfiguration()
+    
+    if (!configValidation.valid) {
+      console.error('❌ Configuration validation failed:')
+      configValidation.errors.forEach(error => console.error(`  - ${error}`))
+      app.quit()
+      return
+    }
+    
+    if (configValidation.warnings.length > 0) {
+      console.warn('⚠️ Configuration warnings:')
+      configValidation.warnings.forEach(warning => console.warn(`  - ${warning}`))
+    }
+    
+    console.log(`✅ Configuration valid (${configValidation.environment} environment)`)
+
     // Initialize database connection
     console.log('🗄️ Initializing database...')
     getDb()
@@ -64,6 +143,7 @@ app.whenReady().then(async () => {
     registerPdfCoreHandlers();
     registerDatabaseHandlers();
     registerBackupHandlers();
+    registerRollbackHandlers(); // ✅ Phase 2: Rollback & migration handlers
     registerFileHandlers();
     registerUpdateManagerHandlers();
     

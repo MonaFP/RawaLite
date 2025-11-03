@@ -30,18 +30,23 @@ export function up(db: Database): void {
   `);
   
   // STEP 3: Data migration with legacy mode conversion
+  // NOTE: id is auto-generated, don't select from old table
   db.exec(`
-    INSERT INTO user_navigation_preferences_new 
+    INSERT INTO user_navigation_preferences_new (user_id, navigation_mode, header_height, sidebar_width, auto_collapse, remember_focus_mode, created_at, updated_at)
     SELECT 
-      id, user_id,
+      user_id,
       CASE 
         WHEN navigation_mode = 'header-statistics' THEN 'mode-dashboard-view'
         WHEN navigation_mode = 'header-navigation' THEN 'mode-data-panel'
         WHEN navigation_mode = 'full-sidebar' THEN 'mode-compact-focus'
         ELSE navigation_mode
       END as navigation_mode,
-      header_height, sidebar_width, auto_collapse, remember_focus_mode,
-      created_at, updated_at
+      COALESCE(header_height, 72) as header_height, 
+      COALESCE(sidebar_width, 280) as sidebar_width, 
+      COALESCE(auto_collapse, 0) as auto_collapse, 
+      COALESCE(remember_focus_mode, 1) as remember_focus_mode,
+      COALESCE(created_at, CURRENT_TIMESTAMP) as created_at, 
+      COALESCE(updated_at, CURRENT_TIMESTAMP) as updated_at
     FROM user_navigation_preferences
   `);
   

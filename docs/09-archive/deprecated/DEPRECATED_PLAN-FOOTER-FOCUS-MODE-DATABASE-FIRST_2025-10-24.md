@@ -1,5 +1,9 @@
 # 🚀 Footer + Focus Mode Implementation Plan - RawaLite (DEPRECATED)
-CAVE:  **🤖 KI-AUTO-DETECTION SYSTEM NEEDED. KI HAS TO READ HANDBOOK FIRST**
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+> - **AKTUELLER STATUS:** KNOWLEDGE_ONLY (Archived Historical Reference)
+> - **TEMPLATE-QUELLE:** 06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md
+> - **AUTO-UPDATE:** Bei ähnlichen Problemen als Referenz nutzen
+> - **STATUS-KEYWORDS:** Erkannt durch Archive, DEPRECATED, Historical Reference
 > **Erstellt:** 24.10.2025 | **Letzte Aktualisierung:** 25.10.2025 (DEPRECATED - Ersetzt durch ROOT_VALIDATED_PLAN-FOOTER-VISIBILITY-FIX_2025-10-25.md)  
 > **Status:** 🗑️ DEPRECATED - Ersetzt durch neuen systematischen Footer-Fix Plan  
 > **Schema:** `DEPRECATED_PLAN-FOOTER-FOCUS-MODE-DATABASE-FIRST_2025-10-24.md`  

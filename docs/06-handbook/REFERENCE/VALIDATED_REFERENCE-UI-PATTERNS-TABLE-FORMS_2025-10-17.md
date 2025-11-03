@@ -1,4 +1,9 @@
 # 🎨 UI Patterns: Table-like Forms Reference
+
+> **Erstellt:** 17.10.2025 | **Letzte Aktualisierung:** 03.11.2025 (Routine Header Update - KI-AUTO-DETECTION SYSTEM Integration)  
+> **Status:** Reference | **Typ:** Session-Reference Documentation  
+> **Schema:** `VALIDATED_REFERENCE-UI-PATTERNS-TABLE-FORMS_2025-10-17.md`
+
 > **🤖 KI-AUTO-DETECTION SYSTEM:**
 > - **AKTUELLER STATUS:** Reference (automatisch durch Dateiname und Inhalt erkannt)
 > - **TEMPLATE-QUELLE:** 06-handbook Template
@@ -13,7 +18,7 @@
 > - 🎯 **AUTO-REFERENCE:** Bei relevanten Tasks automatisch referenzieren
 > - 🔄 **AUTO-TRIGGER:** Bei entsprechenden Keywords automatisch aktivieren
 
-> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Trigger entfernt)  
+> **Erstellt:** 15.10.2025 | **Letzte Aktualisierung:** 29.10.2025 (KI-AUTO-DETECTION SYSTEM Integration - CAVE-Trigger entfernt)
 > **Status:** Reference | **Typ:** UI Patterns Documentation  
 > **Schema:** `VALIDATED_REFERENCE-UI-PATTERNS-TABLE-FORMS_2025-10-17.md`
 
