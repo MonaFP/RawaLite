@@ -1,17 +1,19 @@
-# DEPRECATED_PLAN-OPTION3-HYBRID-MAPPING-FAILED_2025-11-03
+# PLAN_IMPL-OPTION3-DATABASE-HYBRID-MAPPING-LAYER_2025-11-03
 
-> **Erstellt:** 03.11.2025 | **Letzte Aktualisierung:** 04.11.2025 (DEPRECATED - Plan fehlgeschlagen)  
-> **Status:** DEPRECATED - Plan führte zu massivem Fehler | **Typ:** PLAN - Veralteter Planungsansatz  
-> **Schema:** `DEPRECATED_PLAN-OPTION3-HYBRID-MAPPING-FAILED_2025-11-03.md` ✅ **SCHEMA-COMPLIANT**
+> **Erstellt:** 03.11.2025 | **Letzte Aktualisierung:** 05.11.2025 (STATUS UPDATE - DEPRECATED nach fehlgeschlagener Implementation)  
+> **Status:** DEPRECATED - Plan fehlgeschlagen (Migration 045 zerstörte per-mode Schema) | **Typ:** PLAN - Veralteter Planungsansatz  
+> **Schema:** `DEPRECATED_PLAN-OPTION3-HYBRID-MAPPING-FAILED_2025-11-03.md` ✅ **SCHEMA-COMPLIANT**  
+> **🛡️ ARCHIVE-STATUS:** Archiviert als historische Referenz, NICHT ZUM IMPLEMENTIEREN
 
-> **⚠️ DEPRECATED NOTICE:**
-> Dieser Plan wurde als FEHLGESCHLAGEN markiert am 04.11.2025.
+> **⚠️ DEPRECATED NOTICE (05.11.2025):**
+> Dieser Plan wurde als **FEHLGESCHLAGEN** markiert und ist **NICHT ZUM IMPLEMENTIEREN**.
 > 
-> **PROBLEM:** Implementation führte zu GLOBAL-only Konfiguration statt per-mode individual settings
-> **ROOT CAUSE:** Migration 045 zerstörte per-mode Struktur durch DROP TABLE + UNIQUE(user_id)
-> **ERGEBNIS:** App non-functional, individuell konfigurierbare Navigation-Modes verloren
+> **PROBLEM:** Implementation (04.11.2025) führte zu GLOBAL-only Konfiguration statt per-mode individual settings
+> **ROOT CAUSE:** Migration 045 zerstörte per-mode Struktur durch DROP TABLE + UNIQUE(user_id) statt UNIQUE(user_id, navigation_mode)
+> **ERGEBNIS:** App non-functional, individuell konfigurierbare Navigation-Modes verloren, Hybrid-Mapper massiv fehlerhaft
 > 
-> **NEUER PLAN:** Siehe `PLAN_RESCUE-MIGRATION-049-RESTORE-PER-MODE_2025-11-04.md`
+> **NACHFOLGER-PLAN:** Siehe `PLAN_RESCUE-MIGRATION-049-RESTORE-PER-MODE_2025-11-04.md` (aktiver Rettungsplan)
+> **ARCHIV-STATUS:** Diese Datei dient nur historischer Referenz. Nutze stattdessen PLAN_RESCUE für aktuelle Implementierung.
 
 > **🤖 KI-AUTO-DETECTION SYSTEM:**
 > - **AKTUELLER STATUS:** PLAN (automatisch durch "Entwurfsstatus" erkannt)
