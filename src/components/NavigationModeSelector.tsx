@@ -1,31 +1,30 @@
 import React from 'react';
-import { useNavigation } from '../contexts/NavigationContext';
-import { type NavigationMode, NAVIGATION_MODE_DESCRIPTIONS, NAVIGATION_MODE_ICONS } from '../types/navigation-safe';
+import { useNavigation, NavigationMode } from '../contexts/NavigationContext';
 
 export const NavigationModeSelector: React.FC = () => {
   const { mode, setMode } = useNavigation();
 
   const modes = [
     {
-      id: 'mode-dashboard-view' as NavigationMode,
-      name: 'Dashboard View',
-      description: NAVIGATION_MODE_DESCRIPTIONS['mode-dashboard-view'],
-      icon: NAVIGATION_MODE_ICONS['mode-dashboard-view'],
-      features: ['Übersichtliche Darstellung', 'Statistiken im Fokus', 'Dashboard-Layout']
+      id: 'header-statistics' as NavigationMode,
+      name: 'Header Statistics',
+      description: 'Firmen-Statistiken im Header + nur Navigation in Sidebar',
+      icon: '📊',
+      features: ['Statistiken im Header', 'Nur Navigation in Sidebar', 'Maximaler Content-Platz']
     },
     {
-      id: 'mode-data-panel' as NavigationMode,
-      name: 'Data Panel',
-      description: NAVIGATION_MODE_DESCRIPTIONS['mode-data-panel'],
-      icon: NAVIGATION_MODE_ICONS['mode-data-panel'],
-      features: ['Erweiterte Datenansicht', 'Navigation im Panel', 'Strukturierte Darstellung']
+      id: 'header-navigation' as NavigationMode,
+      name: 'Header Navigation',
+      description: 'Navigation im Header + Statistiken in kompakter Sidebar',
+      icon: '🧭',
+      features: ['Navigation im Header', 'Statistiken in 200px Sidebar', 'Moderne Header-Navigation']
     },
     {
-      id: 'mode-compact-focus' as NavigationMode,
-      name: 'Compact Focus',
-      description: NAVIGATION_MODE_DESCRIPTIONS['mode-compact-focus'],
-      icon: NAVIGATION_MODE_ICONS['mode-compact-focus'],
-      features: ['Minimale Oberfläche', 'Konzentriertes Arbeiten', 'Kompakte Darstellung']
+      id: 'full-sidebar' as NavigationMode,
+      name: 'Full Sidebar',
+      description: 'Alles in einer großen Sidebar - Navigation + alle Statistiken',
+      icon: '📱',
+      features: ['Alles in einer Sidebar', 'Traditionelles Layout', 'Vollständige Integration']
     }
   ];
 

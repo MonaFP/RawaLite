@@ -55,8 +55,7 @@ export default function Sidebar({ className = 'sidebar' }: SidebarProps = {}){
     { to: "/angebote", label: "Angebote" },
     { to: "/rechnungen", label: "Rechnungen" },
     { to: "/leistungsnachweise", label: "Leistungsnachweise" },
-    { to: "/einstellungen", label: "Einstellungen" },
-    { to: "/rollback", label: "Wiederherstellung" }
+    { to: "/einstellungen", label: "Einstellungen" }
   ];
   return (
     <aside className={className}>

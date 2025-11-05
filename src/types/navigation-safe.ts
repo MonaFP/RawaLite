@@ -1,137 +1,152 @@
 /**
- * Saubere Navigation Types - Legacy ISOLATION
+ * Navigation-Safe Type Definitions
  * 
- * ✅ STRATEGIE: Legacy darf NICHT "mitlaufen"
- * - Legacy existiert NUR im Kompatibilitäts-/Migrationsrand
- * - UI/Services arbeiten AUSSCHLIESSLICH mit KI-Safe Modes
- * - Normalisierung erfolgt an DB-Read/IPC-Eingang
+ * Type guards and utilities for safe navigation mode handling
+ * Compatible with AKTUELL electron/ipc patterns
  * 
- * @version 1.0.59
- * @date 2025-10-24
- * @author GitHub Copilot (KI-SESSION-BRIEFING compliant)
+ * @since v1.0.48+ (KOPIE + navigation-safe types)
  */
-
-// ✅ PRIMÄRE KI-SAFE TYPES (öffentlich verwendet)
-export type KiSafeNavigationMode =
-  | 'mode-dashboard-view'
-  | 'mode-data-panel'
-  | 'mode-compact-focus';
-
-// ✅ LEGACY TYPES (NUR für Kompatibilität - NICHT re-exportieren in UI/Services)
-type LegacyNavigationMode =
-  | 'header-statistics'
-  | 'header-navigation'
-  | 'full-sidebar';
-
-// ✅ IPC-EINGANG (optional): akzeptiert beides, aber normalisiert sofort
-export type NavigationModeInput = KiSafeNavigationMode | LegacyNavigationMode;
-
-// ✅ KI-SAFE MODES LIST (einzige öffentlich genutzte Liste)
-export const NAVIGATION_MODES_SAFE: readonly KiSafeNavigationMode[] = [
-  'mode-dashboard-view',
-  'mode-data-panel', 
-  'mode-compact-focus'
-] as const;
-
-// ✅ EINZIGER ÖFFENTLICH GENUTZTER GUARD
-export function isValidNavigationMode(x: unknown): x is KiSafeNavigationMode {
-  return typeof x === 'string' && (NAVIGATION_MODES_SAFE as readonly string[]).includes(x);
-}
-
-// ✅ LEGACY GUARD (für interne Kompatibilität)
-export function isLegacyNavigationMode(x: unknown): x is LegacyNavigationMode {
-  return typeof x === 'string' && ['header-statistics', 'header-navigation', 'full-sidebar'].includes(x);
-}
-
-// ✅ KOMPATIBILITÄTS-SCHICHT (schmale Schicht am DB-Read/IPC-Eingang)
 
 /**
- * Normalisiert Legacy → KI-Safe (EINGANG zur App)
- * Wird nur an DB-Read und IPC-Eingang verwendet
+ * Valid navigation modes in the system
  */
-export function normalizeToKiSafe(input: NavigationModeInput): KiSafeNavigationMode {
-  // Bereits KI-Safe → pass through
-  if (isValidNavigationMode(input)) {
-    return input;
-  }
-  
-  // Legacy → KI-Safe normalisieren
-  if (isLegacyNavigationMode(input)) {
-    const legacyMapping: Record<LegacyNavigationMode, KiSafeNavigationMode> = {
-      'header-statistics': 'mode-dashboard-view',
-      'header-navigation': 'mode-data-panel',
-      'full-sidebar': 'mode-compact-focus'
-    };
-    return legacyMapping[input];
-  }
-  
-  // Fallback für unbekannte Werte
-  console.warn(`[Navigation] Unknown navigation mode: ${input}, falling back to mode-dashboard-view`);
-  return 'mode-dashboard-view';
-}
-
-// ✅ TYPE ALIASES (für saubere Migration)
-export type NavigationMode = KiSafeNavigationMode;  // Primary type für alle UI/Services
-export const NAVIGATION_MODES = NAVIGATION_MODES_SAFE;  // Primary list für alle UI/Services
-
-// ✅ VALIDATION HELPERS für Service Layer
-export function validateNavigationMode(mode: unknown): KiSafeNavigationMode {
-  if (isValidNavigationMode(mode)) {
-    return mode;
-  }
-  
-  // Versuche Legacy-Normalisierung
-  if (typeof mode === 'string') {
-    return normalizeToKiSafe(mode as NavigationModeInput);
-  }
-  
-  // Ultimate fallback
-  return 'mode-dashboard-view';
-}
+export type NavigationMode = 'header-statistics' | 'header-navigation' | 'full-sidebar';
 
 /**
- * Type guard für NavigationModeInput (IPC usage)
+ * KI-Safe navigation mode type (alias for consistency with IPC)
  */
-export function isNavigationModeInput(x: unknown): x is NavigationModeInput {
-  return isValidNavigationMode(x) || isLegacyNavigationMode(x);
-}
+export type KiSafeNavigationMode = NavigationMode;
 
-// ✅ DEFAULT WERTE
-export const DEFAULT_NAVIGATION_MODE: KiSafeNavigationMode = 'mode-dashboard-view';
+/**
+ * Input type that can be normalized to safe mode
+ */
+export type NavigationModeInput = string | NavigationMode | KiSafeNavigationMode;
 
-// ✅ MODE DESCRIPTIONS (für UI)
-export const NAVIGATION_MODE_DESCRIPTIONS: Record<KiSafeNavigationMode, string> = {
-  'mode-dashboard-view': 'Dashboard View - Übersichtliche Darstellung mit Statistiken',
-  'mode-data-panel': 'Data Panel - Erweiterte Datenansicht mit Navigation',
-  'mode-compact-focus': 'Compact Focus - Minimale Oberfläche für konzentriertes Arbeiten'
-};
+/**
+ * Array of safe navigation modes
+ */
+export const NAVIGATION_MODES_SAFE: KiSafeNavigationMode[] = [
+  'header-statistics',
+  'header-navigation',
+  'full-sidebar'
+];
 
-// ✅ MODE ICONS (für UI)
-export const NAVIGATION_MODE_ICONS: Record<KiSafeNavigationMode, string> = {
-  'mode-dashboard-view': '📊',
-  'mode-data-panel': '📋', 
-  'mode-compact-focus': '🎯'
+/**
+ * Normalize any input to a safe navigation mode with fallback
+ */
+export const normalizeToKiSafe = (value: NavigationModeInput, fallback: NavigationMode = 'header-navigation'): NavigationMode => {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+
+  const normalized = value.toLowerCase().trim();
+  
+  // Map common aliases to safe modes
+  const modeMap: Record<string, NavigationMode> = {
+    'header-statistics': 'header-statistics',
+    'statistics': 'header-statistics',
+    'stats': 'header-statistics',
+    'header-navigation': 'header-navigation',
+    'navigation': 'header-navigation',
+    'header': 'header-navigation',
+    'full-sidebar': 'full-sidebar',
+    'sidebar': 'full-sidebar',
+    'fullsidebar': 'full-sidebar'
+  };
+
+  return modeMap[normalized] ?? fallback;
 };
 
 /**
- * ✅ EXPORT SUMMARY für clean imports:
- * 
- * PRIMARY TYPES:
- * - KiSafeNavigationMode (main type)
- * - NavigationMode (alias für KiSafeNavigationMode)
- * - NavigationModeInput (IPC usage)
- * 
- * PRIMARY FUNCTIONS:
- * - isValidNavigationMode()
- * - normalizeToKiSafe()
- * - validateNavigationMode()
- * 
- * PRIMARY CONSTANTS:
- * - NAVIGATION_MODES_SAFE
- * - NAVIGATION_MODES (alias)
- * - DEFAULT_NAVIGATION_MODE
- * 
- * UI HELPERS:
- * - NAVIGATION_MODE_DESCRIPTIONS
- * - NAVIGATION_MODE_ICONS
+ * Type guard for valid navigation modes
  */
+export const isValidNavigationMode = (value: unknown): value is NavigationMode => {
+  return typeof value === 'string' && ['header-statistics', 'header-navigation', 'full-sidebar'].includes(value);
+};
+
+/**
+ * Safe mode conversion with fallback
+ */
+export const getSafeNavigationMode = (mode: unknown, fallback: NavigationMode = 'header-navigation'): NavigationMode => {
+  return isValidNavigationMode(mode) ? mode : fallback;
+};
+
+/**
+ * Navigation mode metadata
+ */
+export interface NavigationModeConfig {
+  key: NavigationMode;
+  label: string;
+  description: string;
+  defaultHeaderHeight: number;
+  minHeaderHeight: number;
+  maxHeaderHeight: number;
+  layoutType: 'compact' | 'balanced' | 'spacious';
+}
+
+/**
+ * All available navigation modes with their configurations
+ */
+export const NAVIGATION_MODE_CONFIGS: Record<NavigationMode, NavigationModeConfig> = {
+  'header-statistics': {
+    key: 'header-statistics',
+    label: 'Header mit Statistiken',
+    description: 'Compact header showing key statistics',
+    defaultHeaderHeight: 90,
+    minHeaderHeight: 60,
+    maxHeaderHeight: 120,
+    layoutType: 'compact'
+  },
+  'header-navigation': {
+    key: 'header-navigation',
+    label: 'Header mit Navigation',
+    description: 'Full header with navigation menu',
+    defaultHeaderHeight: 160,
+    minHeaderHeight: 120,
+    maxHeaderHeight: 220,
+    layoutType: 'balanced'
+  },
+  'full-sidebar': {
+    key: 'full-sidebar',
+    label: 'Vollständige Sidebar',
+    description: 'Full sidebar navigation layout',
+    defaultHeaderHeight: 60,
+    minHeaderHeight: 40,
+    maxHeaderHeight: 100,
+    layoutType: 'spacious'
+  }
+};
+
+/**
+ * Get default header height for a navigation mode
+ */
+export const getDefaultHeaderHeight = (mode: NavigationMode): number => {
+  return NAVIGATION_MODE_CONFIGS[mode]?.defaultHeaderHeight ?? 160;
+};
+
+/**
+ * Validate header height for a navigation mode
+ */
+export const isValidHeaderHeight = (mode: NavigationMode, height: number): boolean => {
+  const config = NAVIGATION_MODE_CONFIGS[mode];
+  return height >= config.minHeaderHeight && height <= config.maxHeaderHeight;
+};
+
+/**
+ * Constrain header height to valid range for a navigation mode
+ */
+export const constrainHeaderHeight = (mode: NavigationMode, height: number): number => {
+  const config = NAVIGATION_MODE_CONFIGS[mode];
+  return Math.max(config.minHeaderHeight, Math.min(height, config.maxHeaderHeight));
+};
+
+export default {
+  isValidNavigationMode,
+  getSafeNavigationMode,
+  normalizeToKiSafe,
+  NAVIGATION_MODES_SAFE,
+  NAVIGATION_MODE_CONFIGS,
+  getDefaultHeaderHeight,
+  isValidHeaderHeight,
+  constrainHeaderHeight
+};

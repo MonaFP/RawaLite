@@ -1,0 +1,275 @@
+/* 🎯 HEADER-STATISTICS NAVIGATION MODE */
+/* 📅 Erstellt: 2025-10-19 - Separated Navigation Mode CSS */
+/* 🎨 Statistics Header + Compact Navigation Sidebar */
+/* 🎨 FIX-016/017/018 Compliant: Database-Theme-System CSS Variables */
+
+/* =========================================
+   HEADER-STATISTICS MODE CSS VARIABLES
+   ========================================= */
+
+/* Mode-specific Theme Variables für Header-Statistics */
+[data-navigation-mode="header-statistics"] {
+  /* Header Statistics Theme Variables */
+  --theme-header-bg: var(--header-bg, var(--sidebar-bg));
+  --theme-header-text: var(--header-text, var(--foreground));
+  --theme-header-border: var(--header-border, rgba(255,255,255,.08));
+  
+  /* Company Branding Theme Variables */
+  --theme-company-color: var(--company-name-color, white);
+  --theme-company-weight: var(--company-name-weight, 600);
+  
+  /* Statistics Cards Theme Variables */
+  --theme-stat-bg: var(--stat-card-bg, rgba(255,255,255,0.1));
+  --theme-stat-border: var(--stat-card-border, rgba(255,255,255,0.2));
+  --theme-stat-text: var(--stat-card-text, white);
+  --theme-stat-value: var(--stat-card-value, white);
+  --theme-stat-success: var(--stat-success, #22c55e);
+  --theme-stat-warning: var(--stat-warning, #f59e0b);
+  --theme-stat-danger: var(--stat-danger, #ef4444);
+  
+  /* Sidebar Theme Variables */
+  --theme-sidebar-bg: var(--sidebar-bg);
+  --theme-sidebar-text: var(--sidebar-text, var(--muted));
+  --theme-sidebar-border: var(--sidebar-border, rgba(255,255,255,.08));
+}
+
+/* =========================================
+   HEADER STATISTICS COMPONENT
+   ========================================= */
+
+[data-navigation-mode="header-statistics"] .header-statistics {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--theme-header-bg);
+  color: var(--theme-header-text);
+  border-bottom: 1px solid var(--theme-header-border);
+  box-sizing: border-box;
+  gap: 24px;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Verhindert jeden Overflow */
+}
+
+/* Company Section - Header Statistics Mode */
+[data-navigation-mode="header-statistics"] .header-statistics .company-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  min-width: 200px;
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .company-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .company-name {
+  font-size: 1.1em;
+  font-weight: var(--theme-company-weight);
+  color: var(--theme-company-color);
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .page-title {
+  font-size: 1.2em;
+  font-weight: 500;
+  color: var(--theme-header-text);
+  margin-left: 24px;
+}
+
+/* Statistics Cards Container - Header Statistics Mode */
+[data-navigation-mode="header-statistics"] .header-statistics .statistics-cards {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  justify-content: flex-end;
+  overflow: hidden; /* Kein Scrollbalken mehr */
+  padding: 0 16px;
+  height: 100%; /* Nutzt die komplette verfügbare Höhe bei 160px */
+}
+
+/* Individual Statistic Card - Header Statistics Mode */
+[data-navigation-mode="header-statistics"] .header-statistics .statistic-card {
+  background: var(--theme-stat-bg);
+  border: 1px solid var(--theme-stat-border);
+  border-radius: 8px;
+  padding: 21px 25px; /* +5px mehr Abstand */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 110px;
+  width: 110px;
+  height: 85px; /* Angepasst für 160px Header */
+  text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .statistic-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .stat-icon {
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .stat-value {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--theme-stat-value);
+  line-height: 1.2;
+  margin: 0;
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .stat-label {
+  font-size: 0.75em;
+  color: var(--theme-stat-text);
+  opacity: 0.9;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Status-specific Card Variants - Header Statistics Mode */
+[data-navigation-mode="header-statistics"] .header-statistics .statistic-card.success {
+  border-color: var(--theme-stat-success);
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .statistic-card.success .stat-value {
+  color: var(--theme-stat-success);
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .statistic-card.warning {
+  border-color: var(--theme-stat-warning);
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .statistic-card.warning .stat-value {
+  color: var(--theme-stat-warning);
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .statistic-card.danger {
+  border-color: var(--theme-stat-danger);
+}
+
+[data-navigation-mode="header-statistics"] .header-statistics .statistic-card.danger .stat-value {
+  color: var(--theme-stat-danger);
+}
+
+/* =========================================
+   COMPACT SIDEBAR COMPONENT
+   ========================================= */
+
+[data-navigation-mode="header-statistics"] .compact-sidebar {
+  grid-area: sidebar;
+  background: var(--theme-sidebar-bg);
+  border-right: 1px solid var(--theme-sidebar-border);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  gap: 20px;
+  color: var(--theme-sidebar-text);
+}
+
+/* Brand Section - Header Statistics Mode */
+[data-navigation-mode="header-statistics"] .compact-sidebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 8px 16px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  color: white;
+}
+
+[data-navigation-mode="header-statistics"] .compact-sidebar .brand .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2));
+  box-shadow: 0 0 20px var(--accent);
+}
+
+/* Navigation Menu - Header Statistics Mode */
+[data-navigation-mode="header-statistics"] .compact-sidebar .nav {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+[data-navigation-mode="header-statistics"] .compact-sidebar .nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--theme-sidebar-text);
+  text-decoration: none;
+  padding: 10px 12px;
+  margin: 4px 4px;
+  border-radius: 10px;
+  transition: background .2s, color .2s, transform .06s;
+}
+
+[data-navigation-mode="header-statistics"] .compact-sidebar .nav a:hover {
+  background: rgba(96,165,250,.12);
+  color: white;
+  transform: translateX(2px);
+}
+
+[data-navigation-mode="header-statistics"] .compact-sidebar .nav a[aria-current="page"] {
+  background: rgba(96,165,250,.2);
+  color: white;
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+   ========================================= */
+
+@media (max-width: 1024px) {
+  [data-navigation-mode="header-statistics"] .header-statistics {
+    padding: 12px 20px;
+    gap: 16px;
+  }
+  
+  [data-navigation-mode="header-statistics"] .header-statistics .statistics-cards {
+    gap: 12px;
+  }
+  
+  [data-navigation-mode="header-statistics"] .header-statistics .statistic-card {
+    min-width: 80px;
+    width: 80px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  [data-navigation-mode="header-statistics"] .header-statistics {
+    flex-direction: column;
+    height: auto;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  
+  [data-navigation-mode="header-statistics"] .header-statistics .statistics-cards {
+    width: 100%;
+    justify-content: space-around;
+    gap: 8px;
+  }
+  
+  [data-navigation-mode="header-statistics"] .compact-sidebar {
+    padding: 16px 12px;
+    gap: 16px;
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "rawalite",
-  "version": "1.0.77",
+  "version": "1.0.78",
   "description": "Rechnungs- und Angebotsverwaltung Lite",
   "author": "MonaFP",
   "private": true,
@@ -72,6 +72,7 @@
     "fix:metadata-consistency": "node scripts/FIX_METADATA_CONSISTENCY.mjs",
     "validate:line-items": "node scripts/VALIDATE_DATABASE_HIERARCHY_CHECK.mjs",
     "validate:path-compliance": "node scripts/VALIDATE_PATHS_COMPLIANCE_CHECK.mjs",
+    "validate:per-mode": "node scripts/VALIDATE_NAVIGATION_PER_MODE_CHECK.mjs",
     "analyze:database-schema": "node scripts/ANALYZE_DATABASE_SCHEMA_INSPECT.cjs",
     "analyze:database-sqljs": "node scripts/ANALYZE_DATABASE_SQLJS_INSPECT.mjs",
     "build:native-modules-verify": "node scripts/BUILD_NATIVE_MODULES_VERIFY.mjs",

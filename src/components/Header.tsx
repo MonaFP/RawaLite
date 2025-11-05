@@ -38,8 +38,8 @@ export default function Header({ title: propTitle, right, miniVersion = false, c
       {/* Header Controls - Focus Mode Toggle und weitere Controls */}
       <div className="header-controls">
         
-        {/* Im Data-Panel-Modus zeigen wir zusätzliche Informationen (außer Mini-Version) */}
-        {mode === 'mode-data-panel' && !miniVersion && (
+        {/* Im Sidebar-Modus zeigen wir zusätzliche Informationen (außer Mini-Version) */}
+        {mode === 'header-navigation' && !miniVersion && (
           <div style={{
             display: 'flex',
             alignItems: 'center',

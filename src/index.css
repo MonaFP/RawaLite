@@ -1,15 +1,9 @@
 
-/* 🏗️ LAYOUT & NAVIGATION MODULES - Hierarchical Import Order 2025-10-21 */
-/* WICHTIG: Reihenfolge für CSS-Priorität - Emergency Fallback → Database-First */
-@import url('./styles/fallback-grid.css');              /* 1. Emergency Fallback (niedrigste Priorität) */
-@import url('./styles/layout-grid.css');                /* 2. Database-First Layout (höchste Priorität) */
+/* 🏗️ LAYOUT & NAVIGATION MODULES - Ausgelagert 2025-10-19 */
+@import url('./styles/layout-grid.css');
 @import url('./styles/header-styles.css');
-@import url('./styles/header-navigation.css');          /* ✅ NEW: HeaderNavigation Component Styling */
 @import url('./styles/sidebar-styles.css');
 @import url('./styles/main-content.css');
-
-/* 🐛 DEBUG: Debug-layout-fallback.css ENTFERNT - überschrieb HeaderNavigation mit !important */
-/* @import url('./styles/debug-layout-fallback.css'); */
 
 /* 🎯 NAVIGATION MODES - Separated CSS 2025-10-19 */
 @import url('./styles/navigation-modes/index.css');

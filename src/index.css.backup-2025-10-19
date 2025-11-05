@@ -1,0 +1,1700 @@
+
+@import url('./styles/status-updates/status-core.css');
+@import url('./styles/status-updates/status-layout-minimal.css');
+@import url('./styles/status-updates/status-dropdowns.css');
+@import url('./styles/status-updates/status-badges.css');
+@import url('./styles/status-updates/status-themes.css');
+@import url('./styles/focus-mode.css');
+
+/* Drag-Drop Line Items Styles */
+.draggable-line-item {
+  position: relative;
+  cursor: grab;
+  /* Schnellere Transitions nur für Hintergrund/Farben, NICHT für Transform */
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.draggable-line-item:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.draggable-line-item.is-dragging {
+  cursor: grabbing;
+  z-index: 999;
+  /* ENTFERNT: transform: scale(0.98); - Das verursacht das Ruckeln */
+  /* Keine Transform-Transition während des Ziehens */
+  transition: none;
+}
+
+.draggable-line-item.is-over {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Drag overlay improvements */
+.dnd-overlay {
+  pointer-events: none;
+  z-index: 1000;
+  /* Verhindert Aufblähen beim Absetzen */
+  transition: none !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+:root{
+  --bg:#0f172a;        /* slate-900 */
+  --panel:#111827;     /* gray-900 */
+  --muted:#cbd5e1;     /* slate-300 */
+  --foreground:#374151; /* gray-700 for better contrast */
+  --accent:#8b9dc3;    /* 🎨 DEZENTE PASTELL: Standard mit Anthrazit-Blau (unterscheidet sich von Sage) */
+  --accent-2:#f472b6;  /* pink-400 */
+  --ok:#22c55e;        /* green-500 */
+  --warn:#f59e0b;      /* amber-500 */
+  --danger:#ef4444;    /* red-500 */
+  
+  /* Neue Farben für professionelles Design */
+  --sidebar-bg: linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%); /* Pastell-basiert */
+  --sidebar-green: #4a5d5a; /* Pastell-Sage statt knalligem Grün */
+  --sidebar-green-hover: #3a4d4a; /* Dunklere Variante für Hover-Effekte */
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --main-bg-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+  
+  /* Theme-unabhängige Basis-Variablen */
+  --accent-hover: #c1d0bc; /* Pastell-Sage Hover */
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;
+  --text-secondary: #374151;
+}
+
+/* 🎨 Beautiful Pastel Themes - v1.5.3 - DEZENTE PASTELLTÖNE (Standards-konform) */
+[data-theme="sage"] {
+  --accent: #d2ddcf;                   /* 🎨 DEZENTE PASTELL: Sage aus Pastelles Palette */
+  --accent-hover: #c1d0bc;             /* 10% dunkler für Hover-Effekt */
+  --sidebar-bg: linear-gradient(160deg, #4a5d5a 0%, #3a4d4a 40%, #2f403d 100%);
+  --sidebar-green: #4a5d5a;
+  --sidebar-green-hover: #3a4d4a;
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;            /* Dunkle Kontrastfarbe */
+  --text-secondary: #475569;           /* Sekundärfarbe */
+}
+
+[data-theme="sky"] {
+  --accent: #a2d1ec;                   /* 🎨 DEZENTE PASTELL: Sky aus Webby Palette */
+  --accent-hover: #91c4dc;             /* 10% dunkler für Hover-Effekt */
+  --sidebar-bg: linear-gradient(160deg, #4a5b6b 0%, #3d4e5e 40%, #324151 100%);
+  --sidebar-green: #4a5b6b;
+  --sidebar-green-hover: #3d4e5e;
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;            /* Dunkle Kontrastfarbe */
+  --text-secondary: #475569;           /* Sekundärfarbe */
+}
+
+[data-theme="lavender"] {
+  --accent: #cf9ad6;                   /* 🎨 DEZENTE PASTELL: Status Rejected (bereits pastell-konform) */
+  --accent-hover: #c189cc;             /* 10% dunkler für Hover-Effekt */
+  --sidebar-bg: linear-gradient(160deg, #5a4d6b 0%, #4d405e 40%, #403351 100%);
+  --sidebar-green: #5a4d6b;
+  --sidebar-green-hover: #4d405e;
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;            /* Dunkle Kontrastfarbe */
+  --text-secondary: #475569;           /* Sekundärfarbe */
+}
+
+[data-theme="peach"] {
+  --accent: #feecd4;                   /* 🎨 DEZENTE PASTELL: Peach aus Pastelles Palette */
+  --accent-hover: #eeddc1;             /* 10% dunkler für Hover-Effekt */
+  --sidebar-bg: linear-gradient(160deg, #6b5a4d 0%, #5e4d40 40%, #514033 100%);
+  --sidebar-green: #6b5a4d;
+  --sidebar-green-hover: #5e4d40;
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;            /* Dunkle Kontrastfarbe */
+  --text-secondary: #475569;           /* Sekundärfarbe */
+}
+
+[data-theme="rose"] {
+  --accent: #feb2a8;                   /* 🎨 DEZENTE PASTELL: Rose aus Pastellea Palette */
+  --accent-hover: #ed9e94;             /* 10% dunkler für Hover-Effekt */
+  --sidebar-bg: linear-gradient(160deg, #6b4d5a 0%, #5e4050 40%, #513343 100%);
+  --sidebar-green: #6b4d5a;
+  --sidebar-green-hover: #5e4050;
+  --main-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --card-bg: rgba(255,255,255,0.98);
+  --text-primary: #1e293b;            /* Dunkle Kontrastfarbe */
+  --text-secondary: #475569;           /* Sekundärfarbe */
+}
+
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  color: var(--muted);
+  background: var(--main-bg-dark);
+}
+
+.app{
+  display:grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar focus-bar"
+    "sidebar main";
+  min-height:100%;
+}
+
+/* Header - nur der eigentliche Header */
+.header {
+  grid-area: header;
+}
+
+/* Focus Bar - direkt unter dem Header als zweite Zeile */
+.focus-bar-area {
+  grid-area: focus-bar;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 16px;
+  background: color-mix(in srgb, var(--accent) 15%, transparent 85%); /* 🎨 Theme-basiert statt hardcoded */
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%); /* 🎨 Theme-basiert statt hardcoded */
+}
+
+/* 🧭 Enhanced Navigation - Header Mode (200px Sidebar) */
+[data-navigation-mode="header"] .app {
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar focus-bar"
+    "sidebar main";
+}
+
+/* 🧭 Enhanced Navigation - Sidebar Mode (240px Sidebar) */
+[data-navigation-mode="sidebar"] .app {
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar focus-bar"
+    "sidebar main";
+}
+
+/* 🧭 Enhanced Navigation - Full Sidebar Mode (240px Sidebar) */
+[data-navigation-mode="full-sidebar"] .app {
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar focus-bar"
+    "sidebar main";
+}
+
+.sidebar{
+  grid-area: sidebar;
+  background: var(--sidebar-bg);
+  border-right:1px solid rgba(255,255,255,.08);
+  padding:16px 12px;
+  position: sticky;
+  top:0;
+  min-height:100vh;
+  box-shadow: 2px 0 10px rgba(0,0,0,.2);
+}
+
+/* Compact Sidebar Styles for Header Mode */
+.compact-sidebar {
+  width: 200px !important;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand{
+  display:flex; align-items:center; gap:10px;
+  margin: 0 8px 16px;
+  font-weight:700; letter-spacing:.2px;
+}
+.brand .dot{ width:10px; height:10px; border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), var(--accent-2)); box-shadow:0 0 20px var(--accent); }
+
+.nav{
+  list-style:none; padding:0; margin:8px 0 0;
+}
+.nav a{
+  display:flex; align-items:center; gap:10px;
+  color:var(--muted);
+  text-decoration:none;
+  padding:10px 12px; margin:4px 4px;
+  border-radius:10px;
+  transition: background .2s, color .2s, transform .06s;
+}
+.nav a:hover{ background:rgba(96,165,250,.12); color:white; }
+.nav a[aria-current="page"]{ background:rgba(96,165,250,.2); color:white; }
+
+.header{
+  grid-area: header;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 16px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  background: var(--sidebar-bg);
+  color: var(--muted);
+  box-shadow: 0 1px 3px rgba(0,0,0,.15);
+}
+
+.header .title{ 
+  font-weight:600; 
+  color: white;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header > *:last-child {
+  color: white;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.header .title{ font-weight:600; }
+
+.main{
+  grid-area: main;
+  padding: 18px 20px 40px;
+  background: var(--main-bg, linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%));
+  background-attachment: fixed;
+  position: relative;
+}
+
+.main::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.card{
+  background: var(--card-bg, rgba(255,255,255,0.98));
+  border:1px solid rgba(0,0,0,.12);
+  border-radius:14px;
+  padding:16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.15), 0 1px 8px rgba(0,0,0,.08);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary, #1e293b);
+  position: relative;
+  z-index: 1;
+}
+
+/* Button styles */
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #6b7280;
+  color: white;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: #6b7280;                     /* Einheitliches Grau für alle Buttons */
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover, var(--accent));   /* Fallback für ältere Browser */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* Theme-basierte Hover mit Transparenz */
+}
+
+.btn-success {
+  background: #6b7280;                     /* Einheitliches Grau */
+  color: white;
+}
+
+.btn-success:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt festes Grün */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+.btn-secondary {
+  background: #6b7280;                     /* Bleibt gleich */
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover hinzufügen */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+.btn-info {
+  background: #6b7280;                     /* Einheitliches Grau wie alle anderen */
+  color: white;
+}
+
+.btn-info:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-basierte Hover-Farbe */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+.btn-danger {
+  background: #6b7280;                     /* Grau statt Rot */
+  color: white;
+}
+
+.btn-danger:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt hartem Rot */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+.btn-warning {
+  background: #6b7280;                     /* Grau statt Orange */
+  color: white;
+}
+
+.btn-warning:hover {
+  background: var(--accent-hover, var(--accent));   /* Theme-Hover statt hartem Orange */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);
+}
+
+/* Input field styles for better contrast - exclude status dropdowns */
+.card input, .card textarea, .card select:not([class*="status-"]) {
+  background: rgba(255,255,255,0.9) !important;
+  border: 1px solid rgba(0,0,0,.2) !important;
+  color: var(--text-primary, #1e293b) !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+}
+
+.card input:focus, .card textarea:focus, .card select:not([class*="status-"]):focus {
+  outline: none !important;
+  border-color: var(--accent, var(--sidebar-green)) !important;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 30, 58, 46), 0.1) !important;
+}
+
+.card label {
+  color: var(--text-secondary, #374151) !important;
+  font-weight: 600 !important;
+}
+
+.table:not(.status-table){
+  width:100%; border-collapse: collapse;
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  /* REMOVED: overflow: hidden - blockiert Dropdown-Menus */
+}
+.table:not(.status-table) th, .table:not(.status-table) td{
+  text-align:left; padding:10px 12px; border-bottom:1px solid rgba(0,0,0,.08);
+}
+.table:not(.status-table) th{ 
+  opacity:.9; 
+  font-weight:600; 
+  background: rgba(0,0,0,.03);
+  color: var(--text-secondary, #374151);
+}
+.table:not(.status-table) td {
+  color: var(--text-primary, #1f2937);
+}
+.table:not(.status-table) tr:hover {
+  background: rgba(0,0,0,.02);
+}
+
+/* Additional button styles */
+.button-small {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+}
+
+.button-large {
+  font-size: 1.1rem;
+  padding: 12px 24px;
+}
+
+/* Loading Styles */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-message {
+  color: white;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Notification Styles */
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification-toast {
+  min-width: 300px;
+  max-width: 500px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
+
+.notification-success {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.notification-error {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.notification-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+}
+
+.notification-info {
+  background-color: #d1ecf1;
+  border: 1px solid #bee5eb;
+  color: #0c5460;
+}
+
+.notification-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.notification-message {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 🎯 Sub-Item Implementation - Phase 1 CSS Classes */
+/* Ersetzt inline marginLeft styles mit wiederverwendbaren CSS-Classes */
+
+.line-item {
+  position: relative;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.line-item--parent {
+  border: 2px solid #007bff;
+  background: rgba(0, 123, 255, 0.1);
+}
+
+.line-item--sub {
+  margin-left: 24px; /* Konsistent mit PackageForm/OfferForm/InvoiceForm */
+  border-left: 4px solid var(--accent);
+  background: rgba(96, 165, 250, 0.1);
+}
+
+.line-item--orphaned {
+  border: 4px dashed #ffa500;
+  background: rgba(255, 165, 0, 0.3);
+}
+
+/* Debug Labels - konsistente Positionierung */
+.debug-label {
+  position: absolute;
+  top: -12px;
+  left: 8px;
+  color: white;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+  z-index: 10;
+}
+
+.debug-label--parent {
+  background: #007bff;
+}
+
+.debug-label--sub {
+  background: #ff0000;
+}
+
+.debug-label--orphaned {
+  background: #ffa500;
+}
+
+/* Hover-Effekte für bessere UX */
+.line-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.line-item--sub:hover {
+  margin-left: 42px; /* Leichte Hover-Animation */
+}
+
+/* ====== ANGEBOT PAGE SPEZIFISCHE STYLES ====== */
+
+/* Page Header */
+.offer-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.offer-page-title {
+  margin: 0 0 4px 0;
+}
+
+.offer-page-subtitle {
+  opacity: 0.7;
+}
+
+/* Actions Container - für die Button-Leiste in der Tabelle */
+.offer-actions-container {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Form Sections */
+.offer-form-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+
+.offer-form-header {
+  margin-bottom: 16px;
+}
+
+.offer-form-title {
+  margin: 0 0 4px 0;
+}
+
+.offer-form-subtitle {
+  opacity: 0.7;
+}
+
+/* ====== STATUS DROPDOWN - MIT PFEIL ====== */
+.status-dropdown-direct {
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  background: var(--input-bg, #ffffff) url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23495057' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e") right 0.75rem center/16px 12px no-repeat;
+  border: 1px solid var(--border-color, rgba(0,0,0,0.2));
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-primary, #495057);
+  cursor: pointer;
+  min-width: 130px;
+  max-width: 130px;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 10;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.status-dropdown-direct:hover {
+  border-color: var(--accent, var(--sidebar-green));
+  background-color: var(--input-bg-hover, #ffffff);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.status-dropdown-direct:focus {
+  border-color: var(--accent, var(--sidebar-green));
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem var(--accent-shadow, rgba(13, 110, 253, 0.25));
+  background-color: var(--input-bg-focus, #ffffff);
+}
+
+/* Dark Theme Support */
+[data-theme="dark"] .status-dropdown-direct {
+  background-color: var(--input-bg-dark, #374151);
+  color: var(--text-primary-dark, #f9fafb);
+  border-color: var(--border-color-dark, rgba(255,255,255,0.2));
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23f9fafb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+}
+
+[data-theme="dark"] .status-dropdown-direct:hover {
+  background-color: var(--input-bg-hover-dark, #4b5563);
+}
+
+[data-theme="dark"] .status-dropdown-direct:focus {
+  background-color: var(--input-bg-focus-dark, #4b5563);
+}
+
+/* ====== RESPONSIVE BUTTONS - TEXT VERSCHWINDET ====== */
+.responsive-btn {
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.btn-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.btn-text {
+  flex-shrink: 1;
+  overflow: hidden;
+}
+
+/* Responsive Breakpoints - Text verschwindet bei kleinen Fenstern */
+@media (max-width: 1400px) {
+  .responsive-btn {
+    padding: 3px 6px !important;
+    font-size: 11px !important;
+  }
+  
+  .status-dropdown-direct {
+    min-width: 120px;
+    max-width: 120px;
+    font-size: 0.8rem;
+    padding: 0.4rem 1.8rem 0.4rem 0.6rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .btn-text {
+    display: none !important; /* Text komplett ausblenden */
+  }
+  
+  .responsive-btn {
+    padding: 6px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    justify-content: center;
+    gap: 0;
+  }
+  
+  .status-dropdown-direct {
+    min-width: 100px;
+    max-width: 100px;
+    font-size: 0.75rem;
+    padding: 0.35rem 1.5rem 0.35rem 0.5rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .responsive-btn {
+    padding: 5px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    font-size: 10px !important;
+  }
+  
+  .status-dropdown-direct {
+    min-width: 90px;
+    max-width: 90px;
+    font-size: 0.7rem;
+    padding: 0.3rem 1.3rem 0.3rem 0.4rem;
+  }
+}
+
+/* ====== TABLE OVERFLOW PREVENTION - KEIN SCROLLBALKEN ====== */
+.card {
+  overflow: hidden;
+}
+
+.table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 8px 4px;
+}
+
+/* Overflow hidden nur für Text-Zellen, NICHT für Status-Dropdown-Zellen */
+.table th:not(:last-child),
+.table td:not(:last-child) {
+  overflow: hidden;
+}
+
+/* ====== TABELLEN SPALTEN-BREITEN ====== */
+
+/* ANGEBOTE & RECHNUNGEN (8 Spalten) */
+/* Standard Desktop Layout */
+.table th:nth-child(1), .table td:nth-child(1) { width: 8%; }  /* Nummer */
+.table th:nth-child(2), .table td:nth-child(2) { width: 12%; } /* Kunde */
+.table th:nth-child(3), .table td:nth-child(3) { width: 20%; } /* Titel - mehr Platz */
+.table th:nth-child(4), .table td:nth-child(4) { width: 6%; }  /* Status - nur Kreis */
+.table th:nth-child(5), .table td:nth-child(5) { width: 10%; } /* Betrag */
+.table th:nth-child(6), .table td:nth-child(6) { width: 12%; } /* Gültig bis / Fällig am */
+.table th:nth-child(7), .table td:nth-child(7) { width: 16%; } /* Aktionen */
+.table th:nth-child(8), .table td:nth-child(8) { width: 16%; } /* Status ändern */
+
+/* LEISTUNGSNACHWEISE (9 Spalten) - Spezielle Regeln für mehr Spalten */
+.page-timesheets .table th:nth-child(1), .page-timesheets .table td:nth-child(1) { width: 8%; }  /* Nummer */
+.page-timesheets .table th:nth-child(2), .page-timesheets .table td:nth-child(2) { width: 12%; } /* Kunde */
+.page-timesheets .table th:nth-child(3), .page-timesheets .table td:nth-child(3) { width: 16%; } /* Titel */
+.page-timesheets .table th:nth-child(4), .page-timesheets .table td:nth-child(4) { width: 6%; }  /* Status - nur Kreis */
+.page-timesheets .table th:nth-child(5), .page-timesheets .table td:nth-child(5) { width: 10%; } /* Betrag */
+.page-timesheets .table th:nth-child(6), .page-timesheets .table td:nth-child(6) { width: 14%; } /* Zeitraum */
+.page-timesheets .table th:nth-child(7), .page-timesheets .table td:nth-child(7) { width: 8%; }  /* Stunden */
+.page-timesheets .table th:nth-child(8), .page-timesheets .table td:nth-child(8) { width: 14%; } /* Aktionen */
+.page-timesheets .table th:nth-child(9), .page-timesheets .table td:nth-child(9) { width: 12%; } /* Status ändern */
+
+/* Text-Umbruch und Overflow-Verhalten für bessere Darstellung */
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0; /* Trick für ellipsis bei table-layout: fixed */
+}
+
+/* Spezielle Behandlung für wichtige Spalten */
+.table th:nth-child(6), .table td:nth-child(6) { /* Zeitraum */
+  white-space: normal;
+  word-wrap: break-word;
+  min-width: 120px;
+}
+
+.table th:nth-child(8), .table td:nth-child(8) { /* Aktionen */
+  white-space: normal;
+  overflow: visible;
+}
+
+.table th:nth-child(9), .table td:nth-child(9) { /* Status ändern */
+  white-space: normal;
+  overflow: visible;
+}
+
+/* ====== RESPONSIVE TABLE DESIGN ====== */
+/* Large Desktop (1400px+) - Mehr Platz für wichtige Spalten */
+@media (min-width: 1400px) {
+  /* Angebote & Rechnungen (8 Spalten) */
+  .table th:nth-child(3), .table td:nth-child(3) { width: 22%; } /* Titel noch mehr Platz */
+  .table th:nth-child(6), .table td:nth-child(6) { width: 14%; } /* Gültig bis / Fällig am */
+  .table th:nth-child(7), .table td:nth-child(7) { width: 18%; } /* Aktionen */
+  
+  /* Leistungsnachweise (9 Spalten) */
+  .page-timesheets .table th:nth-child(3), .page-timesheets .table td:nth-child(3) { width: 18%; } /* Titel */
+  .page-timesheets .table th:nth-child(6), .page-timesheets .table td:nth-child(6) { width: 16%; } /* Zeitraum */
+  .page-timesheets .table th:nth-child(8), .page-timesheets .table td:nth-child(8) { width: 16%; } /* Aktionen */
+}
+
+/* Tablet Layout (768px - 1200px) */
+@media (max-width: 1200px) {
+  .table {
+    font-size: 12px;
+  }
+  
+  .table th, .table td {
+    padding: 6px 4px;
+  }
+  
+  /* ANGEBOTE & RECHNUNGEN (8 Spalten) - Kompakt */
+  .table th:nth-child(1), .table td:nth-child(1) { width: 6%; }  /* Nummer kompakter */
+  .table th:nth-child(2), .table td:nth-child(2) { width: 16%; } /* Kunde mehr Platz */
+  .table th:nth-child(3), .table td:nth-child(3) { width: 18%; } /* Titel */
+  .table th:nth-child(4), .table td:nth-child(4) { width: 8%; }  /* Status */
+  .table th:nth-child(5), .table td:nth-child(5) { width: 10%; } /* Betrag */
+  .table th:nth-child(6), .table td:nth-child(6) { 
+    display: none; /* Gültig bis / Fällig am ausblenden für mehr Platz */
+  }
+  .table th:nth-child(7), .table td:nth-child(7) { width: 20%; } /* Aktionen */
+  .table th:nth-child(8), .table td:nth-child(8) { width: 22%; } /* Status ändern - mehr Platz! */
+  
+  /* LEISTUNGSNACHWEISE (9 Spalten) - Spezielle Anpassungen */
+  .page-timesheets .table th:nth-child(1), .page-timesheets .table td:nth-child(1) { width: 6%; }  /* Nummer */
+  .page-timesheets .table th:nth-child(2), .page-timesheets .table td:nth-child(2) { width: 14%; } /* Kunde */
+  .page-timesheets .table th:nth-child(3), .page-timesheets .table td:nth-child(3) { width: 16%; } /* Titel */
+  .page-timesheets .table th:nth-child(4), .page-timesheets .table td:nth-child(4) { width: 8%; }  /* Status */
+  .page-timesheets .table th:nth-child(5), .page-timesheets .table td:nth-child(5) { width: 10%; } /* Betrag */
+  .page-timesheets .table th:nth-child(6), .page-timesheets .table td:nth-child(6) { 
+    display: none; /* Zeitraum ausblenden */
+  }
+  .page-timesheets .table th:nth-child(7), .page-timesheets .table td:nth-child(7) { width: 10%; } /* Stunden */
+  .page-timesheets .table th:nth-child(8), .page-timesheets .table td:nth-child(8) { width: 18%; } /* Aktionen */
+  .page-timesheets .table th:nth-child(9), .page-timesheets .table td:nth-child(9) { width: 18%; } /* Status ändern */
+}
+
+/* ====== RESPONSIVE TIMESHEET EDIT FORMS ====== */
+
+/* Grunddaten-Tabelle responsive */
+.timesheet-grunddaten-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr 120px 120px 100px;
+  padding: 12px 16px;
+  align-items: center;
+  gap: 8px;
+}
+
+.timesheet-grunddaten-header {
+  display: grid;
+  grid-template-columns: 120px 1fr 120px 120px 100px;
+  background-color: var(--color-table-header);
+  padding: 12px 16px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Create-Formular spezifisch - Flexibles Layout */
+.timesheet-create-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  align-items: center;
+  gap: 12px;
+}
+
+.timesheet-create-header {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: var(--color-table-header);
+  padding: 12px 16px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+  gap: 12px;
+}
+
+/* Flexible Größen für Form-Felder */
+.timesheet-create-grid > *:nth-child(1),
+.timesheet-create-header > *:nth-child(1) {
+  min-width: 150px;
+  flex: 0 0 auto;
+}
+
+.timesheet-create-grid > *:nth-child(2),
+.timesheet-create-header > *:nth-child(2) {
+  min-width: 200px;
+  flex: 1 1 auto;
+}
+
+.timesheet-create-grid > *:nth-child(3),
+.timesheet-create-header > *:nth-child(3),
+.timesheet-create-grid > *:nth-child(4),
+.timesheet-create-header > *:nth-child(4) {
+  min-width: 120px;
+  flex: 0 0 auto;
+}
+
+/* Aktionen-Spalte bleibt in derselben Zeile */
+.timesheet-create-grid .timesheet-actions,
+.timesheet-create-header .timesheet-actions {
+  min-width: 160px;
+  flex: 0 0 auto;
+}
+
+/* Positionen-Tabelle responsive */
+.timesheet-positionen-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr 80px 80px 80px 100px 80px 100px;
+  padding: 8px 16px;
+  align-items: center;
+  gap: 8px;
+}
+
+.timesheet-positionen-header {
+  display: grid;
+  grid-template-columns: 100px 1fr 80px 80px 80px 100px 80px 100px;
+  background-color: var(--color-table-header);
+  padding: 12px 16px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Mobile Responsive für Timesheet Forms */
+@media (max-width: 768px) {
+  /* Grunddaten Mobile - Vertikal gestapelt */
+  .timesheet-grunddaten-header,
+  .timesheet-grunddaten-grid,
+  .timesheet-create-header,
+  .timesheet-create-grid {
+    display: none; /* Grid ausblenden */
+  }
+  
+  .timesheet-grunddaten-mobile,
+  .timesheet-create-mobile {
+    display: block; /* Mobile Version einblenden */
+    padding: 16px;
+  }
+  
+  .timesheet-grunddaten-mobile .form-group,
+  .timesheet-create-mobile .form-group {
+    margin-bottom: 12px;
+  }
+  
+  .timesheet-grunddaten-mobile label,
+  .timesheet-create-mobile label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+  
+  .timesheet-grunddaten-mobile .form-control,
+  .timesheet-create-mobile .form-control {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 16px; /* Touch-friendly */
+    border-radius: 6px;
+    box-sizing: border-box; /* Verhindert Überlappung */
+  }
+  
+  /* Mobile Aktionen-Bereich */
+  .timesheet-create-mobile .timesheet-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .timesheet-create-mobile .btn {
+    white-space: nowrap; /* Verhindert Textumbruch in Buttons */
+    min-width: 0; /* Ermöglicht Flexbox-Shrinking */
+  }
+  
+  /* Positionen Mobile - Card Layout */
+  .timesheet-positionen-header,
+  .timesheet-positionen-grid {
+    display: none; /* Grid ausblenden */
+  }
+  
+  .timesheet-positionen-mobile {
+    display: block; /* Mobile Version einblenden */
+  }
+  
+  .timesheet-position-card {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background-color: var(--color-bg-secondary);
+  }
+  
+  .timesheet-position-card .position-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  
+  .timesheet-position-card .position-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 14px;
+  }
+  
+  .timesheet-position-card .position-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+  }
+  
+  /* Add Position Form Mobile */
+  .timesheet-add-position-mobile {
+    display: block;
+    padding: 16px;
+    background-color: var(--color-bg-light);
+    border-top: 1px solid var(--color-border);
+  }
+  
+  .timesheet-add-position-mobile .form-group {
+    margin-bottom: 12px;
+  }
+  
+  .timesheet-add-position-mobile label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+  
+  .timesheet-add-position-mobile .form-control {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 16px; /* Touch-friendly */
+    border-radius: 6px;
+  }
+  
+  .timesheet-add-position-mobile .time-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .timesheet-add-position-mobile .add-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin-top: 8px;
+  }
+}
+
+/* Desktop - Mobile Elemente ausblenden */
+@media (min-width: 769px) {
+  .timesheet-grunddaten-mobile,
+  .timesheet-create-mobile,
+  .timesheet-positionen-mobile,
+  .timesheet-add-position-mobile {
+    display: none;
+  }
+}
+
+/* Medium Tablet (900px - 1200px) - Zusätzliche Anpassungen für Status ändern */
+@media (max-width: 1000px) {
+  /* Angebote & Rechnungen */
+  .table th:nth-child(8), .table td:nth-child(8) { 
+    width: 24%; /* Noch mehr Platz für Status ändern */
+  }
+  
+  /* Leistungsnachweise */
+  .page-timesheets .table th:nth-child(9), .page-timesheets .table td:nth-child(9) { 
+    width: 20%; /* Noch mehr Platz für Status ändern */
+  }
+}
+
+/* Mobile Layout (max-width: 768px) */
+@media (max-width: 768px) {
+  .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table {
+    font-size: 11px;
+    min-width: 600px; /* Minimum Breite für horizontales Scrollen */
+  }
+  
+  .table th, .table td {
+    padding: 4px 6px;
+    white-space: nowrap;
+  }
+  
+  /* Verstecke weitere Spalten auf Mobile */
+  .table th:nth-child(3), 
+  .table td:nth-child(3),
+  .table th:nth-child(5), 
+  .table td:nth-child(5),
+  .table th:nth-child(6), 
+  .table td:nth-child(6) { 
+    display: none; /* Titel, Betrag, Gültig bis ausblenden */
+  }
+  
+  /* Anpassung der verbleibenden Spalten */
+  .table th:nth-child(1), .table td:nth-child(1) { width: 15%; }  /* Nummer */
+  .table th:nth-child(2), .table td:nth-child(2) { width: 25%; } /* Kunde */
+  .table th:nth-child(4), .table td:nth-child(4) { width: 20%; } /* Status */
+  .table th:nth-child(7), .table td:nth-child(7) { width: 25%; } /* Aktionen */
+  .table th:nth-child(8), .table td:nth-child(8) { width: 15%; } /* Status ändern */
+}
+
+/* Card Layout für sehr kleine Bildschirme (max-width: 480px) */
+@media (max-width: 480px) {
+  .table-card-view {
+    display: block;
+  }
+  
+  .table-card-view .table {
+    display: none; /* Verstecke normale Tabelle */
+  }
+  
+  .table-card {
+    display: block;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color, rgba(0,0,0,0.1));
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .table-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.1));
+  }
+  
+  .table-card-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+  }
+  
+  .table-card-number {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--muted, #f8f9fa);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  
+  .table-card-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .table-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+  }
+  
+  .table-card-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  
+  .table-card-value {
+    font-size: 12px;
+    color: var(--text-primary);
+    text-align: right;
+  }
+  
+  .table-card-actions {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color, rgba(0,0,0,0.1));
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .table-card-actions .responsive-btn {
+    flex: 1;
+    min-width: 70px;
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+}
+
+/* Desktop und Tablet: Verstecke Card-View komplett */
+@media (min-width: 481px) {
+  .table-card-view {
+    display: none !important;
+  }
+}
+
+/* ====== GLOBAL DROPDOWN SYSTEM ====== */
+/* 
+  Universelle Dropdown-Standards für die gesamte RawaLite App
+  
+  USAGE EXAMPLES:
+  
+  Basic Dropdown Button:
+  <button className="dropdown-button" onClick={toggleDropdown}>
+    Options <span>▼</span>
+  </button>
+  
+  Compact Dropdown:
+  <button className="dropdown-button compact">
+    Select
+  </button>
+  
+  Large Dropdown:
+  <button className="dropdown-button large">
+    Choose Option <span>▼</span>
+  </button>
+  
+  Dropdown Menu:
+  <div className="dropdown-menu" style={{top: rect.bottom, left: rect.left}}>
+    <button className="dropdown-option">Option 1</button>
+    <button className="dropdown-option selected">Option 2</button>
+    <button className="dropdown-option">Option 3</button>
+  </div>
+  
+  MIGRATION FROM <select> TO NEW STANDARDS:
+  
+  Old:
+  <select className="custom-select" value={value} onChange={handleChange}>
+    <option value="option1">Option 1</option>
+    <option value="option2">Option 2</option>
+  </select>
+  
+  New:
+  <button className="dropdown-button" onClick={toggleDropdown}>
+    {selectedLabel} <span>▼</span>
+  </button>
+  {isOpen && (
+    <div className="dropdown-menu" style={{top: rect.bottom, left: rect.left}}>
+      <button 
+        className={`dropdown-option ${value === 'option1' ? 'selected' : ''}`}
+        onClick={() => handleSelect('option1')}
+      >
+        Option 1
+      </button>
+      <button 
+        className={`dropdown-option ${value === 'option2' ? 'selected' : ''}`}
+        onClick={() => handleSelect('option2')}
+      >
+        Option 2
+      </button>
+    </div>
+  )}
+  
+  NATIVE SELECT STYLING (für Fallback/Einfachheit):
+  Wenn native <select> beibehalten wird, verwende 'dropdown-select' Klasse
+*/
+
+/* Base Dropdown Button - kann für alle Dropdown-Trigger verwendet werden */
+.dropdown-button,
+.status-control-button {
+  background: #6b7280;                     /* Einheitliches Grau wie .btn */
+  color: white;                             /* Weiße Schrift wie andere Buttons */
+  border: none;                             /* Kein Border wie .btn */
+  border-radius: 6px;                       /* Abgerundete Ecken wie .btn */
+  padding: 8px 12px;                        /* Konsistente Padding */
+  font-size: 12px;                         /* Kleinere Schrift für Kompaktheit */
+  font-weight: 500;                         /* Gleiche Schriftstärke wie .btn */
+  transition: all 0.2s ease;               /* Smooth transitions */
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.dropdown-button:hover:not(:disabled),
+.status-control-button:hover:not(:disabled) {
+  background: var(--accent-hover, var(--accent));   /* Fallback für ältere Browser */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* Theme-basierte Hover mit Transparenz */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Gleicher Schatten wie .btn:hover */
+  transform: translateY(-1px);               /* Gleicher Lift-Effekt wie .btn:hover */
+}
+
+.dropdown-button:focus,
+.status-control-button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.dropdown-button:disabled,
+.status-control-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Base Dropdown Menu - universell für alle Dropdowns */
+.dropdown-menu,
+.status-control-dropdown {
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 4px;
+  z-index: 9999;
+  min-width: 120px;
+  max-width: 280px;
+  position: fixed;
+}
+
+/* Base Dropdown Option - für alle Dropdown-Items */
+.dropdown-option,
+.status-control-option {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  border-radius: 3px;
+  margin: 1px 0;
+  transition: all 0.15s ease;
+}
+
+.dropdown-option:hover,
+.status-control-option:hover {
+  background: var(--muted, #f8f9fa);
+}
+
+.dropdown-option.selected,
+.status-control-option.selected {
+  background: var(--accent);
+  color: var(--card-bg);
+  font-weight: 600;
+}
+
+.dropdown-option.selected:hover,
+.status-control-option.selected:hover {
+  background: var(--accent-hover, var(--accent));
+}
+
+/* Native Select Styling (für Fallback-Szenarien) */
+.dropdown-select,
+select.dropdown-select {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  min-width: 120px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdown-select:hover,
+select.dropdown-select:hover {
+  border-color: var(--accent-hover, var(--accent));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-select:focus,
+select.dropdown-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Dropdown Variants - für spezielle Anwendungsfälle */
+.dropdown-button.compact {
+  min-width: 80px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.dropdown-button.large {
+  min-width: 160px;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+.dropdown-menu.compact {
+  min-width: 80px;
+}
+
+.dropdown-menu.large {
+  min-width: 200px;
+  max-width: 320px;
+}
+
+.status-control-option.selected {
+  background: var(--accent);
+  color: var(--card-bg);
+  font-weight: 600;
+}
+
+.status-control-option.selected:hover {
+  background: var(--accent-hover, var(--accent));
+}
+
+/* Dark theme support für alle Dropdowns */
+[data-theme="dark"] .dropdown-button,
+[data-theme="dark"] .status-control-button {
+  background: #6b7280;                     /* Gleiche Grau-Basis auch im Dark Theme */
+  color: white;                             /* Weiße Schrift beibehalten */
+}
+
+[data-theme="dark"] .dropdown-button:hover:not(:disabled),
+[data-theme="dark"] .status-control-button:hover:not(:disabled) {
+  background: var(--accent-hover, var(--accent));   /* Fallback für ältere Browser */
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* Theme-basierte Hover auch im Dark */
+}
+
+[data-theme="dark"] .dropdown-menu,
+[data-theme="dark"] .status-control-dropdown {
+  background: var(--panel);
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .dropdown-option,
+[data-theme="dark"] .status-control-option {
+  color: var(--muted);
+}
+
+[data-theme="dark"] .dropdown-option:hover,
+[data-theme="dark"] .status-control-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive & Mobile Optimierung für alle Dropdowns */
+@media (max-width: 768px) {
+  .dropdown-button,
+  .status-control-button {
+    min-height: 44px; /* Touch-friendly height */
+    min-width: 100px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  
+  .dropdown-menu,
+  .status-control-dropdown {
+    max-width: calc(100vw - 32px); /* Responsive width */
+    font-size: 14px;
+  }
+  
+  .dropdown-option,
+  .status-control-option {
+    padding: 12px 16px; /* Larger touch targets */
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dropdown-button,
+  .status-control-button {
+    width: 100%; /* Full width on very small screens */
+    min-width: unset;
+  }
+}
+  
+  .status-control-dropdown {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    border-width: 2px;
+  }
+  
+
+
+/* ====== STATUS DROPDOWN CSS ISOLATION ====== */
+/* Überschreibt ALLE Tabellen-CSS-Regeln für das Status-Dropdown */
+.status-dropdown-override {
+  /* BASIS STYLING mit !important */
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  padding: 8px 12px !important;
+  border: 2px solid #007bff !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  min-width: 120px !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  
+  /* TABLE CSS OVERRIDES - Tabellen-Vererbung komplett überschreiben */
+  white-space: normal !important;        /* Override .table td { white-space: nowrap; } */
+  width: auto !important;               /* Override .table td:nth-child(8) { width: 12%; } */
+  max-width: none !important;           /* Override potential max-width restrictions */
+  overflow: visible !important;         /* Override .table td { overflow: hidden; } */
+  text-overflow: clip !important;       /* Override text-overflow */
+  display: inline-block !important;     /* Override table cell display */
+  box-sizing: border-box !important;    /* Ensure proper box model */
+  line-height: 1.4 !important;         /* Override table line-height */
+  vertical-align: baseline !important;  /* Override table vertical-align */
+  
+  /* FORM ELEMENT OVERRIDES */
+  appearance: auto !important;          /* Ensure native dropdown appearance */
+  -webkit-appearance: auto !important;  /* Safari/Chrome */
+  -moz-appearance: auto !important;     /* Firefox */
+  outline: none !important;            /* Clean outline */
+  margin: 0 !important;                /* Reset any inherited margins */
+  
+  /* INTERACTION OVERRIDES */
+  pointer-events: auto !important;     /* Ensure click events work */
+  user-select: auto !important;        /* Allow text selection in dropdown */
+  
+  /* LAYOUT OVERRIDES */
+  float: none !important;              /* Reset any float inheritance */
+  clear: both !important;              /* Clear any floats */
+  transform: none !important;          /* Reset any transforms */
+}
+
+/* PAGE-SPECIFIC DROPDOWN ISOLATION */
+/* Angebote: Status-Dropdown in Spalte 8 */
+.offers-status-dropdown {
+  /* BASIS STYLING mit !important */
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  padding: 8px 12px !important;
+  border: 2px solid #007bff !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  min-width: 120px !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  
+  /* TABLE CSS OVERRIDES - Tabellen-Vererbung komplett überschreiben */
+  white-space: normal !important;        /* Override .table td { white-space: nowrap; } */
+  width: auto !important;               /* Override .table td:nth-child(8) { width: 12%; } */
+  max-width: none !important;           /* Override potential max-width restrictions */
+  overflow: visible !important;         /* Override .table td { overflow: hidden; } */
+  text-overflow: clip !important;       /* Override text-overflow */
+  display: inline-block !important;     /* Override table cell display */
+  box-sizing: border-box !important;    /* Ensure proper box model */
+  line-height: 1.4 !important;         /* Override table line-height */
+  vertical-align: baseline !important;  /* Override table vertical-align */
+  
+  /* FORM ELEMENT OVERRIDES */
+  appearance: auto !important;          /* Ensure native dropdown appearance */
+  -webkit-appearance: auto !important;  /* Safari/Chrome */
+  -moz-appearance: auto !important;     /* Firefox */
+  outline: none !important;            /* Clean outline */
+  margin: 0 !important;                /* Reset any inherited margins */
+  
+  /* INTERACTION OVERRIDES */
+  pointer-events: auto !important;     /* Ensure click events work */
+  user-select: auto !important;        /* Allow text selection in dropdown */
+  
+  /* LAYOUT OVERRIDES */
+  float: none !important;              /* Reset any float inheritance */
+  clear: both !important;              /* Clear any floats */
+  transform: none !important;          /* Reset any transforms */
+}
+
+/* Rechnungen: Status-Dropdown in Spalte 8 */
+.invoices-status-dropdown {
+  /* BASIS STYLING mit !important */
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  padding: 8px 12px !important;
+  border: 2px solid #007bff !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  min-width: 120px !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  
+  /* TABLE CSS OVERRIDES - Tabellen-Vererbung komplett überschreiben */
+  white-space: normal !important;        /* Override .table td { white-space: nowrap; } */
+  width: auto !important;               /* Override .table td:nth-child(8) { width: 12%; } */
+  max-width: none !important;           /* Override potential max-width restrictions */
+  overflow: visible !important;         /* Override .table td { overflow: hidden; } */
+  text-overflow: clip !important;       /* Override text-overflow */
+  display: inline-block !important;     /* Override table cell display */
+  box-sizing: border-box !important;    /* Ensure proper box model */
+  line-height: 1.4 !important;         /* Override table line-height */
+  vertical-align: baseline !important;  /* Override table vertical-align */
+  
+  /* FORM ELEMENT OVERRIDES */
+  appearance: auto !important;          /* Ensure native dropdown appearance */
+  -webkit-appearance: auto !important;  /* Safari/Chrome */
+  -moz-appearance: auto !important;     /* Firefox */
+  outline: none !important;            /* Clean outline */
+  margin: 0 !important;                /* Reset any inherited margins */
+  
+  /* INTERACTION OVERRIDES */
+  pointer-events: auto !important;     /* Ensure click events work */
+  user-select: auto !important;        /* Allow text selection in dropdown */
+  
+  /* LAYOUT OVERRIDES */
+  float: none !important;              /* Reset any float inheritance */
+  clear: both !important;              /* Clear any floats */
+  transform: none !important;          /* Reset any transforms */
+}

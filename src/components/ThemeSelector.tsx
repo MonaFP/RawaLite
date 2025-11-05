@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useDatabaseTheme } from '../contexts/DatabaseThemeManager';
 import { useNavigation } from '../contexts/NavigationContext';
-import { type NavigationMode, NAVIGATION_MODE_DESCRIPTIONS, isValidNavigationMode } from '../types/navigation-safe';
 
 export const ThemeSelector: React.FC = () => {
   const { 
@@ -17,11 +16,16 @@ export const ThemeSelector: React.FC = () => {
 
   // Helper function to get user-friendly navigation mode names
   const getNavigationModeName = (mode: string): string => {
-    // Type-safe lookup with validation
-    if (isValidNavigationMode(mode)) {
-      return NAVIGATION_MODE_DESCRIPTIONS[mode];
+    switch (mode) {
+      case 'header-statistics':
+        return 'Header Statistics';
+      case 'header-navigation':
+        return 'Header Navigation';
+      case 'full-sidebar':
+        return 'Full Sidebar';
+      default:
+        return mode;
     }
-    return mode; // Fallback for unknown modes
   };
 
   const [showCreateForm, setShowCreateForm] = useState(false);

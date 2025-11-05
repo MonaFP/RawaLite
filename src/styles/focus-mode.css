@@ -1,18 +1,72 @@
-/* 🎯 Focus Mode Styles – angepasst auf dreizeiliges Footer-Layout */
+/* 🎯 Focus Mode Styles - Zen Mode für ablenkungsfreie Arbeit */
 
-/* Entferne veraltete Focus-Bar-Artefakte */
-.focus-mode-bar,
-.focus-bar-area {
-  display: none !important;
+/* Focus Mode Bar - separater Bereich zwischen Header und Content */
+.focus-mode-bar {
+  grid-area: focus-bar; /* CSS Grid Area für korrekte Positionierung */
+  background: var(--accent-bg, color-mix(in srgb, var(--accent) 15%, transparent 85%)); /* 🎨 Database-Theme-Integration */
+  border-bottom: 1px solid var(--accent-border, color-mix(in srgb, var(--accent) 20%, transparent 80%)); /* 🎨 Database-Theme-Integration */
+  padding: 8px 16px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Fokus-Buttons weiterhin horizontal gruppieren */
+.focus-mode-bar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.focus-mode-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Stabiler Abstand zwischen Elementen */
+}
+
+/* Focus Mode Indicator - in der Bar */
+.focus-mode-indicator {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.85em;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Focus Bar Area - unter dem Header als optische zweite Zeile */
+.focus-bar-area {
+  grid-area: focus-bar;
+  background: var(--focus-bar-bg, var(--accent-bg, color-mix(in srgb, var(--accent) 15%, transparent 85%))); /* 🎨 Database-Theme-Integration */
+  border-bottom: 1px solid var(--focus-bar-border, var(--accent-border, color-mix(in srgb, var(--accent) 20%, transparent 80%))); /* 🎨 Database-Theme-Integration */
+  color: var(--focus-bar-text, var(--foreground)); /* 🎨 Database-Theme-Integration */
+  padding: 8px 16px;
+  height: 40px; /* ✅ FESTE HÖHE für Grid-Layout Konsistenz */
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  gap: 16px;
+}
+
+/* Focus Mode Buttons - jetzt horizontal in der Bar */
 .focus-mode-buttons-vertical {
   display: flex;
-  flex-direction: row;
+  flex-direction: row; /* Horizontal statt vertikal */
+  background: transparent;
+  padding: 4px;
   gap: 8px;
   align-items: center;
-  justify-content: center;
+}
+
+.focus-mode-header {
+  display: none; /* Versteckt da es optisch Header-Teil ist */
 }
 
 .focus-mode-btn {
@@ -20,63 +74,435 @@
   align-items: center;
   justify-content: center;
   padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.8em;
   color: white;
+  min-height: 28px;
+  font-weight: 500;
+  white-space: nowrap;
   gap: 6px;
 }
 
 .focus-mode-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .focus-mode-btn.active {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
   font-weight: 600;
 }
 
 .focus-mode-btn.exit-btn {
-  background: rgba(239, 68, 68, 0.45);
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(239, 68, 68, 0.4);
+}
+
+.focus-mode-btn.exit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .focus-mode-btn.exit-btn:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.65);
+  background: rgba(239, 68, 68, 0.6);
 }
 
-/* Zen Mode – Sidebar ausblenden und Footer erhalten */
+.mode-label {
+  font-weight: inherit;
+  font-size: 0.9em;
+  letter-spacing: 0.3px;
+}
+
+.mode-badge {
+  font-family: monospace;
+  font-size: 0.8em;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: bold;
+}
+
+.focus-mode-btn.active .mode-badge {
+  color: white;
+}
+
+.focus-mode-indicator-inactive {
+  color: white;
+  font-weight: bold;
+  font-size: 0.85em;
+}
+
+/* Zen Mode: Sidebar ausblenden, Header normal */
 body[data-focus-mode="zen"] .sidebar,
 body[data-focus-mode="zen"] .compact-sidebar,
 body[data-focus-mode="zen"] .navigation-only-sidebar {
-  display: none !important;
+  display: none;
 }
 
 body[data-focus-mode="zen"] .app {
   grid-template-columns: 0 1fr;
-  grid-template-rows: 72px 1fr; /* ✅ FIXED: 2-Zeilen - Footer via Flex */
-  grid-template-areas:
+  grid-template-rows: 72px 40px 1fr; /* ✅ ERHÖHT: Header 72px auch im Zen Mode für Dashboard-Content */
+  grid-template-areas: 
     "header header"
-    "main main"; /* ✅ FIXED: Kein Footer-Grid - Footer via Flex positioniert */
+    "focus-bar focus-bar"
+    "main main";
 }
 
-/* Mini Mode – kompakter Header, Footer bleibt sichtbar */
+/* Mini Mode: Sidebar ausblenden, Header kompakt (32px) */
 body[data-focus-mode="mini"] .sidebar,
 body[data-focus-mode="mini"] .compact-sidebar,
 body[data-focus-mode="mini"] .navigation-only-sidebar {
-  display: none !important;
+  display: none;
 }
 
 body[data-focus-mode="mini"] .app {
   grid-template-columns: 0 1fr;
-  grid-template-rows: 48px 1fr; /* ✅ FIXED: 2-Zeilen - Footer via Flex */
-  grid-template-areas:
+  grid-template-rows: 32px 32px 1fr; /* ✅ Mini Mode: Header 32px, Focus-Bar kompakter 32px */
+  grid-template-areas: 
     "header header"
-    "main main"; /* ✅ FIXED: Kein Footer-Grid - Footer via Flex positioniert */
+    "focus-bar focus-bar"
+    "main main";
 }
 
-body[data-focus-mode="mini"] .header {
-  min-height: 48px;
+/* ✅ KONSOLIDIERT: Header Mini Styles in header-styles.css über .header-mini Klasse */
+
+/* Zusätzliche Mini-Mode Styles für kompakteren Look */
+body[data-focus-mode="mini"] .header-controls {
+  gap: 8px !important;
+  font-size: 0.75em !important;
+}
+
+body[data-focus-mode="mini"] .focus-bar-area {
+  height: 32px !important; /* ✅ FESTE HÖHE im Mini Mode */
+  min-height: 32px !important;
+  padding: 4px 16px !important;
+}
+
+body[data-focus-mode="mini"] .focus-mode-btn {
+  padding: 4px 8px !important;
+  font-size: 0.7em !important;
+  min-height: 20px !important;
+}
+
+/* ❌ DUPLIKAT ENTFERNT: .header-mini bereits in header-styles.css definiert */
+/* ✅ Nur body[data-focus-mode="mini"] spezifische Styles hier */
+
+/* Free Mode: Sidebar UND Header komplett ausblenden */
+body[data-focus-mode="free"] .sidebar,
+body[data-focus-mode="free"] .compact-sidebar,
+body[data-focus-mode="free"] .navigation-only-sidebar,
+body[data-focus-mode="free"] .header {
+  display: none;
+}
+
+/* WICHTIG: Focus Mode Bar bleibt IMMER sichtbar - auch im Free Mode */
+
+body[data-focus-mode="free"] .app {
+  grid-template-columns: 0 1fr;
+  grid-template-rows: 0 40px 1fr; /* ✅ Free Mode: Header versteckt (0), Focus-Bar 40px */
+  grid-template-areas: 
+    "header header"
+    "focus-bar focus-bar"
+    "main main";
+}
+
+/* Focus Mode Toggle Button - einfach und stabil */
+.focus-mode-toggle {
+  background: var(--accent);  /* 🎨 Theme-basierte Hauptfarbe */
+  color: var(--card-bg, white);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap; /* Verhindert Text-Umbruch */
+}
+
+/* Compact version für kleine Bereiche */
+.focus-mode-toggle.compact {
+  padding: 4px 8px;
+  font-size: 0.75em;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.focus-mode-toggle:hover {
+  background: color-mix(in srgb, var(--accent) 70%, transparent 30%);  /* 🎨 Theme-basierte Hover mit Transparenz */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.focus-mode-toggle.compact:hover {
+  transform: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.focus-mode-toggle:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Smooth transitions für ein- und ausblendende Elemente */
+.sidebar,
+.compact-sidebar,
+.navigation-only-sidebar,
+.header {
+  transition: all 0.3s ease;
+}
+
+.app {
+  transition: grid-template-columns 0.3s ease, grid-template-rows 0.3s ease;
+}
+
+/* Main content maximierung in Focus Modes */
+body[data-focus-mode="zen"] .main,
+body[data-focus-mode="mini"] .main,
+body[data-focus-mode="free"] .main {
+  padding: 16px 24px;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+}
+
+/* Kompakte Navigation für Mini Mode falls Header Navigation vorhanden */
+body[data-focus-mode="mini"] .header-navigation {
+  padding: 2px 8px;
+}
+
+body[data-focus-mode="mini"] .header-navigation .nav-item {
+  padding: 2px 8px;
+  font-size: 0.8em;
+}
+
+/* Theme Integration - alle Focus Modes nutzen Theme-Variablen */
+body[data-focus-mode="zen"] .main,
+body[data-focus-mode="mini"] .main,
+body[data-focus-mode="free"] .main {
+  background: var(--main-bg, linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%));
+  color: var(--text-primary, #1e293b);
+}
+
+/* Responsive Design für Focus Modes */
+@media (max-width: 768px) {
+  body[data-focus-mode="zen"] .main,
+  body[data-focus-mode="mini"] .main,
+  body[data-focus-mode="free"] .main {
+    padding: 12px 16px;
+  }
+  
+  .focus-mode-toggle {
+    padding: 4px 8px;
+    font-size: 0.75em;
+    gap: 4px;
+  }
+  
+  .focus-mode-toggle.compact {
+    padding: 2px 6px;
+    font-size: 0.7em;
+  }
+  
+  .header-controls {
+    gap: 8px;
+  }
+}
+
+/* 🧭 Focus Navigation - Hamburger Menu */
+.focus-navigation {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.focus-nav-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  font-size: 0.8em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.focus-nav-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.focus-nav-icon {
+  font-size: 1em;
+}
+
+.focus-nav-label {
+  font-size: 0.85em;
+}
+
+/* Mini Mode - kompakterer Button */
+.focus-nav-button.mini {
+  padding: 4px 8px;
+  font-size: 0.7em;
+  gap: 4px;
+}
+
+.focus-nav-button.mini .focus-nav-label {
+  display: none; /* Nur Icon im Mini Mode */
+}
+
+/* Focus Navigation Dropdown */
+.focus-nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1000;
+  animation: focusNavSlideIn 0.2s ease-out;
+}
+
+@keyframes focusNavSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mini Mode - kompakteres Dropdown */
+.focus-nav-dropdown.mini {
+  min-width: 160px;
+  font-size: 0.85em;
+}
+
+.focus-nav-header {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px 6px 0 0;
+}
+
+.current-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary, #1e293b);
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+.current-icon {
+  font-size: 1.1em;
+}
+
+.focus-nav-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 0;
+}
+
+.focus-nav-items {
+  padding: 4px 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.focus-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: var(--text-primary, #1e293b);
+  font-size: 0.85em;
+  text-align: left;
+}
+
+.focus-nav-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.focus-nav-item.active {
+  background: var(--accent, #1e3a2e);
+  color: white;
+}
+
+.focus-nav-item.active:hover {
+  background: var(--accent-hover, #0f2419);
+}
+
+.nav-item-icon {
+  font-size: 1em;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-item-label {
+  flex: 1;
+  font-weight: 500;
+}
+
+/* Mini Mode - kompaktere Items */
+.focus-nav-dropdown.mini .focus-nav-item {
+  padding: 6px 10px;
+  font-size: 0.8em;
+}
+
+.focus-nav-dropdown.mini .nav-item-icon {
+  width: 16px;
+  font-size: 0.9em;
+}
+
+/* Responsive Design für sehr kleine Screens */
+@media (max-width: 480px) {
+  .focus-nav-dropdown {
+    right: 0;
+    left: auto;
+    min-width: 140px;
+  }
+  
+  .focus-nav-item {
+    padding: 6px 8px;
+    font-size: 0.8em;
+  }
+}
+
+/* Debug-Hilfe für Development */
+.focus-mode-debug {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.7em;
+  z-index: 9997;
+  opacity: 0.6;
+  pointer-events: none;
 }

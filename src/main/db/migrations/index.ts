@@ -43,20 +43,6 @@ import * as migration030 from './030_fix_navigation_mode_values';
 import * as migration031 from './031_increase_header_height_limit';
 import * as migration032 from './032_increase_header_height_to_220px';
 import * as migration033 from './033_normalize_header_navigation_height';
-import * as migration034 from './034_add_navigation_mode_settings';
-import * as migration035 from './035_add_focus_mode_preferences';
-import * as migration036 from './036_add_theme_overrides';
-import * as migration037 from './037_centralized_configuration_architecture';
-import * as migration038 from './038_correct_header_heights_final';
-import * as migration039 from './039_fix_full_sidebar_header_height';
-import * as migration040 from './040_fix_navigation_preferences_constraint';
-import * as migration041 from './041_add_footer_content_preferences';
-import * as migration042 from './042_user_navigation_mode_settings';
-import * as migration043 from './043_convert_legacy_navigation_modes';
-import * as migration044 from './044_cleanup_navigation_modes';
-import * as migration045 from './045_enforce_ki_safe_navigation';
-import * as migration046 from './046_add_navigation_mode_history';
-import * as migration047 from './047_add_navigation_mode_history_view';
 
 export const migrations: Migration[] = [
   {
@@ -126,226 +112,142 @@ export const migrations: Migration[] = [
     down: migration010.down
   },
   {
-    version: 12,
+    version: 11,
     name: '011_extend_offer_line_items',
     up: migration011.up,
     down: migration011.down
   },
   {
-    version: 13,
+    version: 12,
     name: '012_add_tax_office_field',
     up: migration012.up,
     down: migration012.down
   },
   {
-    version: 14,
+    version: 13,
     name: '013_add_discount_system',
     up: migration013.up,
     down: migration013.down
   },
   {
-    version: 15,
+    version: 14,
     name: '014_add_item_origin_system',
     up: migration014.up,
     down: migration014.down
   },
   {
-    version: 16,
+    version: 15,
     name: '015_add_status_versioning',
     up: migration015.up,
     down: migration015.down
   },
   {
-    version: 17,
+    version: 16,
     name: '016_add_offer_attachments',
     up: migration016.up,
     down: migration016.down
   },
   {
-    version: 18,
+    version: 17,
     name: '017_add_update_history',
     up: migration017.up,
     down: migration017.down
   },
   {
-    version: 19,
+    version: 18,
     name: '018_add_auto_update_preferences',
     up: migration018.up,
     down: migration018.down
   },
   {
-    version: 20,
+    version: 19,
     name: '019_mini_fix_delivery',
     up: migration019.up,
     down: migration019.down
   },
   {
-    version: 21,
+    version: 20,
     name: '020_cleanup_v1041_settings',
     up: migration020.up,
     down: migration020.down
   },
   {
-    version: 22,
+    version: 21,
     name: '021_unify_package_unit_price',
     up: migration021.up,
     down: migration021.down
   },
   {
-    version: 23,
+    version: 22,
     name: '022_add_invoice_attachments',
     up: migration022.up,
     down: migration022.down
   },
   {
-    version: 24,
+    version: 23,
     name: '023_add_line_item_hierarchy_level',
     up: migration023.up,
     down: migration023.down
   },
   {
-    version: 25,
+    version: 24,
     name: '024_restore_package_line_item_metadata',
     up: migration024.up,
     down: migration024.down
   },
   {
-    version: 26,
+    version: 25,
     name: '025_add_price_display_mode',
     up: migration025.up,
     down: migration025.down
   },
   {
-    version: 27,
+    version: 26,
     name: '026_add_price_display_mode_to_packages',
     up: migration026.up,
     down: migration026.down
   },
   {
-    version: 28,
+    version: 27,
     name: '027_add_theme_system',
     up: migration027.up,
     down: migration027.down
   },
   {
-    version: 29,
+    version: 28,
     name: '028_add_navigation_system',
     up: migration028.up,
     down: migration028.down
   },
   {
-    version: 30,
+    version: 29,
     name: '029_add_focus_mode_system',
     up: migration029.up,
     down: migration029.down
   },
   {
-    version: 31,
+    version: 30,
     name: '030_fix_navigation_mode_values',
     up: migration030.up,
     down: migration030.down
   },
   {
-    version: 32,
+    version: 31,
     name: '031_increase_header_height_limit',
     up: migration031.up,
     down: migration031.down
   },
   {
-    version: 33,
+    version: 32,
     name: '032_increase_header_height_to_220px',
     up: migration032.up,
     down: migration032.down
   },
   {
-    version: 34,
+    version: 33,
     name: '033_normalize_header_navigation_height',
     up: migration033.migrate033,
     down: () => {} // No rollback needed - height normalization is forward-compatible
-  },
-  {
-    version: 35,
-    name: '034_add_navigation_mode_settings',
-    up: migration034.up,
-    down: migration034.down
-  },
-  {
-    version: 36,
-    name: '035_add_focus_mode_preferences',
-    up: migration035.up,
-    down: migration035.down
-  },
-  {
-    version: 37,
-    name: '036_add_theme_overrides',
-    up: migration036.up,
-    down: migration036.down
-  },
-  {
-    version: 38,
-    name: '037_centralized_configuration_architecture',
-    up: migration037.up,
-    down: migration037.down
-  },
-  {
-    version: 39,
-    name: '038_correct_header_heights_final',
-    up: migration038.up,
-    down: migration038.down
-  },
-  {
-    version: 40,
-    name: '039_fix_full_sidebar_header_height',
-    up: migration039.up,
-    down: migration039.down
-  },
-  {
-    version: 41,
-    name: '040_fix_navigation_preferences_constraint',
-    up: migration040.up,
-    down: migration040.down
-  },
-  {
-    version: 42,
-    name: '041_add_footer_content_preferences',
-    up: migration041.up,
-    down: migration041.down
-  },
-  {
-    version: 43,
-    name: '042_user_navigation_mode_settings',
-    up: migration042.up,
-    down: migration042.down
-  },
-  {
-    version: 44,
-    name: '043_convert_legacy_navigation_modes',
-    up: migration043.up,
-    down: migration043.down
-  },
-  {
-    version: 45,
-    name: '044_cleanup_navigation_modes',
-    up: migration044.up,
-    down: migration044.down
-  },
-  {
-    version: 46,
-    name: '045_enforce_ki_safe_navigation',
-    up: migration045.up,
-    down: migration045.down
-  },
-  {
-    version: 47,
-    name: '046_add_navigation_mode_history',
-    up: migration046.up,
-    down: migration046.down
-  },
-  {
-    version: 48,
-    name: '047_add_navigation_mode_history_view',
-    up: migration047.up,
-    down: migration047.down
   }
 ];
 

@@ -1,8 +1,17 @@
-# PLAN_IMPL-OPTION3-DATABASE-HYBRID-MAPPING-LAYER_2025-11-03
+# DEPRECATED_PLAN-OPTION3-HYBRID-MAPPING-FAILED_2025-11-03
 
-> **Erstellt:** 03.11.2025 | **Letzte Aktualisierung:** 03.11.2025 (Initial Plan Creation)  
-> **Status:** PLAN - Entwurfsstatus | **Typ:** PLAN - Planungsdokumente und Roadmaps  
-> **Schema:** `PLAN_IMPL-OPTION3-DATABASE-HYBRID-MAPPING-LAYER_2025-11-03.md` ✅ **SCHEMA-COMPLIANT**
+> **Erstellt:** 03.11.2025 | **Letzte Aktualisierung:** 04.11.2025 (DEPRECATED - Plan fehlgeschlagen)  
+> **Status:** DEPRECATED - Plan führte zu massivem Fehler | **Typ:** PLAN - Veralteter Planungsansatz  
+> **Schema:** `DEPRECATED_PLAN-OPTION3-HYBRID-MAPPING-FAILED_2025-11-03.md` ✅ **SCHEMA-COMPLIANT**
+
+> **⚠️ DEPRECATED NOTICE:**
+> Dieser Plan wurde als FEHLGESCHLAGEN markiert am 04.11.2025.
+> 
+> **PROBLEM:** Implementation führte zu GLOBAL-only Konfiguration statt per-mode individual settings
+> **ROOT CAUSE:** Migration 045 zerstörte per-mode Struktur durch DROP TABLE + UNIQUE(user_id)
+> **ERGEBNIS:** App non-functional, individuell konfigurierbare Navigation-Modes verloren
+> 
+> **NEUER PLAN:** Siehe `PLAN_RESCUE-MIGRATION-049-RESTORE-PER-MODE_2025-11-04.md`
 
 > **🤖 KI-AUTO-DETECTION SYSTEM:**
 > - **AKTUELLER STATUS:** PLAN (automatisch durch "Entwurfsstatus" erkannt)

@@ -15,95 +15,17 @@
  */
 
 import type Database from 'better-sqlite3';
-import { FieldMapper, mapToSQL, mapFromSQL, convertSQLQuery } from '../lib/field-mapper';
-import { detectDatabaseSchema, type SchemaDetectionResult } from '../lib/database-schema-detector';
-import {
-  getNavigationSettingsBySchema,
-  setNavigationSettingsBySchema,
-  getAllModeSettingsBySchema,
-  normalizeSettingsBySchema,
-  validateSchemaVersionForOperations,
-  getFallbackSettings
-} from '../lib/navigation-hybrid-mapper';
-
-// TypeScript types for navigation system
-export type NavigationMode = 'mode-dashboard-view' | 'mode-data-panel' | 'mode-compact-focus';
+import { FieldMapper, mapToSQL, mapFromSQL } from '../lib/field-mapper';
 
 // TypeScript interfaces for navigation system
 export interface NavigationPreferences {
   id?: number;
   userId: string;
-  navigationMode: NavigationMode;
+  navigationMode: 'header-statistics' | 'header-navigation' | 'full-sidebar';
+  headerHeight: number;
   sidebarWidth: number;
   autoCollapse: boolean;
   rememberFocusMode: boolean;
-  headerHeight: number;  // Added for layout consistency
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-// NEW: Global Navigation Settings Interface (Migration 045)
-export interface NavigationGlobalSettings {
-  id?: number;
-  userId: string;
-  defaultNavigationMode: NavigationMode;
-  allowModeSwitching: boolean;
-  rememberLastMode: boolean;
-  showModeIndicator: boolean;
-  autoHideSidebarInFocus: boolean;
-  persistSidebarWidth: boolean;
-  showFooter: boolean;
-  footerShowModeInfo: boolean;
-  footerShowThemeInfo: boolean;
-  footerShowVersion: boolean;
-  footerShowFocusControls: boolean;
-  enableModeTransitions: boolean;
-  transitionDurationMs: number;
-  legacyModeMapping?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-// NEW: Per-Mode Settings Interface (Migration 034) - DEPRECATED by Migration 045
-export interface NavigationModeSettings {
-  id?: number;
-  userId: string;
-  navigationMode: NavigationMode;
-  headerHeight: number;  // Required for cross-service compatibility
-  sidebarWidth: number;
-  autoCollapseMobile: boolean;
-  autoCollapseTablet: boolean;
-  rememberDimensions: boolean;
-  mobileBreakpoint: number;
-  tabletBreakpoint: number;
-  gridTemplateColumns?: string;
-  gridTemplateRows?: string;
-  gridTemplateAreas?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-// NEW: Focus Mode Preferences Interface (Migration 035)
-export interface FocusModePreferences {
-  id?: number;
-  userId: string;
-  navigationMode: NavigationMode;
-  autoFocusEnabled: boolean;
-  autoFocusDelaySeconds: number;
-  focusOnModeSwitch: boolean;
-  hideSidebarInFocus: boolean;
-  hideHeaderStatsInFocus: boolean;
-  dimBackgroundOpacity: number;
-  transitionDurationMs: number;
-  transitionEasing: string;
-  blockNotifications: boolean;
-  blockPopups: boolean;
-  blockContextMenu: boolean;
-  minimalUiMode: boolean;
-  trackFocusSessions: boolean;
-  showFocusTimer: boolean;
-  focusBreakReminders: boolean;
-  focusBreakIntervalMinutes: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -111,19 +33,19 @@ export interface FocusModePreferences {
 export interface NavigationModeHistory {
   id?: number;
   userId: string;
-  previousMode?: NavigationMode;
-  newMode: NavigationMode;
+  previousMode?: 'header-statistics' | 'header-navigation' | 'full-sidebar';
+  newMode: 'header-statistics' | 'header-navigation' | 'full-sidebar';
   changedAt?: string;
   sessionId?: string;
 }
 
 export interface NavigationLayoutConfig {
   // Mode Configuration
-  navigationMode: NavigationMode;
+  navigationMode: 'header-statistics' | 'header-navigation' | 'full-sidebar';
   
   // Layout Dimensions
+  headerHeight: number;        // 60-220px range
   sidebarWidth: number;        // 180-320px range
-  headerHeight: number;        // Header height for layout calculations
   
   // Behavior Settings
   autoCollapse: boolean;       // Auto-collapse sidebar on mobile
@@ -138,112 +60,6 @@ export interface NavigationLayoutConfig {
 export class DatabaseNavigationService {
   private db: Database.Database;
   
-  /**
-   * PHASE 1: Schema Detection Result
-   * Detects at initialization whether Migration 034 (per-mode) or 045 (global-mode) is active
-   */
-  private schemaDetectionResult: SchemaDetectionResult;
-
-  /**
-   * PHASE 1: Get the detected schema version
-   */
-  getSchemaVersion(): "034" | "045" | "unknown" {
-    return this.schemaDetectionResult.schemaVersion;
-  }
-
-  /**
-   * PHASE 1: Check if schema is corrupted
-   */
-  isSchemaCorrupted(): boolean {
-    return this.schemaDetectionResult.isCorrupted;
-  }
-
-  /**
-   * SYSTEM DEFAULTS - Single Source of Truth for Navigation Constants
-   * 
-   * These constants replace ALL hardcoded values throughout the codebase.
-   * Any code that previously used hardcoded header heights, sidebar widths,
-   * or grid templates should now reference these centralized values.
-   * 
-   * CRITICAL: Keep synchronized with DatabaseConfigurationService.getSystemDefaults()
-   * 
-   * Used by:
-   * - getOptimalHeaderHeight() → HEADER_HEIGHTS
-   * - getDefaultLayoutConfig() → ALL values
-   * - getUserNavigationPreferences() defaults → DEFAULT_PREFERENCES
-   * - resetUserPreferences() → DEFAULT_PREFERENCES
-   * - CSS fallbacks via DatabaseConfigurationService
-   * 
-   * @since Migration 037 - Centralized Constants Architecture
-   */
-  static readonly SYSTEM_DEFAULTS = {
-    // Sidebar widths for each navigation mode
-    // Updated to use NEW Migration 045 schema modes
-    SIDEBAR_WIDTHS: {
-      'mode-dashboard-view': 200,      // Dashboard overview mode, compact sidebar
-      'mode-data-panel': 200,          // Data panel mode, compact sidebar
-      'mode-compact-focus': 280        // Compact focus mode, wider sidebar
-    },
-    
-    // CSS Grid template rows for each mode
-    // Updated to use NEW Migration 045 schema modes with proper 3-row layout
-    GRID_TEMPLATE_ROWS: {
-      'mode-dashboard-view': '160px 1fr 60px',   // Dashboard header + main + footer
-      'mode-data-panel': '160px 1fr 60px',       // Data panel header + main + footer  
-      'mode-compact-focus': '36px 1fr 60px'      // Minimal header + main + footer
-    },
-    
-    // CSS Grid template columns for each mode
-    // Updated to use NEW Migration 045 schema modes with consistent sidebar widths
-    GRID_TEMPLATE_COLUMNS: {
-      'mode-dashboard-view': '240px 1fr',       // NavigationOnly sidebar (compact navigation)
-      'mode-data-panel': '240px 1fr',           // CompactSidebar (company + statistics cards) - CORRECTED from 280px
-      'mode-compact-focus': '240px 1fr'         // Full sidebar (both navigation + statistics)
-    },
-    
-    // CSS Grid template areas for each mode
-    // Updated to match ACTUAL CSS layout with 3-row layout (header, main, footer)
-    // RawaLite uses: sidebar (left column), header + main + footer (right column)
-    GRID_TEMPLATE_AREAS: {
-      'mode-dashboard-view': '"sidebar header" "sidebar main" "sidebar footer"',     // Dashboard header + main + footer
-      'mode-data-panel': '"sidebar header" "sidebar main" "sidebar footer"',        // Data panel header + main + footer
-      'mode-compact-focus': '"sidebar header" "sidebar main" "sidebar footer"'       // Minimal header + main + footer
-    },
-    
-    // Default user preferences (replaces hardcoded values in getUserNavigationPreferences)
-    // Updated to use NEW Migration 045 schema default
-    DEFAULT_PREFERENCES: {
-      navigationMode: 'mode-dashboard-view' as NavigationMode,  // New default mode
-      sidebarWidth: 200,                                        // Dashboard mode default
-      autoCollapse: false,
-      rememberFocusMode: true,
-      headerHeight: 160                                         // Added for layout consistency
-    },
-    
-    // Header height ranges for new modes
-    MIN_HEADER_HEIGHTS: {
-      'mode-dashboard-view': 160,
-      'mode-data-panel': 160,
-      'mode-compact-focus': 80    // User-requested: mindestens verdoppelt für Benutzerfreundlichkeit
-    },
-    
-    // Maximum dimensions for validation
-    MAX_DIMENSIONS: {
-      headerHeight: 300,
-      sidebarWidth: 400
-    },
-    
-    // Breakpoints for responsive behavior
-    BREAKPOINTS: {
-      mobile: 768,
-      tablet: 1024,
-      desktop: 1200
-    }
-  } as const;
-  
-  // Type definitions for the constants
-  static readonly NAVIGATION_MODES = ['mode-dashboard-view', 'mode-data-panel', 'mode-compact-focus'] as const;
-  
   // Prepared statements for performance
   private statements: {
     getUserPreferences?: Database.Statement;
@@ -253,35 +69,10 @@ export class DatabaseNavigationService {
     insertModeHistory?: Database.Statement;
     getModeHistory?: Database.Statement;
     cleanupOldHistory?: Database.Statement;
-    
-    // Migration 045: Global Navigation Settings Statements
-    getNavigationSettings?: Database.Statement;
-    upsertNavigationSettings?: Database.Statement;
-    updateDefaultMode?: Database.Statement;
-    getDefaultMode?: Database.Statement;  // NEW: For retrieving default_navigation_mode
-    
-    // DEPRECATED: Per-Mode Settings Statements (Migration 034) - Replaced by Global Settings
-    getModeSettings?: Database.Statement;
-    upsertModeSettings?: Database.Statement;
-    getAllModeSettings?: Database.Statement;
-    
-    // NEW: Focus Mode Preferences Statements (Migration 035)
-    getFocusPreferences?: Database.Statement;
-    upsertFocusPreferences?: Database.Statement;
-    getAllFocusPreferences?: Database.Statement;
   } = {};
 
   constructor(db: Database.Database) {
     this.db = db;
-    
-    // PHASE 1: Detect database schema at initialization
-    this.schemaDetectionResult = detectDatabaseSchema(db);
-    console.log('[DatabaseNavigationService] Schema detected:', this.getSchemaVersion());
-    
-    if (this.isSchemaCorrupted()) {
-      console.warn('[DatabaseNavigationService] Schema is corrupted, will use fallback defaults');
-    }
-    
     this.prepareStatements();
   }
 
@@ -289,11 +80,6 @@ export class DatabaseNavigationService {
    * Prepare all SQL statements for optimal performance
    */
   private prepareStatements(): void {
-    // Migration 045: Get default navigation mode first
-    this.statements.getDefaultMode = this.db.prepare(`
-      SELECT default_navigation_mode FROM user_navigation_mode_settings WHERE user_id = ?
-    `);
-
     // Navigation preferences operations
     this.statements.getUserPreferences = this.db.prepare(`
       SELECT * FROM user_navigation_preferences WHERE user_id = ?
@@ -331,80 +117,10 @@ export class DatabaseNavigationService {
       ORDER BY changed_at DESC 
       LIMIT ?
     `);
-
-    // Migration 045: Initialize updateDefaultMode statement
-    this.statements.updateDefaultMode = this.db.prepare(`
-      UPDATE user_navigation_mode_settings 
-      SET default_navigation_mode = ?, 
-          updated_at = CURRENT_TIMESTAMP 
-      WHERE user_id = ?
-    `);
     
     this.statements.cleanupOldHistory = this.db.prepare(`
       DELETE FROM navigation_mode_history 
       WHERE user_id = ? AND changed_at < datetime('now', '-30 days')
-    `);
-    
-    // === MIGRATION 034: PER-MODE SETTINGS STATEMENTS (RE-ACTIVATED) ===
-    this.statements.getModeSettings = this.db.prepare(`
-      SELECT * FROM user_navigation_mode_settings 
-      WHERE user_id = ? AND default_navigation_mode = ?
-    `);
-    
-    // MIGRATION 045 FIX: user_navigation_mode_settings doesn't have header_height in global-mode schema
-    // Only prepare if schema is 034 (per-mode). For 045, this becomes a no-op
-    if (this.getSchemaVersion() === '034') {
-      this.statements.upsertModeSettings = this.db.prepare(`
-        INSERT OR REPLACE INTO user_navigation_mode_settings 
-        (user_id, default_navigation_mode, header_height, sidebar_width, auto_collapse_mobile, auto_collapse_tablet,
-         remember_dimensions, mobile_breakpoint, tablet_breakpoint, grid_template_columns, grid_template_rows,
-         grid_template_areas, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-          COALESCE((SELECT created_at FROM user_navigation_mode_settings WHERE user_id = ? AND default_navigation_mode = ?), CURRENT_TIMESTAMP),
-          CURRENT_TIMESTAMP)
-      `);
-    } else {
-      // For Migration 045, prepare a safe no-op statement
-      this.statements.upsertModeSettings = this.db.prepare(`
-        SELECT 1 WHERE 0  -- MIGRATION 045: user_navigation_mode_settings is global, no per-mode updates
-      `);
-    }
-    
-    this.statements.getAllModeSettings = this.db.prepare(`
-      SELECT * FROM user_navigation_mode_settings 
-      WHERE user_id = ?
-      ORDER BY default_navigation_mode
-    `);
-    
-    // NEW: Focus Mode Preferences Prepared Statements (Migration 035)
-    this.statements.getFocusPreferences = this.db.prepare(`
-      SELECT * FROM user_focus_mode_preferences 
-      WHERE user_id = ? AND default_navigation_mode = ?
-    `);
-    
-    // MIGRATION 045 FIX: user_focus_mode_preferences might not have same schema in v045
-    // Only prepare if schema is 035+ (focus preferences exist). For 045, conditional prepare
-    if (this.getSchemaVersion() !== '045') {
-      this.statements.upsertFocusPreferences = this.db.prepare(`
-        INSERT OR REPLACE INTO user_focus_mode_preferences 
-        (user_id, default_navigation_mode, auto_focus_enabled, auto_focus_delay_seconds, focus_on_mode_switch, 
-         hide_sidebar_in_focus, hide_header_stats_in_focus, dim_background_opacity, transition_duration_ms, 
-         transition_easing, block_notifications, block_popups, block_context_menu, minimal_ui_mode, 
-         track_focus_sessions, show_focus_timer, focus_break_reminders, focus_break_interval_minutes, 
-         created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-          COALESCE((SELECT created_at FROM user_focus_mode_preferences WHERE user_id = ? AND default_navigation_mode = ?), CURRENT_TIMESTAMP), 
-          CURRENT_TIMESTAMP)
-      `);
-    } else {
-      // For Migration 045, prepare a safe no-op statement
-      this.statements.upsertFocusPreferences = this.db.prepare(`
-        SELECT 1 WHERE 0  -- MIGRATION 045: Focus preferences schema verified
-      `);
-    }
-    
-    this.statements.getAllFocusPreferences = this.db.prepare(`
-      SELECT * FROM user_focus_mode_preferences WHERE user_id = ?
     `);
   }
 
@@ -415,53 +131,37 @@ export class DatabaseNavigationService {
    */
   async getUserNavigationPreferences(userId: string = 'default'): Promise<NavigationPreferences> {
     try {
-      // PHASE 3: Use hybrid-mapper for dual-path logic
-      // Automatically routes to correct schema (034 vs 045) based on detection
-      if (!validateSchemaVersionForOperations(this.getSchemaVersion(), this.isSchemaCorrupted())) {
-        // Schema is corrupted or unknown - use fallback
-        console.warn('[DatabaseNavigationService] Schema validation failed, using fallback defaults');
-        const fallback = getFallbackSettings({ userId });
-        return fallback as NavigationPreferences;
+      const row = this.statements.getUserPreferences!.get(userId) as any;
+      
+      if (row) {
+        return mapFromSQL(row) as NavigationPreferences;
       }
-
-      // Get settings via hybrid-mapper (handles both schema versions)
-      const settings = getNavigationSettingsBySchema(
-        this.db,
-        this.getSchemaVersion(),
-        userId
-      );
-
-      if (settings) {
-        return settings as NavigationPreferences;
-      }
-
+      
       // Return default preferences if not found
-      const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
       const defaultPreferences: NavigationPreferences = {
         userId,
-        navigationMode: defaults.DEFAULT_PREFERENCES.navigationMode,
-        headerHeight: defaults.DEFAULT_PREFERENCES.headerHeight,
-        sidebarWidth: defaults.DEFAULT_PREFERENCES.sidebarWidth,
-        autoCollapse: defaults.DEFAULT_PREFERENCES.autoCollapse,
-        rememberFocusMode: defaults.DEFAULT_PREFERENCES.rememberFocusMode
+        navigationMode: 'header-navigation',
+        headerHeight: 90, // Modus-spezifische Höhe für header-navigation
+        sidebarWidth: 280,
+        autoCollapse: false,
+        rememberFocusMode: true
       };
-
+      
       // Create default preferences in database
       await this.setUserNavigationPreferences(userId, defaultPreferences);
       return defaultPreferences;
-
+      
     } catch (error) {
       console.error('[DatabaseNavigationService] Error getting user preferences:', error);
-
-      // Return safe defaults on error
-      const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
+      
+      // Return hardcoded defaults on error
       return {
         userId,
-        navigationMode: defaults.DEFAULT_PREFERENCES.navigationMode,
-        headerHeight: defaults.DEFAULT_PREFERENCES.headerHeight,
-        sidebarWidth: defaults.DEFAULT_PREFERENCES.sidebarWidth,
-        autoCollapse: defaults.DEFAULT_PREFERENCES.autoCollapse,
-        rememberFocusMode: defaults.DEFAULT_PREFERENCES.rememberFocusMode
+        navigationMode: 'header-navigation',
+        headerHeight: 90, // Modus-spezifische Höhe für header-navigation
+        sidebarWidth: 280,
+        autoCollapse: false,
+        rememberFocusMode: true
       };
     }
   }
@@ -471,63 +171,47 @@ export class DatabaseNavigationService {
    */
   async setUserNavigationPreferences(userId: string = 'default', preferences: Partial<NavigationPreferences>): Promise<boolean> {
     try {
-      // PHASE 3: Use hybrid-mapper for dual-path logic
-      // Automatically routes to correct schema (034 vs 045) based on detection
-      if (!validateSchemaVersionForOperations(this.getSchemaVersion(), this.isSchemaCorrupted())) {
-        // Schema is corrupted or unknown
-        console.error('[DatabaseNavigationService] Schema validation failed, cannot set preferences');
-        return false;
-      }
-
       // Get current preferences for merging
       const currentPrefs = await this.getUserNavigationPreferences(userId);
-
+      
       // Merge with updates
       const updatedPrefs: NavigationPreferences = {
         ...currentPrefs,
         ...preferences,
         userId
       };
-
+      
       // Validate navigation mode
-      if (!DatabaseNavigationService.NAVIGATION_MODES.includes(updatedPrefs.navigationMode as any)) {
+      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(updatedPrefs.navigationMode)) {
         console.error('[DatabaseNavigationService] Invalid navigation mode:', updatedPrefs.navigationMode);
         return false;
       }
-
-      // Validate dimensions using SYSTEM_DEFAULTS
-      const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
-      const minHeight = defaults.MIN_HEADER_HEIGHTS[updatedPrefs.navigationMode] || 60;
-      const maxHeight = defaults.MAX_DIMENSIONS.headerHeight;
-      const maxWidth = defaults.MAX_DIMENSIONS.sidebarWidth;
-
-      if (updatedPrefs.headerHeight < minHeight || updatedPrefs.headerHeight > maxHeight) {
-        console.error('[DatabaseNavigationService] Invalid header height:', updatedPrefs.headerHeight, `(range: ${minHeight}-${maxHeight})`);
+      
+      // Validate dimensions
+      if (updatedPrefs.headerHeight < 60 || updatedPrefs.headerHeight > 220) {
+        console.error('[DatabaseNavigationService] Invalid header height:', updatedPrefs.headerHeight);
         return false;
       }
-
-      if (updatedPrefs.sidebarWidth < 180 || updatedPrefs.sidebarWidth > maxWidth) {
-        console.error('[DatabaseNavigationService] Invalid sidebar width:', updatedPrefs.sidebarWidth, `(range: 180-${maxWidth})`);
+      
+      if (updatedPrefs.sidebarWidth < 180 || updatedPrefs.sidebarWidth > 320) {
+        console.error('[DatabaseNavigationService] Invalid sidebar width:', updatedPrefs.sidebarWidth);
         return false;
       }
-
-      // Normalize settings for the schema version
-      const normalizedPrefs = normalizeSettingsBySchema(
-        this.getSchemaVersion(),
-        updatedPrefs,
-        {}
-      );
-
-      // Use hybrid-mapper for schema-aware update (handles both 034 vs 045)
-      const success = setNavigationSettingsBySchema(
-        this.db,
-        this.getSchemaVersion(),
+      
+      // Convert to SQL format with field mapper
+      const sqlData = mapToSQL(updatedPrefs);
+      
+      this.statements.upsertUserPreferences!.run(
         userId,
-        normalizedPrefs,
-        updatedPrefs.navigationMode
+        sqlData.navigation_mode,
+        sqlData.header_height,
+        sqlData.sidebar_width,
+        sqlData.auto_collapse ? 1 : 0,
+        sqlData.remember_focus_mode ? 1 : 0,
+        userId // for COALESCE in created_at
       );
-
-      return success;
+      
+      return true;
     } catch (error) {
       console.error('[DatabaseNavigationService] Error setting user preferences:', error);
       return false;
@@ -537,10 +221,10 @@ export class DatabaseNavigationService {
   /**
    * Set navigation mode only (fast operation)
    */
-  async setNavigationMode(userId: string = 'default', navigationMode: NavigationMode, sessionId?: string): Promise<boolean> {
+  async setNavigationMode(userId: string = 'default', navigationMode: 'header-statistics' | 'header-navigation' | 'full-sidebar', sessionId?: string): Promise<boolean> {
     try {
       // Validate navigation mode
-      if (!DatabaseNavigationService.NAVIGATION_MODES.includes(navigationMode as any)) {
+      if (!['header-statistics', 'header-navigation', 'full-sidebar'].includes(navigationMode)) {
         console.error('[DatabaseNavigationService] Invalid navigation mode:', navigationMode);
         return false;
       }
@@ -552,12 +236,15 @@ export class DatabaseNavigationService {
       // Update navigation mode
       this.statements.updateNavigationMode!.run(navigationMode, userId);
       
+      // Auto-adjust header height if switching to header-statistics and current height is too low
+      const optimalHeight = this.getOptimalHeaderHeight(navigationMode, currentPrefs.headerHeight);
+      if (optimalHeight > currentPrefs.headerHeight) {
+        await this.updateLayoutDimensions(userId, optimalHeight, undefined);
+      }
+      
       // Record mode change in history (if different)
       if (previousMode !== navigationMode) {
         await this.recordModeChange(userId, previousMode, navigationMode, sessionId);
-
-        // Migration 045: Also update default_navigation_mode
-        await this.setDefaultNavigationMode(userId, navigationMode);
       }
       
       return true;
@@ -573,25 +260,25 @@ export class DatabaseNavigationService {
   async updateLayoutDimensions(userId: string = 'default', headerHeight?: number, sidebarWidth?: number): Promise<boolean> {
     try {
       const currentPrefs = await this.getUserNavigationPreferences(userId);
+      
       const newHeaderHeight = headerHeight !== undefined ? headerHeight : currentPrefs.headerHeight;
       const newSidebarWidth = sidebarWidth !== undefined ? sidebarWidth : currentPrefs.sidebarWidth;
       
-      // Validate dimensions using SYSTEM_DEFAULTS
-      const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
-      const maxWidth = defaults.MAX_DIMENSIONS.sidebarWidth;
-      const maxHeight = defaults.MAX_DIMENSIONS.headerHeight;
+      // Apply optimal height for current navigation mode
+      const optimalHeaderHeight = this.getOptimalHeaderHeight(currentPrefs.navigationMode, newHeaderHeight);
       
-      if (newSidebarWidth < 180 || newSidebarWidth > maxWidth) {
-        console.error('[DatabaseNavigationService] Invalid sidebar width:', newSidebarWidth, `(range: 180-${maxWidth})`);
+      // Validate dimensions
+      if (optimalHeaderHeight < 60 || optimalHeaderHeight > 220) {
+        console.error('[DatabaseNavigationService] Invalid header height:', optimalHeaderHeight);
         return false;
       }
       
-      if (newHeaderHeight < 40 || newHeaderHeight > maxHeight) {
-        console.error('[DatabaseNavigationService] Invalid header height:', newHeaderHeight, `(range: 40-${maxHeight})`);
+      if (newSidebarWidth < 180 || newSidebarWidth > 320) {
+        console.error('[DatabaseNavigationService] Invalid sidebar width:', newSidebarWidth);
         return false;
       }
       
-      this.statements.updateLayoutDimensions!.run(newHeaderHeight, newSidebarWidth, userId);
+      this.statements.updateLayoutDimensions!.run(optimalHeaderHeight, newSidebarWidth, userId);
       return true;
     } catch (error) {
       console.error('[DatabaseNavigationService] Error updating layout dimensions:', error);
@@ -608,8 +295,8 @@ export class DatabaseNavigationService {
     try {
       const preferences = await this.getUserNavigationPreferences(userId);
       
-      // Generate CSS Grid configuration based on navigation mode and per-mode settings
-      const gridConfig = await this.generateGridConfiguration(preferences, userId);
+      // Generate CSS Grid configuration based on navigation mode
+      const gridConfig = this.generateGridConfiguration(preferences);
       
       return {
         navigationMode: preferences.navigationMode,
@@ -628,37 +315,111 @@ export class DatabaseNavigationService {
   }
 
   /**
+   * Get optimal header height for navigation mode
+   */
+  private getOptimalHeaderHeight(navigationMode: string, currentHeight: number): number {
+    const minHeights = {
+      'header-statistics': 160,  // Statistics Cards brauchen mehr Platz
+      'header-navigation': 90,   // Navigation kompakter möglich
+      'full-sidebar': 60         // Minimal header
+    };
+    
+    return Math.max(currentHeight, minHeights[navigationMode as keyof typeof minHeights] || 90);
+  }
+
+  /**
    * Generate CSS Grid configuration based on navigation preferences
    */
-  private async generateGridConfiguration(preferences: NavigationPreferences, userId: string = 'default'): Promise<Pick<NavigationLayoutConfig, 'gridTemplateColumns' | 'gridTemplateRows' | 'gridTemplateAreas'>> {
-    const { navigationMode, sidebarWidth, headerHeight } = preferences;
-    const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
+  private generateGridConfiguration(preferences: NavigationPreferences): Pick<NavigationLayoutConfig, 'gridTemplateColumns' | 'gridTemplateRows' | 'gridTemplateAreas'> {
+    const { navigationMode, headerHeight, sidebarWidth } = preferences;
+    const optimalHeight = this.getOptimalHeaderHeight(navigationMode, headerHeight);
     
-    return {
-      gridTemplateColumns: `${sidebarWidth}px 1fr`,
-      gridTemplateRows: `${headerHeight}px 1fr auto`,  // FIX: Use database headerHeight instead of hardcoded defaults
-      gridTemplateAreas: defaults.GRID_TEMPLATE_AREAS[navigationMode] || defaults.GRID_TEMPLATE_AREAS['mode-dashboard-view']
-    };
+    switch (navigationMode) {
+      case 'header-statistics':
+        return {
+          gridTemplateColumns: `${sidebarWidth}px 1fr`,
+          gridTemplateRows: `${optimalHeight}px 40px 1fr`,
+          gridTemplateAreas: `
+            "sidebar header"
+            "sidebar focus-bar"
+            "sidebar main"`
+        };
+        
+      case 'header-navigation':
+        return {
+          gridTemplateColumns: `${sidebarWidth}px 1fr`,
+          gridTemplateRows: `${optimalHeight}px 40px 1fr`,
+          gridTemplateAreas: `
+            "sidebar header"
+            "sidebar focus-bar"
+            "sidebar main"`
+        };
+        
+      case 'full-sidebar':
+        return {
+          gridTemplateColumns: `${sidebarWidth}px 1fr`,
+          gridTemplateRows: `${optimalHeight}px 40px 1fr`,
+          gridTemplateAreas: `
+            "sidebar header"
+            "sidebar focus-bar"
+            "sidebar main"`
+        };
+        
+      default:
+        return this.getDefaultLayoutConfig();
+    }
   }
 
   /**
    * Get default layout configuration
-   * NOW USES: SYSTEM_DEFAULTS (centralized constants)
    */
-  private getDefaultLayoutConfig(navigationMode?: NavigationMode): NavigationLayoutConfig {
-    const mode = navigationMode || 'mode-dashboard-view';
-    const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
+  private getDefaultLayoutConfig(navigationMode?: 'header-statistics' | 'header-navigation' | 'full-sidebar'): NavigationLayoutConfig {
+    const mode = navigationMode || 'header-navigation';
     
-    return {
-      navigationMode: mode,
-      sidebarWidth: defaults.SIDEBAR_WIDTHS[mode],
-      headerHeight: defaults.MIN_HEADER_HEIGHTS[mode],
-      autoCollapse: defaults.DEFAULT_PREFERENCES.autoCollapse,
-      rememberFocusMode: defaults.DEFAULT_PREFERENCES.rememberFocusMode,
-      gridTemplateColumns: defaults.GRID_TEMPLATE_COLUMNS[mode],
-      gridTemplateRows: defaults.GRID_TEMPLATE_ROWS[mode],
-      gridTemplateAreas: defaults.GRID_TEMPLATE_AREAS[mode]
+    // Modus-spezifische Konfigurationen
+    const configs = {
+      'header-statistics': {
+        navigationMode: 'header-statistics' as const,
+        headerHeight: 160,
+        sidebarWidth: 240,
+        autoCollapse: false,
+        rememberFocusMode: true,
+        gridTemplateColumns: '240px 1fr',
+        gridTemplateRows: '160px 40px 1fr',
+        gridTemplateAreas: `
+          "sidebar header"
+          "sidebar focus-bar"
+          "sidebar main"`
+      },
+      'header-navigation': {
+        navigationMode: 'header-navigation' as const,
+        headerHeight: 90,
+        sidebarWidth: 280,
+        autoCollapse: false,
+        rememberFocusMode: true,
+        gridTemplateColumns: '280px 1fr',
+        gridTemplateRows: '90px 40px 1fr',
+        gridTemplateAreas: `
+          "sidebar header"
+          "sidebar focus-bar"
+          "sidebar main"`
+      },
+      'full-sidebar': {
+        navigationMode: 'full-sidebar' as const,
+        headerHeight: 60,
+        sidebarWidth: 240,
+        autoCollapse: false,
+        rememberFocusMode: true,
+        gridTemplateColumns: '240px 1fr',
+        gridTemplateRows: '60px 40px 1fr',
+        gridTemplateAreas: `
+          "sidebar header"
+          "sidebar focus-bar"
+          "sidebar main"`
+      }
     };
+    
+    return configs[mode];
   }
 
   // === NAVIGATION MODE HISTORY ===
@@ -668,8 +429,8 @@ export class DatabaseNavigationService {
    */
   async recordModeChange(
     userId: string, 
-    previousMode: NavigationMode | undefined, 
-    newMode: NavigationMode,
+    previousMode: 'header-statistics' | 'header-navigation' | 'full-sidebar' | undefined, 
+    newMode: 'header-statistics' | 'header-navigation' | 'full-sidebar',
     sessionId?: string
   ): Promise<boolean> {
     try {
@@ -716,37 +477,6 @@ export class DatabaseNavigationService {
     }
   }
 
-  /**
-   * Migration 045: Get default navigation mode from user_navigation_mode_settings
-   */
-  async getDefaultNavigationMode(userId: string = 'default'): Promise<NavigationMode> {
-    try {
-      const defaultModeRow = this.statements.getDefaultMode!.get(userId) as any;
-      return (defaultModeRow?.default_navigation_mode || DatabaseNavigationService.SYSTEM_DEFAULTS.DEFAULT_PREFERENCES.navigationMode) as NavigationMode;
-    } catch (error) {
-      console.error('[DatabaseNavigationService] Error getting default navigation mode:', error);
-      return DatabaseNavigationService.SYSTEM_DEFAULTS.DEFAULT_PREFERENCES.navigationMode;
-    }
-  }
-
-  /**
-   * Migration 045: Set default navigation mode in user_navigation_mode_settings
-   */
-  async setDefaultNavigationMode(userId: string = 'default', navigationMode: NavigationMode): Promise<boolean> {
-    try {
-      if (!DatabaseNavigationService.NAVIGATION_MODES.includes(navigationMode as any)) {
-        console.error('[DatabaseNavigationService] Invalid navigation mode:', navigationMode);
-        return false;
-      }
-
-      this.statements.updateDefaultMode!.run(navigationMode, userId);
-      return true;
-    } catch (error) {
-      console.error('[DatabaseNavigationService] Error setting default navigation mode:', error);
-      return false;
-    }
-  }
-
   // === UTILITY METHODS ===
 
   /**
@@ -755,14 +485,14 @@ export class DatabaseNavigationService {
   async getNavigationModeStatistics(userId: string = 'default'): Promise<Record<string, number>> {
     try {
       const result = this.db.prepare(`
-        SELECT new_default_mode, COUNT(*) as count 
-        FROM user_navigation_mode_history 
+        SELECT new_mode, COUNT(*) as count 
+        FROM navigation_mode_history 
         WHERE user_id = ? 
-        GROUP BY new_default_mode
-      `).all(userId) as Array<{ new_default_mode: string; count: number }>;
+        GROUP BY new_mode
+      `).all(userId) as Array<{ new_mode: string; count: number }>;
       
-      return result.reduce((acc, { new_default_mode, count }) => {
-        acc[new_default_mode] = count;
+      return result.reduce((acc, { new_mode, count }) => {
+        acc[new_mode] = count;
         return acc;
       }, {} as Record<string, number>);
     } catch (error) {
@@ -773,18 +503,16 @@ export class DatabaseNavigationService {
 
   /**
    * Reset navigation preferences to defaults
-   * NOW USES: SYSTEM_DEFAULTS.DEFAULT_PREFERENCES (centralized constants)
    */
   async resetNavigationPreferences(userId: string = 'default'): Promise<boolean> {
     try {
-      const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
       const defaultPreferences: NavigationPreferences = {
         userId,
-        navigationMode: defaults.DEFAULT_PREFERENCES.navigationMode,
-        sidebarWidth: defaults.DEFAULT_PREFERENCES.sidebarWidth,
-        autoCollapse: defaults.DEFAULT_PREFERENCES.autoCollapse,
-        rememberFocusMode: defaults.DEFAULT_PREFERENCES.rememberFocusMode,
-        headerHeight: defaults.DEFAULT_PREFERENCES.headerHeight
+        navigationMode: 'header-navigation',
+        headerHeight: 160, // Angleichung: einheitliche Header-Höhe
+        sidebarWidth: 280,
+        autoCollapse: false,
+        rememberFocusMode: true
       };
       
       return await this.setUserNavigationPreferences(userId, defaultPreferences);
@@ -799,288 +527,30 @@ export class DatabaseNavigationService {
    */
   async validateNavigationSchema(): Promise<boolean> {
     try {
-      // PHASE 3: Use hybrid-mapper for validation
-      // Checks if schema version is valid (034 or 045) and not corrupted
-      const isValid = validateSchemaVersionForOperations(
-        this.getSchemaVersion(),
-        this.isSchemaCorrupted()
-      );
-
-      if (!isValid) {
-        console.error('[DatabaseNavigationService] Navigation schema validation failed - invalid or corrupted schema');
-        return false;
-      }
-
-      // Additional safety check: ensure required table exists
+      // Check if user_navigation_preferences table exists
       const tableInfo = this.db.prepare(`
-        SELECT name FROM sqlite_master WHERE type='table' AND name='user_navigation_mode_settings'
+        SELECT name FROM sqlite_master WHERE type='table' AND name='user_navigation_preferences'
       `).get();
-
+      
       if (!tableInfo) {
-        console.error('[DatabaseNavigationService] user_navigation_mode_settings table missing');
+        console.error('[DatabaseNavigationService] Migration 028 not applied - user_navigation_preferences table missing');
         return false;
       }
-
+      
+      // Check if navigation_mode_history table exists
+      const historyTableInfo = this.db.prepare(`
+        SELECT name FROM sqlite_master WHERE type='table' AND name='navigation_mode_history'
+      `).get();
+      
+      if (!historyTableInfo) {
+        console.warn('[DatabaseNavigationService] navigation_mode_history table missing - history features disabled');
+        return true; // Not critical, main functionality works
+      }
+      
       return true;
     } catch (error) {
       console.error('[DatabaseNavigationService] Error validating navigation schema:', error);
       return false;
-    }
-  }
-
-  // === NEW: PER-MODE SETTINGS OPERATIONS (Migration 034) ===
-
-  /**
-   * Get mode-specific navigation settings
-   */
-  async getModeSpecificSettings(userId: string = 'default', navigationMode: NavigationMode): Promise<NavigationModeSettings | null> {
-    try {
-      const row = this.statements.getModeSettings!.get(userId, navigationMode) as any;
-      
-      if (row) {
-        return mapFromSQL(row) as NavigationModeSettings;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('[DatabaseNavigationService] Error getting mode settings:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Set mode-specific navigation settings
-   */
-  async setModeSpecificSettings(userId: string = 'default', settings: Partial<NavigationModeSettings>): Promise<boolean> {
-    try {
-      // Get current settings for merging
-      const currentSettings = await this.getModeSpecificSettings(userId, settings.navigationMode!);
-      
-      // Merge with updates using SYSTEM_DEFAULTS for defaults
-      const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
-      const updatedSettings: NavigationModeSettings = {
-        userId,
-        navigationMode: settings.navigationMode!,
-        headerHeight: defaults.MIN_HEADER_HEIGHTS[settings.navigationMode!],
-        sidebarWidth: defaults.SIDEBAR_WIDTHS[settings.navigationMode!],
-        autoCollapseMobile: false,
-        autoCollapseTablet: false,
-        rememberDimensions: true,
-        mobileBreakpoint: defaults.BREAKPOINTS.mobile,
-        tabletBreakpoint: defaults.BREAKPOINTS.tablet,
-        ...currentSettings,
-        ...settings
-      };
-
-      // Validate settings using SYSTEM_DEFAULTS
-      if (!DatabaseNavigationService.NAVIGATION_MODES.includes(updatedSettings.navigationMode as any)) {
-        console.error('[DatabaseNavigationService] Invalid navigation mode:', updatedSettings.navigationMode);
-        return false;
-      }
-
-      // Convert to SQL format
-      const sqlData = mapToSQL(updatedSettings);
-      
-      this.statements.upsertModeSettings!.run(
-        userId,
-        sqlData.navigation_mode,
-        sqlData.header_height,
-        sqlData.sidebar_width,
-        sqlData.auto_collapse_mobile ? 1 : 0,
-        sqlData.auto_collapse_tablet ? 1 : 0,
-        sqlData.remember_dimensions ? 1 : 0,
-        sqlData.mobile_breakpoint,
-        sqlData.tablet_breakpoint,
-        sqlData.grid_template_columns || null,
-        sqlData.grid_template_rows || null,
-        sqlData.grid_template_areas || null,
-        userId, // for COALESCE
-        sqlData.navigation_mode // for COALESCE
-      );
-      
-      return true;
-    } catch (error) {
-      console.error('[DatabaseNavigationService] Error setting mode settings:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Get all mode-specific settings for user
-   */
-  async getAllModeSettings(userId: string = 'default'): Promise<NavigationModeSettings[]> {
-    try {
-      // PHASE 3: Use hybrid-mapper for schema-aware retrieval
-      // Migration 034: Returns all mode-specific settings
-      // Migration 045: Returns empty array (not applicable to global-mode schema)
-      
-      if (!validateSchemaVersionForOperations(this.getSchemaVersion(), this.isSchemaCorrupted())) {
-        console.warn('[DatabaseNavigationService] Schema validation failed in getAllModeSettings, returning empty');
-        return [];
-      }
-
-      // Use hybrid-mapper to get all mode settings (034 only, 045 returns empty)
-      const modeSettingsMap = getAllModeSettingsBySchema(
-        this.db,
-        this.getSchemaVersion(),
-        userId
-      );
-
-      // Convert map to array
-      return Object.values(modeSettingsMap) as NavigationModeSettings[];
-    } catch (error) {
-      console.error('[DatabaseNavigationService] Error getting all mode settings:', error);
-      return [];
-    }
-  }
-
-  // === NEW: FOCUS MODE PREFERENCES OPERATIONS (Migration 035) ===
-
-  /**
-   * Get focus preferences for specific navigation mode
-   */
-  async getFocusModePreferences(userId: string = 'default', navigationMode: NavigationMode): Promise<FocusModePreferences | null> {
-    try {
-      const row = this.statements.getFocusPreferences!.get(userId, navigationMode) as any;
-      
-      if (row) {
-        return mapFromSQL(row) as FocusModePreferences;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('[DatabaseNavigationService] Error getting focus preferences:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Set focus preferences for specific navigation mode
-   */
-  async setFocusModePreferences(userId: string = 'default', preferences: Partial<FocusModePreferences>): Promise<boolean> {
-    try {
-      // Get current preferences for merging
-      const currentPrefs = await this.getFocusModePreferences(userId, preferences.navigationMode!);
-      
-      // Merge with updates and apply defaults using SYSTEM_DEFAULTS
-      const defaults = DatabaseNavigationService.SYSTEM_DEFAULTS;
-      const updatedPrefs: FocusModePreferences = {
-        userId,
-        navigationMode: preferences.navigationMode!,
-        autoFocusEnabled: false,
-        autoFocusDelaySeconds: 300,
-        focusOnModeSwitch: false,
-        hideSidebarInFocus: true,
-        hideHeaderStatsInFocus: false,
-        dimBackgroundOpacity: 0.3,
-        transitionDurationMs: 300,
-        transitionEasing: 'ease-in-out',
-        blockNotifications: true,
-        blockPopups: true,
-        blockContextMenu: false,
-        minimalUiMode: false,
-        trackFocusSessions: true,
-        showFocusTimer: true,
-        focusBreakReminders: false,
-        focusBreakIntervalMinutes: 25,
-        ...currentPrefs,
-        ...preferences
-      };
-
-      // Validate preferences using SYSTEM_DEFAULTS
-      if (!DatabaseNavigationService.NAVIGATION_MODES.includes(updatedPrefs.navigationMode as any)) {
-        console.error('[DatabaseNavigationService] Invalid navigation mode:', updatedPrefs.navigationMode);
-        return false;
-      }
-
-      // Convert to SQL format
-      const sqlData = mapToSQL(updatedPrefs);
-      
-      this.statements.upsertFocusPreferences!.run(
-        userId,
-        sqlData.navigation_mode,
-        sqlData.auto_focus_enabled ? 1 : 0,
-        sqlData.auto_focus_delay_seconds,
-        sqlData.focus_on_mode_switch ? 1 : 0,
-        sqlData.hide_sidebar_in_focus ? 1 : 0,
-        sqlData.hide_header_stats_in_focus ? 1 : 0,
-        sqlData.dim_background_opacity,
-        sqlData.transition_duration_ms,
-        sqlData.transition_easing,
-        sqlData.block_notifications ? 1 : 0,
-        sqlData.block_popups ? 1 : 0,
-        sqlData.block_context_menu ? 1 : 0,
-        sqlData.minimal_ui_mode ? 1 : 0,
-        sqlData.track_focus_sessions ? 1 : 0,
-        sqlData.show_focus_timer ? 1 : 0,
-        sqlData.focus_break_reminders ? 1 : 0,
-        sqlData.focus_break_interval_minutes,
-        userId, // for COALESCE
-        sqlData.navigation_mode // for COALESCE
-      );
-      
-      return true;
-    } catch (error) {
-      console.error('[DatabaseNavigationService] Error setting focus preferences:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Get all focus preferences for user across all navigation modes
-   */
-  async getAllFocusPreferences(userId: string = 'default'): Promise<FocusModePreferences[]> {
-    try {
-      const rows = this.statements.getAllFocusPreferences!.all(userId) as any[];
-      return rows.map(row => mapFromSQL(row) as FocusModePreferences);
-    } catch (error) {
-      console.error('[DatabaseNavigationService] Error getting all focus preferences:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Get combined layout configuration with per-mode and focus settings
-   */
-  async getEnhancedLayoutConfig(userId: string = 'default', navigationMode?: NavigationMode, inFocusMode: boolean = false): Promise<NavigationLayoutConfig & { modeSettings?: NavigationModeSettings; focusPreferences?: FocusModePreferences }> {
-    try {
-      // Get base navigation preferences
-      const basePrefs = await this.getUserNavigationPreferences(userId);
-      const activeMode = navigationMode || basePrefs.navigationMode;
-      
-      // Get mode-specific settings
-      const modeSettings = await this.getModeSpecificSettings(userId, activeMode);
-      
-      // Get focus preferences for this mode
-      const focusPreferences = await this.getFocusModePreferences(userId, activeMode);
-      
-      // Generate base layout config
-      const baseConfig = await this.getNavigationLayoutConfig(userId);
-      
-      // Apply mode-specific overrides if available
-      if (modeSettings) {
-        baseConfig.sidebarWidth = modeSettings.sidebarWidth;
-        
-        // Apply custom grid templates if defined
-        if (modeSettings.gridTemplateColumns) {
-          baseConfig.gridTemplateColumns = modeSettings.gridTemplateColumns;
-        }
-        if (modeSettings.gridTemplateRows) {
-          baseConfig.gridTemplateRows = modeSettings.gridTemplateRows;
-        }
-        if (modeSettings.gridTemplateAreas) {
-          baseConfig.gridTemplateAreas = modeSettings.gridTemplateAreas;
-        }
-      }
-      
-      return {
-        ...baseConfig,
-        modeSettings: modeSettings || undefined,
-        focusPreferences: focusPreferences || undefined
-      };
-    } catch (error) {
-      console.error('[DatabaseNavigationService] Error getting enhanced layout config:', error);
-      return this.getDefaultLayoutConfig();
     }
   }
 
