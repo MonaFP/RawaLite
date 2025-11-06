@@ -42,10 +42,13 @@ db/rawalite-dev-copy_*.db
 # Auto-generated build metadata (esbuild)
 meta.json
 
-# 📁 ARCHIVE FOLDERS (Intentional)
-# Archive folders are intentionally versioned for implementation history
-# These contain archived implementations and deprecated code for reference purposes
-# DO NOT ignore - keep as part of project history
+# 📁 DOCUMENTATION FOLDERS (NOT in repo - local only)
+# /docs is for LOCAL project documentation only
+# Documentation should NOT be committed to version control
+# PLACEHOLDER-only pattern below
+docs/
+!docs/*.PLACEHOLDER
+!docs/**/*.PLACEHOLDER
 
 # 🔐 ENVIRONMENT-SPECIFIC CONFIGS (Prevent accidental commits)
 .env
