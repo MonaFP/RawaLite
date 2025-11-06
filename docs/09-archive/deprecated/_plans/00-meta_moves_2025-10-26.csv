@@ -1,5 +1,0 @@
-file_type,source_path,target_path,operation,priority,reason
-critical_duplicate,docs/00-meta/final/VALIDATED_REGISTRY-CRITICAL-FIXES-2025-10-17.md,docs/_archive_conflicts_2025-10-26/00-meta/critical-duplicates/VALIDATED_REGISTRY-CRITICAL-FIXES-2025-10-17.md,move,1,ROOT_ document duplicate violation - prevents KI confusion
-critical_duplicate,docs/00-meta/final/VALIDATED_GUIDE-KI-FAILURE-MODES-2025-10-17.md,docs/_archive_conflicts_2025-10-26/00-meta/critical-duplicates/VALIDATED_GUIDE-KI-FAILURE-MODES-2025-10-17.md,move,1,ROOT_ document duplicate violation - prevents session killer
-index_duplicate,docs/00-meta/final/INDEX.md,docs/_archive_conflicts_2025-10-26/00-meta/index-duplicates/final_INDEX.md,move,2,Multiple INDEX.md files create navigation confusion
-index_duplicate,docs/00-meta/sessions/INDEX.md,docs/_archive_conflicts_2025-10-26/00-meta/index-duplicates/sessions_INDEX.md,move,2,Multiple INDEX.md files create navigation confusion
