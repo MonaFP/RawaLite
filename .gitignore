@@ -20,5 +20,11 @@ build/
 *.p12
 *.cer
 
+# 🚨 DATABASE PROTECTION - NIEMALS Kundendaten committen!
+db/*.db
+db/*.db-*
+db/archive-migration-backups/*.db
+db/rawalite-dev-copy.db
+
 # Auto-generated build metadata (esbuild)
 meta.json
