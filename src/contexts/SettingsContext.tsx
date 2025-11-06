@@ -46,12 +46,20 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       await settingsAdapter.updateCompanyData(companyData);
       
-      // Force refresh from database
-      await refreshSettings();
+      // ✅ FIX (06.11.2025): DIRECTLY update state with saved data instead of relying on DB refresh
+      // This prevents the silent overwrite where refreshSettings() was reading NULL values
+      setSettings(prev => ({
+        ...prev,
+        companyData: companyData
+      }));
+      
+      setError(null);
     } catch (err) {
       console.error('Error saving company data:', err);
       setError('Fehler beim Speichern der Unternehmensdaten');
       throw err;
+    } finally {
+      setLoading(false);
     }
   };
 

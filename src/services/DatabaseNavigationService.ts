@@ -338,31 +338,31 @@ export class DatabaseNavigationService {
       case 'header-statistics':
         return {
           gridTemplateColumns: `${sidebarWidth}px 1fr`,
-          gridTemplateRows: `${optimalHeight}px 40px 1fr`,
+          gridTemplateRows: `${optimalHeight}px 1fr 60px`,
           gridTemplateAreas: `
             "sidebar header"
-            "sidebar focus-bar"
-            "sidebar main"`
+            "sidebar main"
+            "sidebar footer"`
         };
         
       case 'header-navigation':
         return {
           gridTemplateColumns: `${sidebarWidth}px 1fr`,
-          gridTemplateRows: `${optimalHeight}px 40px 1fr`,
+          gridTemplateRows: `${optimalHeight}px 1fr 60px`,
           gridTemplateAreas: `
             "sidebar header"
-            "sidebar focus-bar"
-            "sidebar main"`
+            "sidebar main"
+            "sidebar footer"`
         };
         
       case 'full-sidebar':
         return {
           gridTemplateColumns: `${sidebarWidth}px 1fr`,
-          gridTemplateRows: `${optimalHeight}px 40px 1fr`,
+          gridTemplateRows: `${optimalHeight}px 1fr 60px`,
           gridTemplateAreas: `
             "sidebar header"
-            "sidebar focus-bar"
-            "sidebar main"`
+            "sidebar main"
+            "sidebar footer"`
         };
         
       default:
@@ -385,11 +385,11 @@ export class DatabaseNavigationService {
         autoCollapse: false,
         rememberFocusMode: true,
         gridTemplateColumns: '240px 1fr',
-        gridTemplateRows: '160px 40px 1fr',
+        gridTemplateRows: '160px 1fr 60px',
         gridTemplateAreas: `
           "sidebar header"
-          "sidebar focus-bar"
-          "sidebar main"`
+          "sidebar main"
+          "sidebar footer"`
       },
       'header-navigation': {
         navigationMode: 'header-navigation' as const,
@@ -398,11 +398,11 @@ export class DatabaseNavigationService {
         autoCollapse: false,
         rememberFocusMode: true,
         gridTemplateColumns: '280px 1fr',
-        gridTemplateRows: '90px 40px 1fr',
+        gridTemplateRows: '90px 1fr 60px',
         gridTemplateAreas: `
           "sidebar header"
-          "sidebar focus-bar"
-          "sidebar main"`
+          "sidebar main"
+          "sidebar footer"`
       },
       'full-sidebar': {
         navigationMode: 'full-sidebar' as const,
@@ -411,11 +411,11 @@ export class DatabaseNavigationService {
         autoCollapse: false,
         rememberFocusMode: true,
         gridTemplateColumns: '240px 1fr',
-        gridTemplateRows: '60px 40px 1fr',
+        gridTemplateRows: '60px 1fr 60px',
         gridTemplateAreas: `
           "sidebar header"
-          "sidebar focus-bar"
-          "sidebar main"`
+          "sidebar main"
+          "sidebar footer"`
       }
     };
     

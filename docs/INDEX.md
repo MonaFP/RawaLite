@@ -198,14 +198,15 @@ Alle Dokumentationsordner enthalten: `final/`, `wip/`, `plan/`, `sessions/`
 
 ---
 
-## 🎯 **KI-NAVIGATION QUICK START**
+### **🎯 KI-NAVIGATION QUICK START**
 
 ### **🚨 Für JEDE KI-Session (MANDATORY):**
-1. ✅ **TEMPLATE:** [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](06-handbook/TEMPLATE/) - Session-Start Template ausfüllen
-2. ✅ **REFERENCE:** [06-handbook/REFERENCE/VALIDATED_REFERENCE-PROJECT-CORE-RULES_2025-10-26.md](06-handbook/REFERENCE/) - Project Core Rules durchlesen
-3. ✅ **ANTIPATTERN:** [06-handbook/ANTIPATTERN/VALIDATED_ANTIPATTERN-KI-MISTAKES_2025-10-26.md](06-handbook/ANTIPATTERN/) - Session-Killer Prevention
-4. ✅ **BRIEFING:** [../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) - Authoritative session template
-5. ✅ **SCHEMA:** [../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md](../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md) - Document recognition rules
+1. ✅ **SCHEMA-REFERENCE:** [VALIDATED_REGISTRY-DOCUMENTATION-SCHEMA-SUMMARY_2025-11-06.md](VALIDATED_REGISTRY-DOCUMENTATION-SCHEMA-SUMMARY_2025-11-06.md) - Quick Schema Reference
+2. ✅ **TEMPLATE:** [06-handbook/TEMPLATE/VALIDATED_TEMPLATE-SESSION-START_2025-10-26.md](06-handbook/TEMPLATE/) - Session-Start Template ausfüllen
+3. ✅ **REFERENCE:** [06-handbook/REFERENCE/VALIDATED_REFERENCE-PROJECT-CORE-RULES_2025-10-26.md](06-handbook/REFERENCE/) - Project Core Rules durchlesen
+4. ✅ **ANTIPATTERN:** [06-handbook/ANTIPATTERN/VALIDATED_ANTIPATTERN-KI-MISTAKES_2025-10-26.md](06-handbook/ANTIPATTERN/) - Session-Killer Prevention
+5. ✅ **BRIEFING:** [../.github/prompts/KI-SESSION-BRIEFING.prompt.md](../.github/prompts/KI-SESSION-BRIEFING.prompt.md) - Authoritative session template
+6. ✅ **SCHEMA:** [../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md](../.github/prompts/KI-PRÄFIX-ERKENNUNGSREGELN.prompt.md) - Document recognition rules
 
 ### **🔧 Für Development:**
 - **System Reality:** [ROOT_VALIDATED_GUIDE-MASTER-VALIDATION-SCRIPT_2025-10-20.md](ROOT_VALIDATED_GUIDE-MASTER-VALIDATION-SCRIPT_2025-10-20.md) - Current system status (445% over-documentation)

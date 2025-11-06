@@ -1,6 +1,6 @@
 # 🚨 Critical Fixes - Current Session Reference
 
-> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 03.11.2025 (KI-AUTO-DETECTION SYSTEM Integration - Code-Verification Update)  
+> **Erstellt:** 26.10.2025 | **Letzte Aktualisierung:** 05.11.2025 (FIX-008b: Fresh Database Renewal Solution - ABI Problem Solved)  
 > **Status:** Live Reference | **Typ:** Session-Critical Info  
 > **Schema:** `VALIDATED_REFERENCE-CRITICAL-FIXES-CURRENT_2025-10-26.md`  
 > **Source:** ROOT_VALIDATED_REGISTRY-CRITICAL-FIXES_2025-10-17.md
@@ -19,7 +19,7 @@
 > - 🎯 **AUTO-REFERENCE:** Bei Session-Start automatisch diese Datei prüfen
 > - 🔄 **AUTO-TRIGGER:** Bei Keywords "CRITICAL PATTERN MISSING" → Critical-Fixes-Check erforderlich
 
-> **⚠️ CRITICAL FIXES STATUS:** 18 aktive critical fixes (03.11.2025 - verified against code)  
+> **⚠️ CRITICAL FIXES STATUS:** 19 aktive critical fixes (05.11.2025 - FIX-008b added: Fresh DB Renewal)  
 > **Registry Status:** Live synchronisation aus ROOT-Registry aktiv  
 > **Template Integration:** KI-SESSION-BRIEFING mandatory vor Code-Änderungen  
 > **Critical Function:** Session-start critical fixes prevention für KI-Sessions
@@ -80,6 +80,19 @@
 - **Emergency Fix:** `pnpm remove better-sqlite3 && pnpm add better-sqlite3@12.4.1 && node scripts/BUILD_NATIVE_ELECTRON_REBUILD.cjs`
 - **Quick Test:** Database operations work in Electron
 
+#### **FIX-008b: Fresh Database Renewal** ⭐ NEW (05.11.2025)
+- **Symptom:** ABI rebuild fails with "file is being used by another process" error
+- **Root Cause:** Stale database files lock native module after rebuild attempt
+- **Solution:** Delete all dev-DB files **BEFORE rebuild** to force clean initialization
+- **Steps:**
+  1. Kill all node/electron processes: `taskkill /F /IM node.exe && taskkill /F /IM electron.exe`
+  2. Delete all dev-DB files: `Remove-Item "$env:APPDATA\Electron\database\rawalite*.db*" -Force`
+  3. Next `pnpm dev:all` will create fresh database with all migrations
+  4. ABI rebuild succeeds without file-locking
+- **Why It Works:** Fresh database initialization bypasses compiled module cache issues
+- **Verified:** 05.11.2025 - Tested with v1.0.78, **problem solved**
+- **Critical:** This is preferred over repeated rebuild attempts
+
 #### **FIX-015: Field Mapper SQL Injection Prevention**
 - **File:** `src/lib/field-mapper.ts`
 - **Critical Pattern:** Parameterized queries only
@@ -109,14 +122,25 @@
 
 ### **ABI Problem (Most Common):**
 ```bash
-# INSTANT SOLUTION - Copy & Paste:
+# METHOD 1: Quick ABI Fix (first attempt)
 pnpm remove better-sqlite3
 pnpm add better-sqlite3@12.4.1
 node scripts/BUILD_NATIVE_ELECTRON_REBUILD.cjs
 
+# If fails with "file is being used by another process":
+# → Continue to METHOD 2 (Fresh DB Renewal)
+
+# METHOD 2: Fresh Database Renewal (SOLVES persistent ABI issues)
+taskkill /F /IM node.exe
+taskkill /F /IM electron.exe
+Remove-Item "$env:APPDATA\Electron\database\rawalite*.db*" -Force
+# Next dev:all will create fresh database - ABI rebuild succeeds!
+
 # Verify:
 pnpm dev:all  # Should start without errors
 ```
+
+**✅ Verified Solution:** Fresh DB renewal (05.11.2025) solves file-locking ABI issues permanently!
 
 ### **Development Port Issues:**
 ```bash

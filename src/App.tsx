@@ -10,6 +10,12 @@ import { useFocusMode } from "./contexts/FocusModeContext";
 import { FocusModeToggle } from "./components/FocusModeToggle";
 import { FocusNavigation } from "./components/FocusNavigation";
 
+// CSS Imports - Database-Theme-System Grid Layout (FIX-016/017/018)
+import "./styles/layout-grid.css";
+import "./styles/header-styles.css";
+import "./styles/sidebar-styles.css";
+import "./styles/main-content.css";
+
 export default function App(){
   const { mode } = useNavigation();
   const { active, variant } = useFocusMode();
@@ -88,15 +94,16 @@ export default function App(){
       {/* Header - erste Zeile - DIREKT ohne zusätzlichen Wrapper */}
       {renderHeader()}
       
-      {/* Focus Bar - zweite Zeile direkt unter Header */}
-      <div className="focus-bar-area">
-        <FocusNavigation />
-        <FocusModeToggle />
-      </div>
-      
+      {/* Main Content Area */}
       <main className="main">
         <Outlet />
       </main>
+      
+      {/* Footer - dritte Zeile mit Navigation Controls */}
+      <footer className="footer">
+        <FocusNavigation />
+        <FocusModeToggle />
+      </footer>
     </div>
   );
 }

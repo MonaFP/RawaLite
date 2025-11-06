@@ -66,7 +66,22 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
   const [headerHeight, setHeaderHeight] = useState<number>(() => getModeDefaults('header-navigation').headerHeight);
   const [autoCollapse, setAutoCollapse] = useState<boolean>(false);
   const [rememberFocusMode, setRememberFocusMode] = useState<boolean>(true);
-  const [layoutConfig, setLayoutConfig] = useState<NavigationLayoutConfig | null>(null);
+  
+  // Initialize layoutConfig with default values to prevent undefined layout
+  const [layoutConfig, setLayoutConfig] = useState<NavigationLayoutConfig | null>(() => {
+    const mode = 'header-navigation' as const;
+    return {
+      navigationMode: mode,
+      headerHeight: 90,
+      sidebarWidth: 280,
+      autoCollapse: false,
+      rememberFocusMode: true,
+      gridTemplateColumns: '280px 1fr',
+      gridTemplateRows: '90px 1fr 60px',
+      gridTemplateAreas: `"sidebar header"\n"sidebar main"\n"sidebar footer"`
+    };
+  });
+  
   const [preferences, setPreferences] = useState<NavigationPreferences | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [sessionId] = useState<string>(() => 
@@ -207,7 +222,17 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     };
 
     updateLayoutDimensions();
-  }, [sidebarWidth, headerHeight, userId, isLoading, navigationService]);
+  }, [sidebarWidth, headerHeight, userId, isLoading, navigationService, layoutConfig]);
+
+  // Ensure CSS variables are always synchronized with layoutConfig
+  useEffect(() => {
+    const root = document.documentElement;
+    if (layoutConfig) {
+      root.style.setProperty('--db-grid-template-columns', layoutConfig.gridTemplateColumns);
+      root.style.setProperty('--db-grid-template-rows', layoutConfig.gridTemplateRows);
+      root.style.setProperty('--db-grid-template-areas', layoutConfig.gridTemplateAreas);
+    }
+  }, [layoutConfig]);
 
   // Handler for updating layout dimensions
   const updateLayoutDimensionsHandler = async (newHeaderHeight?: number, newSidebarWidth?: number): Promise<boolean> => {

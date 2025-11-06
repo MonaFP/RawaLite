@@ -20,11 +20,47 @@ build/
 *.p12
 *.cer
 
-# 🚨 DATABASE PROTECTION - NIEMALS Kundendaten committen!
+# 🚨 DATABASE PROTECTION - NIEMALS Kundendaten committen! (Updated 2025-11-06)
+# MANDATORY: Prevent all database files from being committed
 db/*.db
 db/*.db-*
+db/**/*.db
+db/**/*.db-*
 db/archive-migration-backups/*.db
 db/rawalite-dev-copy.db
+db/rawalite-dev-copy_*.db
+
+# CRITICAL: Production database should NEVER be in repo
+# Real location: C:\Users\ramon\AppData\Roaming\Electron\database\rawalite.db
+# Dev location: C:\Users\ramon\AppData\Roaming\Electron\database\rawalite-dev.db
+# Repository should only contain PLACEHOLDER files
+
+# Ensure only .PLACEHOLDER files are allowed in db/
+!db/*.PLACEHOLDER
+!db/**/*.PLACEHOLDER
 
 # Auto-generated build metadata (esbuild)
 meta.json
+
+# 📁 ARCHIVE FOLDERS (Intentional)
+# Archive folders are intentionally versioned for implementation history
+# These contain archived implementations and deprecated code for reference purposes
+# DO NOT ignore - keep as part of project history
+
+# 🔐 ENVIRONMENT-SPECIFIC CONFIGS (Prevent accidental commits)
+.env
+.env.local
+.env.*.local
+src/config/*.local.*
+electron/config/*.local.*
+
+# 🔐 LOCAL IDE CONFIGURATIONS WITH POTENTIAL SECRETS
+.vscode/settings.local.json
+.vscode/launch.local.json
+
+# 🔐 SENSITIVE DOCUMENTATION PATTERNS (Future prevention)
+# Prevent accidental commit of sensitive documentation if added in future
+docs/**/*secret*
+docs/**/*password*
+docs/**/*apikey*
+docs/**/*credential*

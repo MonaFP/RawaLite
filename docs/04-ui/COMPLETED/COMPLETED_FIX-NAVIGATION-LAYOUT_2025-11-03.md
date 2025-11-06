@@ -7,8 +7,8 @@
 > - **AUTO-UPDATE:** Bei ähnlichen Problemen als Referenz nutzen
 > - **STATUS-KEYWORDS:** Erkannt durch Dateiname, Schema-Konformität
 
-> **Erstellt:** 27.10.2025 | **Status:** SOLVED - Problem behoben  
-> **Typ:** COMPLETED_FIX - Systematische Navigation Layout Korrektur  
+> **Erstellt:** 27.10.2025 | **Status:** SOLVED - Problem behoben (Updated 05.11.2025: Fresh DB Renewal added)  
+> **Typ:** COMPLETED_FIX - Systematische Navigation Layout Korrektur + ABI-Recovery  
 > **Schema:** `COMPLETED-NAVIGATION-LAYOUT-FIX.md`
 
 ## 🎯 **PROBLEM GELÖST: Grid-Architecture-Mismatch**
@@ -136,7 +136,27 @@ GRID_TEMPLATE_COLUMNS: {
 
 ---
 
-## 📋 **LESSONS LEARNED**
+## �️ **RELATED FIX: Fresh Database Renewal (05.11.2025)**
+
+### **Sekundäres Problem entdeckt: ABI-Lock nach Rebuild**
+- **Symptom:** Rebuild fails mit `"file is being used by another process"`
+- **Cause:** Stale dev-DB files lock better-sqlite3 native module
+- **Solution:** Fresh DB deletion BEFORE rebuild
+- **Implementation:** 
+  1. `taskkill /F /IM node.exe && taskkill /F /IM electron.exe`
+  2. `Remove-Item "$env:APPDATA\Electron\database\rawalite*.db*" -Force`
+  3. Next `pnpm dev:all` creates fresh DB with migrations
+- **Result:** ✅ ABI rebuild succeeds, no file-locking
+- **Documented:** FIX-008b in Critical Fixes Registry
+
+### **Combined Solution Impact:**
+- Grid Architecture FIX + Fresh DB Renewal = **Stable Development Environment**
+- Prevents: Layout issues + ABI compilation errors
+- Enables: Clean development workflow with proper data state
+
+---
+
+## �📋 **LESSONS LEARNED**
 
 ### **Root Cause:**
 **Service vs. CSS Definition Mismatch** ist ein häufiges Problem bei Database-First Architectures
@@ -151,6 +171,11 @@ GRID_TEMPLATE_COLUMNS: {
 - **Single Source of Truth** für Layout-Definitionen
 - **Service Tests** für Grid Template Alignment
 
+### **ABI-Problem Prevention (NEW):**
+- **Database State** vor Build-Operationen checken
+- **Stale Files** können native module locks verursachen
+- **Fresh DB Initialization** ist robuste Recovery-Strategie
+
 ---
 
 ## 🎯 **FINAL STATUS**
@@ -158,8 +183,11 @@ GRID_TEMPLATE_COLUMNS: {
 **Problem:** ✅ **COMPLETELY RESOLVED**  
 **Navigation Layout:** ✅ **FUNCTIONAL ACROSS ALL MODES**  
 **Architecture:** ✅ **CONSISTENT CSS-DATABASE ALIGNMENT**  
-**Technical Debt:** ✅ **RESOLVED GRID TEMPLATE MISMATCH**
+**Technical Debt:** ✅ **RESOLVED GRID TEMPLATE MISMATCH**  
+**ABI Management:** ✅ **FRESH DB RENEWAL STRATEGY WORKING**  
+**Development Workflow:** ✅ **STABLE WITH CLEAN DATABASE STATE**
 
 ---
 
-*Problem gelöst: 27.10.2025 - Navigation Layout systematic architecture fix completed*
+*Problem gelöst: 27.10.2025 - Navigation Layout systematic architecture fix completed*  
+*Enhanced: 05.11.2025 - Fresh Database Renewal strategy documented (FIX-008b)*

@@ -62,8 +62,27 @@ export class PDFService {
       console.log('🎨 [PDF-DEBUG] Input currentTheme for PDF generation:', currentTheme);
       console.log('🎨 [PDF-DEBUG] Type of currentTheme:', typeof currentTheme);
       console.log('🎨 [PDF-DEBUG] Truthy check:', !!currentTheme);
+      
+      // CRITICAL FIX: Ensure theme data is properly generated
+      // Handle both string themes (from useTheme) and complex theme objects
       const pdfTheme = currentTheme ? this.getCurrentPDFTheme(currentTheme, customColors) : null;
       console.log('🎨 Generated PDF theme data:', pdfTheme);
+      
+      // VALIDATION: Log theme structure for debugging
+      if (pdfTheme) {
+        console.log('🎨 [PDF-VALIDATION] Theme structure:', {
+          hasThemeId: !!pdfTheme.themeId,
+          hasThemeObject: !!pdfTheme.theme,
+          hasColors: pdfTheme.theme ? {
+            primary: !!pdfTheme.theme.primary,
+            secondary: !!pdfTheme.theme.secondary,
+            accent: !!pdfTheme.theme.accent,
+            text: !!pdfTheme.theme.text
+          } : null
+        });
+      } else {
+        console.warn('⚠️ [PDF-WARNING] No PDF theme generated - theme data might be missing or null');
+      }
       
       // Prepare data for template rendering
       const templateData = {
@@ -379,88 +398,104 @@ export class PDFService {
 
   /**
    * Helper method for PDF theme integration with v1.5.2 pastel themes
+   * 
+   * CRITICAL FIX: Handles both string theme names and complex theme objects
+   * Fallback to 'sage' (salbeigruen) if theme is null/undefined
    */
   private static getCurrentPDFTheme(currentTheme: any, customColors: any): any {
     console.log('🎨 [PDF-DEBUG] Building PDF theme from current theme:', currentTheme);
     console.log('🎨 [PDF-DEBUG] Type of currentTheme:', typeof currentTheme);
     console.log('🎨 [PDF-DEBUG] Custom colors:', customColors);
     
-    // Use the passed currentTheme directly instead of reading from DOM
-    // currentTheme should be the theme key like 'lavendel', 'himmelblau', etc.
-    const currentThemeName = currentTheme || 'salbeigruen';
+    // CRITICAL: Handle null/undefined/empty currentTheme with graceful fallback
+    // currentTheme can be: string ('sage', 'default'), object with legacyId, or null
+    let currentThemeName = 'sage'; // Default fallback is sage (salbeigruen)
+    
+    if (currentTheme) {
+      if (typeof currentTheme === 'string') {
+        // Direct string theme name (e.g., 'sage', 'peach')
+        currentThemeName = currentTheme;
+      } else if (typeof currentTheme === 'object') {
+        // Complex theme object - extract theme key
+        currentThemeName = currentTheme.themeKey || currentTheme.legacyId || currentTheme.id || 'sage';
+      }
+    } else {
+      console.warn('⚠️ [PDF-WARNING] currentTheme is null/undefined - using fallback to sage (salbeigruen)');
+    }
+    
     console.log('📋 [PDF-DEBUG] Current theme name resolved to:', currentThemeName);
     
-    // v1.5.2 Pastel theme color mappings - Updated with correct theme names
+    // v1.5.2 Pastel theme color mappings - Updated with CORRECT Migration 027 theme colors
     const pastelThemes = {
       default: {
-        primary: '#1e3a2e',      // Standard Tannengrün
+        primary: '#1e3a2e',      // Standard Tannengrün (Migration 027)
         secondary: '#2a4a35',    
-        accent: '#f472b6',       
+        accent: '#8b9dc3',       // FIX: Updated from Migration 027
         background: '#f1f5f9',   
-        text: '#1f2937'          
+        text: '#1e293b'          // FIX: Updated from Migration 027
       },
       sage: {
-        primary: '#7ba87b',      // Salbeigrün
+        primary: '#7d9b7d',      // FIX: Updated from '#7ba87b' to Migration 027 value
         secondary: '#5a735a',    
-        accent: '#6b976b',       
-        background: '#f7f9f7',   
-        text: '#2d4a2d'          
+        accent: '#d2ddcf',       // FIX: Updated from '#6b976b' to Migration 027 value
+        background: '#fbfcfb',   // FIX: Updated from '#f7f9f7' to Migration 027 value
+        text: '#1e293b'          // FIX: Updated from Migration 027
       },
       salbeigruen: {  // Legacy fallback
-        primary: '#7ba87b',      
+        primary: '#7d9b7d',      // FIX: Updated to match sage
         secondary: '#5a735a',    
-        accent: '#6b976b',       
-        background: '#f7f9f7',   
-        text: '#2d4a2d'          
+        accent: '#d2ddcf',       // FIX: Updated to match sage
+        background: '#fbfcfb',   // FIX: Updated to match sage
+        text: '#1e293b'          // FIX: Updated to match sage
       },
       sky: {
-        primary: '#7ba2b8',      // Himmelblau
+        primary: '#8bacc8',      // FIX: Updated from '#7ba2b8' to Migration 027 value
         secondary: '#5a6573',    
-        accent: '#6b8ea7',       
-        background: '#f7f9fb',   
-        text: '#2d3a4a'          
+        accent: '#a2d1ec',       // FIX: Updated from '#6b8ea7' to Migration 027 value
+        background: '#fbfcfd',   // FIX: Updated from '#f7f9fb' to Migration 027 value
+        text: '#1e293b'          // FIX: Updated from Migration 027
       },
       himmelblau: {  // Legacy fallback
-        primary: '#7ba2b8',      
+        primary: '#8bacc8',      // FIX: Updated to match sky
         secondary: '#5a6573',    
-        accent: '#6b8ea7',       
-        background: '#f7f9fb',   
-        text: '#2d3a4a'          
+        accent: '#a2d1ec',       // FIX: Updated to match sky
+        background: '#fbfcfd',   // FIX: Updated to match sky
+        text: '#1e293b'          // FIX: Updated to match sky
       },
       lavender: {
-        primary: '#b87ba8',      // Lavendel
+        primary: '#a89dc8',      // FIX: Updated from '#b87ba8' to Migration 027 value
         secondary: '#735a73',    
-        accent: '#a76b97',       
-        background: '#f9f7fb',   
-        text: '#4a2d4a'          
+        accent: '#cf9ad6',       // FIX: Updated from '#a76b97' to Migration 027 value
+        background: '#fcfbfd',   // FIX: Updated from '#f9f7fb' to Migration 027 value
+        text: '#1e293b'          // FIX: Updated from Migration 027
       },
       lavendel: {  // Legacy fallback
-        primary: '#b87ba8',      
+        primary: '#a89dc8',      // FIX: Updated to match lavender
         secondary: '#735a73',    
-        accent: '#a76b97',       
-        background: '#f9f7fb',   
-        text: '#4a2d4a'          
+        accent: '#cf9ad6',       // FIX: Updated to match lavender
+        background: '#fcfbfd',   // FIX: Updated to match lavender
+        text: '#1e293b'          // FIX: Updated to match lavender
       },
       peach: {
-        primary: '#b8a27b',      // Pfirsich
+        primary: '#c8a89d',      // FIX: Updated from '#b8a27b' to Migration 027 value
         secondary: '#73655a',    
-        accent: '#a7916b',       
-        background: '#fbf9f7',   
-        text: '#4a3a2d'          
+        accent: '#feecd4',       // FIX: Updated from '#a7916b' to Migration 027 value
+        background: '#fdfcfb',   // FIX: Updated from '#fbf9f7' to Migration 027 value
+        text: '#1e293b'          // FIX: Updated from Migration 027
       },
       pfirsich: {  // Legacy fallback
-        primary: '#b8a27b',      
+        primary: '#c8a89d',      // FIX: Updated to match peach
         secondary: '#73655a',    
-        accent: '#a7916b',       
-        background: '#fbf9f7',   
-        text: '#4a3a2d'          
+        accent: '#feecd4',       // FIX: Updated to match peach
+        background: '#fdfcfb',   // FIX: Updated to match peach
+        text: '#1e293b'          // FIX: Updated to match peach
       },
       rose: {
-        primary: '#b87ba2',      // Rosé
+        primary: '#c89da8',      // FIX: Updated from '#b87ba2' to Migration 027 value
         secondary: '#735a65',    
-        accent: '#a76b91',       
-        background: '#fbf7f9',   
-        text: '#4a2d3a'          
+        accent: '#feb2a8',       // FIX: Updated from '#a76b91' to Migration 027 value
+        background: '#fdfbfc',   // FIX: Updated from '#fbf7f9' to Migration 027 value
+        text: '#1e293b'          // FIX: Updated from Migration 027
       }
     };
     
@@ -470,8 +505,10 @@ export class PDFService {
     console.log('🎨 [PDF-DEBUG] PDF theme colors selected:', themeColors);
     console.log('🎨 [PDF-DEBUG] Available pastel themes:', Object.keys(pastelThemes));
     
+    // ⚠️ CRITICAL FIX-007: Return structure expected by pdf-templates.ts
+    // Template expects: options.theme?.theme?.primary OR options.theme?.primary
+    // So we return: { theme: { primary, secondary, accent, background, text } }
     const result = {
-      themeId: currentThemeName,
       theme: {
         primary: themeColors.primary,
         secondary: themeColors.secondary,
@@ -481,7 +518,7 @@ export class PDFService {
       }
     };
     
-    console.log('🎨 [PDF-DEBUG] Final PDF theme result:', result);
+    console.log('🎨 [PDF-DEBUG] Final PDF theme result (FIX-007 compatible):', result);
     return result;
   }
 }

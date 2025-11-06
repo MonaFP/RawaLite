@@ -17,7 +17,7 @@
   --theme-focus-bar-bg: color-mix(in srgb, var(--accent) 15%, transparent 85%);
   --theme-focus-bar-border: color-mix(in srgb, var(--accent) 20%, transparent 80%);
   --theme-focus-bar-text: var(--foreground);
-  --theme-focus-bar-height: 40px;
+  --theme-focus-bar-height: 60px;
   
   /* HEADER-STATISTICS Mode - Statistics Header + Compact Navigation Sidebar */
   --header-statistics-sidebar-width: 240px;
@@ -40,16 +40,17 @@
   color: var(--theme-grid-text, var(--foreground));
 }
 
-/* Focus Bar Area - Database-Theme Integration */
-.focus-bar-area {
-  grid-area: focus-bar;
+/* Focus Bar Area - Database-Theme Integration (FOOTER) */
+.footer {
+  grid-area: footer;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding: 8px 16px;
   background: var(--theme-focus-bar-bg, color-mix(in srgb, var(--accent) 15%, transparent 85%));
-  border-bottom: 1px solid var(--theme-focus-bar-border, color-mix(in srgb, var(--accent) 20%, transparent 80%));
+  border-top: 1px solid var(--theme-focus-bar-border, color-mix(in srgb, var(--accent) 20%, transparent 80%));
   color: var(--theme-focus-bar-text, var(--foreground));
+  gap: 16px;
 }
 
 /* =========================================
@@ -96,29 +97,29 @@
 /* 🎯 HEADER-STATISTICS Mode - Statistics Header + Compact Navigation Sidebar */
 [data-navigation-mode="header-statistics"] .app {
   grid-template-columns: var(--db-grid-template-columns, var(--header-statistics-sidebar-width, 240px) 1fr) !important;
-  grid-template-rows: var(--db-grid-template-rows, var(--header-statistics-header-height, 160px) var(--theme-focus-bar-height, 40px) 1fr) !important;
+  grid-template-rows: var(--db-grid-template-rows, var(--header-statistics-header-height, 160px) 1fr 60px) !important;
   grid-template-areas: var(--db-grid-template-areas, 
     "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main") !important;
+    "sidebar main"
+    "sidebar footer") !important;
 }
 
 /* 🎯 HEADER-NAVIGATION Mode - Navigation Header + Compact Statistics Sidebar */
 [data-navigation-mode="header-navigation"] .app {
   grid-template-columns: var(--db-grid-template-columns, var(--header-navigation-sidebar-width, 280px) 1fr) !important;
-  grid-template-rows: var(--db-grid-template-rows, var(--header-navigation-header-height, 160px) var(--theme-focus-bar-height, 40px) 1fr) !important;
+  grid-template-rows: var(--db-grid-template-rows, var(--header-navigation-header-height, 160px) 1fr 60px) !important;
   grid-template-areas: var(--db-grid-template-areas,
     "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main") !important;
+    "sidebar main"
+    "sidebar footer") !important;
 }
 
 /* 🎯 FULL-SIDEBAR Mode - Minimal Header + Full Sidebar */
 [data-navigation-mode="full-sidebar"] .app {
   grid-template-columns: var(--db-grid-template-columns, var(--full-sidebar-sidebar-width, 240px) 1fr) !important;
-  grid-template-rows: var(--db-grid-template-rows, var(--full-sidebar-header-height, 72px) var(--theme-focus-bar-height, 40px) 1fr) !important;
+  grid-template-rows: var(--db-grid-template-rows, var(--full-sidebar-header-height, 72px) 1fr 60px) !important;
   grid-template-areas: var(--db-grid-template-areas,
     "sidebar header"
-    "sidebar focus-bar"
-    "sidebar main") !important;
+    "sidebar main"
+    "sidebar footer") !important;
 }

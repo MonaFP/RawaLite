@@ -122,7 +122,14 @@ export class SettingsAdapter {
       bankAccount: companyData.bankAccount,
       bankBic: companyData.bankBic,
       taxOffice: companyData.taxOffice, // taxOffice field
-      logo: companyData.logo
+      logo: companyData.logo,
+      // ✅ FIX: Auto-update preferences (ALL FIELDS!)
+      autoUpdateEnabled: companyData.autoUpdateEnabled ?? false,
+      autoUpdateCheckFrequency: companyData.autoUpdateCheckFrequency || 'startup',
+      autoUpdateNotificationStyle: companyData.autoUpdateNotificationStyle || 'subtle',
+      autoUpdateReminderInterval: companyData.autoUpdateReminderInterval || 4,
+      autoUpdateAutoDownload: companyData.autoUpdateAutoDownload ?? false,
+      autoUpdateInstallPrompt: companyData.autoUpdateInstallPrompt || 'manual'
     });
     
     console.log('🔧 After mapToSQL conversion:', sqliteData);
@@ -132,17 +139,29 @@ export class SettingsAdapter {
       bank_bic: sqliteData.bank_bic,
       tax_office: sqliteData.tax_office
     });
+    console.log('🔧 SQL auto-update fields:', {
+      auto_update_enabled: sqliteData.auto_update_enabled,
+      auto_update_check_frequency: sqliteData.auto_update_check_frequency,
+      auto_update_notification_style: sqliteData.auto_update_notification_style,
+      auto_update_reminder_interval: sqliteData.auto_update_reminder_interval,
+      auto_update_auto_download: sqliteData.auto_update_auto_download,
+      auto_update_install_prompt: sqliteData.auto_update_install_prompt
+    });
     
     const timestamp = new Date().toISOString();
 
-    // Update or insert company data via DbClient.exec
+    // ✅ FIX: INSERT OR REPLACE mit ALLEN Feldern inkl. auto-update preferences + ID Parameter!
     await this.client.exec(`
       INSERT OR REPLACE INTO settings (
         id, company_name, street, zip, city, phone, email, website, 
         tax_id, vat_id, kleinunternehmer, bank_name, bank_account, bank_bic, 
-        tax_office, logo, updated_at
+        tax_office, logo,
+        auto_update_enabled, auto_update_check_frequency, auto_update_notification_style,
+        auto_update_reminder_interval, auto_update_auto_download, auto_update_install_prompt,
+        updated_at
       ) VALUES (
-        1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?
       )
     `, [
       sqliteData.company_name,
@@ -160,6 +179,13 @@ export class SettingsAdapter {
       sqliteData.bank_bic,
       sqliteData.tax_office,
       sqliteData.logo,
+      // ✅ FIX: Auto-update parameter
+      sqliteData.auto_update_enabled ? 1 : 0,
+      sqliteData.auto_update_check_frequency,
+      sqliteData.auto_update_notification_style,
+      sqliteData.auto_update_reminder_interval,
+      sqliteData.auto_update_auto_download ? 1 : 0,
+      sqliteData.auto_update_install_prompt,
       timestamp
     ]);
   }

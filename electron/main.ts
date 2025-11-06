@@ -50,6 +50,81 @@ console.log(`[RawaLite] Database will use: ${isDev ? 'rawalite-dev.db' : 'rawali
 // === APP INITIALIZATION ===
 let updateManager: UpdateManagerService;
 
+// 🆕 FIX-1.5: userData Migration (Electron → RawaLite)
+// PROBLEM: When running as developer (DEV):
+//   userData = C:\Users\ramon\AppData\Roaming\Electron\
+// When running installed from NSIS (PROD):
+//   userData = C:\Users\ramon\AppData\Roaming\RawaLite\
+// This causes data loss after installation!
+// SOLUTION: Migrate data from Electron folder to RawaLite folder if needed
+const migrateUserDataIfNeeded = () => {
+  // Note: This runs on ALL platforms to handle:
+  // 1. PROD installs (where userData changes from Electron to RawaLite)
+  // 2. DEV transitions (where userData folder was renamed)
+  // 3. Testing scenarios (where we want to verify migration logic)
+  
+  const rawaliteUserData = path.join(app.getPath('userData'), 'database');
+  const electronUserData = path.join(app.getPath('home'), 'AppData', 'Roaming', 'Electron', 'database');
+  
+  console.log('[MIGRATION] Checking userData migration...');
+  console.log(`  Current userData: ${rawaliteUserData}`);
+  console.log(`  Electron userData: ${electronUserData}`);
+  
+  // Check if RawaLite userData is empty but Electron userData has data
+  if (fs.existsSync(rawaliteUserData)) {
+    const rawaliteDbPath = path.join(rawaliteUserData, 'rawalite.db');
+    const rawaliteDbExists = fs.existsSync(rawaliteDbPath);
+    
+    console.log(`  RawaLite DB exists: ${rawaliteDbExists}`);
+    
+    if (!rawaliteDbExists && fs.existsSync(electronUserData)) {
+      const electronDbPath = path.join(electronUserData, 'rawalite.db');
+      console.log(`  Checking Electron DB: ${electronDbPath}`);
+      
+      if (fs.existsSync(electronDbPath)) {
+        const electronDbStats = fs.statSync(electronDbPath);
+        console.log(`🔄 [MIGRATION] Found Electron userData with data (${(electronDbStats.size / 1024 / 1024).toFixed(2)} MB) - migrating to RawaLite userData...`);
+        try {
+          // Copy database file
+          console.log(`  📋 Copying database from: ${electronDbPath}`);
+          console.log(`  📋 Copying database to:   ${rawaliteDbPath}`);
+          fs.copyFileSync(electronDbPath, rawaliteDbPath);
+          const migratedStats = fs.statSync(rawaliteDbPath);
+          console.log(`  ✅ Database migrated successfully (${(migratedStats.size / 1024 / 1024).toFixed(2)} MB)`);
+          
+          // Copy WAL files if present
+          const electronWalPath = `${electronDbPath}-wal`;
+          const rawaliteWalPath = `${rawaliteDbPath}-wal`;
+          if (fs.existsSync(electronWalPath)) {
+            fs.copyFileSync(electronWalPath, rawaliteWalPath);
+            console.log(`  ✅ WAL file migrated`);
+          }
+          
+          // Copy SHM files if present
+          const electronShmPath = `${electronDbPath}-shm`;
+          const rawaliteShmPath = `${rawaliteDbPath}-shm`;
+          if (fs.existsSync(electronShmPath)) {
+            fs.copyFileSync(electronShmPath, rawaliteShmPath);
+            console.log(`  ✅ SHM file migrated`);
+          }
+          
+          console.log('✅ [MIGRATION] userData migration complete!');
+        } catch (error) {
+          console.error('❌ [MIGRATION] Error during userData migration:', error);
+          // Continue anyway - better to start fresh than crash
+        }
+      } else {
+        console.log('  ℹ️ No Electron userData found - fresh installation detected');
+      }
+    } else {
+      console.log('  ℹ️ RawaLite userData already has data - no migration needed');
+    }
+  } else {
+    console.log('  ℹ️ RawaLite userData directory does not exist yet');
+  }
+};
+
+
 // 🆕 PHASE 1: Fresh DB on First Install Detection
 const DB_INITIALIZED_MARKER = path.join(
   app.getPath('userData'),
@@ -100,6 +175,10 @@ const ensureFreshDbOnFirstRun = () => {
 
 app.whenReady().then(async () => {
   try {
+    // 🔄 FIX-1.5: Migrate userData from Electron to RawaLite folder if needed
+    console.log('🔄 [MIGRATION] Checking for userData migration...');
+    migrateUserDataIfNeeded();
+    
     // 🆕 PHASE 1: Ensure fresh DB on first run
     console.log('🆕 [PHASE 1] Checking first-run status...');
     ensureFreshDbOnFirstRun();
@@ -120,7 +199,7 @@ app.whenReady().then(async () => {
       configValidation.warnings.forEach(warning => console.warn(`  - ${warning}`))
     }
     
-    console.log(`✅ Configuration valid (${configValidation.environment} environment)`)
+    console.log(`✅ Configuration valid`)
 
     // Initialize database connection
     console.log('🗄️ Initializing database...')
@@ -140,7 +219,7 @@ app.whenReady().then(async () => {
     registerFilesystemHandlers();
     registerStatusHandlers();
     registerNumberingHandlers();
-    registerPdfCoreHandlers();
+    registerPdfCoreHandlers(getDb());  // ✅ FIX-008b: Pass DB for theme color loading
     registerDatabaseHandlers();
     registerBackupHandlers();
     registerRollbackHandlers(); // ✅ Phase 2: Rollback & migration handlers

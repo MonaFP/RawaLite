@@ -1,5 +1,15 @@
 # Lessons Learned – Settings & Angebote Mapping-Probleme
-+> **🤖 KI-AUTO-DETECTION SYSTEM:**
+
+> **⚠️ RELATED SOLVED FIX (06.11.2025):**
+> This document covers **Oct 15 problem** = Settings persistence via **Field-Mapping issues (taxNumber ↔ tax_id)**
+> 
+> **BUT:** A **different root cause** was found on Nov 6:
+> - **[SOLVED_FIX-SETTINGS-PERSISTENCE-CONTEXT-REFRESH-LOGIC-2025-11-06.md](../../03-data/SOLVED/SOLVED_FIX-SETTINGS-PERSISTENCE-CONTEXT-REFRESH-LOGIC-2025-11-06.md)**
+> - Root Cause: `SettingsContext.updateCompanyData()` calling `refreshSettings()` which overwrites with NULL values
+> - Fix: Removed refreshSettings(), use direct state update instead
+> - **Takeaway:** Similar symptom (data disappears), DIFFERENT root cause - always check context logic!
+
+> **🤖 KI-AUTO-DETECTION SYSTEM:**
 > - **AKTUELLER STATUS:** KNOWLEDGE_ONLY
 > - **TEMPLATE-QUELLE:** 06-handbook/TEMPLATE/VALIDATED_TEMPLATE-LESSONS-LEARNED_2025-10-26.md
 > - **AUTO-UPDATE:** Bei ähnlichen Problemen als Referenz nutzen

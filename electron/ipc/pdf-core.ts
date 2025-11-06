@@ -19,12 +19,26 @@ import { writeFileSync, statSync, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { generateTemplateHTML } from './pdf-templates';
+import type Database from 'better-sqlite3';
+import { DatabaseThemeService } from '../../src/services/DatabaseThemeService';
+
+let themeService: DatabaseThemeService | null = null;
 
 /**
  * Register all PDF core IPC handlers
+ * 
+ * @param db - Database instance for theme color loading
  */
-export function registerPdfCoreHandlers(): void {
+export function registerPdfCoreHandlers(db?: Database.Database): void {
   console.log('🔌 [PDF-CORE] Registering PDF core IPC handlers...');
+  
+  // Initialize theme service if database provided
+  if (db) {
+    themeService = new DatabaseThemeService(db);
+    console.log('✅ [PDF-CORE] Theme service initialized for database-based color loading');
+  } else {
+    console.warn('⚠️ [PDF-CORE] No database provided - will use hardcoded theme colors');
+  }
   
   // Main PDF generation handler
   ipcMain.handle('pdf:generate', handlePdfGenerate);
@@ -133,15 +147,55 @@ async function handlePdfGenerate(event: any, options: {
     
     const { settings } = options.data;
     
-    // ⚠️ CRITICAL FIX-007: Parameter-based theme color extraction
-    // This is the CORE of FIX-007 - theme colors from parameters, NOT DOM inspection
-    const primaryColor = options.theme?.theme?.primary || options.theme?.primary || '#7ba87b';
-    const accentColor = options.theme?.theme?.accent || options.theme?.accent || '#6b976b';
+    // ⚠️ FIX-008b: Database-based theme color loading (after backup restore)
+    // Load theme colors from database instead of hardcoded fallbacks
+    let primaryColor = '#7ba87b';   // Sage fallback
+    let accentColor = '#6b976b';    // Sage fallback
+    
+    if (themeService && options.theme) {
+      try {
+        console.log('🎨 [PDF-FIX-008b] Loading theme from database:', options.theme);
+        
+        // Get theme name from options (can be string or object)
+        let themeName = options.theme;
+        if (typeof options.theme === 'object' && options.theme.themeKey) {
+          themeName = options.theme.themeKey;
+        } else if (typeof options.theme === 'object' && options.theme.name) {
+          themeName = options.theme.name;
+        }
+        
+        // Try to get theme by key
+        const dbTheme = await (themeService as DatabaseThemeService).getThemeByKey(String(themeName).toLowerCase());
+        
+        if (dbTheme && dbTheme.colors) {
+          console.log('✅ [PDF-FIX-008b] Theme loaded from database:', Object.keys(dbTheme.colors));
+          // Use database colors for primary/accent
+          primaryColor = dbTheme.colors['primary'] || dbTheme.colors['primary-bg'] || primaryColor;
+          accentColor = dbTheme.colors['accent'] || dbTheme.colors['accent-color'] || accentColor;
+          console.log('🎨 [PDF-FIX-008b] Using DB theme colors:', { primary: primaryColor, accent: accentColor });
+        } else {
+          console.warn('⚠️ [PDF-FIX-008b] Theme not found in database, using hardcoded colors');
+          // Fallback to parameter-based (FIX-007 original)
+          primaryColor = options.theme?.theme?.primary || options.theme?.primary || primaryColor;
+          accentColor = options.theme?.theme?.accent || options.theme?.accent || accentColor;
+        }
+      } catch (error) {
+        console.error('❌ [PDF-FIX-008b] Error loading theme from database:', error);
+        // Fallback to original FIX-007 logic
+        primaryColor = options.theme?.theme?.primary || options.theme?.primary || primaryColor;
+        accentColor = options.theme?.theme?.accent || options.theme?.accent || accentColor;
+      }
+    } else {
+      console.log('ℹ️ [PDF-FIX-008b] Theme service not available or no theme specified, using defaults');
+      // Fallback to original FIX-007 logic
+      primaryColor = options.theme?.theme?.primary || options.theme?.primary || primaryColor;
+      accentColor = options.theme?.theme?.accent || options.theme?.accent || accentColor;
+    }
     
     console.log(`🎨 PDF Header using theme colors:`, {
       primary: primaryColor,
       accent: accentColor,
-      theme: options.theme
+      themeLoaded: themeService ? 'from-database' : 'hardcoded'
     });
     
     // Create header template with 3-column layout: Logo | Empty | Company Address
