@@ -14,6 +14,7 @@ import { useActivities } from "../hooks/useActivities";
 import type { Activity } from "../persistence/adapter";
 import VersionService from "../services/VersionService";
 import { SQLiteAdapter } from "../adapters/SQLiteAdapter";
+import { formatNumberInputValue, parseNumberInput, getNumberInputStyles } from "../lib/input-helpers";
 
 interface EinstellungenPageProps {
   title?: string;
@@ -561,60 +562,224 @@ Möchten Sie wirklich fortfahren?`;
       }
 
       // Schritt 2: Backup-Daten importieren
-      let importedCounts = { customers: 0, invoices: 0, offers: 0, packages: 0 };
+      let importedCounts = { customers: 0, invoices: 0, offers: 0, packages: 0, settings: 0 };
+      let importErrors: { type: string; item: any; error: string }[] = [];
 
+      // NORMALISIERUNG: Konvertiere alte Oct 17 Backup Struktur (Migration 034) zu Migration 033
+      // Oct 17 Backup könnte komplexere Felder haben, die wir hier vereinfachen
+      const normalizeOffer = (offer: any) => {
+        // Stelle sicher, dass notwendige Felder existieren
+        if (!offer.customerId) throw new Error('Angebot hat keine customerId');
+        if (!offer.offerNumber) throw new Error('Angebot hat keine offerNumber');
+        
+        // Normalisiere lineItems wenn vorhanden
+        if (offer.lineItems && Array.isArray(offer.lineItems)) {
+          offer.lineItems = offer.lineItems.map((item: any) => ({
+            ...item,
+            // Stelle sicher, dass parent_item_id nur wenn subItem
+            parentItemId: item.parentItemId || item.parent_item_id || undefined
+          }));
+        }
+        return offer;
+      };
+
+      const normalizeInvoice = (invoice: any) => {
+        if (!invoice.customerId) throw new Error('Rechnung hat keine customerId');
+        if (!invoice.invoiceNumber) throw new Error('Rechnung hat keine invoiceNumber');
+        
+        if (invoice.lineItems && Array.isArray(invoice.lineItems)) {
+          invoice.lineItems = invoice.lineItems.map((item: any) => ({
+            ...item,
+            parentItemId: item.parentItemId || item.parent_item_id || undefined
+          }));
+        }
+        return invoice;
+      };
+
+      const normalizeCompanyData = (companyData: any) => {
+        // Konvertiere Oct 17 Backup CompanyData (Migration 034) zu Migration 033 Format
+        const normalized = {
+          name: companyData.name || companyData.companyName || 'RawaLite',
+          street: companyData.street || companyData.streetAddress || '',
+          postalCode: companyData.postalCode || companyData.zip || '',
+          city: companyData.city || companyData.location || '',
+          phone: companyData.phone || companyData.phoneNumber || '',
+          email: companyData.email || companyData.emailAddress || '',
+          website: companyData.website || companyData.websiteUrl || '',
+          taxNumber: companyData.taxNumber || companyData.taxId || companyData.tax_number || '',
+          vatId: companyData.vatId || companyData.vat_id || companyData.umsatzsteuer_id || '',
+          kleinunternehmer: companyData.kleinunternehmer ?? companyData.smallBusiness ?? false,
+          bankName: companyData.bankName || companyData.bank_name || '',
+          bankAccount: companyData.bankAccount || companyData.account_number || companyData.iban || '',
+          bankBic: companyData.bankBic || companyData.bic || '',
+          taxOffice: companyData.taxOffice || companyData.finanzamt || '',
+          logo: companyData.logo || '',
+          
+          // Auto-Update Preferences (Migration 018)
+          autoUpdateEnabled: companyData.autoUpdateEnabled ?? false,
+          autoUpdateCheckFrequency: companyData.autoUpdateCheckFrequency || 'startup',
+          autoUpdateNotificationStyle: companyData.autoUpdateNotificationStyle || 'subtle',
+          autoUpdateReminderInterval: companyData.autoUpdateReminderInterval || 4,
+          autoUpdateAutoDownload: companyData.autoUpdateAutoDownload ?? false,
+          autoUpdateInstallPrompt: companyData.autoUpdateInstallPrompt || 'manual'
+        };
+        
+        console.log('📋 Normalized Company Data:', { original: companyData, normalized });
+        return normalized;
+      };
+
+      // Build ID-Mapping für Kunden UND Angebote (Oct 17 Backup → neue DB IDs)
+      const customerIdMap = new Map<number, number>(); // backupCustomerID → newCustomerID
+      const offerIdMap = new Map<number, number>();   // backupOfferID → newOfferID
+      
       // Importiere Kunden
       if (backupData.customers && Array.isArray(backupData.customers)) {
         for (const customer of backupData.customers) {
           try {
+            // Speichere alte ID BEVOR wir sie entfernen
+            const backupCustomerId = (customer as any).id;
+            
             // Entferne ID und Timestamps für Import
             const { id, createdAt, updatedAt, ...customerData } = customer;
-            await adapter.createCustomer(customerData);
+            const result = await adapter.createCustomer(customerData);
+            
+            // Speichere Mapping für später (Invoices und Offers brauchen die neuen IDs!)
+            if (backupCustomerId && result?.id) {
+              customerIdMap.set(backupCustomerId, result.id);
+            }
+            
             importedCounts.customers++;
           } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
             console.warn('Fehler beim Importieren von Kunde:', customer, error);
+            importErrors.push({
+              type: 'customer',
+              item: customer,
+              error: errorMsg
+            });
           }
         }
       }
 
-      // Importiere Angebote
+      // Importiere Angebote (mit ID-Mapping für Customers!)
       if (backupData.offers && Array.isArray(backupData.offers)) {
         for (const offer of backupData.offers) {
           try {
+            // Speichere alte Offer-ID für Package-Mapping
+            const backupOfferId = (offer as any).id;
+            
             // Entferne ID und Timestamps für Import
             const { id, createdAt, updatedAt, ...offerData } = offer;
-            await adapter.createOffer(offerData);
+            
+            // Remap customerId wenn nötig (Oct 17 Backup alte ID → neue DB ID)
+            const remappedOfferData = { ...offerData } as any;
+            if (remappedOfferData.customerId) {
+              const newCustomerId = customerIdMap.get(remappedOfferData.customerId);
+              if (newCustomerId) {
+                remappedOfferData.customerId = newCustomerId;
+              } else {
+                throw new Error(`Customer ID ${remappedOfferData.customerId} nicht im Backup vorhanden`);
+              }
+            }
+            
+            // Normalisiere für Migration 033 Kompatibilität
+            const normalizedOffer = normalizeOffer(remappedOfferData);
+            
+            const result = await adapter.createOffer(normalizedOffer);
+            
+            // Speichere Mapping für später (Packages brauchen die neuen Offer-IDs!)
+            if (backupOfferId && result?.id) {
+              offerIdMap.set(backupOfferId, result.id);
+            }
+            
             importedCounts.offers++;
           } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
             console.warn('Fehler beim Importieren von Angebot:', offer, error);
+            importErrors.push({
+              type: 'offer',
+              item: offer,
+              error: errorMsg
+            });
           }
         }
       }
 
-      // Importiere Rechnungen
+      // Importiere Rechnungen (mit ID-Mapping für Customers UND Offers!)
       if (backupData.invoices && Array.isArray(backupData.invoices)) {
         for (const invoice of backupData.invoices) {
           try {
             // Entferne ID und Timestamps für Import
             const { id, createdAt, updatedAt, ...invoiceData } = invoice;
-            await adapter.createInvoice(invoiceData);
+            
+            // Remap customerID UND offerId wenn nötig (Oct 17 Backup alte IDs → neue DB IDs)
+            const remappedInvoiceData = { ...invoiceData } as any;
+            
+            // Remap Customer ID
+            if (remappedInvoiceData.customerId) {
+              const newCustomerId = customerIdMap.get(remappedInvoiceData.customerId);
+              if (newCustomerId) {
+                remappedInvoiceData.customerId = newCustomerId;
+              } else {
+                throw new Error(`Customer ID ${remappedInvoiceData.customerId} nicht im Backup vorhanden`);
+              }
+            }
+            
+            // Remap Offer ID (falls vorhanden - Oct 17 Backup könnte Invoices mit Offer referenzen haben)
+            if (remappedInvoiceData.offerId) {
+              const newOfferId = offerIdMap.get(remappedInvoiceData.offerId);
+              if (newOfferId) {
+                remappedInvoiceData.offerId = newOfferId;
+              } else {
+                throw new Error(`Offer ID ${remappedInvoiceData.offerId} nicht im Backup vorhanden`);
+              }
+            }
+            
+            // Normalisiere für Migration 033 Kompatibilität
+            const normalizedInvoice = normalizeInvoice(remappedInvoiceData);
+            
+            await adapter.createInvoice(normalizedInvoice);
             importedCounts.invoices++;
           } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
             console.warn('Fehler beim Importieren von Rechnung:', invoice, error);
+            importErrors.push({
+              type: 'invoice',
+              item: invoice,
+              error: errorMsg
+            });
           }
         }
       }
 
-      // Importiere Pakete
+      // Importiere Pakete (mit ID-Mapping für Angebote!)
       if (backupData.packages && Array.isArray(backupData.packages)) {
         for (const pkg of backupData.packages) {
           try {
             // Entferne ID und Timestamps für Import
             const { id, createdAt, updatedAt, ...packageData } = pkg;
-            await adapter.createPackage(packageData);
+            
+            // Remap offerId wenn nötig (Oct 17 Backup alte ID → neue DB ID)
+            const remappedPackageData = { ...packageData } as any;
+            if (remappedPackageData.offerId) {
+              const newOfferId = offerIdMap.get(remappedPackageData.offerId);
+              if (newOfferId) {
+                remappedPackageData.offerId = newOfferId;
+              } else {
+                throw new Error(`Offer ID ${remappedPackageData.offerId} nicht im Backup vorhanden`);
+              }
+            }
+            
+            await adapter.createPackage(remappedPackageData);
             importedCounts.packages++;
           } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
             console.warn('Fehler beim Importieren von Paket:', pkg, error);
+            importErrors.push({
+              type: 'package',
+              item: pkg,
+              error: errorMsg
+            });
           }
         }
       }
@@ -623,11 +788,35 @@ Möchten Sie wirklich fortfahren?`;
       if (backupData.companyData) {
         try {
           console.log('🏢 Importing company data...');
-          await updateCompanyData(backupData.companyData);
+          console.log('📋 Original backup companyData:', JSON.stringify(backupData.companyData, null, 2));
+          
+          // Normalisiere CompanyData für Migration 033 Kompatibilität
+          const normalizedCompanyData = normalizeCompanyData(backupData.companyData);
+          console.log('📋 Normalized company data:', JSON.stringify(normalizedCompanyData, null, 2));
+          
+          // Call updateCompanyData and wait for it to complete
+          await updateCompanyData(normalizedCompanyData);
           console.log('✅ Company data imported successfully');
+          console.log('✅ Settings updated in database and context');
+          importedCounts.settings++;
         } catch (error) {
-          console.warn('Error importing company data:', error);
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          console.error('❌ FATAL Error importing company data:', error);
+          console.error('📋 Full error stack:', error instanceof Error ? error.stack : 'No stack');
+          console.error('📋 Error details:', {
+            message: errorMsg,
+            originalData: backupData.companyData,
+            timestamp: new Date().toISOString(),
+            errorType: error instanceof Error ? error.constructor.name : typeof error
+          });
+          importErrors.push({
+            type: 'settings',
+            item: backupData.companyData,
+            error: `Settings import failed: ${errorMsg}`
+          });
         }
+      } else {
+        console.warn('⚠️ No company data in backup');
       }
       
       // Schritt 4: Nummernkreise intelligent anpassen - schaue nach höchster verwendeter ID
@@ -706,17 +895,34 @@ Möchten Sie wirklich fortfahren?`;
         }
       }
 
-      showSuccess(`✅ Backup erfolgreich importiert!
+      // Stelle Erfolgs- und Fehler-Message zusammen
+      let resultMessage = `✅ Backup Import abgeschlossen!\n\nImportierte Daten:\n`;
+      resultMessage += `- ${importedCounts.customers} Kunden\n`;
+      resultMessage += `- ${importedCounts.invoices} Rechnungen\n`;
+      resultMessage += `- ${importedCounts.offers} Angebote\n`;
+      resultMessage += `- ${importedCounts.packages} Pakete\n`;
+      resultMessage += `- Unternehmenseinstellungen\n`;
+      resultMessage += `- Intelligente Nummernkreise (angepasst an vorhandene Daten)\n\n`;
+      resultMessage += `🔄 Die Anwendung wurde aktualisiert. Sie können jetzt mit den importierten Daten arbeiten.`;
 
-Importierte Daten:
-- ${importedCounts.customers} Kunden
-- ${importedCounts.invoices} Rechnungen
-- ${importedCounts.offers} Angebote
-- ${importedCounts.packages} Pakete
-- Unternehmenseinstellungen
-- Intelligente Nummernkreise (angepasst an vorhandene Daten)
+      // Zeige Fehler, falls vorhanden
+      if (importErrors.length > 0) {
+        resultMessage += `\n\n⚠️ ${importErrors.length} Import-Fehler aufgetreten:\n`;
+        importErrors.forEach((err, idx) => {
+          resultMessage += `\n${idx + 1}. ${err.type.toUpperCase()}: ${err.error}`;
+          if (err.item.offerNumber) resultMessage += ` (Angebot: ${err.item.offerNumber})`;
+          if (err.item.invoiceNumber) resultMessage += ` (Rechnung: ${err.item.invoiceNumber})`;
+          if (err.item.customerNumber) resultMessage += ` (Kunde: ${err.item.customerNumber})`;
+        });
+        resultMessage += `\n\nBitte überprüfen Sie die fehlgeschlagenen Datensätze manuell oder kontaktieren Sie den Support.`;
+        console.warn('Import errors tracked:', importErrors);
+      }
 
-🔄 Die Anwendung wurde aktualisiert. Sie können jetzt mit den importierten Daten arbeiten.`);
+      if (importErrors.length > 0 && importErrors.length > importedCounts.offers + importedCounts.invoices + importedCounts.customers + importedCounts.packages) {
+        showError(resultMessage);
+      } else {
+        showSuccess(resultMessage);
+      }
       
       console.log('✅ Backup import completed successfully');
       
@@ -1764,9 +1970,10 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                       type="number"
                       min="1"
                       max="10"
-                      value={circle.digits}
+                      value={formatNumberInputValue(circle.digits)}
                       onChange={(e) => updateNumberingCircle(index, 'digits', parseInt(e.target.value) || 1)}
                       style={{
+                        ...getNumberInputStyles(),
                         width: "100%",
                         padding: "8px",
                         borderRadius: "4px",
@@ -1784,9 +1991,10 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                     <input
                       type="number"
                       min="0"
-                      value={circle.current}
+                      value={formatNumberInputValue(circle.current)}
                       onChange={(e) => updateNumberingCircle(index, 'current', parseInt(e.target.value) || 0)}
                       style={{
+                        ...getNumberInputStyles(),
                         width: "100%",
                         padding: "8px",
                         borderRadius: "4px",
@@ -2273,11 +2481,20 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
                 id="activity-hourlyRate"
                 type="number"
                 min="0"
-                step="0.01"
-                value={activityFormData.hourlyRate}
-                onChange={(e) => setActivityFormData(prev => ({ ...prev, hourlyRate: parseFloat(e.target.value) || 0 }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0.00"
+                value={formatNumberInputValue(activityFormData.hourlyRate, true)}
+                onChange={(e) => setActivityFormData(prev => ({ ...prev, hourlyRate: parseNumberInput(e.target.value, 0) }))}
+                style={{
+                  ...getNumberInputStyles(),
+                  width: "100%",
+                  padding: "8px",
+                  border: "1px solid rgb(209, 213, 219)",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontFamily: "inherit",
+                  outline: "none"
+                }}
+                className="focus:ring-2 focus:ring-blue-500"
+                placeholder="0,00"
               />
             </div>
 
