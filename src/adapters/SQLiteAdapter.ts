@@ -1163,10 +1163,68 @@ export class SQLiteAdapter implements PersistenceAdapter {
   }
 
   async deleteInvoice(id: number): Promise<void> {
+    // 🛡️ FIX-002: Numbering-Circle-Reset (MEDIUM)
+    // Get invoice details before deletion to check numbering
+    const invoice = await this.getInvoice(id);
+    
     await this.client.transaction([
       { sql: `DELETE FROM invoice_line_items WHERE invoice_id = ?`, params: [id] },
       { sql: `DELETE FROM invoices WHERE id = ?`, params: [id] }
     ]);
+    
+    // Check if this was the highest invoice number and update numbering circle if needed
+    if (invoice) {
+      try {
+        // Get all remaining invoices to find the new highest number
+        const remainingInvoices = await this.listInvoices();
+        
+        // Parse invoice numbers (format: PREFIX-NUMBER, e.g., "RE-042")
+        const invoiceNumbers = remainingInvoices
+          .map(inv => {
+            const match = inv.invoiceNumber?.match(/(\d+)$/);
+            return match ? parseInt(match[1], 10) : 0;
+          })
+          .filter(num => num > 0);
+        
+        // If there are remaining invoices, find the highest number
+        if (invoiceNumbers.length > 0) {
+          const highestNumber = Math.max(...invoiceNumbers);
+          
+          // Get invoice numbering circle (assuming ID 'invoice' as per standard setup)
+          const circleQuery = convertSQLQuery("SELECT * FROM numberingCircles WHERE id = ?");
+          const circleRows = await this.client.query<any>(circleQuery, ['invoice']);
+          
+          if (circleRows.length > 0) {
+            const circle = mapFromSQL(circleRows[0]);
+            
+            // Only update if the deleted invoice was the highest
+            const deletedNumber = invoice.invoiceNumber?.match(/(\d+)$/)?.[1];
+            if (deletedNumber && parseInt(deletedNumber, 10) >= (circle.current || 0)) {
+              // Update circle to highest remaining number
+              const updateQuery = convertSQLQuery(`
+                UPDATE numberingCircles 
+                SET current = ?, updatedAt = datetime('now')
+                WHERE id = ?
+              `);
+              await this.client.exec(updateQuery, [highestNumber, 'invoice']);
+              console.log(`✅ Numbering circle 'invoice' updated: ${circle.current} → ${highestNumber} (after deleting invoice ${invoice.invoiceNumber})`);
+            }
+          }
+        } else {
+          // No invoices left - reset circle to 0
+          const updateQuery = convertSQLQuery(`
+            UPDATE numberingCircles 
+            SET current = 0, updatedAt = datetime('now')
+            WHERE id = ?
+          `);
+          await this.client.exec(updateQuery, ['invoice']);
+          console.log(`✅ Numbering circle 'invoice' reset to 0 (all invoices deleted)`);
+        }
+      } catch (error) {
+        // Non-critical: Don't fail deletion if numbering update fails
+        console.warn('Warning: Could not update numbering circle after invoice deletion:', error);
+      }
+    }
   }
 
   // ACTIVITIES
