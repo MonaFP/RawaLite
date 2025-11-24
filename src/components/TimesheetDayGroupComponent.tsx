@@ -227,13 +227,13 @@ export function TimesheetDayGroupComponent({
               
               {/* Hourly Rate */}
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={activity.hourlyRate}
                 onChange={(e) => onActivityUpdate(activity.id, {
                   hourlyRate: parseFloat(e.target.value) || 0,
                   total: activity.hours * (parseFloat(e.target.value) || 0)
                 })}
-                step="0.01"
                 min="0"
                 style={{
                   border: "1px solid var(--color-border)",

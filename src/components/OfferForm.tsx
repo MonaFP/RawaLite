@@ -1168,7 +1168,8 @@ export const OfferForm: React.FC<OfferFormProps> = ({
               {discountType === 'percentage' && (
                 <div style={{display:"flex", alignItems:"center", gap:"4px"}}>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="0"
                     value={formatNumberInputValue(discountValue)}
                     onChange={(e) => setDiscountValue(parseNumberInput(e.target.value))}
@@ -1196,7 +1197,8 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                 <div style={{display:"flex", alignItems:"center", gap:"4px"}}>
                   <span>€</span>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="0,00"
                     value={formatNumberInputValue(discountValue)}
                     onChange={(e) => setDiscountValue(parseNumberInput(e.target.value))}
@@ -1239,7 +1241,8 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                   <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
                     <span>MwSt.:</span>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       placeholder="19"
                       value={formatNumberInputValue(vatRate)}
                       onChange={(e) => setVatRate(parseNumberInput(e.target.value, 19))}

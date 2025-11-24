@@ -974,8 +974,8 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
               />
               
               <input 
-                type="number" 
-                step="0.1"
+                type="text"
+                inputMode="decimal"
                 className="form-control" 
                 style={{fontSize:"12px", padding:"4px"}}
                 placeholder="8.0"
@@ -984,8 +984,8 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
               />
               
               <input 
-                type="number" 
-                step="0.01"
+                type="text"
+                inputMode="decimal"
                 className="form-control" 
                 style={{fontSize:"12px", padding:"4px"}}
                 placeholder="50.00"
@@ -1054,8 +1054,8 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
                 <div>
                   <label>Stunden</label>
                   <input 
-                    type="number" 
-                    step="0.1"
+                    type="text"
+                    inputMode="decimal"
                     className="form-control"
                     placeholder="8.0"
                     value={newPosition.hours}
@@ -1067,8 +1067,8 @@ export default function TimesheetsPage({ title = "Leistungsnachweise" }: Timeshe
               <div className="form-group">
                 <label>Stundensatz (€)</label>
                 <input 
-                  type="number" 
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   className="form-control"
                   placeholder="50.00"
                   value={newPosition.hourlyRate}

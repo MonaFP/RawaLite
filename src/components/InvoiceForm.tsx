@@ -472,13 +472,13 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   </div>
                   <div>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       placeholder="Menge"
                       value={item.quantity}
                       onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
                       style={{width:"100%", padding:"6px", border:"1px solid rgba(255,255,255,.1)", borderRadius:"4px", background:"rgba(17,24,39,.8)", color:"var(--muted)", fontSize:"14px"}}
                       min="0"
-                      step="0.01"
                     />
                   </div>
                   <div>
@@ -587,7 +587,8 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                         </div>
                         <div>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             placeholder="Menge"
                             value={subItem.quantity}
                             onChange={(e) => updateLineItem(subItem.id, 'quantity', parseFloat(e.target.value) || 0)}
@@ -602,7 +603,6 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                               opacity: subItem.priceDisplayMode === 'included' || subItem.priceDisplayMode === 'hidden' ? 0.5 : 1
                             }}
                             min="0"
-                            step="0.01"
                             disabled={subItem.priceDisplayMode === 'included' || subItem.priceDisplayMode === 'hidden'}
                           />
                         </div>
@@ -772,7 +772,8 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
               {discountType === 'percentage' && (
                 <div style={{display:"flex", alignItems:"center", gap:"4px"}}>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="0"
                     value={formatNumberInputValue(discountValue)}
                     onChange={(e) => setDiscountValue(parseNumberInput(e.target.value))}
@@ -800,7 +801,8 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 <div style={{display:"flex", alignItems:"center", gap:"4px"}}>
                   <span>€</span>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="0,00"
                     value={formatNumberInputValue(discountValue)}
                     onChange={(e) => setDiscountValue(parseNumberInput(e.target.value))}
@@ -843,7 +845,8 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
                     <span>MwSt.:</span>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       placeholder="19"
                       value={formatNumberInputValue(vatRate)}
                       onChange={(e) => setVatRate(parseNumberInput(e.target.value, 19))}

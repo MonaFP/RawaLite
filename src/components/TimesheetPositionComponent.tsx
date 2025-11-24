@@ -190,10 +190,10 @@ export function TimesheetPositionComponent({
               />
               
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={activity.hours}
                 onChange={(e) => updateActivity(activity.id, { hours: parseFloat(e.target.value) || 0 })}
-                step="0.1"
                 min="0"
                 style={{
                   border: "1px solid var(--color-border)",
@@ -204,10 +204,10 @@ export function TimesheetPositionComponent({
               />
               
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={activity.hourlyRate}
                 onChange={(e) => updateActivity(activity.id, { hourlyRate: parseFloat(e.target.value) || 0 })}
-                step="0.01"
                 min="0"
                 style={{
                   border: "1px solid var(--color-border)",

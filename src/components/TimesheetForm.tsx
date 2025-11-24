@@ -269,8 +269,8 @@ export const TimesheetForm: React.FC<TimesheetFormProps> = ({
                 <div className="form-group">
                   <label>Stunden</label>
                   <input
-                    type="number"
-                    step="0.25"
+                    type="text"
+                    inputMode="decimal"
                     min="0"
                     value={activity.hours}
                     onChange={(e) => updateActivity(index, 'hours', parseFloat(e.target.value) || 0)}
@@ -337,12 +337,12 @@ export const TimesheetForm: React.FC<TimesheetFormProps> = ({
             <div className="form-group inline">
               <label>MwSt. (%):</label>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={vatRate}
                 onChange={(e) => setVatRate(parseFloat(e.target.value) || 0)}
                 min="0"
                 max="50"
-                step="0.1"
                 style={{ width: '80px' }}
               />
               <span>€{vatAmount.toFixed(2)}</span>

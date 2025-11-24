@@ -226,7 +226,11 @@ export default function EinstellungenPage({ title = "Einstellungen" }: Einstellu
   };
 
   const handleTaxSubmit = async (e: React.FormEvent) => {
+    // 🛡️ FIX-003: Tax-Form-Event-Prevention (HIGH)
+    // Prevents event bubbling that could trigger clearAllData
     e.preventDefault();
+    e.stopPropagation();
+    
     console.log('Tax form submitted, NOT calling clear data');
     try {
       setSaving(true);
@@ -1181,7 +1185,14 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
     }
   };
 
-  const handleClearAllData = async () => {
+  const handleClearAllData = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    // 🛡️ FIX-001: Event-Handler-Isolation (CRITICAL)
+    // Prevents accidental triggering from event bubbling
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     console.log('🚨 CRITICAL: handleClearAllData was called! This should only happen from the Clear All Data button!');
     console.trace('Call stack:');
     
@@ -2411,7 +2422,13 @@ CSV-Format: Titel;Kundenname;Gesamtbetrag;Fällig am (YYYY-MM-DD);Notizen`);
             </p>
             <button
               type="button"
-              onClick={handleClearAllData}
+              onClick={(e) => {
+                // 🛡️ FIX-001: Event-Handler-Isolation (CRITICAL)
+                // Double-safety: prevent + stop propagation at button level
+                e.preventDefault();
+                e.stopPropagation();
+                handleClearAllData(e);
+              }}
               className="btn btn-danger"
               style={{
                 backgroundColor: "#ef4444",
