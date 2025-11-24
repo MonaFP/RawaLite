@@ -42,6 +42,11 @@ db/rawalite-dev-copy_*.db
 # Auto-generated build metadata (esbuild)
 meta.json
 
+# 📌 BACKUP FILES (FILE REPLACEMENT POLICY - 29.10.2025)
+# MANDATORY: All backup files from file replacement operations
+*.backup
+*.backup-*
+
 # 📁 DOCUMENTATION FOLDERS (NOT in repo - local only)
 # /docs is for LOCAL project documentation only
 # Documentation should NOT be committed to version control
